@@ -13,8 +13,11 @@
 # limitations under the License.
 FROM amazoncorretto:8
 
+ARG JAR_VERSION
+ENV JAR_FILE=search-aws-${JAR_VERSION}-spring-boot.jar
+
 WORKDIR /
-COPY provider/search-aws/target/search-aws-0.0.1-SNAPSHOT-spring-boot.jar search-aws-0.0.1-SNAPSHOT-spring-boot.jar
+COPY provider/search-aws/target/$JAR_FILE $JAR_FILE
 EXPOSE 8080
 
-CMD ["java","-jar", "search-aws-0.0.1-SNAPSHOT-spring-boot.jar"]
+CMD java -jar $JAR_FILE
