@@ -1,0 +1,240 @@
+// Copyright 2017-2019, Schlumberger
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.opengroup.osdu.search.provider.gcp.provider.impl;
+
+import com.google.common.collect.Lists;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.*;
+import org.opengroup.osdu.core.common.model.http.DpsHeaders;
+import org.opengroup.osdu.core.common.model.search.DeploymentEnvironment;
+import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
+import org.opengroup.osdu.search.util.ElasticClientHandler;
+import org.opengroup.osdu.search.cache.CursorCache;
+import org.opengroup.osdu.search.logging.AuditLogger;
+import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
+import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
+import org.opengroup.osdu.core.common.model.search.CursorSettings;
+import org.opengroup.osdu.search.util.CrossTenantUtils;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.when;
+
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({SearchRequest.class, SearchHits.class, RestHighLevelClient.class, Config.class})
+public class ScrollQueryServiceTest {
+
+    @Mock
+    private ElasticClientHandler elasticClientHandler;
+    @Mock
+    private CursorQueryRequest cursorQueryRequest;
+    @Mock
+    private CursorCache redisCache;
+    @Mock
+    private DpsHeaders dpsHeaders;
+    @Mock
+    private CrossTenantUtils crossTenantUtils;
+    @Mock
+    private AuditLogger auditLogger;
+    @Mock
+    private IProviderHeaderService providerHeaderService;
+    @Mock
+    private Config searchConfig;
+
+    private RestHighLevelClient restHighLevelClient;
+
+    private SearchResponse elasticSearchResponse;
+
+    @InjectMocks @Spy
+    private ScrollQueryServiceImpl sut = new ScrollQueryServiceImpl();
+
+    private final String DATA_GROUPS = "X-Data-Groups";
+    private static final String DATA_GROUP_1 = "data.welldb.viewers@common.evd.cloud.slb-ds.com";
+    private static final String DATA_GROUP_2 = "data.npd.viewers@common.evd.cloud.slb-ds.com";
+    private static final String USER_EMAIL = "blah@slb.com";
+
+    public ScrollQueryServiceTest() throws NoSuchAlgorithmException {
+    }
+
+    @Before
+    public void setup() {
+        MockitoAnnotations.initMocks(this);
+
+        mockStatic(RestHighLevelClient.class);
+        mockStatic(SearchRequest.class);
+        mockStatic(Config.class);
+
+        restHighLevelClient = PowerMockito.mock(RestHighLevelClient.class);
+        elasticSearchResponse = PowerMockito.mock(SearchResponse.class, RETURNS_DEEP_STUBS);
+
+        Map<String, String> HEADERS = new HashMap<>();
+        HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
+        HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
+        HEADERS.put(DpsHeaders.USER_EMAIL, USER_EMAIL);
+        HEADERS.put(DATA_GROUPS, String.format("%s,%s", DATA_GROUP_1, DATA_GROUP_2));
+        when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
+        when(dpsHeaders.getUserEmail()).thenReturn(USER_EMAIL);
+
+        when(providerHeaderService.getDataGroupsHeader()).thenReturn(DATA_GROUPS);
+
+        when(Config.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.LOCAL);
+    }
+
+    @Test
+    public void should_not_returnCursor_when_request_resultIsSmall() throws Exception {
+
+        Map<String, Object> hit = new HashMap<>();
+        hit.put("_id", "tenant1:welldb:wellbore-33fe05e1-df20-49d9-bd63-74cf750a206f");
+        hit.put("type", "wellbore");
+
+        List<Map<String, Object>> hits = new ArrayList<>();
+        hits.add(hit);
+
+        doReturn(elasticSearchResponse).when(this.sut).makeSearchRequest(any(), any());
+        doReturn(hits).when(this.sut).getHitsFromSearchResponse(any());
+        doReturn(null).when(this.sut).refreshCursorCache(any(), any());
+
+        when(elasticSearchResponse.getScrollId()).thenReturn(null);
+        when(elasticSearchResponse.getHits().getTotalHits()).thenReturn(1L);
+
+        CursorQueryResponse queryResponse = this.sut.queryIndex(cursorQueryRequest);
+        assertNotNull(queryResponse);
+        assertEquals(1, queryResponse.getTotalCount());
+        assertNull(queryResponse.getCursor());
+        verify(this.auditLogger).queryIndexWithCursor(Lists.newArrayList(cursorQueryRequest.toString()));
+    }
+
+
+    @Test
+    public void should_returnCursor_when_request_resultIsOverDefaultLimit() throws Exception {
+
+        Map<String, Object> hit = new HashMap<>();
+        hit.put("_id", "tenant1:welldb:wellbore-33fe05e1-df20-49d9-bd63-74cf750a206f");
+        hit.put("type", "wellbore");
+
+        List<Map<String, Object>> hits = new ArrayList<>();
+        hits.add(hit);
+
+        doReturn(elasticSearchResponse).when(this.sut).makeSearchRequest(any(), any());
+        doReturn(hits).when(this.sut).getHitsFromSearchResponse(any());
+        doReturn("fso09flgl").when(this.sut).refreshCursorCache(any(), any());
+
+        when(elasticSearchResponse.getScrollId()).thenReturn("fso09flgl");
+        when(elasticSearchResponse.getHits().getTotalHits()).thenReturn(15L);
+
+        CursorQueryResponse queryResponse = this.sut.queryIndex(cursorQueryRequest);
+        assertNotNull(queryResponse);
+        assertEquals(15, queryResponse.getTotalCount());
+        assertNotNull(queryResponse.getCursor());
+        verify(this.auditLogger).queryIndexWithCursor(Lists.newArrayList(cursorQueryRequest.toString()));
+    }
+
+    @Test
+    public void should_returnCursorResponse_when_request_hadValidCursor() throws Exception {
+
+        Map<String, Object> hit = new HashMap<>();
+        hit.put("_id", "tenant1:welldb:wellbore-33fe05e1-df20-49d9-bd63-74cf750a206f");
+        hit.put("type", "wellbore");
+
+        List<Map<String, Object>> hits = new ArrayList<>();
+        hits.add(hit);
+
+        String cursor = "fso09flgl";
+
+        CursorSettings cursorSettings = CursorSettings.builder().cursor(cursor).userId(USER_EMAIL).build();
+
+        when(this.cursorQueryRequest.getCursor()).thenReturn(cursor);
+
+        when(elasticSearchResponse.getScrollId()).thenReturn(cursor);
+        when(elasticSearchResponse.getHits().getTotalHits()).thenReturn(7515L);
+
+        doReturn(restHighLevelClient).when(this.elasticClientHandler).createRestClient();
+
+        when(restHighLevelClient.scroll(any(), any(RequestOptions.class))).thenReturn(elasticSearchResponse);
+
+        doReturn(hits).when(this.sut).getHitsFromSearchResponse(any());
+        doReturn(cursor).when(this.sut).refreshCursorCache(any(), any());
+        doReturn(cursorSettings).when(this.redisCache).get(cursor);
+
+        CursorQueryResponse queryResponse = this.sut.queryIndex(cursorQueryRequest);
+        assertNotNull(queryResponse);
+        verify(this.auditLogger).queryIndexWithCursor(Lists.newArrayList(cursorQueryRequest.toString()));
+    }
+
+    @Test
+    public void should_return_correctElasticRequest_given_firstCursorRequestQuery() throws IOException {
+
+        int limit = 5;
+        String kind = "tenant1:welldb:well:1.0.0";
+
+        List<String> returnedFields = new ArrayList<>();
+        returnedFields.add("id");
+        when(cursorQueryRequest.getKind()).thenReturn(kind);
+        when(cursorQueryRequest.getLimit()).thenReturn(limit);
+        when(cursorQueryRequest.getReturnedFields()).thenReturn(returnedFields);
+        when(searchConfig.getQueryLimitMaximum()).thenReturn(1000);
+
+        Mockito.when(crossTenantUtils.getIndexName(any(), any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
+
+        SearchRequest elasticRequest = this.sut.createElasticRequest(cursorQueryRequest);
+        assertNotNull(elasticRequest);
+
+        String[] indices = elasticRequest.indices();
+        assertEquals(1, indices.length);
+        assertEquals("tenant1-welldb-well-1.0.0,-.*", indices[0]);
+
+        SearchSourceBuilder elasticSearchSourceBuilder = elasticRequest.source();
+        assertNotNull(elasticSearchSourceBuilder);
+        assertEquals(limit, elasticSearchSourceBuilder.size());
+        assertEquals(1, elasticSearchSourceBuilder.timeout().getMinutes());
+
+        FetchSourceContext elasticFetchSourceContext = elasticSearchSourceBuilder.fetchSource();
+        assertNotNull(elasticFetchSourceContext);
+
+        String[] elasticExcludes = elasticFetchSourceContext.excludes();
+        assertEquals(2, elasticExcludes.length);
+        assertEquals("x-acl", elasticExcludes[0]);
+        assertEquals("index", elasticExcludes[1]);
+
+        String[] elasticIncludes = elasticFetchSourceContext.includes();
+        assertEquals(1, elasticIncludes.length);
+        assertEquals("id", elasticIncludes[0]);
+
+        QueryBuilder elasticQueryBuilder = elasticSearchSourceBuilder.query();
+        assertNotNull(elasticQueryBuilder);
+    }
+}

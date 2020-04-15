@@ -1,0 +1,18 @@
+# Created by .ignore support plugin (hsz.mobi)
+# IntelliJ
+.idea/*
+testing/.idea
+testing/integration-tests/.idea
+testing/integration-tests/search-test-core/.idea
+testing/integration-tests/search-test-gcp/.idea
+
+*.iml
+# Output
+target/
+load-tests/*.pyc
+# Eclipse
+.classpath
+.project
+.settings/
+.DS_Store
+.factorypath

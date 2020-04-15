@@ -1,0 +1,68 @@
+{{$endPointsServiceName := getenv "ENDPOINTS_SERVICE_NAME" -}}
+{{$gcloudProject := getenv "GCLOUD_PROJECT" -}}
+{{$gcloudRedisHost := getenv "REDIS_SEARCH_HOST" -}}
+{{$sauthAuthorizationUrl := getenv "SAUTH_AUTHORIZATION_URL" -}}
+{{$sauthIssuer := getenv "SAUTH_ISSUER" -}}
+{{$environment := getenv "ENVIRONMENT" -}}
+{{$sauthJwksUri := getenv "SAUTH_JWKS_URI" -}}
+{{$sauthAudiences := getenv "SAUTH_AUDIENCES" -}}
+{{$googleAudiences := getenv "GOOGLE_AUDIENCES" -}}
+{{$ccsDisabled := getenv "SMART_SEARCH_CCS_DISABLED" -}}
+service: search
+
+runtime: java
+env: flex
+
+api_version: 1
+threadsafe: yes
+
+endpoints_api_service:
+  name: "{{$endPointsServiceName}}"
+  rollout_strategy: managed
+
+resources:
+  cpu: 2
+  memory_gb: 4.8
+
+beta_settings:
+  java_quickstart: true
+
+automatic_scaling:
+  min_num_instances: 2
+  max_num_instances: 30
+  cool_down_period_sec: 120
+  cpu_utilization:
+    target_utilization: 0.5
+
+liveness_check:
+  path: '/_ah/liveness_check'
+  timeout_sec: 4
+  check_interval_sec: 10
+  failure_threshold: 3
+  success_threshold: 2
+  initial_delay_sec: 300
+
+readiness_check:
+  path: '/_ah/readiness_check'
+  timeout_sec: 4
+  check_interval_sec: 5
+  failure_threshold: 2
+  success_threshold: 2
+  app_start_timeout_sec: 1200
+
+env_variables:
+  JETTY_MODULES_ENABLE: 'gzip'
+  JAVA_OPTS: -Xms3072m -Xmx3072m
+  SEARCH_HOST: "search-dot-{{$gcloudProject}}.appspot.com"
+  ENTITLEMENTS_HOST: "https://entitlements-dot-{{$gcloudProject}}.appspot.com/entitlements/v1"
+  ELASTIC_DATASTORE_KIND: "SearchSettings"
+  ELASTIC_DATASTORE_ID: "search-service"
+  REDIS_SEARCH_HOST: "{{$gcloudRedisHost}}"
+  SAUTH_AUTHORIZATION_URL: {{$sauthAuthorizationUrl}}
+  SAUTH_AUDIENCES: {{$sauthAudiences}}
+  SAUTH_ISSUER: {{$sauthIssuer}}
+  SAUTH_JWKS_URI: {{$sauthJwksUri}}
+  ENVIRONMENT: {{$environment}}
+  GOOGLE_AUDIENCES: {{$googleAudiences}}
+  INDEXER_HOST: "https://indexer-dot-{{$gcloudProject}}.appspot.com/api/indexer/v2/"
+  SMART_SEARCH_CCS_DISABLED: {{$ccsDisabled}}

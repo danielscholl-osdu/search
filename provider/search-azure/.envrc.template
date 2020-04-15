@@ -1,0 +1,42 @@
+##
+# Needed to run the service
+##
+export LOG_PREFIX=
+export server.servlet.contextPath=
+export search.service.port=
+export AUTHORIZE_API=
+export AUTHORIZE_API_KEY=
+export cosmosdb_account=
+export cosmosdb_key=
+export cosmosdb_database=
+export azure.activedirectory.client-id=
+export azure.activedirectory.AppIdUri=
+export azure.activedirectory.session-stateless=
+export ELASTIC_CACHE_EXPIRATION=
+export MAX_CACHE_VALUE_SIZE=
+export KEYVAULT_URI=
+export AZURE_CLIENT_ID=
+export AZURE_TENANT_ID=
+export AZURE_CLIENT_SECRET=
+export azure.application-insights.instrumentation-key=
+export appinsights_key=
+
+
+##
+# Needed to run the integration tests
+##
+export DEFAULT_DATA_PARTITION_ID_TENANT1=
+export DEFAULT_DATA_PARTITION_ID_TENANT2=
+export ELASTIC_USER_NAME=
+export ELASTIC_PASSWORD=
+export ELASTIC_HOST=
+export ELASTIC_PORT=
+export INDEXER_HOST=
+export ENTITLEMENTS_DOMAIN=
+export SEARCH_HOST=
+export STORAGE_HOST=
+export AZURE_AD_TENANT_ID=
+export AZURE_AD_APP_RESOURCE_ID=
+export INTEGRATION_TESTER=
+export AZURE_TESTER_SERVICEPRINCIPAL_SECRET=
+

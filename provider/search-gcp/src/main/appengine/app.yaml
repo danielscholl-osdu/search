@@ -1,0 +1,21 @@
+service: os-search
+runtime: java
+env: flex
+
+resources:
+  cpu: 2
+  memory_gb: 6
+
+automatic_scaling:
+  min_num_instances: 2
+  max_num_instances: 5
+  cool_down_period_sec: 120
+  cpu_utilization:
+    target_utilization: 0.7
+
+env_variables:
+  SPRING_PROFILES_ACTIVE: 'ENVIRONMENT'
+  AUTHORIZE_API: 'AUTHORIZE_API_VAR'
+  CRON_JOB_IP: 'CRON_JOB_IP_VAR'
+  LEGAL_HOSTNAME: 'LEGAL_HOSTNAME_VAR'
+  REGION: 'REGION_VAR'
