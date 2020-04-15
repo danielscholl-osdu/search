@@ -1,0 +1,18 @@
+variables:
+  AWS_BUILD_SUBDIR: provider/search-aws
+  AWS_APPLICATION_NAME: os-search
+  AWS_ENVIRONMENT: dev
+  GCP_BUILD_SUBDIR: provider/search-gcp
+  GCP_INT_TEST_SUBDIR: testing/integration-tests/search-test-gcp
+  GCP_APPLICATION_NAME: os-search
+  GCP_ENVIRONMENT: dev
+  GCP_PROJECT: opendes
+  GCP_TENANT_NAME: opendes
+  GCP_DEPLOY_ENV: p4d
+  GCP_DOMAIN: cloud.slb-ds.com
+  GCP_STORAGE_URL: https://os-search-dot-opendes.appspot.com/api/storage/v2/
+
+include:
+  - project: 'osdu/platform/ci-cd-pipelines'
+    ref: 'master'
+    file: 'service.gitlab-ci.yml'
