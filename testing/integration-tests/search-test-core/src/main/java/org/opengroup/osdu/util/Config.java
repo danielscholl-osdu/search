@@ -20,6 +20,7 @@ public class Config {
     private static final String DEFAULT_OTHER_RELEVANT_DATA_COUNTRIES = "";
 
     private static final String DEFAULT_ENTITLEMENTS_DOMAIN = "";
+    private static final String DEFAULT_USER_EMAIL = "user";
 
 
     public static String getOtherRelevantDataCountries() {
@@ -76,6 +77,10 @@ public class Config {
 
     public static String getEntitlementsDomain() {
         return getEnvironmentVariableOrDefaultValue("ENTITLEMENTS_DOMAIN", DEFAULT_ENTITLEMENTS_DOMAIN);
+    }
+
+    public static String getUserEmail() {
+        return getEnvironmentVariableOrDefaultValue("USER_EMAIL", DEFAULT_USER_EMAIL);
     }
 
     private static String getEnvironmentVariableOrDefaultValue(String key, String defaultValue) {

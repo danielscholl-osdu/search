@@ -32,23 +32,7 @@ public class SwaggerDocumentationConfig {
         List<Parameter> parameters = new ArrayList<>();
         builder.name(DpsHeaders.DATA_PARTITION_ID)
                 .description("tenant. This should be same value as first field in 'kind' field")
-                .defaultValue("tenant1")
-                .modelRef(new ModelRef("string"))
-                .parameterType("header")
-                .required(true)
-                .build();
-        parameters.add(builder.build());
-//        builder.name("slb-frame-of-reference")
-//                .description("reference")
-//                .defaultValue("none")
-//                .modelRef(new ModelRef("string"))
-//                .parameterType("header")
-//                .required(true)
-//                .build();
-//        parameters.add(builder.build());
-        builder.name(DpsHeaders.ACCOUNT_ID)
-                .description("account id. Either data partition id or account id is required.")
-                .defaultValue("common")
+                .defaultValue("opendes")
                 .modelRef(new ModelRef("string"))
                 .parameterType("header")
                 .required(true)

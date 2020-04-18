@@ -92,8 +92,7 @@ public class QueryServiceAwsImpl extends QueryBase implements IQueryService {
         SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);
         sourceBuilder.from(searchRequest.getFrom());
 
-        // aggregation: only make it available in pre demo for now
-        if (isPreDemo() && StringUtils.isNotEmpty(searchRequest.getAggregateBy())) {
+        if (StringUtils.isNotEmpty(searchRequest.getAggregateBy())) {
             TermsAggregationBuilder termsAggregationBuilder = new TermsAggregationBuilder(AGGREGATION_NAME, ValueType.STRING);
             termsAggregationBuilder.field(searchRequest.getAggregateBy());
             termsAggregationBuilder.size(Config.getAggregationSize());

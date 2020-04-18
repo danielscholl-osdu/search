@@ -130,9 +130,9 @@ abstract class QueryBase {
         if (spatialQueryBuilder != null) {
             queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(spatialQueryBuilder) : boolQuery().must(spatialQueryBuilder);
         }
-//        if (authorizationQueryBuilder != null) {
-//            queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(authorizationQueryBuilder) : boolQuery().must(authorizationQueryBuilder);
-//        }
+        if (authorizationQueryBuilder != null) {
+            queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(authorizationQueryBuilder) : boolQuery().must(authorizationQueryBuilder);
+        }
 
         return queryBuilder;
     }

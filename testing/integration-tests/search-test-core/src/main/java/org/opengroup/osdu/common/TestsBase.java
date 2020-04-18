@@ -51,7 +51,7 @@ public abstract class TestsBase {
         this.httpClient = httpClient;
         this.elasticUtils = elasticUtils;
         headers = httpClient.getCommonHeader();
-        headers.put("user", "user");
+        headers.put("user", getUserEmail());
         tenantMap.put("tenant1", getDataPartitionIdTenant1());
         tenantMap.put("tenant2", getDataPartitionIdTenant2());
         tenantMap.put("common", "common");

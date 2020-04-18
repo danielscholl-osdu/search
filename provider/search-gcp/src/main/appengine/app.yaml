@@ -1,4 +1,4 @@
-service: os-search
+service: osdu-search
 runtime: java
 env: flex
 
