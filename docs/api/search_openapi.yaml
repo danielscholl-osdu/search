@@ -1,0 +1,434 @@
+swagger: "2.0"
+info:
+  description: "Search service"
+  version: "1.0.0"
+  title: "Search Service APIs"
+host: "search-[OSDU].appspot.com"
+x-google-allow: all
+x-google-endpoints:
+- name: "search-[OSDU].appspot.com"
+  allowCors: true
+basePath: "/api/search/v2"
+tags:
+- name: search
+  description: Service endpoints to search data in datalake
+- name: Search
+schemes:
+- https
+consumes:
+- application/json
+produces:
+- application/json
+security:
+- Bearer: []
+- google_id_token: []
+- sauth_id_token: []
+paths:
+  "/index/{kind}":
+    delete:
+      tags:
+      - Search
+      summary: Deletes all documents from index for given 'kind'.
+      description: The API can be used  to purge all indexed documents for a kind. Required access level to use this API is service.search.admin
+      operationId: deleteIndex
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: OSDU-Account-Id
+        in: header
+        description: Account ID is the active OSDU account (OSDU account or customer's account) which the users choose to use with the Search API.
+        required: true
+        type: string
+      - name: OSDU-On-Behalf-Of
+        in: header
+        description: On behalf email or token is the token/email of the original user making the call. For now, only email is supported but eventually, primary usage will be token.
+        required: false
+        type: string
+      - name: kind
+        in: path
+        description: Kind of the record.
+        required: true
+        type: string
+      responses:
+        '204':
+          description: No Content Returned.
+        '400':
+          description: Invalid parameters were given on request.
+          schema:
+            "$ref": "#/definitions/AppError"
+        '404':
+          description: Requested kind not found.
+          schema:
+            "$ref": "#/definitions/AppError"
+      security:
+        - Bearer: []
+        - google_id_token: []
+        - sauth_id_token: []
+  "/index/schema/{kind}":
+    get:
+      tags:
+      - Search
+      summary: Returns the index schema for given 'kind'.
+      description: The API returns the schema for a given kind which is used find what attributes are indexed and their respective data types (at index time). Required access levels to use this API are service.search.user, service.search.admin
+      operationId: getKindSchema
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: OSDU-Account-Id
+        in: header
+        description: Account ID is the active OSDU account (OSDU account or customer's account) which the users choose to use with the Search API.
+        required: true
+        type: string
+      - name: OSDU-On-Behalf-Of
+        in: header
+        description: On behalf email or token is the token/email of the original user making the call. For now, only email is supported but eventually, primary usage will be token.
+        required: false
+        type: string
+      - name: kind
+        in: path
+        description: Kind of the record.
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: string
+        '400':
+          description: Invalid parameters were given on request.
+          schema:
+            "$ref": "#/definitions/AppError"
+        '404':
+          description: Index schema for requested kind not found.
+          schema:
+            "$ref": "#/definitions/AppError"
+      security:
+        - Bearer: []
+        - google_id_token: []
+        - sauth_id_token: []
+  "/query":
+    post:
+      tags:
+      - Search
+      summary: Queries the index for the specified kind using the input query string.
+      description: The API supports full text search on string fields, range queries on date, numeric or string fields, along with geo-spatial search. Required access levels to use this API are service.search.user, service.search.admin. In addition, users must be a member of data groups to access the data.
+      operationId: queryRecords
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: OSDU-Account-Id
+        in: header
+        description: Account ID is the active OSDU account (OSDU account or customer's account) which the users choose to use with the Search API.
+        required: true
+        type: string
+      - name: OSDU-On-Behalf-Of
+        in: header
+        description: On behalf email or token is the token/email of the original user making the call. For now, only email is supported but eventually, primary usage will be token.
+        required: false
+        type: string
+      - in: body
+        name: body
+        required: true
+        description: Specifies the API parameters. The only required parameter is the kind which needs to be formatted correctly.
+        schema:
+          "$ref": "#/definitions/QueryRequest"
+      responses:
+        '200':
+          description: Success.
+          schema:
+            "$ref": "#/definitions/QueryResponse"
+        '400':
+          description: Invalid parameters were given on request / Unrecognized fields found on request/ Bad JSON format.
+          schema:
+            "$ref": "#/definitions/AppError"
+        '403':
+          description: User not authorized to perform the action.
+          schema:
+            "$ref": "#/definitions/AppError"
+        '404':
+          description: Resource you are trying to find does not exists
+          schema:
+           "$ref": "#/definitions/AppError"
+      security:
+        - Bearer: []
+        - google_id_token: []
+        - sauth_id_token: []
+  "/query_with_cursor":
+    post:
+      tags:
+      - Search
+      summary: Query the index using cursor and optionally return only requested fields.
+      description: The API supports full text search on string fields, range queries on date, numeric or string fields, along with geo-spatial search. Required access levels to use this API are service.search.user, service.search.admin. In addition, users must be a member of data groups to access the data. It can be used to retrieve large numbers of results (or even all results) from a single search request, in much the same way as you would use a cursor on a traditional database.
+      operationId: queryWithCursor
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: OSDU-Account-Id
+        in: header
+        description: Account ID is the active OSDU account (OSDU account or customer's account) which the users choose to use with the Search API.
+        required: true
+        type: string
+      - name: OSDU-On-Behalf-Of
+        in: header
+        description: On behalf email or token is the token/email of the original user making the call. For now, only email is supported but eventually, primary usage will be token.
+        required: false
+        type: string
+      - in: body
+        name: body
+        required: true
+        description: Specifies the API parameters. The only required parameter is the kind which needs to be formatted correctly.
+        schema:
+          "$ref": "#/definitions/CursorQueryRequest"
+      responses:
+        '200':
+          description: Success.
+          schema:
+            "$ref": "#/definitions/CursorQueryResponse"
+        '400':
+          description: Invalid parameters were given on request / Unrecognized fields found on request/ Bad JSON format.
+          schema:
+            "$ref": "#/definitions/AppError"
+        '403':
+          description: User not authorized to perform the action.
+          schema:
+            "$ref": "#/definitions/AppError"
+        '404':
+          description: Resource you are trying to find does not exists
+          schema:
+            "$ref": "#/definitions/AppError"
+      security:
+        - Bearer: []
+        - google_id_token: []
+        - sauth_id_token: []
+definitions:
+  AppError:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      reason:
+        type: string
+      message:
+        type: string
+  QueryResponse:
+    type: object
+    properties:
+      results:
+        type: array
+        items:
+          type: object
+          additionalProperties:
+            type: object
+      totalCount:
+        type: integer
+        format: int64
+  ByBoundingBox:
+    title: Query by bounding box
+    description : A spatial filter criteria to allow to filter documents based on a point location within a bounding box.
+    type: object
+    required:
+    - topLeft
+    - bottomRight
+    properties:
+      topLeft:
+        "$ref": "#/definitions/Point"
+      bottomRight:
+        "$ref": "#/definitions/Point"
+  ByDistance:
+    title: Query by distance
+    description: A spatial filter criteria to filter documents that exist within a specific distance from a geo point.
+    type: object
+    required:
+    - point
+    properties:
+      distance:
+        type: number
+        format: double
+        minimum: 0
+      point:
+        "$ref": "#/definitions/Point"
+  ByGeoPolygon:
+    title: Query by polygon
+    description: A spatial filter criteria to filter documents which falls within a polygon of points.
+    type: array
+    items:
+      "$ref": "#/definitions/Point"
+    required:
+    - points
+    properties:
+      points:
+        type: array
+        items:
+            "$ref": "#/definitions/Point"
+  Point:
+    title: Point
+    description: Geo-point with latitude and longitude
+    type: object
+    properties:
+      latitude:
+        type: number
+        format: double
+        minimum: -90
+        maximum: 90
+      longitude:
+        type: number
+        format: double
+        minimum: -180
+        maximum: 180
+  QueryRequest:
+    description: Json object to query the Search API
+    type: object
+    required:
+    - kind
+    properties:
+      offset:
+        type: integer
+        format: int32
+        minimum: 0
+        description: The starting offset from which to return results
+      kind:
+        type: string
+        description: The kind of the record to query e.g. 'tenant1:test:well:1.0.0'.
+      limit:
+        type: integer
+        format: int32
+        minimum: 0
+        description: The maximum number of results to return from the given offset. If no limit is provided, then it will return 10 items. Max number of items which can be fetched by the query is 100.
+      query:
+        type: string
+        description: The query string in Lucene query string syntax.
+      spatialFilter:
+        "$ref": "#/definitions/SpatialFilter"
+      returnedFields:
+        type: array
+        items:
+          type: string
+        description: The fields on which to project the results.
+    example:
+      offset: 10
+      kind: tenant1:test:well:1.0.0
+      limit: 30
+      query: Status:Active
+      spatialFilter:
+        field: Location
+        byBoundingBox:
+          topLeft:
+            latitude: 37.450727
+            longitude: -122.174762
+          bottomRight:
+            latitude: 36.450727
+            longitude: 122.174762
+      returnedFields: [Location]
+  SpatialFilter:
+    title: Spatial Filter
+    description: This filter is used to filter geo-point geo data which supports lat/lon pairs. The queries in this group are Geo Distance, Geo Polygon and Bounding Box. Only one spatial criteria can be used while defining filter.
+    type: object
+    required:
+    - field
+    properties:
+      field:
+        type: string
+        description: geo-point field in the index on which filtering will be performed.
+      byBoundingBox:
+        "$ref": "#/definitions/ByBoundingBox"
+      byDistance:
+        "$ref": "#/definitions/ByDistance"
+      byGeoPolygon:
+        "$ref": "#/definitions/ByGeoPolygon"
+  CursorQueryResponse:
+    type: object
+    properties:
+      cursor:
+        type: string
+      results:
+        type: array
+        items:
+          type: object
+          additionalProperties:
+            type: object
+      totalCount:
+        type: integer
+        format: int64
+  CursorQueryRequest:
+    description: Json object to query the Search API
+    type: object
+    required:
+    - kind
+    properties:
+      cursor:
+        type: string
+        description: The cursor value returned from a previous query.
+      kind:
+        type: string
+        description: The kind of the record to query e.g. 'tenant1:test:well:1.0.0'.
+      limit:
+        type: integer
+        format: int32
+        minimum: 0
+        description: The maximum number of results to return from the given offset. If no limit is provided, then it will return 10 items. Max number of items which can be fetched by the query is 100.
+      query:
+        type: string
+        description: The query string in Lucene query string syntax.
+      spatialFilter:
+        "$ref": "#/definitions/SpatialFilter"
+      returnedFields:
+        type: array
+        items:
+          type: string
+        description: The fields on which to project the results.
+    example:
+      cursor: yyyyyyy
+      kind: tenant1:test:well:1.0.0
+      limit: 30
+      query: Status:Active
+      spatialFilter:
+        field: Location
+        byBoundingBox:
+          topLeft:
+            latitude: 37.450727
+            longitude: -122.174762
+          bottomRight:
+            latitude: 36.450727
+            longitude: 122.174762
+      returnedFields: [Location]
+  # This section is the general responses shared by all apis
+  GeneralResponse:
+    properties:
+      502:
+        description: Too many requests are received in short period of time. Please retry later.
+# This section requires all requests to any path to require an API key.
+securityDefinitions:
+  # This section configures authentication using SAuth Tokens.
+  sauth_id_token:
+    authorizationUrl: "https://opsauth-dot-auth-preview.appspot.com/v1/auth"
+    flow: "implicit"
+    type: "oauth2"
+    x-google-issuer: "sauth-preview.OSDU.com"
+    x-google-jwks_uri: "https://opsauth-dot-auth-preview.appspot.com/v1/certs"
+    x-google-audiences: "entitlement-datalake.OSDUservice.com,entitlement-datalake.OSDUclient.com,dev-OSDUdev-devportal.OSDUapp.com,test-OSDUdev-devportal.OSDUapp.com,discover-evd-csp-OSDU-com-dtwdev.OSDUapp.com,discover-evt-csp-OSDU-com-dtwcmz.OSDUapp.com,discover-evq-csp-OSDU-com-dtwstage.OSDUapp.com,fuse-evd-csp-OSDU-com-dtwdev.OSDUapp.com,fuse-evt-csp-OSDU-com-dtwcmz.OSDUapp.com,fuse-evq-csp-OSDU-com-dtwstage.OSDUapp.com,local-logstore.OSDUapp.com,localhost3000-dtwdev.OSDUapp.com,prod-logstoreproject.OSDUapp.com,prodanadarko-logstoreproject.OSDUapp.com,prodeu-logstoreproject.OSDUapp.com,local-logstore.OSDUapp.com,widget-catalogue-evd-csp-OSDU-com-dtwdev.OSDUapp.com,automation-test-svc-dtwdev.OSDUservice.com,OSDU-wellbore-dev1-wing.OSDUapp.com,OSDU-wellbore-stg1-wing.OSDUapp.com,OSDU-wellbore-stg2-wing.OSDUapp.com,test-sauthdevportalsvc-devportal.OSDUapp.com,prodops-evd-prodops.OSDUapp.com,prodops-evq-prodops.OSDUapp.com,prodops-evt-prodops.OSDUapp.com,pwe-evd-prodops.OSDUapp.com,prodops-pdi-evq-prodops.OSDUapp.com"
+    scopes: {}
+   # This section configures authentication using SAuth Tokens.
+   # ID Tokens can be obtained using OAuth2 clients, and can be used to access
+   # your API on behalf of a particular user.
+  google_id_token:
+    authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth"
+    flow: "implicit"
+    type: "oauth2"
+    x-google-issuer: "https://accounts.google.com"
+    x-google-jwks_uri: "https://www.googleapis.com/oauth2/v3/certs"
+    x-google-audiences: "245464679631-ktfdfpl147m1mjpbutl00b3cmffissgq.apps.googleusercontent.com,245464679631-u44eh98vq4t2ajc2quc8b0kgojsmd3gp.apps.googleusercontent.com"
+    scopes: {}
+  #SAuth security configuration or the portal
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
