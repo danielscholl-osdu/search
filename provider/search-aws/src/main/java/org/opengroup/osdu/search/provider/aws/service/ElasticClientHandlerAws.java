@@ -14,14 +14,11 @@
 
 package org.opengroup.osdu.search.provider.aws.service;
 
-import com.amazonaws.auth.AWS4Signer;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.http.AWSRequestSigningApacheInterceptor;
+import org.apache.http.Header;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.message.BasicHeader;
 import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.opengroup.osdu.core.aws.iam.IAMConfig;
+import org.elasticsearch.client.RestClientBuilder;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -30,31 +27,40 @@ import org.springframework.stereotype.Component;
 @Primary
 @Component
 public class ElasticClientHandlerAws extends ElasticClientHandler {
-    @Value("${aws.es.serviceName}")
-    private String serviceName;
 
-    @Value("${aws.region}")
-    private String region;
+    private static final int REST_CLIENT_CONNECT_TIMEOUT = 60000;
+    private static final int REST_CLIENT_SOCKET_TIMEOUT = 60000;
+    private static final int REST_CLIENT_RETRY_TIMEOUT = 60000;
 
-    @Value("${aws.es.host}")
-    String host;
-
+    @Value("${aws.environment}")
+    String environment;
     public ElasticClientHandlerAws() {
     }
 
-    @Override
-    public RestHighLevelClient createRestClient() {
+    public RestClientBuilder createClientBuilder(String host, String basicAuthenticationHeaderVal, int port, String protocolScheme, String tls) {
 
-        return esClient();
+        RestClientBuilder builder = RestClient.builder(new HttpHost(host, port, protocolScheme));
+        builder.setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder.setConnectTimeout(REST_CLIENT_CONNECT_TIMEOUT)
+                .setSocketTimeout(REST_CLIENT_SOCKET_TIMEOUT));
+        builder.setMaxRetryTimeoutMillis(REST_CLIENT_RETRY_TIMEOUT);
+
+        if(isLocalHost(host)) {
+            builder.setHttpClientConfigCallback(httpAsyncClientBuilder -> httpAsyncClientBuilder.setSSLHostnameVerifier((s, sslSession) -> true));
+    }
+        Header[] defaultHeaders = new Header[]{
+                new BasicHeader("client.transport.nodes_sampler_interval", "30s"),
+                new BasicHeader("client.transport.ping_timeout", "30s"),
+                new BasicHeader("client.transport.sniff", "false"),
+                new BasicHeader("request.headers.X-Found-Cluster", host),
+                new BasicHeader("cluster.name", host),
+                new BasicHeader("xpack.security.transport.ssl.enabled", tls)
+        };
+
+        builder.setDefaultHeaders(defaultHeaders);
+        return builder;
     }
 
-    private RestHighLevelClient esClient() {
-        AWSCredentialsProvider credentials = new IAMConfig().amazonAWSCredentials();
-        AWS4Signer signer = new AWS4Signer();
-        signer.setServiceName(serviceName);
-        signer.setRegionName(region);
-        HttpRequestInterceptor interceptor = new AWSRequestSigningApacheInterceptor(serviceName, signer, credentials);
-        return new RestHighLevelClient(RestClient.builder(HttpHost.create(host)).setHttpClientConfigCallback(configCallBack -> configCallBack.addInterceptorLast(interceptor)));
-
+    private boolean isLocalHost(String uri) {
+        return (uri.contains("localhost") || uri.contains("127.0.0.1"));
     }
 }

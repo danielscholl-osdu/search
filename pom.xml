@@ -49,6 +49,7 @@
         <module>provider/search-gcp</module>
         <module>provider/search-aws</module>
         <module>provider/search-azure</module>
+        <module>provider/search-ibm</module>
         <!--<module>testing/integration-tests</module>-->
     </modules>
 

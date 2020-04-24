@@ -38,18 +38,11 @@
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu.core.aws</groupId>
-            <artifactId>aws-osdu-util</artifactId>
-            <version>0.0.9</version>
+            <artifactId>os-core-lib-aws</artifactId>
+            <version>0.0.10</version>
         </dependency>
 
-        <!-- AWS managed packages -->
-        <dependency>
-            <groupId>com.github.awslabs</groupId>
-            <artifactId>aws-request-signing-apache-interceptor</artifactId>
-            <version>deb7941</version>
-        </dependency>
-
-        <!-- third party Apache 2.0 license packages -->
+        <!-- Third party Apache 2.0 license packages -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -111,11 +104,7 @@
             <artifactId>log4j-to-slf4j</artifactId>
             <version>2.11.2</version>
         </dependency>
-        <!--<dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-            <version>1.8.0-beta4</version>
-        </dependency>-->
+
         <!-- Testing -->
         <dependency>
             <groupId>junit</groupId>

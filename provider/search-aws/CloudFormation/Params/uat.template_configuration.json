@@ -2,7 +2,6 @@
   "Parameters" : {
     "Environment" : "uat",
     "DeploymentRegion" : "us-east-1",
-    "ChildTemplateBasePath" : "https://s3.amazonaws.com/uat-os-search-cloudformation-scripts/Automated/",
     "ApplicationName" : "os-search",
     "KeyName": "search-ecs-keypair",
     "DesiredCapacity": "1",
@@ -21,9 +20,16 @@
     "IndexCacheEngine": "redis",
     "IndexCacheNodeInstanceType": "cache.t2.micro",
     "IndexCacheNumberOfCacheNodes": "1",
-    "ECSPort": "80",
+    "ECSPort": "443",
     "ECSCPUAllocation": "1024",
-    "ECSMemoryAllocation": "3072"
+    "ECSMemoryAllocation": "3072",
+    "ElasticsearchDomainName": "osdu-indexer",
+    "ElasticsearchPortNumber":"443",
+    "DomainName": "",
+    "HostedZoneName": "",
+    "AcmCertificateArn": "",
+    "ServiceName": "search",
+    "VersionNumber": "0.0.3"
   },
   "Tags" : {
     "Environment" : "uat"
