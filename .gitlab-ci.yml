@@ -1,6 +1,7 @@
 variables:
-  AWS_BUILD_SUBDIR: provider/search-aws
-  AWS_APPLICATION_NAME: os-search
+  AWS_BUILD_SUBDIR: provider/search-aws/build-aws
+  AWS_TEST_SUBDIR: testing/integration-tests/search-test-aws
+  AWS_SERVICE: search
   AWS_ENVIRONMENT: dev
   GCP_BUILD_SUBDIR: provider/search-gcp
   GCP_INT_TEST_SUBDIR: testing/integration-tests/search-test-gcp
@@ -24,3 +25,14 @@ include:
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/gitlab-ultimate.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/aws.yml"  
+
+
+aws-test:
+  tags: ['aws-internal-test']    
+
+
+
+

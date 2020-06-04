@@ -14,11 +14,15 @@
 
 package org.opengroup.osdu.search.provider.aws.service;
 
+import org.opengroup.osdu.core.aws.ssm.ParameterStorePropertySource;
+import org.opengroup.osdu.core.aws.ssm.SSMConfig;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 
 @Primary
 @Component
@@ -32,6 +36,29 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
 
     @Value("${aws.es.userNameAndPassword}")
     String userNameAndPassword;
+
+    @Value("${aws.ssm}")
+    String isEnabledString;
+
+    @Value("${aws.elasticsearch.host}")
+    String hostParameter;
+
+    @Value("${aws.elasticsearch.port}")
+    String portParameter;
+
+    private ParameterStorePropertySource ssm;
+
+    @PostConstruct
+    private void postConstruct() {
+        Boolean isEnabled = Boolean.parseBoolean(isEnabledString);
+        if(isEnabled) {
+            SSMConfig ssmConfig = new SSMConfig();
+            ssm = ssmConfig.amazonSSM();
+            host = ssm.getProperty(hostParameter).toString();
+            port = Integer.parseInt(ssm.getProperty(portParameter).toString());
+        }
+    }
+
     @Override
     public ClusterSettings getElasticClusterInformation() {
 
