@@ -32,8 +32,6 @@ public class ElasticClientHandlerAws extends ElasticClientHandler {
     private static final int REST_CLIENT_SOCKET_TIMEOUT = 60000;
     private static final int REST_CLIENT_RETRY_TIMEOUT = 60000;
 
-    @Value("${aws.environment}")
-    String environment;
     public ElasticClientHandlerAws() {
     }
 
