@@ -19,6 +19,7 @@ package org.opengroup.osdu.search.provider.ibm.provider.impl;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +27,7 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
@@ -45,9 +47,6 @@ import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-
 @Service
 public class ScrollQueryServiceImpl extends QueryBase implements IScrollQueryService {
 
@@ -62,17 +61,18 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
 
     private final MessageDigest digest;
 
-    ScrollQueryServiceImpl() throws NoSuchAlgorithmException {
+    public ScrollQueryServiceImpl() throws NoSuchAlgorithmException {
         this.digest = MessageDigest.getInstance("MD5");
     }
 
     @Override
     public CursorQueryResponse queryIndex(CursorQueryRequest searchRequest) throws Exception {
-
+    	
+    	validateTenant(searchRequest);
         CursorQueryResponse queryResponse = null;
 
         try (RestHighLevelClient client = this.elasticClientHandler.createRestClient()) {
-            if (Strings.isNullOrEmpty(searchRequest.getCursor())) {
+            if (StringUtils.isEmpty(searchRequest.getCursor())) {
                 return this.initCursorQuery(searchRequest, client);
             } else {
                 try {
@@ -92,7 +92,9 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                                     .cursor(this.refreshCursorCache(searchScrollResponse.getScrollId(), this.dpsHeaders.getUserEmail()))
                                     .results(results)
                                     .totalCount(searchScrollResponse.getHits().getTotalHits()).build();
-                            this.auditLogger.queryIndexWithCursor(Lists.newArrayList(searchRequest.toString()));
+                            List<String> resources = new ArrayList<>();
+                            resources.add(searchRequest.toString());
+                            this.auditLogger.queryIndexWithCursor(resources);
                         }
                     } else {
                         throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired");
@@ -109,7 +111,9 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
 
     private CursorQueryResponse initCursorQuery(CursorQueryRequest searchRequest, RestHighLevelClient client) {
         CursorQueryResponse queryResponse = this.executeCursorQuery(searchRequest, client);
-        this.auditLogger.queryIndexWithCursor(Lists.newArrayList(searchRequest.toString()));
+        List<String> resources = new ArrayList<>();
+        resources.add(searchRequest.toString());
+        this.auditLogger.queryIndexWithCursor(resources);
         return queryResponse;
     }
 

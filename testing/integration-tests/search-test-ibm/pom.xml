@@ -37,7 +37,13 @@
 			<artifactId>search-test-core</artifactId>
 			<version>0.0.2-SNAPSHOT</version>
 		</dependency>
-
+	
+		<dependency>
+			<groupId>org.opengroup.osdu</groupId>
+			<artifactId>os-core-lib-ibm</artifactId>
+			<version>0.0.14-SNAPSHOT</version>
+		</dependency>
+		
 		<!-- Cucumber -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -127,57 +133,5 @@
 			<version>27.1-jre</version>
 		</dependency>
 	</dependencies>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.22.2</version>
-				<executions>
-					<execution>
-						<phase>integration-test</phase>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<configuration>
-							<excludes>
-								<exclude>none</exclude>
-							</excludes>
-							<includes>
-								<include>**/search</include>
-							</includes>
-						</configuration>
-					</execution>
-				</executions>
-				<configuration>
-					<trimStackTrace>false</trimStackTrace>
-					<systemPropertyVariables>
 
-						<USER_EMAIL>osdu-user@osdu.opengroup.org</USER_EMAIL>
-						<ENTITLEMENTS_DOMAIN>ibm.com</ENTITLEMENTS_DOMAIN>
-						<DEFAULT_DATA_PARTITION_ID_TENANT1>opendes</DEFAULT_DATA_PARTITION_ID_TENANT1>
-						<DEFAULT_DATA_PARTITION_ID_TENANT2>tenant2</DEFAULT_DATA_PARTITION_ID_TENANT2>
-					
-						<LEGAL_TAG>opendes-public-usa-dataset-1</LEGAL_TAG>
-						<OTHER_RELEVANT_DATA_COUNTRIES>US</OTHER_RELEVANT_DATA_COUNTRIES>
-					
-						<KEYCLOAK_URL>CHANGE_ME</KEYCLOAK_URL>
-						<KEYCLOAK_REALM>OSDU</KEYCLOAK_REALM>
-						<KEYCLOAK_CLIENT_ID>osdu-login</KEYCLOAK_CLIENT_ID>
-						<AUTH_USER_ACCESS>CHANGE_ME</AUTH_USER_ACCESS>
-						<AUTH_USER_ACCESS_PASSWORD>CHANGE_ME</AUTH_USER_ACCESS_PASSWORD>
-					
-						<ELASTIC_HOST>CHANGE_ME</ELASTIC_HOST>
-						<ELASTIC_USER_NAME>CHANGE_ME</ELASTIC_USER_NAME>
-						<ELASTIC_PASSWORD>CHANGE_ME</ELASTIC_PASSWORD>
-						<ELASTIC_PORT>443</ELASTIC_PORT>
-					
-						<SEARCH_HOST>https://search.osdu-r2-dev-a1c3eaf78a86806e299f5f3f207556f0-0000.us-south.containers.appdomain.cloud/api/search/v2/</SEARCH_HOST>
-						<STORAGE_HOST>https://storage.osdu-r2-dev-a1c3eaf78a86806e299f5f3f207556f0-0000.us-south.containers.appdomain.cloud/api/storage/v2/</STORAGE_HOST>
-					
-					</systemPropertyVariables>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>

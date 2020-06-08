@@ -36,6 +36,7 @@
 		<module>search-test-aws</module>
 		<module>search-test-azure</module>
 		<module>search-test-gcp</module>
+        <module>search-test-ibm</module>
 	</modules>
 
 	<repositories>

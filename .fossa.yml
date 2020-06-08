@@ -32,3 +32,7 @@ analyze:
     type: mvn
     target: provider/search-azure/pom.xml
     path: .
+  - name: search-ibm
+    type: mvn
+    target: provider/search-ibm/pom.xml
+    path: .
