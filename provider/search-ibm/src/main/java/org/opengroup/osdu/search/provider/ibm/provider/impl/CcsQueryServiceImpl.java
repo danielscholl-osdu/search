@@ -13,33 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.opengroup.osdu.search.provider.ibm.provider.impl;
 
-import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.provider.interfaces.ITenantFactory;
-import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
-import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
-import org.opengroup.osdu.core.common.search.Config;
-import org.opengroup.osdu.core.common.model.search.CcsQueryRequest;
-import org.opengroup.osdu.core.common.model.search.CcsQueryResponse;
-import org.opengroup.osdu.core.common.model.search.QueryRequest;
-import org.opengroup.osdu.core.common.model.search.QueryResponse;
-import org.opengroup.osdu.search.provider.interfaces.ICcsQueryService;
-import org.opengroup.osdu.search.provider.interfaces.IQueryService;
-import org.springframework.stereotype.Service;
-
-import javax.inject.Inject;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-// TODO: Remove this temporary implementation when ECE CCS is utilized
-@Service
-public class CcsQueryServiceImpl implements ICcsQueryService {
+import javax.inject.Inject;
 
+import org.opengroup.osdu.core.common.model.http.DpsHeaders;
+import org.opengroup.osdu.core.common.model.search.CcsQueryRequest;
+import org.opengroup.osdu.core.common.model.search.CcsQueryResponse;
+import org.opengroup.osdu.core.common.model.search.QueryRequest;
+import org.opengroup.osdu.core.common.model.search.QueryResponse;
+import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
+import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
+import org.opengroup.osdu.core.common.provider.interfaces.ITenantFactory;
+import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.provider.interfaces.ICcsQueryService;
+import org.opengroup.osdu.search.provider.interfaces.IQueryService;
+import org.springframework.stereotype.Component;
+
+// TODO: Remove this temporary implementation when ECE CCS is utilized
+@Component
+public class CcsQueryServiceImpl implements ICcsQueryService {
     @Inject
-    private DpsHeaders dpsHeaders;
+    private DpsHeaders requestHeader;
 
     @Inject
     private ITenantFactory tenantStorageFactory;
@@ -51,8 +57,8 @@ public class CcsQueryServiceImpl implements ICcsQueryService {
     private IQueryService queryService;
 
     @Override
-    public CcsQueryResponse makeRequest(final CcsQueryRequest ccsQueryRequest) throws Exception {
-        List<String> accounts = Arrays.asList(dpsHeaders.getPartitionIdWithFallbackToAccountId().trim().split("\\s*,\\s*"));
+    public CcsQueryResponse makeRequest(CcsQueryRequest ccsQueryRequest) throws Exception {
+        List<String> accounts = Arrays.asList(requestHeader.getPartitionIdWithFallbackToAccountId().trim().split("\\s*,\\s*"));
         List<QueryResponse> tenantResponses = getTenantResponses(accounts, ccsQueryRequest);
         return convertQueryResponseToCcsQueryResponse(getCompoundResponse(tenantResponses));
     }
@@ -60,7 +66,7 @@ public class CcsQueryServiceImpl implements ICcsQueryService {
     private List<QueryResponse> getTenantResponses(final List<String> accounts, final CcsQueryRequest ccsQueryRequest) throws Exception {
         List<QueryResponse> tenantResponses = new ArrayList<>();
         if (Config.isSmartSearchCcsDisabled() || accounts.size() == 1) {
-            TenantInfo tenant = tenantStorageFactory.getTenantInfo(dpsHeaders.getPartitionIdWithFallbackToAccountId());
+            TenantInfo tenant = tenantStorageFactory.getTenantInfo(requestHeader.getPartitionIdWithFallbackToAccountId());
             tenantResponses.add(queryService.queryIndex(convertCcsQueryRequestToQueryRequest(ccsQueryRequest),
                     elasticRepository.getElasticClusterSettings(tenant)));
         } else {

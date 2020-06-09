@@ -13,6 +13,9 @@ variables:
   GCP_DOMAIN: cloud.slb-ds.com
   GCP_STORAGE_URL: https://osdu-search-dot-opendes.appspot.com/api/storage/v2/
 
+  IBM_BUILD_SUBDIR: provider/search-ibm
+  IBM_INT_TEST_SUBDIR: testing/integration-tests/search-test-ibm
+
 include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
@@ -22,17 +25,16 @@ include:
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/fossa.yml"
-
+  
   - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/gitlab-ultimate.yml"
+  
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/aws.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/aws.yml"  
+    file: "cloud-providers/ibm.yml"
 
 
 aws-test:
-  tags: ['aws-internal-test']    
-
-
-
-
+  tags: ['aws-internal-test']

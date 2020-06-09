@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.opengroup.osdu.common.query.singlecluster.QuerySteps;
 import org.opengroup.osdu.util.Config;
-import org.opengroup.osdu.util.ElasticUtilsIBM;
 import org.opengroup.osdu.util.IBMHTTPClient;
 
 import cucumber.api.DataTable;
@@ -18,7 +17,7 @@ import cucumber.api.java.en.When;
 public class Steps extends QuerySteps {
 
     public Steps() {
-        super(new IBMHTTPClient(), new ElasticUtilsIBM());
+        super(new IBMHTTPClient());
     }
 
     @Given("^the elastic search is initialized with the following data$")
