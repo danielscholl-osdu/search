@@ -3,6 +3,7 @@ variables:
   AWS_TEST_SUBDIR: testing/integration-tests/search-test-aws
   AWS_SERVICE: search
   AWS_ENVIRONMENT: dev
+
   GCP_BUILD_SUBDIR: provider/search-gcp
   GCP_INT_TEST_SUBDIR: testing/integration-tests/search-test-gcp
   GCP_APPLICATION_NAME: osdu-search
@@ -16,6 +17,11 @@ variables:
   IBM_BUILD_SUBDIR: provider/search-ibm
   IBM_INT_TEST_SUBDIR: testing/integration-tests/search-test-ibm
 
+  AZURE_SERVICE: search
+  AZURE_BUILD_SUBDIR: provider/search-azure
+  AZURE_TEST_SUBDIR: testing/integration-tests/search-test-azure
+
+
 include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
@@ -25,15 +31,19 @@ include:
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/fossa.yml"
-  
+
   - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/gitlab-ultimate.yml"
-  
+
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/ibm.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/azure.yml"
+
 
 
 aws-test:
