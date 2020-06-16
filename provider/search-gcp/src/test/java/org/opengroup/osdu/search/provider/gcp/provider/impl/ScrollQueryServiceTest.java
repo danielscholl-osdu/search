@@ -23,6 +23,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -135,7 +136,6 @@ public class ScrollQueryServiceTest {
         assertNotNull(queryResponse);
         assertEquals(1, queryResponse.getTotalCount());
         assertNull(queryResponse.getCursor());
-        verify(this.auditLogger).queryIndexWithCursor(Lists.newArrayList(cursorQueryRequest.toString()));
     }
 
 
@@ -160,7 +160,6 @@ public class ScrollQueryServiceTest {
         assertNotNull(queryResponse);
         assertEquals(15, queryResponse.getTotalCount());
         assertNotNull(queryResponse.getCursor());
-        verify(this.auditLogger).queryIndexWithCursor(Lists.newArrayList(cursorQueryRequest.toString()));
     }
 
     @Test
@@ -192,7 +191,85 @@ public class ScrollQueryServiceTest {
 
         CursorQueryResponse queryResponse = this.sut.queryIndex(cursorQueryRequest);
         assertNotNull(queryResponse);
-        verify(this.auditLogger).queryIndexWithCursor(Lists.newArrayList(cursorQueryRequest.toString()));
+        verify(this.auditLogger).queryIndexWithCursorSuccess(Lists.newArrayList(cursorQueryRequest.toString()));
+    }
+
+    @Test
+    public void should_TotalCountIsZero_when_cursorIsNull() throws Exception {
+        List<Map<String, Object>> results = null;
+
+        doReturn(elasticSearchResponse).when(this.sut).makeSearchRequest(any(), any());
+        doReturn(results).when(this.sut).getHitsFromSearchResponse(any());
+
+        CursorQueryResponse queryResponse = this.sut.queryIndex(cursorQueryRequest);
+        assertNotNull(queryResponse);
+        assertEquals(0, queryResponse.getTotalCount());
+        assertNull(queryResponse.getCursor());
+    }
+
+    @Test
+    public void should_returnRightTotalCount_when_resultsIsNull() throws Exception {
+        List<Map<String, Object>> results = null;
+
+        String cursor = "fso09flgl";
+
+        CursorSettings cursorSettings = CursorSettings.builder().cursor(cursor).userId(USER_EMAIL).build();
+
+        when(this.cursorQueryRequest.getCursor()).thenReturn(cursor);
+
+        when(elasticSearchResponse.getScrollId()).thenReturn(cursor);
+        when(elasticSearchResponse.getHits().getTotalHits()).thenReturn(100L);
+
+        doReturn(restHighLevelClient).when(this.elasticClientHandler).createRestClient();
+
+        when(restHighLevelClient.scroll(any(), any(RequestOptions.class))).thenReturn(elasticSearchResponse);
+
+        doReturn(results).when(this.sut).getHitsFromSearchResponse(any());
+        doReturn(cursorSettings).when(this.redisCache).get(cursor);
+
+        CursorQueryResponse queryResponse = this.sut.queryIndex(cursorQueryRequest);
+        assertNotNull(queryResponse);
+        assertEquals(100, queryResponse.getTotalCount());
+    }
+
+    @Test
+    public void should_returnRightTotalCount_when_cusorBeyondLastRecord() throws Exception {
+        String cursor = "fso09flgl";
+        Map<String, Object> hit1 = new HashMap<>();
+        hit1.put("_id", "tenant1:welldb:wellbore-33fe05e1-df20-49d9-bd63-74cf750a206f");
+        hit1.put("type", "wellbore");
+
+        List<Map<String, Object>> hits1 = new ArrayList<>();
+        hits1.add(hit1);
+
+        List<Map<String, Object>> hits2 = null;
+
+        CursorSettings cursorSettings = CursorSettings.builder().cursor(cursor).userId(USER_EMAIL).build();
+
+        when(this.cursorQueryRequest.getCursor()).thenReturn(cursor);
+
+        when(elasticSearchResponse.getScrollId()).thenReturn(cursor);
+        when(elasticSearchResponse.getHits().getTotalHits()).thenReturn(100L);
+
+        doReturn(restHighLevelClient).when(this.elasticClientHandler).createRestClient();
+
+        when(restHighLevelClient.scroll(any(), any(RequestOptions.class))).thenReturn(elasticSearchResponse);
+
+        doReturn(hits1).when(this.sut).getHitsFromSearchResponse(any());
+        doReturn(cursorSettings).when(this.redisCache).get(cursor);
+
+        // first call queryIndex()
+        CursorQueryResponse queryResponse1 = this.sut.queryIndex(cursorQueryRequest);
+        assertNotNull(queryResponse1);
+        assertEquals(1, queryResponse1.getResults().size());
+        assertEquals(100, queryResponse1.getTotalCount());
+
+        //second call queryIndex()
+        doReturn(hits2).when(this.sut).getHitsFromSearchResponse(any());
+        CursorQueryResponse queryResponse2 = this.sut.queryIndex(cursorQueryRequest);
+        assertNotNull(queryResponse2);
+        assertEquals(0, queryResponse2.getResults().size());
+        assertEquals(100, queryResponse2.getTotalCount());
     }
 
     @Test
@@ -221,6 +298,9 @@ public class ScrollQueryServiceTest {
         assertNotNull(elasticSearchSourceBuilder);
         assertEquals(limit, elasticSearchSourceBuilder.size());
         assertEquals(1, elasticSearchSourceBuilder.timeout().getMinutes());
+        assertEquals(2, elasticSearchSourceBuilder.sorts().size());
+        assertTrue(elasticSearchSourceBuilder.sorts().contains(SortBuilders.scoreSort()));
+        assertTrue(elasticSearchSourceBuilder.sorts().contains(SortBuilders.fieldSort("_doc")));
 
         FetchSourceContext elasticFetchSourceContext = elasticSearchSourceBuilder.fetchSource();
         assertNotNull(elasticFetchSourceContext);

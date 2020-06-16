@@ -30,6 +30,7 @@ import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -286,6 +287,7 @@ abstract class QueryBase {
     SearchResponse makeSearchRequest(Query searchRequest, RestHighLevelClient client) {
         Long startTime = 0L;
         SearchRequest elasticSearchRequest = null;
+        SearchResponse searchResponse = null;
 
         try {
             if (searchRequest.getSpatialFilter() != null) {
@@ -294,7 +296,7 @@ abstract class QueryBase {
 
             elasticSearchRequest = createElasticRequest(searchRequest);
             startTime = System.currentTimeMillis();
-            SearchResponse searchResponse = client.search(elasticSearchRequest, RequestOptions.DEFAULT);
+            searchResponse = client.search(elasticSearchRequest, RequestOptions.DEFAULT);
             return searchResponse;
         } catch (ElasticsearchStatusException e) {
             switch (e.status()) {
@@ -318,6 +320,7 @@ abstract class QueryBase {
             Long latency = System.currentTimeMillis() - startTime;
             String request = elasticSearchRequest != null ? elasticSearchRequest.source().toString() : searchRequest.toString();
             this.log.info(String.format("elastic latency: %s | elastic request-payload: %s", latency, request));
+            this.auditLog(searchRequest, searchResponse);
         }
     }
 
@@ -329,4 +332,16 @@ abstract class QueryBase {
     }
 
     abstract SearchRequest createElasticRequest(Query request) throws AppException, IOException;
+
+    abstract void querySuccessAuditLogger(Query request);
+
+    abstract void queryFailedAuditLogger(Query request);
+
+    private void auditLog(Query searchRequest, SearchResponse searchResponse) {
+        if (searchResponse != null && searchResponse.status() == RestStatus.OK) {
+            this.querySuccessAuditLogger(searchRequest);
+            return;
+        }
+        this.queryFailedAuditLogger(searchRequest);
+    }
 }

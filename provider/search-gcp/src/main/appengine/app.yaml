@@ -1,4 +1,4 @@
-service: osdu-search
+service: os-search
 runtime: java
 env: flex
 
@@ -15,7 +15,3 @@ automatic_scaling:
 
 env_variables:
   SPRING_PROFILES_ACTIVE: 'ENVIRONMENT'
-  AUTHORIZE_API: 'AUTHORIZE_API_VAR'
-  CRON_JOB_IP: 'CRON_JOB_IP_VAR'
-  LEGAL_HOSTNAME: 'LEGAL_HOSTNAME_VAR'
-  REGION: 'REGION_VAR'

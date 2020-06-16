@@ -16,26 +16,8 @@
 
 package org.opengroup.osdu.search.provider.ibm.provider.impl;
 
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-import static org.elasticsearch.index.query.QueryBuilders.geoBoundingBoxQuery;
-import static org.elasticsearch.index.query.QueryBuilders.geoDistanceQuery;
-import static org.elasticsearch.index.query.QueryBuilders.geoPolygonQuery;
-import static org.elasticsearch.index.query.QueryBuilders.geoWithinQuery;
-import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
-import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
@@ -50,6 +32,7 @@ import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -63,19 +46,18 @@ import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.entitlements.AclRole;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.model.search.AggregationResponse;
-import org.opengroup.osdu.core.common.model.search.Point;
-import org.opengroup.osdu.core.common.model.search.Query;
-import org.opengroup.osdu.core.common.model.search.QueryUtils;
-import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
-import org.opengroup.osdu.core.common.model.search.SpatialFilter;
+import org.opengroup.osdu.core.common.model.search.*;
 import org.opengroup.osdu.search.provider.ibm.service.FieldMappingTypeService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
-import org.springframework.security.access.AccessDeniedException;
 
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.*;
 
-// TODO This class is a duplicate of byoc and gcp, should likely be moved to the core folder
+import static org.elasticsearch.index.query.QueryBuilders.*;
+
 abstract class QueryBase {
 
     @Inject
@@ -106,10 +88,10 @@ abstract class QueryBase {
 
         QueryBuilder textQueryBuilder = null;
         QueryBuilder spatialQueryBuilder = null;
-        QueryBuilder authorizationQueryBuilder = null;
+        QueryBuilder authorizationQueryBuilder;
         QueryBuilder queryBuilder = null;
 
-        if (StringUtils.isNotEmpty(simpleQuery)) {
+        if (!Strings.isNullOrEmpty(simpleQuery)) {
             textQueryBuilder = getSimpleQuery(simpleQuery);
         }
 
@@ -291,8 +273,8 @@ abstract class QueryBase {
         includesArr = returnedFieldsSet.toArray(new String[returnedFieldsSet.size()]);
 
         // remove all matching returnedField and queryable from excludes
-        Set<String> shouldNotExclude = returnedFieldsSet.stream().filter(queryableExcludes::contains).collect(Collectors.toSet());
-        Set<String> shouldExclude = queryableExcludes.stream().filter(n -> !shouldNotExclude.contains(n)).collect(Collectors.toSet());
+        Set<String> shouldNotExclude = Sets.intersection(returnedFieldsSet, queryableExcludes);
+        Set<String> shouldExclude = Sets.difference(queryableExcludes, shouldNotExclude);
         excludes.addAll(shouldExclude);
         excludesArr = excludes.toArray(new String[excludes.size()]);
 
@@ -303,7 +285,8 @@ abstract class QueryBase {
     SearchResponse makeSearchRequest(Query searchRequest, RestHighLevelClient client) {
         Long startTime = 0L;
         SearchRequest elasticSearchRequest = null;
-        
+        SearchResponse searchResponse = null;
+
         try {
             if (searchRequest.getSpatialFilter() != null) {
                 useGeoShapeQuery = this.useGeoShapeQuery(client, searchRequest, this.getIndex(searchRequest));
@@ -311,7 +294,7 @@ abstract class QueryBase {
 
             elasticSearchRequest = createElasticRequest(searchRequest);
             startTime = System.currentTimeMillis();
-            SearchResponse searchResponse = client.search(elasticSearchRequest, RequestOptions.DEFAULT);
+            searchResponse = client.search(elasticSearchRequest, RequestOptions.DEFAULT);
             return searchResponse;
         } catch (ElasticsearchStatusException e) {
             switch (e.status()) {
@@ -335,6 +318,7 @@ abstract class QueryBase {
             Long latency = System.currentTimeMillis() - startTime;
             String request = elasticSearchRequest != null ? elasticSearchRequest.source().toString() : searchRequest.toString();
             this.log.info(String.format("elastic latency: %s | elastic request-payload: %s", latency, request));
+            this.auditLog(searchRequest, searchResponse);
         }
     }
 
@@ -344,14 +328,18 @@ abstract class QueryBase {
         if (indexedTypes.isEmpty() || indexedTypes.size() > 1) return false;
         return indexedTypes.contains(GEO_SHAPE_INDEXED_TYPE);
     }
-    
-	// validate tenant from kind with the partition id header
-    public void validateTenant(Query searchRequest) {
-        if (!this.getIndex(searchRequest).startsWith(this.dpsHeaders.getPartitionId())) {
-        	throw new AccessDeniedException("query kind tenant is not that same at the data-partition-id header");
-        }
-        
-    }
 
     abstract SearchRequest createElasticRequest(Query request) throws AppException, IOException;
+
+    abstract void querySuccessAuditLogger(Query request);
+
+    abstract void queryFailedAuditLogger(Query request);
+
+    private void auditLog(Query searchRequest, SearchResponse searchResponse) {
+        if (searchResponse != null && searchResponse.status() == RestStatus.OK) {
+            this.querySuccessAuditLogger(searchRequest);
+            return;
+        }
+        this.queryFailedAuditLogger(searchRequest);
+    }
 }

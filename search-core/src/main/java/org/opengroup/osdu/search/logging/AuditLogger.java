@@ -40,12 +40,20 @@ public class AuditLogger {
         return this.events;
     }
 
-    public void queryIndex(List<String> resources) {
-        this.writeLog(this.getAuditEvents().getQueryIndexEvent(resources));
+    public void queryIndexSuccess(List<String> resources) {
+        this.writeLog(this.getAuditEvents().getSuccessfulQueryIndexEvent(resources));
     }
 
-    public void queryIndexWithCursor(List<String> resources) {
-        this.writeLog(this.getAuditEvents().getQueryIndexWithCursorEvent(resources));
+    public void queryIndexFailed(List<String> resources) {
+        this.writeLog(this.getAuditEvents().getFailedQueryIndexEvent(resources));
+    }
+
+    public void queryIndexWithCursorSuccess(List<String> resources) {
+        this.writeLog(this.getAuditEvents().getSuccessfulQueryIndexWithCursorEvent(resources));
+    }
+
+    public void queryIndexWithCursorFailed(List<String> resources) {
+        this.writeLog(this.getAuditEvents().getFailedQueryIndexWithCursorEvent(resources));
     }
 
     public void getIndexSchema(List<String> resources) {

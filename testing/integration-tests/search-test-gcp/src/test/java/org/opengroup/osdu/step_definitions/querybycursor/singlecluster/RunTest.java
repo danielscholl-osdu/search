@@ -8,6 +8,6 @@ import org.junit.runner.RunWith;
 @CucumberOptions(
         features = "classpath:features/querybycursor/singlecluster/QueryByCursor.feature",
         glue = {"classpath:org.opengroup.osdu.step_definitions/querybycursor/singlecluster"},
-        format = {"pretty", "junit:target/cucumber-reports/TEST-querybycursor-sc.xml"})
+        plugin = {"pretty", "junit:target/cucumber-reports/TEST-querybycursor-sc.xml"})
 public class RunTest {
 }

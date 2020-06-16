@@ -58,7 +58,6 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
         try (RestHighLevelClient client = this.elasticClientHandler.createRestClient()) {
             QueryResponse queryResponse = this.executeQuery(searchRequest, client);
-            this.auditLogger.queryIndex(Lists.newArrayList(searchRequest.toString()));
             return queryResponse;
         }
     }
@@ -68,7 +67,6 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     public QueryResponse queryIndex(QueryRequest searchRequest,  ClusterSettings clusterSettings) throws Exception {
         try (RestHighLevelClient client = elasticClientHandler.createRestClient(clusterSettings)) {
             QueryResponse queryResponse = executeQuery(searchRequest, client);
-            auditLogger.queryIndex(Lists.newArrayList(searchRequest.toString()));
             return queryResponse;
         }
     }
@@ -79,11 +77,13 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
         List<AggregationResponse> aggregations = getAggregationFromSearchResponse(searchResponse);
 
+        QueryResponse queryResponse = QueryResponse.getEmptyResponse();
+        queryResponse.setTotalCount(searchResponse.getHits().getTotalHits());
         if (results != null) {
-            return QueryResponse.builder().results(results).aggregations(aggregations).totalCount(searchResponse.getHits().getTotalHits()).build();
-        } else {
-            return QueryResponse.getEmptyResponse();
+            queryResponse.setAggregations(aggregations);
+            queryResponse.setResults(results);
         }
+        return queryResponse;
     }
 
     @Override
@@ -110,5 +110,16 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         elasticSearchRequest.source(sourceBuilder);
 
         return elasticSearchRequest;
+    }
+
+
+    @Override
+    void querySuccessAuditLogger(Query request) {
+        this.auditLogger.queryIndexSuccess(Lists.newArrayList(request.toString()));
+    }
+
+    @Override
+    void queryFailedAuditLogger(Query request) {
+        this.auditLogger.queryIndexFailed(Lists.newArrayList(request.toString()));
     }
 }

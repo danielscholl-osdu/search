@@ -48,7 +48,7 @@ public class CrossTenantUtils {
 
             if (dataPartitions.size() == 1) {
                 TenantInfo tenantInfo = this.tenantInfoServiceProvider.get().getTenantInfo();
-                return String.format("%s%s,-.*", tenantInfo.getName(), this.elasticIndexNameResolver.getIndexNameFromKind(searchRequest.getKind()));
+                return String.format("%s%s,-.*", tenantInfo.getName(), this.elasticIndexNameResolver.getIndexNameFromKind(searchRequest.getKind()).substring(1));
             }
         }
 

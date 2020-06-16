@@ -147,7 +147,22 @@ public class QueryServiceTest {
         QueryResponse queryResponse = this.sut.queryIndex(searchRequest);
         assertNotNull(queryResponse);
         assertEquals(queryResponse.getTotalCount(), 1);
-        verify(this.auditLogger).queryIndex(Lists.newArrayList(searchRequest.toString()));
+    }
+
+    @Test
+    public void should_returnRightTotalCount_when_queryResponseResultsIsNull() throws Exception {
+        List<Map<String, Object>> results = null;
+        when(elasticClientHandler.createRestClient()).thenReturn(restHighLevelClient);
+
+        doReturn(elasticSearchResponse).when(this.sut).makeSearchRequest(any(), any());
+        doReturn(results).when(this.sut).getHitsFromSearchResponse(any());
+
+        when(elasticSearchResponse.getHits().getTotalHits()).thenReturn(100L);
+        when(elasticSearchResponse.getAggregations()).thenReturn(null);
+
+        QueryResponse queryResponse = this.sut.queryIndex(searchRequest);
+        assertNotNull(queryResponse);
+        assertEquals(queryResponse.getTotalCount(), 100);
     }
 
     @Test
@@ -556,7 +571,7 @@ public class QueryServiceTest {
     }
 
     @Test
-    public void should_return_correctElasticRequest_gievn_groupByField() throws IOException {
+    public void should_return_correctElasticRequest_given_groupByField() throws IOException {
         when(searchRequest.getKind()).thenReturn("tenant1:welldb:well:1.0.0");
         when(searchRequest.getAggregateBy()).thenReturn("namespace");
         when(crossTenantUtils.getIndexName(any(), any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
