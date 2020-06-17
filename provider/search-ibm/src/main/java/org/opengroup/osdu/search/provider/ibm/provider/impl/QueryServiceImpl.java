@@ -37,7 +37,6 @@ import org.opengroup.osdu.core.common.search.Config;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Strings;
@@ -51,11 +50,10 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     private ElasticClientHandler elasticClientHandler;
     @Inject
     private AuditLogger auditLogger;
-    @Value("${ENVIRONMENT}")
-    private String ENVIRONMENT;
 
     @Override
     public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
+    	validateTenant(searchRequest);
         try (RestHighLevelClient client = this.elasticClientHandler.createRestClient()) {
             QueryResponse queryResponse = this.executeQuery(searchRequest, client);
             return queryResponse;
@@ -96,8 +94,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);
         sourceBuilder.from(searchRequest.getFrom());
 
-        // aggregation: only make it available in pre demo for now
-        if (isEnvironmentPreDemo() && !Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
+        if (!Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
             TermsAggregationBuilder termsAggregationBuilder = new TermsAggregationBuilder(AGGREGATION_NAME, ValueType.STRING);
             termsAggregationBuilder.field(searchRequest.getAggregateBy());
             termsAggregationBuilder.size(Config.getAggregationSize());
@@ -119,15 +116,4 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         this.auditLogger.queryIndexFailed(Lists.newArrayList(request.toString()));
     }
 
-    private boolean isEnvironmentLocal() {
-        return "local".equalsIgnoreCase(ENVIRONMENT);
-    }
-
-    private boolean isEnvironmentPreP4d() {
-        return isEnvironmentLocal() || "dev".equalsIgnoreCase(ENVIRONMENT) || "evt".equalsIgnoreCase(ENVIRONMENT);
-    }
-
-    protected boolean isEnvironmentPreDemo() {
-        return isEnvironmentPreP4d() || "p4d".equalsIgnoreCase(ENVIRONMENT);
-    }
 }

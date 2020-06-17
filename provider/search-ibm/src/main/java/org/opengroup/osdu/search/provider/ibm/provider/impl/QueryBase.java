@@ -50,6 +50,7 @@ import org.opengroup.osdu.core.common.model.search.*;
 import org.opengroup.osdu.search.provider.ibm.service.FieldMappingTypeService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
+import org.springframework.security.access.AccessDeniedException;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
@@ -341,5 +342,13 @@ abstract class QueryBase {
             return;
         }
         this.queryFailedAuditLogger(searchRequest);
+    }
+    
+    // validate tenant from kind with the partition id header
+    public void validateTenant(Query searchRequest) {
+        if (!this.getIndex(searchRequest).startsWith(this.dpsHeaders.getPartitionId())) {
+        	throw new AccessDeniedException("query kind tenant is not that same at the data-partition-id header");
+        }
+        
     }
 }

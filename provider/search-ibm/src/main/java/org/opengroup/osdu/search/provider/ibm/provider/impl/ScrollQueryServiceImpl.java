@@ -63,14 +63,16 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
 
     private final MessageDigest digest;
 
-    ScrollQueryServiceImpl() throws NoSuchAlgorithmException {
+    public ScrollQueryServiceImpl() throws NoSuchAlgorithmException {
         this.digest = MessageDigest.getInstance("MD5");
     }
 
     @Override
     public CursorQueryResponse queryIndex(CursorQueryRequest searchRequest) throws Exception {
     	
-        CursorQueryResponse queryResponse = CursorQueryResponse.getEmptyResponse();
+    	validateTenant(searchRequest);
+    	
+    	CursorQueryResponse queryResponse = CursorQueryResponse.getEmptyResponse();
 
         try (RestHighLevelClient client = this.elasticClientHandler.createRestClient()) {
             if (Strings.isNullOrEmpty(searchRequest.getCursor())) {
