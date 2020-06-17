@@ -12,7 +12,9 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<cucumber.version>1.2.5</cucumber.version>
+		<os-core-lib-ibm.version>0.0.18</os-core-lib-ibm.version>
 	</properties>
+	
 	<repositories>
 		<repository>
 			<id>${gitlab-server}</id>
@@ -41,7 +43,7 @@
 		<dependency>
 			<groupId>org.opengroup.osdu</groupId>
 			<artifactId>os-core-lib-ibm</artifactId>
-			<version>0.0.14-SNAPSHOT</version>
+			<version>${os-core-lib-ibm.version}</version>
 		</dependency>
 		
 		<!-- Cucumber -->
