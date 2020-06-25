@@ -59,7 +59,7 @@ public class CrossTenantUtilsTest {
         tenantInfo.setName("tenant1");
         when(this.tenantInfoService.getTenantInfo()).thenReturn(tenantInfo);
 
-        assertEquals("tenant1*-ihs-well-1.0.0,-.*", this.sut.getIndexName(queryRequest, crmAccountId));
+        assertEquals("tenant1-ihs-well-1.0.0,-.*", this.sut.getIndexName(queryRequest, crmAccountId));
     }
 
     @Test

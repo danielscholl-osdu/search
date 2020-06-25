@@ -14,6 +14,7 @@
 
 package org.opengroup.osdu.search.provider.aws.provider.impl;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -65,7 +66,7 @@ public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQuery
     @Override
     public CursorQueryResponse queryIndex(CursorQueryRequest searchRequest) throws Exception {
 
-        CursorQueryResponse queryResponse = null;
+        CursorQueryResponse queryResponse = CursorQueryResponse.getEmptyResponse();
 
         try (RestHighLevelClient client = this.elasticClientHandler.createRestClient()) {
             if (StringUtils.isEmpty(searchRequest.getCursor())) {
@@ -83,14 +84,14 @@ public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQuery
                         SearchResponse searchScrollResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
 
                         List<Map<String, Object>> results = getHitsFromSearchResponse(searchScrollResponse);
+                        queryResponse.setTotalCount(searchScrollResponse.getHits().getTotalHits());
                         if (results != null) {
-                            queryResponse = CursorQueryResponse.builder()
-                                    .cursor(this.refreshCursorCache(searchScrollResponse.getScrollId(), this.dpsHeaders.getUserEmail()))
-                                    .results(results)
-                                    .totalCount(searchScrollResponse.getHits().getTotalHits()).build();
+                            queryResponse.setResults(results);
+                            queryResponse.setCursor(this.refreshCursorCache(searchScrollResponse.getScrollId(), dpsHeaders.getUserEmail()));
+
                             List<String> resources = new ArrayList<>();
                             resources.add(searchRequest.toString());
-                            this.auditLogger.queryIndexWithCursor(resources);
+                            this.querySuccessAuditLogger(searchRequest);
                         }
                     } else {
                         throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired");
@@ -109,7 +110,6 @@ public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQuery
         CursorQueryResponse queryResponse = this.executeCursorQuery(searchRequest, client);
         List<String> resources = new ArrayList<>();
         resources.add(searchRequest.toString());
-        this.auditLogger.queryIndexWithCursor(resources);
         return queryResponse;
     }
 
@@ -124,7 +124,7 @@ public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQuery
                     .totalCount(searchResponse.getHits().getTotalHits())
                     .build();
         }
-        return null;
+        return CursorQueryResponse.getEmptyResponse();
     }
 
     @Override
@@ -150,5 +150,15 @@ public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQuery
             return hashCursor;
         }
         return null;
+    }
+
+    @Override
+    void querySuccessAuditLogger(Query request) {
+        this.auditLogger.queryIndexWithCursorSuccess(Lists.newArrayList(request.toString()));
+    }
+
+    @Override
+    void queryFailedAuditLogger(Query request) {
+        this.auditLogger.queryIndexWithCursorFailed(Lists.newArrayList(request.toString()));
     }
 }

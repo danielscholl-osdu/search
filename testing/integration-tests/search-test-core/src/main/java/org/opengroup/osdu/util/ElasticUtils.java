@@ -264,7 +264,7 @@ public class ElasticUtils {
             String rawString = String.format("%s:%s", username, password);
 
             RestClientBuilder builder = createClientBuilder(host,rawString, port);
-
+            
             restHighLevelClient = new RestHighLevelClient(builder);
 
         } catch (Exception e) {
@@ -274,22 +274,21 @@ public class ElasticUtils {
     }
 
     public RestClientBuilder createClientBuilder(String host, String usernameAndPassword, int port) {
-            RestClientBuilder builder = RestClient.builder(new HttpHost(host, port, "https"));
-            builder.setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder.setConnectTimeout(REST_CLIENT_CONNECT_TIMEOUT)
-                    .setSocketTimeout(REST_CLIENT_SOCKET_TIMEOUT));
-            builder.setMaxRetryTimeoutMillis(REST_CLIENT_RETRY_TIMEOUT);
-
-            Header[] defaultHeaders = new Header[]{
-                    new BasicHeader("client.transport.nodes_sampler_interval", "30s"),
-                    new BasicHeader("client.transport.ping_timeout", "30s"),
-                    new BasicHeader("client.transport.sniff", "false"),
-                    new BasicHeader("request.headers.X-Found-Cluster", Config.getElasticHost()),
-                    new BasicHeader("cluster.name", Config.getElasticHost()),
-                    new BasicHeader("xpack.security.transport.ssl.enabled", Boolean.toString(true)),
+        RestClientBuilder builder = RestClient.builder(new HttpHost(host, port, "https"));
+        builder.setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder.setConnectTimeout(REST_CLIENT_CONNECT_TIMEOUT)
+                .setSocketTimeout(REST_CLIENT_SOCKET_TIMEOUT));
+        builder.setMaxRetryTimeoutMillis(REST_CLIENT_RETRY_TIMEOUT);
+        Header[] defaultHeaders = new Header[]{
+                new BasicHeader("client.transport.nodes_sampler_interval", "30s"),
+                new BasicHeader("client.transport.ping_timeout", "30s"),
+                new BasicHeader("client.transport.sniff", "false"),
+                new BasicHeader("request.headers.X-Found-Cluster", Config.getElasticHost()),
+                new BasicHeader("cluster.name", Config.getElasticHost()),
+                new BasicHeader("xpack.security.transport.ssl.enabled", Boolean.toString(true)),
                 new BasicHeader("Authorization", String.format("Basic %s", Base64.getEncoder().encodeToString(usernameAndPassword.getBytes()))),
-            };
+        };
 
-            builder.setDefaultHeaders(defaultHeaders);
+        builder.setDefaultHeaders(defaultHeaders);
         return builder;
     }
 }

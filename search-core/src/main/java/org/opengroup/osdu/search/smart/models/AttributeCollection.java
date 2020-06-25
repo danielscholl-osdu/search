@@ -45,7 +45,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 
-
+import org.elasticsearch.search.fetch.ShardFetchSearchRequest;
+import org.opengroup.osdu.core.common.http.FetchServiceHttpRequest;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.http.HttpResponse;
 import org.opengroup.osdu.core.common.model.search.DeploymentEnvironment;
@@ -76,8 +77,8 @@ public class AttributeCollection {
 	private IAttributesCache<String, Set<String>> cache;
 	@Inject
     private IServiceAccountJwtClient serviceAccountJwtClient;
-	
-    private Map<String,Set<String>> attributes = new HashMap<>();
+
+	private Map<String, Set<String>> attributes = new HashMap<>();
 	
 	private static final int AggregationSize = 10000;
 	private static final TimeValue REQUEST_TIMEOUT = TimeValue.timeValueMinutes(1);
@@ -94,7 +95,7 @@ public class AttributeCollection {
 			for (String fieldName : attr.getSchemaMapping()) {
 				attrVals.addAll(this.getTermAggregationForField("by_" + fieldName, fieldName));
 			}
-			if(!attrVals.isEmpty())	
+			if (!attrVals.isEmpty())
 				this.cache.put(cacheKey, attrVals);
 		}
 	}
@@ -118,9 +119,9 @@ public class AttributeCollection {
 		sourceBuilder.aggregation(aggregation);
 		searchRequest.source(sourceBuilder);
 		try (RestHighLevelClient client = this.elasticClientHandler.createRestClient()) {
-			SearchResponse searchResponse = client.search(searchRequest,RequestOptions.DEFAULT);
+			SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 			Aggregations aggregations = searchResponse.getAggregations();
-			if(aggregations!=null) {
+			if (aggregations != null) {
 				Terms keywordAggregation = aggregations.get(termAggId);
 				for (Terms.Bucket bucket : keywordAggregation.getBuckets()) {
 				result.put(bucket.getKeyAsString().toLowerCase(), bucket.getDocCount());
@@ -162,10 +163,10 @@ public class AttributeCollection {
 						FieldMappingMetaData fieldMappingMetaData = fieldMapping.get(fieldName);
 						Map<String, Object> mapping = fieldMappingMetaData.sourceAsMap();
 						String fieldkey = fieldName.split("\\.")[1];
-						Map<String, Map<String,  Map<String, Object>>> keywordMapping = (Map<String, Map<String,  Map<String, Object>>>) mapping.get(fieldkey);
+						Map<String, Map<String, Map<String, Object>>> keywordMapping = (Map<String, Map<String, Map<String, Object>>>) mapping.get(fieldkey);
 						updatedIndices.add(indices);
-						if(keywordMapping.get(FIELDS)!=null&&keywordMapping.get(FIELDS).get(KEYWORD)!=null)
-							if(keywordMapping.get(FIELDS).get(KEYWORD).get(TYPE).equals(KEYWORD))
+						if (keywordMapping.get(FIELDS) != null && keywordMapping.get(FIELDS).get(KEYWORD) != null)
+							if (keywordMapping.get(FIELDS).get(KEYWORD).get(TYPE).equals(KEYWORD))
 								updatedIndices.remove(indices);
 					}
 				}
@@ -184,7 +185,13 @@ public class AttributeCollection {
 			String body = this.gson.toJson(indexMappingRequest);
 			String endUrl = String.format("kinds/%s", fieldName.split("\\.")[1]);
 			headersInfo.put(DpsHeaders.AUTHORIZATION, this.checkOrGetAuthorizationHeader());
-			HttpResponse response = this.urlFetchService.sendRequest(HttpMethods.PUT,Config.getIndexerHostUrl() + endUrl, headersInfo, null, body);
+			FetchServiceHttpRequest request = FetchServiceHttpRequest
+					.builder()
+					.httpMethod(HttpMethods.PUT)
+					.url(Config.getIndexerHostUrl() + endUrl)
+					.headers(headersInfo)
+					.body(body).build();
+			HttpResponse response = this.urlFetchService.sendRequest(request);
 			if (response.getResponseCode() != 200)
 				log.warning(String.format("Failed to update field: %s | indices:  %s", fieldName, indicesSet));
 			else

@@ -14,6 +14,7 @@
 
 package org.opengroup.osdu.search.provider.aws.provider.impl;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -52,7 +53,6 @@ public class QueryServiceAwsImpl extends QueryBase implements IQueryService {
             QueryResponse queryResponse = this.executeQuery(searchRequest, client);
             List<String> resources = new ArrayList<>();
             resources.add(searchRequest.toString());
-            this.auditLogger.queryIndex(resources);
             return queryResponse;
         }
     }
@@ -64,7 +64,6 @@ public class QueryServiceAwsImpl extends QueryBase implements IQueryService {
             QueryResponse queryResponse = executeQuery(searchRequest, client);
             List<String> resources = new ArrayList<>();
             resources.add(searchRequest.toString());
-            auditLogger.queryIndex(resources);
             return queryResponse;
         }
     }
@@ -74,11 +73,13 @@ public class QueryServiceAwsImpl extends QueryBase implements IQueryService {
         List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
         List<AggregationResponse> aggregations = getAggregationFromSearchResponse(searchResponse);
 
+        QueryResponse queryResponse = QueryResponse.getEmptyResponse();
+        queryResponse.setTotalCount(searchResponse.getHits().getTotalHits());
         if (results != null) {
-            return QueryResponse.builder().results(results).aggregations(aggregations).totalCount(searchResponse.getHits().getTotalHits()).build();
-        } else {
-            return QueryResponse.getEmptyResponse();
+            queryResponse.setAggregations(aggregations);
+            queryResponse.setResults(results);
         }
+        return queryResponse;
     }
 
     @Override
@@ -102,5 +103,15 @@ public class QueryServiceAwsImpl extends QueryBase implements IQueryService {
         elasticSearchRequest.source(sourceBuilder);
 
         return elasticSearchRequest;
+    }
+
+    @Override
+    void querySuccessAuditLogger(Query request) {
+        this.auditLogger.queryIndexSuccess(Lists.newArrayList(request.toString()));
+    }
+
+    @Override
+    void queryFailedAuditLogger(Query request) {
+        this.auditLogger.queryIndexFailed(Lists.newArrayList(request.toString()));
     }
 }

@@ -16,6 +16,7 @@ package org.opengroup.osdu.search.provider.gcp.provider.impl;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.cache.CursorCache;
@@ -25,7 +26,6 @@ import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
-import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
@@ -66,7 +66,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
     @Override
     public CursorQueryResponse queryIndex(CursorQueryRequest searchRequest) throws Exception {
 
-        CursorQueryResponse queryResponse = null;
+        CursorQueryResponse queryResponse = CursorQueryResponse.getEmptyResponse();
 
         try (RestHighLevelClient client = this.elasticClientHandler.createRestClient()) {
             if (Strings.isNullOrEmpty(searchRequest.getCursor())) {
@@ -84,12 +84,12 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                         SearchResponse searchScrollResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
 
                         List<Map<String, Object>> results = getHitsFromSearchResponse(searchScrollResponse);
+                        queryResponse.setTotalCount(searchScrollResponse.getHits().getTotalHits());
                         if (results != null) {
-                            queryResponse = CursorQueryResponse.builder()
-                                    .cursor(this.refreshCursorCache(searchScrollResponse.getScrollId(), this.dpsHeaders.getUserEmail()))
-                                    .results(results)
-                                    .totalCount(searchScrollResponse.getHits().getTotalHits()).build();
-                            this.auditLogger.queryIndexWithCursor(Lists.newArrayList(searchRequest.toString()));
+                            queryResponse.setResults(results);
+                            queryResponse.setCursor(this.refreshCursorCache(searchScrollResponse.getScrollId(), dpsHeaders.getUserEmail()));
+
+                            this.querySuccessAuditLogger(searchRequest);
                         }
                     } else {
                         throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired");
@@ -106,7 +106,6 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
 
     private CursorQueryResponse initCursorQuery(CursorQueryRequest searchRequest, RestHighLevelClient client) {
         CursorQueryResponse queryResponse = this.executeCursorQuery(searchRequest, client);
-        this.auditLogger.queryIndexWithCursor(Lists.newArrayList(searchRequest.toString()));
         return queryResponse;
     }
 
@@ -121,7 +120,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                     .totalCount(searchResponse.getHits().getTotalHits())
                     .build();
         }
-        return null;
+        return CursorQueryResponse.getEmptyResponse();
     }
 
     @Override
@@ -132,6 +131,12 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
 
         // build query
         SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);
+
+        // Optimize Scroll request if users wants to iterate over all documents regardless of order
+        if (request.getSort() == null) {
+            sourceBuilder.sort(SortBuilders.scoreSort());
+            sourceBuilder.sort(SortBuilders.fieldSort("_doc"));
+        }
 
         elasticSearchRequest.source(sourceBuilder);
         elasticSearchRequest.scroll(new Scroll(SEARCH_SCROLL_TIMEOUT));
@@ -147,5 +152,15 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
             return hashCursor;
         }
         return null;
+    }
+
+    @Override
+    void querySuccessAuditLogger(Query request) {
+        this.auditLogger.queryIndexWithCursorSuccess(Lists.newArrayList(request.toString()));
+    }
+
+    @Override
+    void queryFailedAuditLogger(Query request) {
+        this.auditLogger.queryIndexWithCursorFailed(Lists.newArrayList(request.toString()));
     }
 }

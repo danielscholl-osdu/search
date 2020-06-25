@@ -131,7 +131,7 @@ public class AttributesTest {
 		mapping.put("indices 1", mappingBuilder);
 		when(searchResponse.getAggregations()).thenReturn(null);
 		when(getFieldMappingsResponse.mappings()).thenReturn(mapping);
-		when(urlFetchService.sendRequest(any(), any(), any(), any(), any())).thenReturn(response);
+		when(urlFetchService.sendRequest(any())).thenReturn(response);
 		when(response.getResponseCode()).thenReturn(200);
 		PowerMockito.when(restHighLevelClient.search(any(), any(RequestOptions.class))).thenReturn(searchResponse);
 

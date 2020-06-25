@@ -21,6 +21,8 @@ import org.opengroup.osdu.core.common.logging.audit.AuditStatus;
 
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+
 public class AuditEventsTest {
 
     @Test(expected = IllegalArgumentException.class)
@@ -30,30 +32,58 @@ public class AuditEventsTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void should_createQueryIndexEvent() {
+    public void should_createSuccessfulQueryIndexEvent() {
         AuditEvents auditEvent = new AuditEvents("testUser");
-        Map<String, String> payload = (Map) auditEvent.getQueryIndexEvent(Lists.newArrayList("anything"))
+        Map<String, String> payload = (Map) auditEvent.getSuccessfulQueryIndexEvent(Lists.newArrayList("anything"))
                 .get("auditLog");
-        org.junit.Assert.assertEquals(Lists.newArrayList("anything"), payload.get("resources"));
-        org.junit.Assert.assertEquals(AuditStatus.SUCCESS, payload.get("status"));
-        org.junit.Assert.assertEquals("Query index", payload.get("message"));
-        org.junit.Assert.assertEquals(AuditAction.READ, payload.get("action"));
-        org.junit.Assert.assertEquals("SE001", payload.get("actionId"));
-        org.junit.Assert.assertEquals("testUser", payload.get("user"));
+        assertEquals(Lists.newArrayList("anything"), payload.get("resources"));
+        assertEquals(AuditStatus.SUCCESS, payload.get("status"));
+        assertEquals("Query index", payload.get("message"));
+        assertEquals(AuditAction.READ, payload.get("action"));
+        assertEquals("SE001", payload.get("actionId"));
+        assertEquals("testUser", payload.get("user"));
     }
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void should_createQueryIndexWithCursorEvent() {
+    public void should_createFailedQueryIndexEvent() {
         AuditEvents auditEvent = new AuditEvents("testUser");
-        Map<String, String> payload = (Map) auditEvent.getQueryIndexWithCursorEvent(Lists.newArrayList("anything"))
+        Map<String, String> payload = (Map) auditEvent.getFailedQueryIndexEvent(Lists.newArrayList("anything"))
                 .get("auditLog");
-        org.junit.Assert.assertEquals(Lists.newArrayList("anything"), payload.get("resources"));
-        org.junit.Assert.assertEquals(AuditStatus.SUCCESS, payload.get("status"));
-        org.junit.Assert.assertEquals("Query index with cursor", payload.get("message"));
-        org.junit.Assert.assertEquals(AuditAction.READ, payload.get("action"));
-        org.junit.Assert.assertEquals("SE002", payload.get("actionId"));
-        org.junit.Assert.assertEquals("testUser", payload.get("user"));
+        assertEquals(Lists.newArrayList("anything"), payload.get("resources"));
+        assertEquals(AuditStatus.FAILURE, payload.get("status"));
+        assertEquals("Query index", payload.get("message"));
+        assertEquals(AuditAction.READ, payload.get("action"));
+        assertEquals("SE001", payload.get("actionId"));
+        assertEquals("testUser", payload.get("user"));
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void should_createSuccessfulQueryIndexWithCursorEvent() {
+        AuditEvents auditEvent = new AuditEvents("testUser");
+        Map<String, String> payload = (Map) auditEvent.getSuccessfulQueryIndexWithCursorEvent(Lists.newArrayList("anything"))
+                .get("auditLog");
+        assertEquals(Lists.newArrayList("anything"), payload.get("resources"));
+        assertEquals(AuditStatus.SUCCESS, payload.get("status"));
+        assertEquals("Query index with cursor", payload.get("message"));
+        assertEquals(AuditAction.READ, payload.get("action"));
+        assertEquals("SE002", payload.get("actionId"));
+        assertEquals("testUser", payload.get("user"));
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void should_createFailedQueryIndexWithCursorEvent() {
+        AuditEvents auditEvent = new AuditEvents("testUser");
+        Map<String, String> payload = (Map) auditEvent.getFailedQueryIndexWithCursorEvent(Lists.newArrayList("anything"))
+                .get("auditLog");
+        assertEquals(Lists.newArrayList("anything"), payload.get("resources"));
+        assertEquals(AuditStatus.FAILURE, payload.get("status"));
+        assertEquals("Query index with cursor", payload.get("message"));
+        assertEquals(AuditAction.READ, payload.get("action"));
+        assertEquals("SE002", payload.get("actionId"));
+        assertEquals("testUser", payload.get("user"));
     }
 
     @Test
@@ -62,12 +92,12 @@ public class AuditEventsTest {
         AuditEvents auditEvent = new AuditEvents("testUser");
         Map<String, String> payload = (Map) auditEvent.getIndexSchemaEvent(Lists.newArrayList("anything"))
                 .get("auditLog");
-        org.junit.Assert.assertEquals(Lists.newArrayList("anything"), payload.get("resources"));
-        org.junit.Assert.assertEquals(AuditStatus.SUCCESS, payload.get("status"));
-        org.junit.Assert.assertEquals("Get index schema", payload.get("message"));
-        org.junit.Assert.assertEquals(AuditAction.READ, payload.get("action"));
-        org.junit.Assert.assertEquals("SE003", payload.get("actionId"));
-        org.junit.Assert.assertEquals("testUser", payload.get("user"));
+        assertEquals(Lists.newArrayList("anything"), payload.get("resources"));
+        assertEquals(AuditStatus.SUCCESS, payload.get("status"));
+        assertEquals("Get index schema", payload.get("message"));
+        assertEquals(AuditAction.READ, payload.get("action"));
+        assertEquals("SE003", payload.get("actionId"));
+        assertEquals("testUser", payload.get("user"));
     }
 
     @Test
@@ -76,12 +106,12 @@ public class AuditEventsTest {
         AuditEvents auditEvent = new AuditEvents("testUser");
         Map<String, String> payload = (Map) auditEvent.getDeleteIndexEvent(Lists.newArrayList("anything"))
                 .get("auditLog");
-        org.junit.Assert.assertEquals(Lists.newArrayList("anything"), payload.get("resources"));
-        org.junit.Assert.assertEquals(AuditStatus.SUCCESS, payload.get("status"));
-        org.junit.Assert.assertEquals("Delete index", payload.get("message"));
-        org.junit.Assert.assertEquals(AuditAction.DELETE, payload.get("action"));
-        org.junit.Assert.assertEquals("SE004", payload.get("actionId"));
-        org.junit.Assert.assertEquals("testUser", payload.get("user"));
+        assertEquals(Lists.newArrayList("anything"), payload.get("resources"));
+        assertEquals(AuditStatus.SUCCESS, payload.get("status"));
+        assertEquals("Delete index", payload.get("message"));
+        assertEquals(AuditAction.DELETE, payload.get("action"));
+        assertEquals("SE004", payload.get("actionId"));
+        assertEquals("testUser", payload.get("user"));
     }
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -89,11 +119,11 @@ public class AuditEventsTest {
         AuditEvents auditEvent = new AuditEvents("testUser");
         Map<String, String> payload = (Map) auditEvent.getSmartSearchCacheUpdateEvent(Lists.newArrayList("anything"))
                 .get("auditLog");
-        org.junit.Assert.assertEquals(Lists.newArrayList("anything"), payload.get("resources"));
-        org.junit.Assert.assertEquals(AuditStatus.SUCCESS, payload.get("status"));
-        org.junit.Assert.assertEquals("Update smart search cache", payload.get("message"));
-        org.junit.Assert.assertEquals(AuditAction.UPDATE, payload.get("action"));
-        org.junit.Assert.assertEquals("SE005", payload.get("actionId"));
-        org.junit.Assert.assertEquals("testUser", payload.get("user"));
+        assertEquals(Lists.newArrayList("anything"), payload.get("resources"));
+        assertEquals(AuditStatus.SUCCESS, payload.get("status"));
+        assertEquals("Update smart search cache", payload.get("message"));
+        assertEquals(AuditAction.UPDATE, payload.get("action"));
+        assertEquals("SE005", payload.get("actionId"));
+        assertEquals("testUser", payload.get("user"));
     }
 }

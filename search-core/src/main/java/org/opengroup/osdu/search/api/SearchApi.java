@@ -93,8 +93,6 @@ public class SearchApi {
     public ResponseEntity<QueryResponse> queryRecords(@NotNull(message = SwaggerDoc.REQUEST_VALIDATION_NOT_NULL_BODY) @RequestBody @Valid QueryRequest queryRequest) throws Exception {
             try{
                 QueryResponse searchResponse = queryService.queryIndex(queryRequest);
-                if (searchResponse == null)
-                    searchResponse = QueryResponse.getEmptyResponse();
                 return new ResponseEntity<QueryResponse>(searchResponse, HttpStatus.OK);
             } catch (NotFoundException e) {
                 return new ResponseEntity<QueryResponse>(QueryResponse.getEmptyResponse(), HttpStatus.OK);
@@ -128,8 +126,6 @@ public class SearchApi {
     public ResponseEntity<CursorQueryResponse> queryWithCursor(@NotNull(message = SwaggerDoc.REQUEST_VALIDATION_NOT_NULL_BODY) @RequestBody @Valid CursorQueryRequest queryRequest) throws Exception {
         try{
             CursorQueryResponse searchResponse = scrollQueryService.queryIndex(queryRequest);
-            if (searchResponse == null)
-                searchResponse = CursorQueryResponse.getEmptyResponse();
             return new ResponseEntity<CursorQueryResponse>(searchResponse, HttpStatus.OK);
         } catch (NotFoundException e) {
             return new ResponseEntity<CursorQueryResponse>(CursorQueryResponse.getEmptyResponse(), HttpStatus.OK);

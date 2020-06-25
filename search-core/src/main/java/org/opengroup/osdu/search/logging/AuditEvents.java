@@ -21,6 +21,8 @@ import org.opengroup.osdu.core.common.logging.audit.AuditAction;
 
 import java.util.List;
 
+import static org.opengroup.osdu.core.common.logging.audit.AuditPayload.builder;
+
 public class AuditEvents {
 
     private static final String QUERY_INDEX_ACTION_ID = "SE001";
@@ -47,8 +49,8 @@ public class AuditEvents {
         this.user = user;
     }
 
-    public AuditPayload getQueryIndexEvent(List<String> resources) {
-        return AuditPayload.builder()
+    public AuditPayload getSuccessfulQueryIndexEvent(List<String> resources) {
+        return builder()
                 .action(AuditAction.READ)
                 .status(AuditStatus.SUCCESS)
                 .actionId(QUERY_INDEX_ACTION_ID)
@@ -58,8 +60,19 @@ public class AuditEvents {
                 .build();
     }
 
-    public AuditPayload getQueryIndexWithCursorEvent(List<String> resources) {
-        return AuditPayload.builder()
+    public AuditPayload getFailedQueryIndexEvent(List<String> resources) {
+        return builder()
+                .action(AuditAction.READ)
+                .status(AuditStatus.FAILURE)
+                .actionId(QUERY_INDEX_ACTION_ID)
+                .message(QUERY_INDEX_OPERATION)
+                .resources(resources)
+                .user(this.user)
+                .build();
+    }
+
+    public AuditPayload getSuccessfulQueryIndexWithCursorEvent(List<String> resources) {
+        return builder()
                 .action(AuditAction.READ)
                 .status(AuditStatus.SUCCESS)
                 .actionId(QUERY_INDEX_WITH_CURSOR_ACTION_ID)
@@ -69,8 +82,19 @@ public class AuditEvents {
                 .build();
     }
 
+    public AuditPayload getFailedQueryIndexWithCursorEvent(List<String> resources) {
+        return builder()
+                .action(AuditAction.READ)
+                .status(AuditStatus.FAILURE)
+                .actionId(QUERY_INDEX_WITH_CURSOR_ACTION_ID)
+                .message(QUERY_INDEX_WITH_CURSOR_OPERATION)
+                .resources(resources)
+                .user(this.user)
+                .build();
+    }
+
     public AuditPayload getIndexSchemaEvent(List<String> resources) {
-        return AuditPayload.builder()
+        return builder()
                 .action(AuditAction.READ)
                 .status(AuditStatus.SUCCESS)
                 .actionId(GET_INDEX_SCHEMA_ACTION_ID)
@@ -81,7 +105,7 @@ public class AuditEvents {
     }
 
     public AuditPayload getDeleteIndexEvent(List<String> resources) {
-        return AuditPayload.builder()
+        return builder()
                 .action(AuditAction.DELETE)
                 .status(AuditStatus.SUCCESS)
                 .actionId(DELETE_INDEX_ACTION_ID)
@@ -92,7 +116,7 @@ public class AuditEvents {
     }
 
     public AuditPayload getSmartSearchCacheUpdateEvent(List<String> resources) {
-        return AuditPayload.builder()
+        return builder()
                 .action(AuditAction.UPDATE)
                 .status(AuditStatus.SUCCESS)
                 .actionId(UPDATE_SMART_SEARCH_CACHE_ACTION_ID)

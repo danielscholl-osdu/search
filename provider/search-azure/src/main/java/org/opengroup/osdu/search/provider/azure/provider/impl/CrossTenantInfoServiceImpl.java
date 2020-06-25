@@ -16,44 +16,27 @@ package org.opengroup.osdu.search.provider.azure.provider.impl;
 
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.provider.interfaces.ITenantFactory;
+import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.core.common.multitenancy.ITenantInfoService;
+import org.opengroup.osdu.core.common.provider.interfaces.ITenantFactory;
 import org.opengroup.osdu.search.provider.interfaces.ICrossTenantInfoService;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.util.LinkedList;
 import java.util.List;
-import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 
 @Component
 public class CrossTenantInfoServiceImpl implements ITenantInfoService, ICrossTenantInfoService {
 
     @Inject
     private ITenantFactory tenantFactory;
-
-    /**
-     * TODO: Fix this: Due to two instances of DpsHeaders (one from corelib and another from os-indexer-search-lib, spring unable to inject the right one. So, instantiate using ConfigModule.
-     */
+    @Inject
     private DpsHeaders dpsHeaders;
-
-    @PostConstruct
-    public void init(){
-        dpsHeaders = new DpsHeaders();
-    }
 
     @Override
     public TenantInfo getTenantInfo() {
-        String primaryAccountId= TenantInfo.COMMON;
-
-        if(dpsHeaders != null){
-            if(dpsHeaders.getAccountId() != null)
-                primaryAccountId = dpsHeaders.getAccountId();
-            else if(dpsHeaders.getPartitionId() != null)
-                primaryAccountId = dpsHeaders.getPartitionId();
-        }
-
+        String primaryAccountId = this.dpsHeaders.getPartitionIdWithFallbackToAccountId();
         TenantInfo tenantInfo = this.tenantFactory.getTenantInfo(primaryAccountId);
         if (tenantInfo == null) {
             throw AppException.createUnauthorized(String.format("could not retrieve tenant info for data partition id: %s", primaryAccountId));

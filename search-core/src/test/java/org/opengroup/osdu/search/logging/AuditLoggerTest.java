@@ -51,7 +51,7 @@ public class AuditLoggerTest {
     @Test
     @SuppressWarnings("rawtypes")
     public void should_createAuditLogEvent_when_queryIndex() {
-        this.sut.queryIndex(Lists.newArrayList("anything"));
+        this.sut.queryIndexSuccess(Lists.newArrayList("anything"));
 
         ArgumentCaptor<AuditPayload> payloadCaptor = ArgumentCaptor.forClass(AuditPayload.class);
 
@@ -65,7 +65,7 @@ public class AuditLoggerTest {
     @Test
     @SuppressWarnings("rawtypes")
     public void should_createAuditLogEvent_when_queryIndexWithCursor() {
-        this.sut.queryIndexWithCursor(Lists.newArrayList("anything"));
+        this.sut.queryIndexWithCursorSuccess(Lists.newArrayList("anything"));
 
         ArgumentCaptor<AuditPayload> payloadCaptor = ArgumentCaptor.forClass(AuditPayload.class);
 
