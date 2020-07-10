@@ -22,7 +22,6 @@ produces:
 security:
 - Bearer: []
 - google_id_token: []
-- sauth_id_token: []
 paths:
   "/index/{kind}":
     delete:
@@ -65,7 +64,6 @@ paths:
       security:
         - Bearer: []
         - google_id_token: []
-        - sauth_id_token: []
   "/index/schema/{kind}":
     get:
       tags:
@@ -109,7 +107,6 @@ paths:
       security:
         - Bearer: []
         - google_id_token: []
-        - sauth_id_token: []
   "/query":
     post:
       tags:
@@ -158,7 +155,6 @@ paths:
       security:
         - Bearer: []
         - google_id_token: []
-        - sauth_id_token: []
   "/query_with_cursor":
     post:
       tags:
@@ -207,7 +203,6 @@ paths:
       security:
         - Bearer: []
         - google_id_token: []
-        - sauth_id_token: []
 definitions:
   AppError:
     type: object
@@ -407,18 +402,6 @@ definitions:
         description: Too many requests are received in short period of time. Please retry later.
 # This section requires all requests to any path to require an API key.
 securityDefinitions:
-  # This section configures authentication using SAuth Tokens.
-  sauth_id_token:
-    authorizationUrl: "https://opsauth-dot-auth-preview.appspot.com/v1/auth"
-    flow: "implicit"
-    type: "oauth2"
-    x-google-issuer: "sauth-preview.OSDU.com"
-    x-google-jwks_uri: "https://opsauth-dot-auth-preview.appspot.com/v1/certs"
-    x-google-audiences: "entitlement-datalake.OSDUservice.com,entitlement-datalake.OSDUclient.com,dev-OSDUdev-devportal.OSDUapp.com,test-OSDUdev-devportal.OSDUapp.com,discover-evd-csp-OSDU-com-dtwdev.OSDUapp.com,discover-evt-csp-OSDU-com-dtwcmz.OSDUapp.com,discover-evq-csp-OSDU-com-dtwstage.OSDUapp.com,fuse-evd-csp-OSDU-com-dtwdev.OSDUapp.com,fuse-evt-csp-OSDU-com-dtwcmz.OSDUapp.com,fuse-evq-csp-OSDU-com-dtwstage.OSDUapp.com,local-logstore.OSDUapp.com,localhost3000-dtwdev.OSDUapp.com,prod-logstoreproject.OSDUapp.com,prodanadarko-logstoreproject.OSDUapp.com,prodeu-logstoreproject.OSDUapp.com,local-logstore.OSDUapp.com,widget-catalogue-evd-csp-OSDU-com-dtwdev.OSDUapp.com,automation-test-svc-dtwdev.OSDUservice.com,OSDU-wellbore-dev1-wing.OSDUapp.com,OSDU-wellbore-stg1-wing.OSDUapp.com,OSDU-wellbore-stg2-wing.OSDUapp.com,test-sauthdevportalsvc-devportal.OSDUapp.com,prodops-evd-prodops.OSDUapp.com,prodops-evq-prodops.OSDUapp.com,prodops-evt-prodops.OSDUapp.com,pwe-evd-prodops.OSDUapp.com,prodops-pdi-evq-prodops.OSDUapp.com"
-    scopes: {}
-   # This section configures authentication using SAuth Tokens.
-   # ID Tokens can be obtained using OAuth2 clients, and can be used to access
-   # your API on behalf of a particular user.
   google_id_token:
     authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth"
     flow: "implicit"
@@ -427,7 +410,7 @@ securityDefinitions:
     x-google-jwks_uri: "https://www.googleapis.com/oauth2/v3/certs"
     x-google-audiences: "245464679631-ktfdfpl147m1mjpbutl00b3cmffissgq.apps.googleusercontent.com,245464679631-u44eh98vq4t2ajc2quc8b0kgojsmd3gp.apps.googleusercontent.com"
     scopes: {}
-  #SAuth security configuration or the portal
+  #Security configuration or the portal
   Bearer:
     type: apiKey
     name: Authorization

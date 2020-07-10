@@ -1,11 +1,7 @@
 {{$endPointsServiceName := getenv "ENDPOINTS_SERVICE_NAME" -}}
 {{$gcloudProject := getenv "GCLOUD_PROJECT" -}}
 {{$gcloudRedisHost := getenv "REDIS_SEARCH_HOST" -}}
-{{$sauthAuthorizationUrl := getenv "SAUTH_AUTHORIZATION_URL" -}}
-{{$sauthIssuer := getenv "SAUTH_ISSUER" -}}
 {{$environment := getenv "ENVIRONMENT" -}}
-{{$sauthJwksUri := getenv "SAUTH_JWKS_URI" -}}
-{{$sauthAudiences := getenv "SAUTH_AUDIENCES" -}}
 {{$googleAudiences := getenv "GOOGLE_AUDIENCES" -}}
 {{$ccsDisabled := getenv "SMART_SEARCH_CCS_DISABLED" -}}
 service: search
@@ -58,10 +54,6 @@ env_variables:
   ELASTIC_DATASTORE_KIND: "SearchSettings"
   ELASTIC_DATASTORE_ID: "search-service"
   REDIS_SEARCH_HOST: "{{$gcloudRedisHost}}"
-  SAUTH_AUTHORIZATION_URL: {{$sauthAuthorizationUrl}}
-  SAUTH_AUDIENCES: {{$sauthAudiences}}
-  SAUTH_ISSUER: {{$sauthIssuer}}
-  SAUTH_JWKS_URI: {{$sauthJwksUri}}
   ENVIRONMENT: {{$environment}}
   GOOGLE_AUDIENCES: {{$googleAudiences}}
   INDEXER_HOST: "https://indexer-dot-{{$gcloudProject}}.appspot.com/api/indexer/v2/"
