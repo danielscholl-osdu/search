@@ -35,19 +35,20 @@ variables:
   - group: 'Azure - Common'
 
   - name: serviceName
-    value: 'storage'
+    value: 'search'
 
 stages:
   - template: devops/service-pipelines/build-stage.yml@osdu-infrastructure
     parameters:
       mavenGoal: 'package'
       mavenPublishJUnitResults: true
-      mavenOptions: '-P storage-azure'
+      serviceCoreMavenOptions: '-P search-core'
+      mavenOptions: '-P search-azure'
       copyFileContents: |
         pom.xml
-        provider/storage-azure/maven/settings.xml
-        provider/storage-azure/pom.xml
-        provider/storage-azure/target/*-spring-boot.jar
+        provider/search-azure/maven/settings.xml
+        provider/search-azure/pom.xml
+        provider/search-azure/target/*-spring-boot.jar
       copyFileContentsToFlatten: ''
       mavenSettingsFile: './maven/settings.xml'
       serviceBase: ${{ variables.serviceName }}
@@ -55,8 +56,8 @@ stages:
   - template: devops/service-pipelines/deploy-stages.yml@osdu-infrastructure
     parameters:
       serviceName: ${{ variables.serviceName }}
-      testCoreMavenPomFile: 'testing/storage-test-core/pom.xml'
-      testCoreMavenOptions: '--settings $(System.DefaultWorkingDirectory)/drop/deploy/testing/maven/settings.xml'
+      testCoreMavenPomFile: 'testing/integration-tests/search-test-core/pom.xml'
+      testCoreMavenOptions: '--settings $(System.DefaultWorkingDirectory)/drop/deploy/testing/integration-tests/maven/settings.xml'
       providers:
         -  name: Azure
            environments: ['test']
