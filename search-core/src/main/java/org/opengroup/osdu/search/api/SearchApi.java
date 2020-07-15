@@ -48,8 +48,7 @@ import javax.validation.constraints.NotNull;
 @Api(
         value = SwaggerDoc.SEARCH_TAG,
         authorizations = {@Authorization(value = SwaggerDoc.BEARER_AUTH),
-                @Authorization(value = SwaggerDoc.GOOGLE_ID_AUTH),
-                @Authorization(value = SwaggerDoc.SAUTH_ID_AUTH)})
+                @Authorization(value = SwaggerDoc.GOOGLE_ID_AUTH)})
 @RestController
 @RequestScope
 @RequestMapping("/")
