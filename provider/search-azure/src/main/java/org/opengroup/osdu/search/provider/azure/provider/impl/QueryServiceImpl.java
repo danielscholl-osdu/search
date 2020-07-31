@@ -57,7 +57,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     @Override
     public QueryResponse queryIndex(QueryRequest searchRequest, ClusterSettings clusterSettings) throws Exception {
         try (RestHighLevelClient client = elasticClientHandler.createRestClient(clusterSettings)) {
-            QueryResponse queryResponse = executeQuery(searchRequest, client);
+            QueryResponse queryResponse = this.executeQuery(searchRequest, client);
             return queryResponse;
         }
     }
