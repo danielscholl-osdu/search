@@ -59,6 +59,12 @@
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>core-lib-azure</artifactId>
             <version>0.0.12</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-log4j2</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
