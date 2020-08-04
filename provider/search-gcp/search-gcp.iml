@@ -31,7 +31,7 @@
     <orderEntry type="library" name="Maven: com.google.cloud:google-cloud-pubsub:1.86.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.api.grpc:proto-google-cloud-pubsub-v1:1.68.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.api.grpc:grpc-google-cloud-pubsub-v1:1.68.0" level="project" />
-    <orderEntry type="library" name="Maven: org.opengroup.osdu:os-core-common:0.3.5" level="project" />
+    <orderEntry type="library" name="Maven: org.opengroup.osdu:os-core-common:0.0.18" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-starter:2.1.7.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot:2.1.7.RELEASE" level="project" />
