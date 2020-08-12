@@ -33,7 +33,7 @@ import org.springframework.web.context.annotation.RequestScope;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-@Component
+@Component("searchKmsClient")
 @RequestScope
 public class KmsClient {
 

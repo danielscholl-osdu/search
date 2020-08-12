@@ -161,7 +161,12 @@ public abstract class TestsBase {
         if (clientResponse.getType() == null || log == null){
             int i = 0;
         }
-        log.info(String.format("Response status: %s, type: %s", clientResponse.getStatus(), clientResponse.getType().toString()));
+        log.info(String.format("Response status: %s", clientResponse.getStatus()));
+        if(clientResponse.getType() != null){
+            log.info(String.format("Response type: %s", clientResponse.getType().toString()));
+        }else {
+            log.info("Got response type: null");
+        }
         assertEquals("application/json; charset=UTF-8", clientResponse.getType().toString());
         String responseEntity = clientResponse.getEntity(String.class);
 

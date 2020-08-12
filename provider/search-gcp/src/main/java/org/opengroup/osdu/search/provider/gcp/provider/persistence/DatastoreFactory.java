@@ -19,16 +19,15 @@ import com.google.cloud.TransportOptions;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.http.HttpTransportOptions;
+import java.util.HashMap;
+import java.util.Map;
+import javax.inject.Inject;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.search.provider.gcp.cache.DatastoreCredentialCache;
 import org.springframework.stereotype.Component;
 import org.threeten.bp.Duration;
 
-import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.Map;
-
-@Component
+@Component("searchDatastoreFactory")
 public class DatastoreFactory {
 
     @Inject
