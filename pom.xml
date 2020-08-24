@@ -267,7 +267,7 @@
 
     <repositories>
         <repository>
-            <id>{repo.releases.id}</id>
+            <id>${repo.releases.id}</id>
             <url>${repo.releases.url}</url>
         </repository>
     </repositories>
