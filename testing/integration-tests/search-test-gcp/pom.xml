@@ -126,13 +126,13 @@
     <repositories>
         <repository>
             <id>${repo.releases.id}</id>
-            <url>{repo.releases.url}</url>
+            <url>${repo.releases.url}</url>
         </repository>
     </repositories>
 
     <distributionManagement>
         <repository>
-            <id>{publish.releases.id}</id>
+            <id>${publish.releases.id}</id>
             <url>${publish.releases.url}</url>
         </repository>
         <snapshotRepository>
