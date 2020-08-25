@@ -267,19 +267,19 @@
 
     <repositories>
         <repository>
-            <id>${repo.releases.id}</id>
-            <url>${repo.releases.url}</url>
+            <id>${gitlab-server}</id>
+            <url>https://community.opengroup.org/api/v4/groups/17/-/packages/maven</url>
         </repository>
     </repositories>
 
     <distributionManagement>
         <repository>
-            <id>${publish.releases.id}</id>
-            <url>${publish.releases.url}</url>
+            <id>${gitlab-server}</id>
+            <url>https://community.opengroup.org/api/v4/projects/19/packages/maven</url>
         </repository>
         <snapshotRepository>
-            <id>${publish.snapshots.id}</id>
-            <url>${publish.snapshots.url}</url>
+            <id>${gitlab-server}</id>
+            <url>https://community.opengroup.org/api/v4/projects/19/packages/maven</url>
         </snapshotRepository>
     </distributionManagement>
 
