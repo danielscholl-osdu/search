@@ -118,3 +118,5 @@ spec:
           value: "60"
         - name: search_service_spring_logging_level
           value: debug
+        - name: azure_istioauth_enabled
+          value: "true"

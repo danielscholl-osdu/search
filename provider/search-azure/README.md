@@ -58,7 +58,7 @@ az keyvault secret show --vault-name $KEY_VAULT_NAME --name $KEY_VAULT_SECRET_NA
 | `AZURE_CLIENT_SECRET` | `********` | Secret for `$AZURE_CLIENT_ID` | yes | keyvault secret: `$KEYVAULT_URI/secrets/app-dev-sp-password` |
 | `azure.application-insights.instrumentation-key` | `********` | API Key for App Insights | yes | output of infrastructure deployment |
 | `appinsights_key` | `********` | API Key for App Insights | yes | output of infrastructure deployment |
-
+| `azure_istioauth_enabled` | `true` | Flag to Disable AAD auth | no | -- |
 
 **Required to run integration tests**
 
