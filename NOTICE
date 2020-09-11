@@ -237,6 +237,7 @@ The following software have components provided under the terms of this license:
 - Spring Context Support (from https://github.com/spring-projects/spring-framework)
 - Spring Core (from https://github.com/spring-projects/spring-framework)
 - Spring Data Core (from )
+- Spring Data Core (from )
 - Spring Data KeyValue (from )
 - Spring Data Redis (from )
 - Spring Expression Language (SpEL) (from https://github.com/spring-projects/spring-framework)
@@ -368,6 +369,7 @@ The following software have components provided under the terms of this license:
 - Lucene Common Analyzers (from )
 - Lucene Common Analyzers (from )
 - StAX (from http://stax.codehaus.org/)
+- Stax2 API (from http://github.com/FasterXML/stax2-api)
 - jersey-ext-bean-validation (from )
 - jersey-spring4 (from )
 
@@ -742,9 +744,9 @@ The following software have components provided under the terms of this license:
 - Microsoft Azure client library for KeyVault Secrets (from https://github.com/Azure/azure-sdk-for-java)
 - Microsoft Azure common module for Storage (from https://github.com/Azure/azure-sdk-for-java)
 - Mockito (from http://www.mockito.org)
+- Mockito (from http://mockito.org)
+- Mockito (from http://mockito.org)
 - Mockito (from http://www.mockito.org)
-- Mockito (from http://mockito.org)
-- Mockito (from http://mockito.org)
 - Netty/Codec/HTTP (from )
 - Netty/Common (from )
 - Project Lombok (from https://projectlombok.org)
@@ -752,6 +754,7 @@ The following software have components provided under the terms of this license:
 - Spring Data for Azure Cosmos DB SQL API (from https://github.com/Microsoft/spring-data-cosmosdb)
 - adal4j (from https://github.com/AzureAD/azure-activedirectory-library-for-java)
 - azure-documentdb (from https://azure.microsoft.com/en-us/services/cosmos-db/)
+- micrometer-core (from https://github.com/micrometer-metrics/micrometer)
 - msal4j (from https://github.com/AzureAD/microsoft-authentication-library-for-java)
 - spring-security-core (from http://spring.io/spring-security)
 
@@ -779,7 +782,6 @@ The following software have components provided under the terms of this license:
 - jersey-core-common (from )
 - jersey-core-server (from git://java.net/jersey~code/jersey-server)
 - jts-core (from )
-- reactive-streams (from http://www.reactive-streams.org/)
 
 ========================================================================
 SPL-1.0
@@ -815,6 +817,7 @@ The following software have components provided under the terms of this license:
 - RESTEasy JAX-RS Implementation (from )
 - Spring Security JWT Library (from http://github.com/spring-projects/spring-security-oauth)
 - Spring Web (from https://github.com/spring-projects/spring-framework)
+- reactive-streams (from http://www.reactive-streams.org/)
 
 ========================================================================
 unknown
