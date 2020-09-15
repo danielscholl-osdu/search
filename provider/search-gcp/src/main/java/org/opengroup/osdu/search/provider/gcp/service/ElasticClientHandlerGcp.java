@@ -62,6 +62,7 @@ public class ElasticClientHandlerGcp extends ElasticClientHandler {
     try {
       cluster = clusterSettings.getHost();
       host = clusterSettings.getHost();
+      log.info("Elastic host "+clusterSettings.getHost() );
       port = clusterSettings.getPort();
       if (!clusterSettings.isHttps()) {
         protocolScheme = "http";
