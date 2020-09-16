@@ -72,7 +72,7 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
     // ResponseEntityExceptionHandler already has a default implementation for handling HttpMessageNotReadableException, so we are overriding it
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException e, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        AppException appException = new AppException(HttpStatus.BAD_REQUEST.value(), "Bad Request", e.getMessage(), e);
+        AppException appException = new AppException(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Invalid parameters were given on search request", e);
         this.logger.warning(appException.getError().getMessage(), appException);
         HttpStatus httpStatus = HttpStatus.resolve(appException.getError().getCode());
         return new ResponseEntity<>(appException.getError(), httpStatus);
