@@ -132,7 +132,7 @@ You will need to have the following environment variables defined.
 | `DATA_GROUP` | `opendes` | The service account to this group and substitute | no | - |
 | `ENTITLEMENTS_DOMAIN` | ex `opendes-gcp.projects.com` | OSDU R2 to run tests under  | no | - |
 | `INTEGRATION_TEST_AUDIENCE` | `********` | client application ID | yes | https://console.cloud.google.com/apis/credentials |
-| `DEFAULT_OTHER_RELEVANT_DATA_COUNTRIES` | ex `US` | valid legal tag with a other relevant data countries | no | - |
+| `OTHER_RELEVANT_DATA_COUNTRIES` | ex `US` | valid legal tag with a other relevant data countries | no | - |
 | `SEARCH_INTEGRATION_TESTER` | `********` | Service account for API calls. Note: this user must have entitlements configured already | yes | https://console.cloud.google.com/iam-admin/serviceaccounts |
 | `SEARCH_HOST` | `http://localhost:8080/api/search/v2/` | Endpoint of search service | no | - |
 
