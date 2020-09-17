@@ -41,38 +41,3 @@ If you search for
 }
 ```
 you will get a 404 which means there is no data found for that kind. 
-
-
-
-## Cloud Environment Setup
-
-### Cloud KMS Setup
-
-Enable cloud KMS on master project
-
-Create king ring and key in the ***master project***
-```sh
-    gcloud services enable cloudkms.googleapis.com
-    export KEYRING_NAME="csqp"
-    export CRYPTOKEY_NAME="searchService"
-    gcloud kms keyrings create $KEYRING_NAME --location global
-    gcloud kms keys create $CRYPTOKEY_NAME --location global \
-    		--keyring $KEYRING_NAME \
-    		--purpose encryption
-```
-
-Add **Cloud KMS CryptoKey Encrypter/Decrypter** role to the **App Engine default service account** of the master project through IAM - Role tab
-
-Add "Cloud KMS Encrypt/Decrypt" role to the "App Engine default service account" of ***master project***
-
-Refer to [dps-tenant-init](https://slb-swt.visualstudio.com/data-at-rest/DPS%20Data%20Lake/_git/dps-tenant-init) for new tenant on-boarding script
-
-### Memory Store (Redis Instance) Setup
-
-Create a new Standard tier Redis instance on the ***service project***
-
-The Redis instance must be created under the same region with the App Engine application which needs to access it.
-
-```sh
-    gcloud beta redis instances create redis-cache-search --size=10 --region=<service-deployment-region> --zone=<service-deployment-zone> --tier=STANDARD
-```
