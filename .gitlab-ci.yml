@@ -56,5 +56,5 @@ include:
     ref: "master"
     file: 'cloud-providers/osdu-gcp.yml'
 
-aws-test:
-  tags: ['aws-internal-test']
+# aws-test:
+#   tags: ['aws-internal-test']
