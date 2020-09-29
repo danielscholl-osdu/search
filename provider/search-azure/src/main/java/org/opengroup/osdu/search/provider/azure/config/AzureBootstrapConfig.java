@@ -14,6 +14,8 @@
 
 package org.opengroup.osdu.search.provider.azure.config;
 
+import com.azure.security.keyvault.secrets.SecretClient;
+import org.opengroup.osdu.azure.KeyVaultFacade;
 import org.opengroup.osdu.core.common.entitlements.EntitlementsAPIConfig;
 import org.opengroup.osdu.core.common.entitlements.EntitlementsFactory;
 import org.opengroup.osdu.core.common.entitlements.IEntitlementsFactory;
@@ -67,5 +69,17 @@ public class AzureBootstrapConfig {
                 .rootUrl(entitlementsAPIEndpoint)
                 .build();
         return new EntitlementsFactory(apiConfig);
+    }
+
+    @Bean
+    @Named("COSMOS_ENDPOINT")
+    public String cosmosEndpoint(SecretClient kv) {
+        return KeyVaultFacade.getSecretWithValidation(kv, "cosmos-endpoint");
+    }
+
+    @Bean
+    @Named("COSMOS_KEY")
+    public String cosmosKey(SecretClient kv) {
+        return KeyVaultFacade.getSecretWithValidation(kv, "cosmos-primary-key");
     }
 }
