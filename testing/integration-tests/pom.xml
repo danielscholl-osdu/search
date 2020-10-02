@@ -40,20 +40,20 @@
 	</modules>
 
 	<repositories>
-		<repository>
-			<id>${gitlab-server}</id>
-			<url>https://community.opengroup.org/api/v4/groups/17/-/packages/maven</url>
-		</repository>
-	</repositories>
+        <repository>
+            <id>${gitlab-server}</id>
+            <url>https://community.opengroup.org/api/v4/groups/17/-/packages/maven</url>
+        </repository>
+    </repositories>
 
-	<distributionManagement>
-		<repository>
-			<id>${gitlab-server}</id>
-			<url>https://community.opengroup.org/api/v4/projects/19/packages/maven</url>
-		</repository>
-		<snapshotRepository>
-			<id>${gitlab-server}</id>
-			<url>https://community.opengroup.org/api/v4/projects/19/packages/maven</url>
-		</snapshotRepository>
-	</distributionManagement>
+    <distributionManagement>
+        <repository>
+            <id>${gitlab-server}</id>
+            <url>https://community.opengroup.org/api/v4/projects/19/packages/maven</url>
+        </repository>
+        <snapshotRepository>
+            <id>${gitlab-server}</id>
+            <url>https://community.opengroup.org/api/v4/projects/19/packages/maven</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>
