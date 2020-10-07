@@ -103,15 +103,13 @@
             <scope>provided</scope>
         </dependency>
 
-<!-- Dependencies for importing AzureServicePrinciple class -->
+        <!-- Dependencies for importing AzureServicePrinciple class -->
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>core-lib-azure</artifactId>
-            <version>0.0.28</version>
+            <version>0.0.33</version>
             <scope>test</scope>
         </dependency>
-
-
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>

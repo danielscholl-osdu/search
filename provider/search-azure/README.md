@@ -44,8 +44,8 @@ az keyvault secret show --vault-name $KEY_VAULT_NAME --name $KEY_VAULT_SECRET_NA
 | `search.service.port` | `8085` | Service port | no | - |
 | `AUTHORIZE_API` | ex `https://foo-entitlements.azurewebsites.net` | Entitlements API endpoint | no | output of infrastructure deployment |
 | `AUTHORIZE_API_KEY` | `********` | The API key clients will need to use when calling the entitlements | yes | -- |
-| `cosmosdb_account` | ex `devintosdur2cosmosacct` | Cosmos account name | no | output of infrastructure deployment |
-| `cosmosdb_key` | `********` | Key for CosmosDB | yes | output of infrastructure deployments |
+| `partition_service_endpoint` |  ex `https://foo-partition.azurewebsites.net` | Partition Service API endpoint | no | output of infrastructure deployment |
+| `azure.activedirectory.app-resource-id` | `********` | AAD client application ID  | yes | output of infrastructure deployment |
 | `cosmosdb_database` | ex `dev-osdu-r2-db` | Cosmos database for documents | no | output of infrastructure deployment |
 | `azure.activedirectory.client-id` | `********` | AAD client application ID | yes | output of infrastructure deployment |
 | `azure.activedirectory.AppIdUri` | `api://${azure.activedirectory.client-id}` | URI for AAD Application | no | -- |
@@ -92,24 +92,6 @@ Java version: 1.8.0_212, vendor: AdoptOpenJDK, runtime: /usr/lib/jvm/jdk8u212-b0
 ...
 ```
 
-You will need to configure access to the remote maven repository that holds the OSDU dependencies. This file should live within `~/.m2/settings.xml`:
-```bash
-$ cat ~/.m2/settings.xml
-<?xml version="1.0" encoding="UTF-8"?>
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
-    <servers>
-        <server>
-            <id>os-core</id>
-            <username>mvn-pat</username>
-            <!-- Treat this auth token like a password. Do not share it with anyone, including Microsoft support. -->
-            <!-- The generated token expires on or before 11/14/2019 -->
-            <password>$PERSONAL_ACCESS_TOKEN_GOES_HERE</password>
-        </server>
-    </servers>
-</settings>
-```
 
 ### Build and run the application
 

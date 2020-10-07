@@ -109,7 +109,7 @@ public class AttributesTest {
 		attribute.setName("Operataor");
 		attribute.setSchemaMapping(schemaMapping);
 		ls.add(attribute);
-		
+
 		when(dpsHeaders.getPartitionId()).thenReturn("tenant1");
 		when(elasticClientHandler.createRestClient()).thenReturn(restHighLevelClient);
 		doReturn(this.indicesClient).when(this.restHighLevelClient).indices();
