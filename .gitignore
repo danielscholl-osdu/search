@@ -52,6 +52,7 @@ load-tests/*.pyc
 
 # Environment configuration
 *.env
+.envrc
 .sts4*
 
 
