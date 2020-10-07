@@ -49,10 +49,13 @@ The following software have components provided under the terms of this license:
 - Apache HttpCore NIO (from http://hc.apache.org/httpcomponents-core-ga)
 - Apache Log4j API (from )
 - Apache Log4j Core (from )
+- Apache Log4j JUL Adapter (from )
+- Apache Log4j SLF4J Binding (from )
 - Apache Log4j to SLF4J Adapter (from )
 - AssertJ fluent assertions (from )
 - Asynchronous Http Client (from )
 - Asynchronous Http Client Netty Utils (from )
+- BTF (from https://github.com/fge/btf)
 - Bean Validation API (from http://beanvalidation.org)
 - Byte Buddy (without dependencies) (from )
 - Byte Buddy Java agent (from )
@@ -86,7 +89,6 @@ The following software have components provided under the terms of this license:
 - Guava: Google Core Libraries for Java (from https://github.com/google/guava.git)
 - HPPC Collections (from http://labs.carrotsearch.com)
 - Hibernate Validator Engine (from )
-- Hibernate Validator Engine (from )
 - Identity and Access Management (IAM) API v1-rev247-1.23.0 (from )
 - J2ObjC Annotations (from https://github.com/google/j2objc/)
 - JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from )
@@ -117,6 +119,7 @@ The following software have components provided under the terms of this license:
 - Jackson-datatype-jdk8 (from )
 - Jackson-module-JAXB-annotations (from http://wiki.fasterxml.com/JacksonJAXBAnnotations)
 - Jackson-module-parameter-names (from )
+- Jakarta Bean Validation API (from https://beanvalidation.org)
 - Java Native Access (from https://github.com/java-native-access/jna)
 - Java Native Access Platform (from https://github.com/java-native-access/jna)
 - Java Servlet API (from http://servlet-spec.java.net)
@@ -162,10 +165,12 @@ The following software have components provided under the terms of this license:
 - Microsoft Application Insights Java SDK Spring Boot starter (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Microsoft Application Insights Java SDK Web Module (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Microsoft Application Insights Log4j 2 Appender (from https://github.com/Microsoft/ApplicationInsights-Java)
+- Microsoft Azure Netty HTTP Client Library (from https://github.com/Azure/azure-sdk-for-java)
 - Mockito (from http://mockito.org)
 - Mockito (from http://www.mockito.org)
 - Mockito (from http://www.mockito.org)
 - Mockito (from http://mockito.org)
+- Msg Simple (from https://github.com/fge/msg-simple)
 - Netty Reactive Streams Implementation (from )
 - Netty/Buffer (from http://netty.io/)
 - Netty/Codec (from )
@@ -184,6 +189,7 @@ The following software have components provided under the terms of this license:
 - Nimbus JOSE+JWT (from https://bitbucket.org/connect2id/nimbus-jose-jwt)
 - Nimbus JOSE+JWT (from https://bitbucket.org/connect2id/nimbus-jose-jwt)
 - Nimbus LangTag (from https://bitbucket.org/connect2id/nimbus-language-tags)
+- Non-Blocking Reactive Foundation for the JVM (from https://github.com/reactor/reactor)
 - Non-Blocking Reactive Foundation for the JVM (from https://github.com/reactor/reactor)
 - OAuth 2.0 SDK with OpenID Connect extensions (from https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions)
 - OAuth 2.0 SDK with OpenID Connect extensions (from https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions)
@@ -223,6 +229,7 @@ The following software have components provided under the terms of this license:
 - Spring Boot Dependencies (from http://projects.spring.io/spring-boot/)
 - Spring Boot Jersey Starter (from http://projects.spring.io/spring-boot/)
 - Spring Boot Json Starter (from https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-starters/spring-boot-starter-json)
+- Spring Boot Log4J2 Starter (from http://projects.spring.io/spring-boot/)
 - Spring Boot Logging Starter (from http://projects.spring.io/spring-boot/)
 - Spring Boot Security Starter (from http://projects.spring.io/spring-boot/)
 - Spring Boot Starter (from http://projects.spring.io/spring-boot/)
@@ -284,7 +291,6 @@ The following software have components provided under the terms of this license:
 - jackson-databind (from http://github.com/FasterXML/jackson)
 - java-cloudant (from https://cloudant.com)
 - java-cloudant (from https://cloudant.com)
-- javatuples (from http://www.javatuples.org)
 - javax.inject (from http://code.google.com/p/atinject/)
 - javax.ws.rs-api (from http://jax-rs-spec.java.net)
 - jersey-container-servlet (from git://java.net/jersey~code/project/jersey-container-servlet)
@@ -350,7 +356,6 @@ The following software have components provided under the terms of this license:
 - swagger-models (from )
 - tomcat-annotations-api (from http://tomcat.apache.org/)
 - tomcat-embed-core (from http://tomcat.apache.org/)
-- tomcat-embed-core (from http://tomcat.apache.org/)
 - tomcat-embed-el (from http://tomcat.apache.org/)
 - tomcat-embed-websocket (from http://tomcat.apache.org/)
 - x-content (from https://github.com/elastic/elasticsearch)
@@ -390,6 +395,8 @@ The following software have components provided under the terms of this license:
 - Google Auth Library for Java - Credentials (from )
 - Google Auth Library for Java - OAuth2 HTTP (from )
 - Hamcrest library (from )
+- Java Architecture for XML Binding 2.3 (from )
+- JavaBeans Activation Framework (from )
 - Lucene Common Analyzers (from )
 - Lucene Common Analyzers (from )
 - Lucene Core (from )
@@ -467,7 +474,6 @@ The following software have components provided under the terms of this license:
 - HK2 configuration module (from )
 - HK2 core module (from )
 - HK2 module of HK2 itself (from )
-- JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from )
 - JavaBeans Activation Framework API jar (from )
 - JavaBeans(TM) Activation Framework (from http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp)
 - Run Level Service (from )
@@ -493,20 +499,15 @@ CDDL-1.1
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- Common Annotations 1.2 API (from )
 - Expression Language 3.0 (from http://uel.java.net)
-- JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from )
 - JSR 353 (JSON Processing) Default Provider (from http://jsonp.java.net)
 - Java Architecture For XML Binding (from )
-- Java Architecture for XML Binding 2.3 (from )
 - Java Servlet API (from http://servlet-spec.java.net)
 - JavaBeans Activation Framework (from )
-- JavaBeans(TM) Activation Framework (from http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp)
 - JavaMail API (from )
 - OSGi resource locator (from )
 - jersey-ext-bean-validation (from )
 - jersey-spring4 (from )
-- tomcat-embed-core (from http://tomcat.apache.org/)
 - tomcat-embed-core (from http://tomcat.apache.org/)
 
 ========================================================================
@@ -521,6 +522,8 @@ EPL-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- Common Annotations 1.3 API (from )
+- JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from )
 - JUnit (from http://junit.org)
 - Logback Classic Module (from )
 - Logback Core Module (from )
@@ -533,13 +536,20 @@ The following software have components provided under the terms of this license:
 - jts-io-common (from )
 
 ========================================================================
+EPL-2.0
+========================================================================
+The following software have components provided under the terms of this license:
+
+- Common Annotations 1.3 API (from )
+- JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from )
+
+========================================================================
 GPL-2.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
 - ASM library repackaged as OSGi bundle (from )
 - Class Model for Hk2 (from )
-- Common Annotations 1.2 API (from )
 - Expression Language 3.0 (from http://uel.java.net)
 - Expression Language 3.0 API (from http://uel.java.net)
 - HK2 API module (from git://java.net/hk2~git/hk2-api)
@@ -549,14 +559,11 @@ The following software have components provided under the terms of this license:
 - HK2 configuration module (from )
 - HK2 core module (from )
 - HK2 module of HK2 itself (from )
-- JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from )
 - JSR 353 (JSON Processing) Default Provider (from http://jsonp.java.net)
 - Java Architecture For XML Binding (from )
-- Java Architecture for XML Binding 2.3 (from )
 - Java Servlet API (from http://servlet-spec.java.net)
 - JavaBeans Activation Framework (from )
 - JavaBeans Activation Framework API jar (from )
-- JavaBeans(TM) Activation Framework (from http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp)
 - JavaMail API (from )
 - OSGi resource locator (from )
 - Run Level Service (from )
@@ -578,7 +585,6 @@ The following software have components provided under the terms of this license:
 - jersey-media-json-jackson (from git://java.net/jersey~code/project/jersey-media-json-jackson)
 - jersey-spring4 (from )
 - tomcat-embed-core (from http://tomcat.apache.org/)
-- tomcat-embed-core (from http://tomcat.apache.org/)
 
 ========================================================================
 GPL-2.0-or-later
@@ -593,16 +599,15 @@ GPL-2.0-with-classpath-exception
 The following software have components provided under the terms of this license:
 
 - Checker Qual (from https://checkerframework.org)
+- Common Annotations 1.3 API (from )
 - Expression Language 3.0 (from http://uel.java.net)
 - HK2 Implementation Utilities (from )
 - JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from )
 - JSR 353 (JSON Processing) Default Provider (from http://jsonp.java.net)
 - Java Architecture For XML Binding (from )
-- Java Architecture for XML Binding 2.3 (from )
 - Java Servlet API (from http://servlet-spec.java.net)
 - JavaBeans Activation Framework (from )
 - JavaBeans Activation Framework API jar (from )
-- JavaBeans(TM) Activation Framework (from http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp)
 - JavaMail API (from )
 - OSGi resource locator (from )
 - ServiceLocator Default Implementation (from git://java.net/hk2~git/hk2-locator)
@@ -623,45 +628,30 @@ The following software have components provided under the terms of this license:
 - jersey-media-json-jackson (from git://java.net/jersey~code/project/jersey-media-json-jackson)
 - jersey-spring4 (from )
 - tomcat-embed-core (from http://tomcat.apache.org/)
-- tomcat-embed-core (from http://tomcat.apache.org/)
 
 ========================================================================
 GPL-3.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- Jackson CoreUtils (from https://github.com/fge/jackson-coreutils)
+- Common Annotations 1.3 API (from )
+- JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from )
 - OSGi resource locator (from )
 - Project Lombok (from https://projectlombok.org)
-- SnakeYAML (from http://www.snakeyaml.org)
 - javax.ws.rs-api (from http://jax-rs-spec.java.net)
 - jersey-client (from )
 - jersey-core (from )
-- json-patch (from https://github.com/fge/json-patch)
-
-========================================================================
-GPL-3.0-or-later
-========================================================================
-The following software have components provided under the terms of this license:
-
-- Jackson CoreUtils (from https://github.com/fge/jackson-coreutils)
-- json-patch (from https://github.com/fge/json-patch)
-
-========================================================================
-JSON
-========================================================================
-The following software have components provided under the terms of this license:
-
-- JSON in Java (from https://github.com/douglascrockford/JSON-java)
 
 ========================================================================
 LGPL-2.1-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- BTF (from https://github.com/fge/btf)
 - Elastic JNA Distribution (from https://github.com/java-native-access/jna)
 - FindBugs-Annotations (from http://findbugs.sourceforge.net/)
 - JTS Topology Suite (from http://sourceforge.net/projects/jts-topo-suite)
+- Jackson CoreUtils (from https://github.com/fge/jackson-coreutils)
 - Java Native Access (from https://github.com/java-native-access/jna)
 - Java Native Access Platform (from https://github.com/java-native-access/jna)
 - Javassist (from http://www.javassist.org/)
@@ -671,7 +661,9 @@ The following software have components provided under the terms of this license:
 - Microsoft Application Insights Java SDK Spring Boot starter (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Microsoft Application Insights Java SDK Web Module (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Microsoft Application Insights Log4j 2 Appender (from https://github.com/Microsoft/ApplicationInsights-Java)
+- Msg Simple (from https://github.com/fge/msg-simple)
 - SpotBugs Annotations (from https://spotbugs.github.io/)
+- json-patch (from https://github.com/fge/json-patch)
 
 ========================================================================
 LGPL-2.1-or-later
@@ -691,15 +683,9 @@ The following software have components provided under the terms of this license:
 
 - Apache Log4j API (from )
 - Apache Log4j Core (from )
+- BTF (from https://github.com/fge/btf)
 - Jackson CoreUtils (from https://github.com/fge/jackson-coreutils)
-- json-patch (from https://github.com/fge/json-patch)
-
-========================================================================
-LGPL-3.0-or-later
-========================================================================
-The following software have components provided under the terms of this license:
-
-- Jackson CoreUtils (from https://github.com/fge/jackson-coreutils)
+- Msg Simple (from https://github.com/fge/msg-simple)
 - json-patch (from https://github.com/fge/json-patch)
 
 ========================================================================
@@ -710,7 +696,6 @@ The following software have components provided under the terms of this license:
 - AWS Java SDK for AWS Lambda (from https://aws.amazon.com/sdkforjava)
 - Animal Sniffer Annotations (from )
 - Azure AD Spring Security Integration Spring Boot Starter (from https://github.com/Microsoft/azure-spring-boot)
-- Azure Cosmos DB Spring Boot Starter (from https://github.com/Microsoft/azure-spring-boot)
 - Azure Java Client Authentication Library for AutoRest (from https://github.com/Azure/autorest-clientruntime-for-java)
 - Azure Java Client Runtime for AutoRest (from https://github.com/Azure/autorest-clientruntime-for-java)
 - Azure Metrics Spring Boot Starter (from https://github.com/Microsoft/azure-spring-boot)
@@ -729,6 +714,7 @@ The following software have components provided under the terms of this license:
 - Lucene Core (from )
 - Lucene Core (from )
 - Lucene Sandbox (from )
+- Lucene Sandbox (from )
 - Microsoft Application Insights Java SDK Core (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Microsoft Application Insights Java SDK Spring Boot starter (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Microsoft Application Insights Java SDK Web Module (from https://github.com/Microsoft/ApplicationInsights-Java)
@@ -737,23 +723,20 @@ The following software have components provided under the terms of this license:
 - Microsoft Azure Netty HTTP Client Library (from https://github.com/Azure/azure-sdk-for-java)
 - Microsoft Azure SDK annotations (from https://github.com/Microsoft/java-api-annotations)
 - Microsoft Azure SDK for SQL API of Azure Cosmos DB Service (from https://github.com/Azure/azure-sdk-for-java)
-- Microsoft Azure SDK for SQL API of Azure Cosmos DB Service (from https://github.com/Azure/azure-sdk-for-java)
 - Microsoft Azure SDK for Service Bus (from https://github.com/Azure/azure-sdk-for-java)
 - Microsoft Azure client library for Blob Storage (from https://github.com/Azure/azure-sdk-for-java)
 - Microsoft Azure client library for Identity (from https://github.com/Azure/azure-sdk-for-java)
 - Microsoft Azure client library for KeyVault Secrets (from https://github.com/Azure/azure-sdk-for-java)
 - Microsoft Azure common module for Storage (from https://github.com/Azure/azure-sdk-for-java)
-- Mockito (from http://www.mockito.org)
-- Mockito (from http://mockito.org)
 - Mockito (from http://mockito.org)
 - Mockito (from http://www.mockito.org)
+- Mockito (from http://www.mockito.org)
+- Mockito (from http://mockito.org)
 - Netty/Codec/HTTP (from )
 - Netty/Common (from )
 - Project Lombok (from https://projectlombok.org)
 - SLF4J API Module (from http://www.slf4j.org)
-- Spring Data for Azure Cosmos DB SQL API (from https://github.com/Microsoft/spring-data-cosmosdb)
 - adal4j (from https://github.com/AzureAD/azure-activedirectory-library-for-java)
-- azure-documentdb (from https://azure.microsoft.com/en-us/services/cosmos-db/)
 - micrometer-core (from https://github.com/micrometer-metrics/micrometer)
 - msal4j (from https://github.com/AzureAD/microsoft-authentication-library-for-java)
 - spring-security-core (from http://spring.io/spring-security)
@@ -771,6 +754,14 @@ MPL-2.0
 The following software have components provided under the terms of this license:
 
 - Javassist (from http://www.javassist.org/)
+
+========================================================================
+PHP-3.01
+========================================================================
+The following software have components provided under the terms of this license:
+
+- Java Architecture for XML Binding 2.3 (from )
+- JavaBeans Activation Framework (from )
 
 ========================================================================
 Public-Domain
@@ -811,7 +802,6 @@ The following software have components provided under the terms of this license:
 - LatencyUtils (from http://latencyutils.github.io/LatencyUtils/)
 - Microsoft Application Insights Java SDK Core (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Microsoft Azure SDK for SQL API of Azure Cosmos DB Service (from https://github.com/Azure/azure-sdk-for-java)
-- Microsoft Azure SDK for SQL API of Azure Cosmos DB Service (from https://github.com/Azure/azure-sdk-for-java)
 - Microsoft Azure client library for Blob Storage (from https://github.com/Azure/azure-sdk-for-java)
 - Project Lombok (from https://projectlombok.org)
 - RESTEasy JAX-RS Implementation (from )
@@ -824,9 +814,14 @@ unknown
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- BTF (from https://github.com/fge/btf)
 - Bouncy Castle PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs (from http://www.bouncycastle.org/java.html)
 - Bouncy Castle Provider (from http://www.bouncycastle.org/java.html)
 - Byte Buddy (without dependencies) (from )
+- Jackson CoreUtils (from https://github.com/fge/jackson-coreutils)
+- Java Architecture for XML Binding 2.3 (from )
+- JavaBeans Activation Framework (from )
+- Msg Simple (from https://github.com/fge/msg-simple)
 - System Rules (from http://stefanbirkner.github.io/system-rules/)
 - jersey-container-servlet (from git://java.net/jersey~code/project/jersey-container-servlet)
 - jersey-container-servlet-core (from git://java.net/jersey~code/project/jersey-container-servlet-core)
@@ -836,6 +831,7 @@ The following software have components provided under the terms of this license:
 - jersey-inject-hk2 (from )
 - jersey-media-jaxb (from )
 - jersey-spring4 (from )
+- json-patch (from https://github.com/fge/json-patch)
 - jts-core (from )
 - jts-io-common (from )
 

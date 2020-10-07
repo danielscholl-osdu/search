@@ -15,6 +15,7 @@
 package org.opengroup.osdu.search.middleware;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import java.util.Objects;
 import javassist.NotFoundException;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
@@ -104,6 +105,16 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<Object> handleGeneralException(Exception e) {
+      if (Objects.nonNull(e) && Objects.nonNull(e.getStackTrace())) {
+        logger.error("handleGeneralException " + e.getMessage());
+        for (StackTraceElement element : e.getStackTrace()) {
+          logger.error("handleGeneralExceptionElement " + element);
+        }
+        if (Objects.nonNull(e.getCause())) {
+          e.getCause().printStackTrace();
+        }
+      }
+
         return this.getErrorResponse(
                 new AppException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Server error.",
                         "An unknown error has occurred.", e));
