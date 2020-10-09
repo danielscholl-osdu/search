@@ -32,6 +32,12 @@ public class FieldMappingTypeServiceTest {
     @InjectMocks
     private FieldMappingTypeService sut;
 
+    /*
+     * NOTE [aaljain] :
+     * Scenarios where typeMap and fieldMapping are null will result into error
+     * which the current implementation of FieldMappingTypeService does not handle
+     */
+
     @Test
     public void testGetFieldTypes_whenAllMappingsProvided_returnsCorrectFieldTypes() throws IOException {
         RestHighLevelClient restClient = mock(RestHighLevelClient.class);
