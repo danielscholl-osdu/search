@@ -81,6 +81,30 @@ public class FieldMappingTypeServiceTest {
         assertEquals(fieldTypes.size(), 0);
     }
 
+    @Test
+    public void testGetFieldTypes_whenMissingFieldMappingMetaData_returnsEmptyFieldTypes() throws IOException {
+        RestHighLevelClient restClient = mock(RestHighLevelClient.class);
+        GetFieldMappingsResponse response = mock(GetFieldMappingsResponse.class);
+        IndicesClient indicesClient = mock(IndicesClient.class);
+
+        String fieldName = FIELD + "." + TYPE;
+        String indexPattern = "index.pattern";
+
+        Map<String, GetFieldMappingsResponse.FieldMappingMetaData> fieldMapping = new HashMap<>();
+        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>> typeMapping = new HashMap<>();
+        typeMapping.put(FIELD, fieldMapping);
+        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>>> indexMapping = new HashMap<>();
+        indexMapping.put(TYPE, typeMapping);
+
+        doReturn(indicesClient).when(restClient).indices();
+        doReturn(response).when(indicesClient).getFieldMapping(any(), any());
+        doReturn(indexMapping).when(response).mappings();
+
+        Set<String> fieldTypes = sut.getFieldTypes(restClient, fieldName, indexPattern);
+
+        assertEquals(fieldTypes.size(), 0);
+    }
+
     private Map<String, Object> getDummySourceMap() {
         Map<String, Object> sourceMap = new HashMap<>();
         LinkedHashMap typeMap = new LinkedHashMap<>();
