@@ -71,11 +71,49 @@ public class EntitlementsAndCacheServiceImplTest {
         }
     }
 
+    @Test(expected = AppException.class)
+    public void testIsValidAcl_whenInvalidEmailId_throwsException() throws EntitlementsException {
+        IEntitlementsService iEntitlementsService = mock(IEntitlementsService.class);
+
+        String desId = "desId";
+        String memberEmail = "member@email.com";
+        Groups groups = getGroups(desId, memberEmail);
+
+        String invalidEmail = "invalidemail.com";
+        String description = "Group description";
+        String groupName = "groupName";
+        GroupInfo groupInfo = getGroupInfo(invalidEmail, description, groupName);
+        List<GroupInfo> groupInfoList = Arrays.asList(groupInfo);
+
+        groups.setGroups(groupInfoList);
+
+        doReturn(groups).when(iEntitlementsService).getGroups();
+        doReturn(iEntitlementsService).when(factory).create(eq(dpsHeaders));
+
+        try {
+            sut.isValidAcl(dpsHeaders, new HashSet<>());
+        } catch (AppException e) {
+            int errorCode = 500;
+            // TODO [aaljain]: Improve EntitlementsAndCacheServiceImpl to add better message logs
+            String errorMessage = "Unknown error happened when validating ACL";
+            validateAppException(e, errorCode, errorMessage);
+            throw(e);
+        }
+    }
+
     private Groups getGroups(String desId, String memberEmail) {
         Groups groups = new Groups();
         groups.setDesId(desId);
         groups.setMemberEmail(memberEmail);
         return groups;
+    }
+
+    private GroupInfo getGroupInfo(String email, String description, String name) {
+        GroupInfo groupInfo = new GroupInfo();
+        groupInfo.setEmail(email);
+        groupInfo.setDescription(description);
+        groupInfo.setName(name);
+        return groupInfo;
     }
 
     private void validateAppException(AppException e, int errorCode, String errorMessage) {
