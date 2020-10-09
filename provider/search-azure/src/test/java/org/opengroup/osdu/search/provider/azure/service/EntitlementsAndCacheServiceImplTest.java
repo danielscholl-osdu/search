@@ -109,10 +109,10 @@ public class EntitlementsAndCacheServiceImplTest {
         String memberEmail = "member@email.com";
         Groups groups = getGroups(desId, memberEmail);
 
-        String invalidEmail = "group@domain.com";
+        String email = "group@domain.com";
         String description = "Group description";
         String groupName = "groupName";
-        GroupInfo groupInfo = getGroupInfo(invalidEmail, description, groupName);
+        GroupInfo groupInfo = getGroupInfo(email, description, groupName);
         List<GroupInfo> groupInfoList = Arrays.asList(groupInfo);
 
         groups.setGroups(groupInfoList);
@@ -136,10 +136,10 @@ public class EntitlementsAndCacheServiceImplTest {
         String memberEmail = "member@email.com";
         Groups groups = getGroups(desId, memberEmail);
 
-        String invalidEmail = "group@domain.com";
+        String email = "group@domain.com";
         String description = "Group description";
         String groupName = "groupName";
-        GroupInfo groupInfo = getGroupInfo(invalidEmail, description, groupName);
+        GroupInfo groupInfo = getGroupInfo(email, description, groupName);
         List<GroupInfo> groupInfoList = Arrays.asList(groupInfo);
 
         groups.setGroups(groupInfoList);
