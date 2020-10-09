@@ -101,6 +101,33 @@ public class EntitlementsAndCacheServiceImplTest {
         }
     }
 
+    @Test
+    public void testIsValidAcl_whenDifferentDomain_thenReturnsFalse() throws EntitlementsException {
+        IEntitlementsService iEntitlementsService = mock(IEntitlementsService.class);
+
+        String desId = "desId";
+        String memberEmail = "member@email.com";
+        Groups groups = getGroups(desId, memberEmail);
+
+        String invalidEmail = "group@domain.com";
+        String description = "Group description";
+        String groupName = "groupName";
+        GroupInfo groupInfo = getGroupInfo(invalidEmail, description, groupName);
+        List<GroupInfo> groupInfoList = Arrays.asList(groupInfo);
+
+        groups.setGroups(groupInfoList);
+
+        doReturn(groups).when(iEntitlementsService).getGroups();
+        doReturn(iEntitlementsService).when(factory).create(eq(dpsHeaders));
+
+        List<String> emails = Arrays.asList("emailid1@domain.com", "emailid2@otherdomain.com");
+        Set<String> acls = new HashSet<String>(emails);
+
+        boolean status = sut.isValidAcl(dpsHeaders, acls);
+
+        assertFalse(status);
+    }
+
     private Groups getGroups(String desId, String memberEmail) {
         Groups groups = new Groups();
         groups.setDesId(desId);
