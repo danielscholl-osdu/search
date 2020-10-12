@@ -68,6 +68,11 @@ public class CcsQueryServiceImplTest {
         lenient().doReturn(partitionIdWithFallbackToAccountId).when(dpsHeaders).getPartitionIdWithFallbackToAccountId();
     }
 
+    /*
+     * NOTE [aaljain] :
+     * Simulate the test scenario for thread failure in case of multiple accounts provided
+     */
+
     @Test
     public void testCcsQueryResponse_whenSingleAccountProvided() throws Exception {
         QueryResponse queryResponse = mock(QueryResponse.class);
