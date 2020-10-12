@@ -69,7 +69,7 @@ public class CcsQueryServiceImplTest {
     }
 
     @Test
-    public void testCcsQueryResponse_whenSingleClusterSettingsProvided() throws Exception {
+    public void testCcsQueryResponse_whenSingleAccountProvided() throws Exception {
         QueryResponse queryResponse = mock(QueryResponse.class);
         CcsQueryRequest ccsQueryRequest = mock(CcsQueryRequest.class);
         mockCcsQueryRequest(ccsQueryRequest,1, "kind", 100, "query");
@@ -98,6 +98,7 @@ public class CcsQueryServiceImplTest {
         validateQueryRequestAndCcsQueryRequestCorrespondence(obtainedQueryRequest, ccsQueryRequest);
 
         assertEquals(obtainedClusterSettings, clusterSettings);
+        assertEquals(ccsQueryResponse.getResults().size(), 1);
         assertEquals(ccsQueryResponse.getResults(), results);
         assertEquals(ccsQueryResponse.getTotalCount(), totalCount);
     }
