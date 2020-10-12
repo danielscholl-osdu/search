@@ -103,6 +103,61 @@ public class CcsQueryServiceImplTest {
         assertEquals(ccsQueryResponse.getTotalCount(), totalCount);
     }
 
+    @Test
+    public void testCcsQueryResponse_whenMultipleAccountsProvided() throws Exception {
+        lenient().doReturn(partitionIdWithFallbackToAccountIdMultipleAccounts).when(dpsHeaders).getPartitionIdWithFallbackToAccountId();
+
+        QueryResponse queryResponse1 = mock(QueryResponse.class);
+        QueryResponse queryResponse2 = mock(QueryResponse.class);
+
+        CcsQueryRequest ccsQueryRequest = mock(CcsQueryRequest.class);
+        mockCcsQueryRequest(ccsQueryRequest, 1, "kind", 100, "query");
+
+        List<Map<String, Object>> results1 = getDummyResults("dummy-object-key-1", "dummy-id-1");
+        List<Map<String, Object>> results2 = getDummyResults("dummy-object-key-2", "dummy-id-2");
+        String[] accounts = partitionIdWithFallbackToAccountIdMultipleAccounts.split("\\s*,\\s*");
+
+        ClusterSettings clusterSettings1 = getClusterSettings("host1", 1111, "secret1");
+        ClusterSettings clusterSettings2 = getClusterSettings("host2", 2222, "secret2");
+
+        long totalCount1 = 100L;
+        long totalCount2 = 200L;
+        doReturn(totalCount1).when(queryResponse1).getTotalCount();
+        doReturn(results1).when(queryResponse1).getResults();
+        doReturn(totalCount2).when(queryResponse2).getTotalCount();
+        doReturn(results2).when(queryResponse2).getResults();
+
+        TenantInfo tenant1 = getTenantInfo(1L, "tenant1", "project-id1");
+        TenantInfo tenant2 = getTenantInfo(2L, "tenant2", "project-id2");
+
+        doReturn(tenant1).when(tenantStorageFactory).getTenantInfo(eq(accounts[0]));
+        doReturn(tenant2).when(tenantStorageFactory).getTenantInfo(eq(accounts[1]));
+        doReturn(clusterSettings1).when(elasticRepository).getElasticClusterSettings(eq(tenant1));
+        doReturn(clusterSettings2).when(elasticRepository).getElasticClusterSettings(eq(tenant2));
+        doReturn(queryResponse1).doReturn(queryResponse2).when(queryService).queryIndex(any(), any());
+
+        CcsQueryResponse ccsQueryResponse = sut.makeRequest(ccsQueryRequest);
+
+        ArgumentCaptor<QueryRequest> searchRequestArgCaptor = ArgumentCaptor.forClass(QueryRequest.class);
+        ArgumentCaptor<ClusterSettings> clusterSettingsArgCaptor = ArgumentCaptor.forClass(ClusterSettings.class);
+
+        verify(queryService, times(2)).queryIndex(searchRequestArgCaptor.capture(), clusterSettingsArgCaptor.capture());
+
+        QueryRequest queryRequest = searchRequestArgCaptor.getValue();
+        List<ClusterSettings> clusterSettings = clusterSettingsArgCaptor.getAllValues();
+
+        validateQueryRequestAndCcsQueryRequestCorrespondence(queryRequest, ccsQueryRequest);
+
+        assertEquals(clusterSettings.size(), 2);
+        assertTrue(clusterSettings.contains(clusterSettings1));
+        assertTrue(clusterSettings.contains(clusterSettings2));
+
+        assertEquals(ccsQueryResponse.getResults().size(), 2);
+        assertTrue(ccsQueryResponse.getResults().contains(results1.get(0)));
+        assertTrue(ccsQueryResponse.getResults().contains(results2.get(0)));
+        assertEquals(ccsQueryResponse.getTotalCount(), totalCount1 + totalCount2);
+    }
+
     private void mockCcsQueryRequest(CcsQueryRequest ccsQueryRequest, int offset, String kind, int limit, String query) {
         doReturn(offset).when(ccsQueryRequest).getFrom();
         doReturn(kind).when(ccsQueryRequest).getKind();
