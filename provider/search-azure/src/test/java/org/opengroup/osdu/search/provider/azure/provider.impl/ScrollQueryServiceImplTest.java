@@ -84,7 +84,7 @@ public class ScrollQueryServiceImplTest {
         lenient().doReturn(userId).when(dpsHeaders).getUserEmail();
         lenient().doReturn(dataPartitionId).when(dpsHeaders).getPartitionId();
         lenient().doReturn(indexName).when(crossTenantUtils).getIndexName(any(), eq(dataPartitionId));
-        doReturn(cursorSettings).when(cursorCache).get(any());
+        doReturn(cursorSettings).when(cursorCache).get(anyString());
         doReturn(client).when(elasticClientHandler).createRestClient();
     }
 
