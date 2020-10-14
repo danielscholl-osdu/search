@@ -70,6 +70,13 @@ public class CrossTenantInfoServiceImplTest {
         assertEquals(tenantInfo, obtainedTenantInfo);
     }
 
+    @Test()
+    public void testGetPartitionId_mustReturnDataPartitionId() {
+        String obtainedPartitionId = sut.getPartitionId();
+
+        assertEquals(dataPartitionId, obtainedPartitionId);
+    }
+
     private TenantInfo getTenantInfo(Long id, String name, String projectId) {
         TenantInfo tenantInfo = new TenantInfo();
         tenantInfo.setId(id);
