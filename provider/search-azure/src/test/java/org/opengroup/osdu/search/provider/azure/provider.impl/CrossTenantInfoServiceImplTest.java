@@ -42,4 +42,20 @@ public class CrossTenantInfoServiceImplTest {
         lenient().doReturn(dataPartitionId).when(dpsHeaders).getPartitionId();
         lenient().doReturn(partitionIdWithFallbackToAccountId).when(dpsHeaders).getPartitionIdWithFallbackToAccountId();
     }
+
+    @Test(expected = AppException.class)
+    public void testGetTenantInfo_whenTenantInfoIsNull_throwsException() {
+        try {
+            sut.getTenantInfo();
+        } catch (AppException e) {
+            int errorCode = 401;
+            String errorMessage = "not authorized to perform this action";
+            AppError error = e.getError();
+
+            assertEquals(error.getCode(), errorCode);
+            assertThat(error.getMessage(), containsString(errorMessage));
+
+            throw(e);
+        }
+    }
 }
