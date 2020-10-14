@@ -1,5 +1,5 @@
 package org.opengroup.osdu.search.provider.azure.provider.impl;
-import org.elasticsearch.action.search.SearchRequest;
+
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.RequestOptions;
@@ -20,13 +20,9 @@ import org.opengroup.osdu.core.common.model.http.AppError;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.*;
-import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
-import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
-import org.opengroup.osdu.core.common.provider.interfaces.ITenantFactory;
 import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
-import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 
@@ -46,9 +42,16 @@ public class ScrollQueryServiceImplTest {
     private static final String name = "name";
     private static final String text = "text";
 
+    @Mock
     private CursorSettings cursorSettings;
+
+    @Mock
     private RestHighLevelClient client;
+
+    @Mock
     private SearchHits searchHits;
+
+    @Mock
     private SearchHit searchHit;
 
     @Mock
@@ -77,10 +80,6 @@ public class ScrollQueryServiceImplTest {
 
     @Before
     public void init() {
-        cursorSettings = mock(CursorSettings.class);
-        client = mock(RestHighLevelClient.class);
-        searchHits = mock(SearchHits.class);
-        searchHit = mock(SearchHit.class);
         lenient().doReturn(userId).when(dpsHeaders).getUserEmail();
         lenient().doReturn(dataPartitionId).when(dpsHeaders).getPartitionId();
         lenient().doReturn(indexName).when(crossTenantUtils).getIndexName(any(), eq(dataPartitionId));
