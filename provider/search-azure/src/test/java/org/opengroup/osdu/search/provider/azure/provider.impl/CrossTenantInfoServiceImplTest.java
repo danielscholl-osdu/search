@@ -77,6 +77,14 @@ public class CrossTenantInfoServiceImplTest {
         assertEquals(dataPartitionId, obtainedPartitionId);
     }
 
+    @Test()
+    public void testGetAllTenantsFromPartitionId_whenGetTenantInfoReturnsNull() {
+        doReturn(partitionIdWithFallbackToAccountIdMultipleAccounts).when(dpsHeaders).getPartitionId();
+        List<TenantInfo> tenantInfos = sut.getAllTenantsFromPartitionId();
+        assertNull(tenantInfos.get(0));
+        assertNull(tenantInfos.get(1));
+    }
+
     private TenantInfo getTenantInfo(Long id, String name, String projectId) {
         TenantInfo tenantInfo = new TenantInfo();
         tenantInfo.setId(id);
