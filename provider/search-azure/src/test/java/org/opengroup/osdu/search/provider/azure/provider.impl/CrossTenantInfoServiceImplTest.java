@@ -85,6 +85,23 @@ public class CrossTenantInfoServiceImplTest {
         assertNull(tenantInfos.get(1));
     }
 
+    @Test()
+    public void testGetAllTenantsFromPartitionId_whenGivenTenantInfos_thenReturnTenantInfos() {
+        String[] accounts = partitionIdWithFallbackToAccountIdMultipleAccounts.split(",");
+
+        TenantInfo tenant1 = getTenantInfo(1L, "tenant1", "project-id1");
+        TenantInfo tenant2 = getTenantInfo(2L, "tenant2", "project-id2");
+
+        doReturn(tenant1).when(tenantFactory).getTenantInfo(eq(accounts[0]));
+        doReturn(tenant2).when(tenantFactory).getTenantInfo(eq(accounts[1]));
+        doReturn(partitionIdWithFallbackToAccountIdMultipleAccounts).when(dpsHeaders).getPartitionId();
+
+        List<TenantInfo> tenantInfos = sut.getAllTenantsFromPartitionId();
+
+        assertEquals(tenantInfos.get(0), tenant1);
+        assertEquals(tenantInfos.get(1), tenant2);
+    }
+
     private TenantInfo getTenantInfo(Long id, String name, String projectId) {
         TenantInfo tenantInfo = new TenantInfo();
         tenantInfo.setId(id);
