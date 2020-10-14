@@ -176,6 +176,27 @@ public class ScrollQueryServiceImplTest {
         }
     }
 
+    @Test(expected = AppException.class)
+    public void testQueryIndex_whenCursorSettingsNotFoundInCursorCache_thenThrowException() throws Exception {
+        CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
+
+        String cursor = "cursor";
+
+        doReturn(cursor).when(searchRequest).getCursor();
+        doReturn(null).when(cursorCache).get(any());
+
+        try {
+            sut.queryIndex(searchRequest);
+        } catch (AppException e) {
+            int errorCode = 400;
+            AppError error = e.getError();
+            assertThat(error.getReason(), containsString("Can't find the given cursor"));
+            assertThat(error.getMessage(), containsString("The given cursor is invalid or expired"));
+            assertEquals(error.getCode(), errorCode);
+            throw(e);
+        }
+    }
+
     private Map<String, HighlightField> getHighlightFields() {
         Text[] fragments = {new Text(text)};
         HighlightField highlightField = new HighlightField(name, fragments);
