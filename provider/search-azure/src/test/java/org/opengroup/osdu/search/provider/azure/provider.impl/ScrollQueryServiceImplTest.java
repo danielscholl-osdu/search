@@ -43,9 +43,13 @@ public class ScrollQueryServiceImplTest {
     private static final String dataPartitionId = "data-partition-id";
     private static final String indexName = "index";
     private static final String userId = "userId";
+    private static final String name = "name";
+    private static final String text = "text";
 
     private CursorSettings cursorSettings;
     private RestHighLevelClient client;
+    private SearchHits searchHits;
+    private SearchHit searchHit;
 
     @Mock
     private DpsHeaders dpsHeaders;
@@ -75,6 +79,8 @@ public class ScrollQueryServiceImplTest {
     public void init() {
         cursorSettings = mock(CursorSettings.class);
         client = mock(RestHighLevelClient.class);
+        searchHits = mock(SearchHits.class);
+        searchHit = mock(SearchHit.class);
         lenient().doReturn(userId).when(dpsHeaders).getUserEmail();
         lenient().doReturn(dataPartitionId).when(dpsHeaders).getPartitionId();
         lenient().doReturn(indexName).when(crossTenantUtils).getIndexName(any(), eq(dataPartitionId));
@@ -86,16 +92,10 @@ public class ScrollQueryServiceImplTest {
     public void testQueryIndex_whenSearchHitsIsNotEmpty() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
         SearchResponse searchScrollResponse = mock(SearchResponse.class);
-        SearchHits searchHits = mock(SearchHits.class);
-        SearchHit searchHit = mock(SearchHit.class);
 
-        String name = "name";
-        Text[] fragments = {new Text("text")};
         SearchHit[] hits = {searchHit};
+        Map<String, HighlightField> highlightFields = getHighlightFields();
         Map<String, Object> hitFields = new HashMap<>();
-        HighlightField highlightField = new HighlightField(name, fragments);
-        Map<String, HighlightField> highlightFields = new HashMap<>();
-        highlightFields.put("highlightField", highlightField);
         String cursor = "cursor";
         String scrollId = "scrollId";
         long totalHitsCount = 1L;
@@ -128,5 +128,13 @@ public class ScrollQueryServiceImplTest {
         assertEquals(obtainedQueryResponse.getTotalCount(), totalHitsCount);
         assertEquals(scrollRequest.scrollId(), scrollId);
         assertEquals(searchRequestCursor, cursor);
+    }
+
+    private Map<String, HighlightField> getHighlightFields() {
+        Text[] fragments = {new Text(text)};
+        HighlightField highlightField = new HighlightField(name, fragments);
+        Map<String, HighlightField> highlightFields = new HashMap<>();
+        highlightFields.put("highlightField", highlightField);
+        return highlightFields;
     }
 }
