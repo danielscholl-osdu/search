@@ -58,4 +58,24 @@ public class CrossTenantInfoServiceImplTest {
             throw(e);
         }
     }
+
+    @Test()
+    public void testGetTenantInfo_whenTenantInfoIsProvided_thenReturnsTenantInfo() {
+        TenantInfo tenantInfo = getTenantInfo(1L, "name", "projectId");
+
+        doReturn(tenantInfo).when(tenantFactory).getTenantInfo(eq(partitionIdWithFallbackToAccountId));
+
+        TenantInfo obtainedTenantInfo = sut.getTenantInfo();
+
+        assertEquals(tenantInfo, obtainedTenantInfo);
+    }
+
+    private TenantInfo getTenantInfo(Long id, String name, String projectId) {
+        TenantInfo tenantInfo = new TenantInfo();
+        tenantInfo.setId(id);
+        tenantInfo.setDataPartitionId(dataPartitionId);
+        tenantInfo.setName(name);
+        tenantInfo.setProjectId(projectId);
+        return tenantInfo;
+    }
 }
