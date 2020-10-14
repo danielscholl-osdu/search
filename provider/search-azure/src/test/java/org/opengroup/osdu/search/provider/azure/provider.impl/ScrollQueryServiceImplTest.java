@@ -130,6 +130,29 @@ public class ScrollQueryServiceImplTest {
         assertEquals(searchRequestCursor, cursor);
     }
 
+    @Test
+    public void testQueryIndex_whenNoCursorInSearchQuery() throws Exception {
+        CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
+        SearchResponse searchScrollResponse = mock(SearchResponse.class);
+
+        SearchHit[] hits = {searchHit};
+        Map<String, HighlightField> highlightFields = getHighlightFields();
+        long totalHitsCount = 1L;
+
+        doReturn(searchHits).when(searchScrollResponse).getHits();
+        doReturn(hits).when(searchHits).getHits();
+        doReturn(highlightFields).when(searchHit).getHighlightFields();
+        doReturn(totalHitsCount).when(searchHits).getTotalHits();
+        doReturn(searchScrollResponse).when(client).search(any(), any(RequestOptions.class));
+
+        CursorQueryResponse obtainedQueryResponse = sut.queryIndex(searchRequest);
+
+        assertEquals(obtainedQueryResponse.getResults().size(), 1);
+        assertTrue(obtainedQueryResponse.getResults().get(0).keySet().contains("name"));
+        assertEquals(obtainedQueryResponse.getResults().get(0).get("name"), "text");
+        assertEquals(obtainedQueryResponse.getTotalCount(), totalHitsCount);
+    }
+
     private Map<String, HighlightField> getHighlightFields() {
         Text[] fragments = {new Text(text)};
         HighlightField highlightField = new HighlightField(name, fragments);
