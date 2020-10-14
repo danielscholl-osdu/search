@@ -188,6 +188,24 @@ public class ScrollQueryServiceImplTest {
         assertEquals(obtainedQueryResponse.getTotalCount(), totalHitsCount);
     }
 
+    @Test
+    public void testQueryIndex_whenNoCursorInSearchQueryAndSearchHitsIsEmpty() throws Exception {
+        CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
+        SearchResponse searchScrollResponse = mock(SearchResponse.class);
+
+        SearchHit[] hits = {};
+        long totalHitsCount = 0L;
+
+        doReturn(searchHits).when(searchScrollResponse).getHits();
+        doReturn(hits).when(searchHits).getHits();
+        doReturn(searchScrollResponse).when(client).search(any(), any(RequestOptions.class));
+
+        CursorQueryResponse obtainedQueryResponse = sut.queryIndex(searchRequest);
+
+        assertEquals(obtainedQueryResponse.getResults().size(), 0);
+        assertEquals(obtainedQueryResponse.getTotalCount(), totalHitsCount);
+    }
+
     @Test(expected = AppException.class)
     public void testQueryIndex_whenMismatchCursorIssuerAndConsumer_thenThrowException() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
