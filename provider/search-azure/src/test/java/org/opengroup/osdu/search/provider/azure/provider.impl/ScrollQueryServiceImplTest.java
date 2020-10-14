@@ -153,6 +153,29 @@ public class ScrollQueryServiceImplTest {
         assertEquals(obtainedQueryResponse.getTotalCount(), totalHitsCount);
     }
 
+    @Test(expected = AppException.class)
+    public void testQueryIndex_whenMismatchCursorIssuerAndConsumer_thenThrowException() throws Exception {
+        CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
+
+        String cursor = "cursor";
+        String mismatchUserId = "mismatchUserId";
+
+        doReturn(cursor).when(searchRequest).getCursor();
+        doReturn(mismatchUserId).when(cursorSettings).getUserId();
+        doReturn(client).when(elasticClientHandler).createRestClient();
+
+        try {
+            sut.queryIndex(searchRequest);
+        } catch (AppException e) {
+            int errorCode = 403;
+            AppError error = e.getError();
+            assertEquals(error.getCode(), errorCode);
+            assertThat(error.getReason(), containsString("cursor issuer doesn't match the cursor consumer"));
+            assertThat(error.getMessage(), containsString("cursor sharing is forbidden"));
+            throw(e);
+        }
+    }
+
     private Map<String, HighlightField> getHighlightFields() {
         Text[] fragments = {new Text(text)};
         HighlightField highlightField = new HighlightField(name, fragments);
