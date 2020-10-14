@@ -131,6 +131,41 @@ public class ScrollQueryServiceImplTest {
     }
 
     @Test
+    public void testQueryIndex_whenSearchHitsIsEmpty() throws Exception {
+        CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
+        SearchResponse searchScrollResponse = mock(SearchResponse.class);
+
+        SearchHit[] hits = {};
+        String cursor = "cursor";
+        String scrollId = "scrollId";
+        long totalHitsCount = 0L;
+
+        // getCursor on cursorSettings returns scrollId in this case
+        doReturn(scrollId).when(cursorSettings).getCursor();
+        doReturn(userId).when(cursorSettings).getUserId();
+        doReturn(cursor).when(searchRequest).getCursor();
+        doReturn(searchScrollResponse).when(client).scroll(any(), any());
+        doReturn(searchHits).when(searchScrollResponse).getHits();
+        doReturn(hits).when(searchHits).getHits();
+        doReturn(totalHitsCount).when(searchHits).getTotalHits();
+
+        CursorQueryResponse obtainedQueryResponse = sut.queryIndex(searchRequest);
+
+        ArgumentCaptor<SearchScrollRequest> searchScrollRequestArgumentCaptor = ArgumentCaptor.forClass(SearchScrollRequest.class);
+        ArgumentCaptor<String> cursorArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(client).scroll(searchScrollRequestArgumentCaptor.capture(), eq(RequestOptions.DEFAULT));
+        verify(cursorCache).get(cursorArgumentCaptor.capture());
+
+        SearchScrollRequest scrollRequest = searchScrollRequestArgumentCaptor.getValue();
+        String searchRequestCursor = cursorArgumentCaptor.getValue();
+
+        assertEquals(obtainedQueryResponse.getResults().size(), 0);
+        assertEquals(obtainedQueryResponse.getTotalCount(), totalHitsCount);
+        assertEquals(scrollRequest.scrollId(), scrollId);
+        assertEquals(searchRequestCursor, cursor);
+    }
+
+    @Test
     public void testQueryIndex_whenNoCursorInSearchQuery() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
         SearchResponse searchScrollResponse = mock(SearchResponse.class);
