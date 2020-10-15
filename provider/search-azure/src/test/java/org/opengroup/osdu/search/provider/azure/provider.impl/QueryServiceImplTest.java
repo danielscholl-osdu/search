@@ -349,6 +349,26 @@ public class QueryServiceImplTest {
         }
     }
 
+    @Test(expected = AppException.class)
+    public void testQueryBase_whenClientSearchResultsInBadRequestElasticSearchStatusException_throwsException() throws IOException {
+        ElasticsearchStatusException exception = mock(ElasticsearchStatusException.class);
+
+        Set<String> indexedTypes = new HashSet<>();
+
+        doThrow(exception).when(client).search(any(), any(RequestOptions.class));
+        doReturn(RestStatus.BAD_REQUEST).when(exception).status();
+        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
+
+        try {
+            sut.queryIndex(searchRequest);
+        } catch (AppException e) {
+            int errorCode = 400;
+            String errorMessage = "Invalid parameters were given on search request";
+            validateAppException(e, errorCode, errorMessage);
+            throw(e);
+        }
+    }
+
     private Map<String, HighlightField> getHighlightFields() {
         Text[] fragments = {new Text(text)};
         HighlightField highlightField = new HighlightField(name, fragments);
