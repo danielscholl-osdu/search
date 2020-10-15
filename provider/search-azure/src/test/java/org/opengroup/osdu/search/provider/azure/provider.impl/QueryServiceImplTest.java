@@ -410,6 +410,29 @@ public class QueryServiceImplTest {
         }
     }
 
+    @Test(expected = AppException.class)
+    public void testQueryBase_IOException_EmptyMessage() throws IOException {
+        IOException exception = mock(IOException.class);
+
+        Set<String> indexedTypes = new HashSet<String>();
+        String dummyTimeoutMessage = "";
+
+        doThrow(exception).when(client).search(any(), any(RequestOptions.class));
+        doReturn(dummyTimeoutMessage).when(exception).getMessage();
+        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
+
+        try {
+            sut.queryIndex(searchRequest);
+        } catch (AppException e) {
+            int errorCode = 500;
+            String errorMessage = "Error processing search request";
+            AppError error = e.getError();
+            assertEquals(error.getCode(), errorCode);
+            assertThat(error.getMessage(), containsString(errorMessage));
+            throw(e);
+        }
+    }
+
     private Map<String, HighlightField> getHighlightFields() {
         Text[] fragments = {new Text(text)};
         HighlightField highlightField = new HighlightField(name, fragments);
