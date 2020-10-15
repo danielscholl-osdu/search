@@ -330,7 +330,7 @@ public class QueryServiceImplTest {
     }
 
     @Test(expected = AppException.class)
-    public void testQueryBase_whenClientSearchResultsInNotFoundElasticSearchStatusException_throwsException() throws IOException {
+    public void testQueryBase_whenClientSearchResultsInElasticsearchStatusException_statusNotFound_throwsException() throws IOException {
         ElasticsearchStatusException exception = mock(ElasticsearchStatusException.class);
 
         Set<String> indexedTypes = new HashSet<>();
@@ -350,7 +350,7 @@ public class QueryServiceImplTest {
     }
 
     @Test(expected = AppException.class)
-    public void testQueryBase_whenClientSearchResultsInBadRequestElasticSearchStatusException_throwsException() throws IOException {
+    public void testQueryBase_whenClientSearchResultsInElasticsearchStatusException_statusBadRequest_throwsException() throws IOException {
         ElasticsearchStatusException exception = mock(ElasticsearchStatusException.class);
 
         Set<String> indexedTypes = new HashSet<>();
