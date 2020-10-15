@@ -389,6 +389,27 @@ public class QueryServiceImplTest {
         }
     }
 
+    @Test(expected = AppException.class)
+    public void testQueryBase_IOException_ListenerTimeout_throwsException() throws IOException {
+        IOException exception = mock(IOException.class);
+
+        Set<String> indexedTypes = new HashSet<String>();
+        String dummyTimeoutMessage = "listener timeout after waiting for 1m";
+
+        doThrow(exception).when(client).search(any(), any(RequestOptions.class));
+        doReturn(dummyTimeoutMessage).when(exception).getMessage();
+        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
+
+        try {
+            sut.queryIndex(searchRequest);
+        } catch (AppException e) {
+            int errorCode = 504;
+            String errorMessage = "Request timed out after waiting";
+            validateAppException(e, errorCode, errorMessage);
+            throw(e);
+        }
+    }
+
     private Map<String, HighlightField> getHighlightFields() {
         Text[] fragments = {new Text(text)};
         HighlightField highlightField = new HighlightField(name, fragments);
