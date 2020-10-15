@@ -298,6 +298,37 @@ public class QueryServiceImplTest {
         assertEquals(fieldName, ((GeoPolygonQueryBuilder) queryBuilder.queryName("fieldName")).fieldName());
     }
 
+    @Test
+    public void testQueryBase_useGeoShapeQueryIsTrue_getByGeoPolygon() throws IOException {
+        SearchHit[] hits = {};
+        Set<String> indexedTypes = new HashSet<>();
+        indexedTypes.add(GEO_SHAPE);
+        SpatialFilter.ByGeoPolygon geoPolygon = getGeoPolygon(closedPolygonPoints);
+
+        doReturn(geoPolygon).when(spatialFilter).getByGeoPolygon();
+        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
+        doReturn(hits).when(searchHits).getHits();
+
+        QueryResponse queryResponse = sut.queryIndex(searchRequest);
+
+        ArgumentCaptor<SearchRequest> elasticSearchRequest = ArgumentCaptor.forClass(SearchRequest.class);
+
+        verify(client).search(elasticSearchRequest.capture(), eq(RequestOptions.DEFAULT));
+
+        QueryBuilder queryBuilder = ((BoolQueryBuilder) elasticSearchRequest.getValue().source().query()).must().get(0);
+        PolygonBuilder shape = (PolygonBuilder) ((GeoShapeQueryBuilder) queryBuilder).shape();
+        Coordinate[] coordinates = shape.coordinates()[0][0];
+
+        // coordinates obtained starts from 1st point instead of 0th point of closedPolygon
+        assertTrue(checkPointAndCoordinateCorrespondence(closedPolygonPoints.get(1), coordinates[0]));
+        assertTrue(checkPointAndCoordinateCorrespondence(closedPolygonPoints.get(2), coordinates[1]));
+        assertTrue(checkPointAndCoordinateCorrespondence(closedPolygonPoints.get(3), coordinates[2]));
+        assertTrue(checkPointAndCoordinateCorrespondence(closedPolygonPoints.get(0), coordinates[3]));
+        assertTrue(checkPointAndCoordinateCorrespondence(closedPolygonPoints.get(1), coordinates[4]));
+        assertEquals(GEO_SHAPE, queryBuilder.getName());
+        assertEquals(fieldName, ((GeoShapeQueryBuilder) queryBuilder.queryName("fieldName")).fieldName());
+    }
+
     private Map<String, HighlightField> getHighlightFields() {
         Text[] fragments = {new Text(text)};
         HighlightField highlightField = new HighlightField(name, fragments);
