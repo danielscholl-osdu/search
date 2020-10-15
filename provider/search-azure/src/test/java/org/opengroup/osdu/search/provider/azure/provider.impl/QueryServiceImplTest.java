@@ -273,6 +273,31 @@ public class QueryServiceImplTest {
         assertEquals(queryResponse.getTotalCount(), 0);
     }
 
+    @Test
+    public void testQueryBase_useGeoShapeQueryIsFalse_getByGeoPolygon() throws IOException {
+        SearchHit[] hits = new SearchHit[0];
+        Set<String> indexedTypes = new HashSet<>();
+
+        SpatialFilter.ByGeoPolygon geoPolygon = new SpatialFilter.ByGeoPolygon(polygonPoints);
+
+        doReturn(geoPolygon).when(spatialFilter).getByGeoPolygon();
+        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
+        doReturn(hits).when(searchHits).getHits();
+
+        QueryResponse queryResponse = sut.queryIndex(searchRequest);
+
+        ArgumentCaptor<SearchRequest> elasticSearchRequest = ArgumentCaptor.forClass(SearchRequest.class);
+
+        verify(client).search(elasticSearchRequest.capture(), eq(RequestOptions.DEFAULT));
+
+        QueryBuilder queryBuilder = ((BoolQueryBuilder) elasticSearchRequest.getValue().source().query()).must().get(0);
+        List<GeoPoint> geoPoints = ((GeoPolygonQueryBuilder) queryBuilder).points();
+
+        validateGeoPointsPolygonAndPolygonCorrespondence(geoPoints, polygonPoints);
+        assertEquals(GEO_POLYGON, queryBuilder.getName());
+        assertEquals(fieldName, ((GeoPolygonQueryBuilder) queryBuilder.queryName("fieldName")).fieldName());
+    }
+
     private Map<String, HighlightField> getHighlightFields() {
         Text[] fragments = {new Text(text)};
         HighlightField highlightField = new HighlightField(name, fragments);
