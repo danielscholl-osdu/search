@@ -119,6 +119,21 @@ public class QueryServiceImplTest {
         doReturn(hitFields).when(searchHit).getSourceAsMap();
     }
 
+    @Test
+    public void testQueryBase_whenSearchHitsIsEmpty() throws IOException {
+        SearchHit[] hits = {};
+        Set<String> indexedTypes = new HashSet<>();
+
+        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
+        doReturn(hits).when(searchHits).getHits();
+
+        QueryResponse queryResponse = sut.queryIndex(searchRequest);
+
+        assertEquals(queryResponse.getResults().size(), 0);
+        assertEquals(queryResponse.getAggregations().size(), 0);
+        assertEquals(queryResponse.getTotalCount(), 0);
+    }
+
     private Map<String, HighlightField> getHighlightFields() {
         Text[] fragments = {new Text(text)};
         HighlightField highlightField = new HighlightField(name, fragments);
