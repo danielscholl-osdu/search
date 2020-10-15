@@ -152,6 +152,34 @@ public class QueryServiceImplTest {
         assertEquals(queryResponse.getResults().get(0).get(name), text);
     }
 
+    @Test
+    public void testQueryBase_useGeoShapeQueryIsFalse_getByBoundingBox() throws IOException {
+        SearchHit[] hits = {};
+        Set<String> indexedTypes = new HashSet<>();
+        SpatialFilter.ByBoundingBox boundingBox = getValidBoundingBox();
+
+        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
+        doReturn(boundingBox).when(spatialFilter).getByBoundingBox();
+        doReturn(hits).when(searchHits).getHits();
+
+        QueryResponse queryResponse = sut.queryIndex(searchRequest);
+
+        ArgumentCaptor<SearchRequest> elasticSearchRequest = ArgumentCaptor.forClass(SearchRequest.class);
+
+        verify(client).search(elasticSearchRequest.capture(), eq(RequestOptions.DEFAULT));
+
+        GeoBoundingBoxQueryBuilder queryBuilder = (GeoBoundingBoxQueryBuilder) ((BoolQueryBuilder) elasticSearchRequest.getValue().source().query()).must().get(0);
+        GeoPoint topLeft = queryBuilder.topLeft();
+        GeoPoint bottomRight = queryBuilder.bottomRight();
+
+        assertTrue(checkPointAndGeoPointCorrespondence(this.topLeft, topLeft));
+        assertTrue(checkPointAndGeoPointCorrespondence(this.bottomRight, bottomRight));
+        assertEquals(fieldName, (queryBuilder.queryName("fieldName")).fieldName());
+        assertEquals(queryResponse.getResults().size(), 0);
+        assertEquals(queryResponse.getAggregations().size(), 0);
+        assertEquals(queryResponse.getTotalCount(), 0);
+    }
+
     private Map<String, HighlightField> getHighlightFields() {
         Text[] fragments = {new Text(text)};
         HighlightField highlightField = new HighlightField(name, fragments);
