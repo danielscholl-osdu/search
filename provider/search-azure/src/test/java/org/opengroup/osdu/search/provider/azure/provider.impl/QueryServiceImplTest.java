@@ -245,6 +245,34 @@ public class QueryServiceImplTest {
         }
     }
 
+    @Test
+    public void testQueryBase_useGeoShapeQueryIsFalse_getByDistance() throws IOException {
+        SearchHit[] hits = {};
+        Set<String> indexedTypes = new HashSet<>();
+        SpatialFilter.ByDistance distance = getDistance(1.0, dummyPoint);
+
+        doReturn(distance).when(spatialFilter).getByDistance();
+        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
+        doReturn(hits).when(searchHits).getHits();
+
+        QueryResponse queryResponse = sut.queryIndex(searchRequest);
+
+        ArgumentCaptor<SearchRequest> elasticSearchRequest = ArgumentCaptor.forClass(SearchRequest.class);
+
+        verify(client).search(elasticSearchRequest.capture(), eq(RequestOptions.DEFAULT));
+
+        QueryBuilder queryBuilder = ((BoolQueryBuilder) elasticSearchRequest.getValue().source().query()).must().get(0);
+
+        assertEquals(((GeoDistanceQueryBuilder) queryBuilder).distance(), distance.getDistance(), DELTA);
+        assertEquals(dummyPoint.getLatitude(), ((GeoDistanceQueryBuilder) queryBuilder).point().getLat(), DELTA);
+        assertEquals(dummyPoint.getLongitude(), ((GeoDistanceQueryBuilder) queryBuilder).point().getLon(), DELTA);
+        assertEquals(GEO_DISTANCE, queryBuilder.getName());
+        assertEquals(fieldName, ((GeoDistanceQueryBuilder) queryBuilder.queryName("fieldName")).fieldName());
+        assertEquals(queryResponse.getResults().size(), 0);
+        assertEquals(queryResponse.getAggregations().size(), 0);
+        assertEquals(queryResponse.getTotalCount(), 0);
+    }
+
     private Map<String, HighlightField> getHighlightFields() {
         Text[] fragments = {new Text(text)};
         HighlightField highlightField = new HighlightField(name, fragments);
