@@ -14,6 +14,14 @@ variables:
   GCP_DOMAIN: cloud.slb-ds.com
   GCP_STORAGE_URL: https://osdu-search-dot-opendes.appspot.com/api/storage/v2/
 
+  OSDU_GCP_BUILD_SUBDIR: provider/search-gcp
+  OSDU_GCP_INT_TEST_SUBDIR: testing/integration-tests/search-test-gcp
+  OSDU_GCP_APPLICATION_NAME: os-search
+  OSDU_GCP_PROJECT: nice-etching-277309
+  OSDU_GCP_TENANT_NAME: osdu
+  OSDU_GCP_STORAGE_URL: https://os-storage-dot-nice-etching-277309.uc.r.appspot.com/api/storage/v2/
+  OSDU_SECURITY_HTTPS_CERTIFICATE_TRUST: 'true'
+
   IBM_BUILD_SUBDIR: provider/search-ibm
   IBM_INT_TEST_SUBDIR: testing/integration-tests/search-test-ibm
 
@@ -44,7 +52,10 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/azure.yml"
 
+  - project: 'osdu/platform/ci-cd-pipelines'
+    ref: "master"
+    file: 'cloud-providers/osdu-gcp.yml'
 
 
-aws-test:
+aws-test-java:
   tags: ['aws-internal-test']

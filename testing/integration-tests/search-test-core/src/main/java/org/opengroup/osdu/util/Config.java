@@ -11,7 +11,7 @@ public class Config {
     private static final String DEFAULT_INDEXER_HOST = "";
     private static final String DEFAULT_SEARCH_HOST = "";
     private static final String DEFAULT_STORAGE_HOST = "";
-    private static final String DEFAULT_DATA_PARTITION_ID_TENANT1 = "";
+    private static final String DEFAULT_DATA_PARTITION_ID_TENANT1 = "opendes";
     private static final String DEFAULT_DATA_PARTITION_ID_TENANT2 = "";
     private static final String DEFAULT_SEARCH_INTEGRATION_TESTER = "";
 

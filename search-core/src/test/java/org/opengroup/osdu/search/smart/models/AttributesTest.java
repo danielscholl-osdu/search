@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsRequest;
 import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsResponse;
 import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsResponse.FieldMappingMetaData;
 import org.elasticsearch.action.search.SearchResponse;
@@ -108,12 +109,12 @@ public class AttributesTest {
 		attribute.setName("Operataor");
 		attribute.setSchemaMapping(schemaMapping);
 		ls.add(attribute);
-		
+
 		when(dpsHeaders.getPartitionId()).thenReturn("tenant1");
 		when(elasticClientHandler.createRestClient()).thenReturn(restHighLevelClient);
 		doReturn(this.indicesClient).when(this.restHighLevelClient).indices();
 		GetFieldMappingsResponse getFieldMappingsResponse = mock(GetFieldMappingsResponse.class);
-		when(this.indicesClient.getFieldMapping(any(), any())).thenReturn(getFieldMappingsResponse);
+		when(this.indicesClient.getFieldMapping((GetFieldMappingsRequest) any(), any())).thenReturn(getFieldMappingsResponse);
 		XContentBuilder builder = XContentFactory.jsonBuilder();
 		builder.startObject();
 		Map<String, Object> fields = new HashMap();

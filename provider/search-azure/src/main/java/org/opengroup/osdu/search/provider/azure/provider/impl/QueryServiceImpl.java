@@ -87,8 +87,8 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);
         sourceBuilder.from(searchRequest.getFrom());
 
-        // aggregation: only make it available in pre demo for now
-        if (isPreDemo() && !Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
+        // aggregation
+        if (!Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
             TermsAggregationBuilder termsAggregationBuilder = new TermsAggregationBuilder(AGGREGATION_NAME, ValueType.STRING);
             termsAggregationBuilder.field(searchRequest.getAggregateBy());
             termsAggregationBuilder.size(Config.getAggregationSize());
