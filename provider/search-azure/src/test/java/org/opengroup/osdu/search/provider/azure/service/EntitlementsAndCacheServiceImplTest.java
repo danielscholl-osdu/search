@@ -44,6 +44,9 @@ import static org.mockito.Mockito.mock;
 @RunWith(MockitoJUnitRunner.class)
 public class EntitlementsAndCacheServiceImplTest {
 
+    private static final String desId = "desId";;
+    private static final String memberEmail = "member@email.com";
+
     @Mock
     private JaxRsDpsLog logger;
 
@@ -68,8 +71,6 @@ public class EntitlementsAndCacheServiceImplTest {
     public void testIsValidAcl_whenMissingGroups_throwsException() throws EntitlementsException {
         IEntitlementsService iEntitlementsService = mock(IEntitlementsService.class);
 
-        String desId = "desId";
-        String memberEmail = "member@email.com";
         Groups groups = getGroups(desId, memberEmail);
 
         doReturn(groups).when(iEntitlementsService).getGroups();
@@ -90,14 +91,12 @@ public class EntitlementsAndCacheServiceImplTest {
     public void testIsValidAcl_whenInvalidEmailId_throwsException() throws EntitlementsException {
         IEntitlementsService iEntitlementsService = mock(IEntitlementsService.class);
 
-        String desId = "desId";
-        String memberEmail = "member@email.com";
         Groups groups = getGroups(desId, memberEmail);
 
-        String invalidEmail = "invalidemail.com";
+        String email = "invalidemail.com";
         String description = "Group description";
         String groupName = "groupName";
-        GroupInfo groupInfo = getGroupInfo(invalidEmail, description, groupName);
+        GroupInfo groupInfo = getGroupInfo(email, description, groupName);
         List<GroupInfo> groupInfoList = Arrays.asList(groupInfo);
 
         groups.setGroups(groupInfoList);
@@ -120,8 +119,6 @@ public class EntitlementsAndCacheServiceImplTest {
     public void testIsValidAcl_whenDifferentDomain_thenReturnsFalse() throws EntitlementsException {
         IEntitlementsService iEntitlementsService = mock(IEntitlementsService.class);
 
-        String desId = "desId";
-        String memberEmail = "member@email.com";
         Groups groups = getGroups(desId, memberEmail);
 
         String email = "group@domain.com";
@@ -147,8 +144,6 @@ public class EntitlementsAndCacheServiceImplTest {
     public void testIsValidAcl_whenCorrectGroupAndAcl_thenReturnsTrue() throws EntitlementsException {
         IEntitlementsService iEntitlementsService = mock(IEntitlementsService.class);
 
-        String desId = "desId";
-        String memberEmail = "member@email.com";
         Groups groups = getGroups(desId, memberEmail);
 
         String email = "group@domain.com";
