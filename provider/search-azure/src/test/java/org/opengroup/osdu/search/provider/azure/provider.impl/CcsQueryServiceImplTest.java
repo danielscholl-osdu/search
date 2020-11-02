@@ -64,8 +64,7 @@ public class CcsQueryServiceImplTest {
 
     @Before
     public void init() {
-        lenient().doReturn(dataPartitionId).when(dpsHeaders).getPartitionId();
-        lenient().doReturn(partitionIdWithFallbackToAccountId).when(dpsHeaders).getPartitionIdWithFallbackToAccountId();
+        doReturn(partitionIdWithFallbackToAccountId).when(dpsHeaders).getPartitionIdWithFallbackToAccountId();
     }
 
     /*
@@ -110,7 +109,7 @@ public class CcsQueryServiceImplTest {
 
     @Test
     public void testCcsQueryResponse_whenMultipleAccountsProvided() throws Exception {
-        lenient().doReturn(partitionIdWithFallbackToAccountIdMultipleAccounts).when(dpsHeaders).getPartitionIdWithFallbackToAccountId();
+        doReturn(partitionIdWithFallbackToAccountIdMultipleAccounts).when(dpsHeaders).getPartitionIdWithFallbackToAccountId();
 
         QueryResponse queryResponse1 = mock(QueryResponse.class);
         QueryResponse queryResponse2 = mock(QueryResponse.class);
