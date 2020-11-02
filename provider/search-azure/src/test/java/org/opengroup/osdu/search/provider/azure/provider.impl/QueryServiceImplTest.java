@@ -53,10 +53,8 @@ import org.opengroup.osdu.search.util.ElasticClientHandler;
 import java.io.IOException;
 import java.util.*;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
@@ -260,7 +258,7 @@ public class QueryServiceImplTest {
             String originalExceptionErrorMessage = "Distance query is not supported for GeoShape field";
 
             assertEquals(originalExceptionErrorCode, originalException.getError().getCode());
-            assertThat(originalException.getError().getReason(), containsString(originalExceptionErrorMessage));
+            assertEquals(originalException.getError().getReason(), originalExceptionErrorMessage);
             throw(originalException);
         }
     }
@@ -403,7 +401,7 @@ public class QueryServiceImplTest {
             sut.queryIndex(searchRequest);
         } catch (AppException e) {
             int errorCode = 503;
-            String errorMessage = "Please re-try search after some time";
+            String errorMessage = "Please re-try search after some time.";
             validateAppException(e, errorCode, errorMessage);
             throw(e);
         }
@@ -413,7 +411,7 @@ public class QueryServiceImplTest {
     public void testQueryBase_IOException_ListenerTimeout_throwsException() throws IOException {
         IOException exception = mock(IOException.class);
 
-        Set<String> indexedTypes = new HashSet<String>();
+        Set<String> indexedTypes = new HashSet<>();
         String dummyTimeoutMessage = "listener timeout after waiting for 1m";
 
         doThrow(exception).when(client).search(any(), any(RequestOptions.class));
@@ -424,7 +422,7 @@ public class QueryServiceImplTest {
             sut.queryIndex(searchRequest);
         } catch (AppException e) {
             int errorCode = 504;
-            String errorMessage = "Request timed out after waiting";
+            String errorMessage = "Request timed out after waiting for 1m";
             validateAppException(e, errorCode, errorMessage);
             throw(e);
         }
@@ -434,7 +432,7 @@ public class QueryServiceImplTest {
     public void testQueryBase_IOException_EmptyMessage_throwsException() throws IOException {
         IOException exception = mock(IOException.class);
 
-        Set<String> indexedTypes = new HashSet<String>();
+        Set<String> indexedTypes = new HashSet<>();
         String dummyTimeoutMessage = "";
 
         doThrow(exception).when(client).search(any(), any(RequestOptions.class));
@@ -446,9 +444,8 @@ public class QueryServiceImplTest {
         } catch (AppException e) {
             int errorCode = 500;
             String errorMessage = "Error processing search request";
-            AppError error = e.getError();
-            assertEquals(error.getCode(), errorCode);
-            assertThat(error.getMessage(), containsString(errorMessage));
+
+            validateAppException(e, errorCode, errorMessage);
             throw(e);
         }
     }
@@ -515,7 +512,7 @@ public class QueryServiceImplTest {
     private void validateAppException(AppException e, int errorCode, String errorMessage) {
         AppError error = e.getError();
         assertEquals(error.getCode(), errorCode);
-        assertThat(error.getMessage(), containsString(errorMessage));
+        assertEquals(error.getMessage(), errorMessage);
     }
 
     public void validateGeoPointsPolygonAndPolygonCorrespondence(List<GeoPoint> points, List<Point> polygon) {

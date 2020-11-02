@@ -42,10 +42,8 @@ import org.opengroup.osdu.search.util.ElasticClientHandler;
 
 import java.util.*;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
@@ -242,8 +240,8 @@ public class ScrollQueryServiceImplTest {
             int errorCode = 403;
             AppError error = e.getError();
             assertEquals(error.getCode(), errorCode);
-            assertThat(error.getReason(), containsString("cursor issuer doesn't match the cursor consumer"));
-            assertThat(error.getMessage(), containsString("cursor sharing is forbidden"));
+            assertEquals(error.getReason(), "cursor issuer doesn't match the cursor consumer");
+            assertEquals(error.getMessage(), "cursor sharing is forbidden");
             throw(e);
         }
     }
@@ -262,8 +260,8 @@ public class ScrollQueryServiceImplTest {
         } catch (AppException e) {
             int errorCode = 400;
             AppError error = e.getError();
-            assertThat(error.getReason(), containsString("Can't find the given cursor"));
-            assertThat(error.getMessage(), containsString("The given cursor is invalid or expired"));
+            assertEquals(error.getReason(), "Can't find the given cursor");
+            assertEquals(error.getMessage(), "The given cursor is invalid or expired");
             assertEquals(error.getCode(), errorCode);
             throw(e);
         }

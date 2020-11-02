@@ -14,6 +14,7 @@
 
 package org.opengroup.osdu.search.provider.azure.service;
 
+import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsRequest;
 import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsResponse;
 import org.elasticsearch.client.IndicesClient;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -72,7 +73,7 @@ public class FieldMappingTypeServiceTest {
         indexMapping.put(TYPE, typeMapping);
 
         doReturn(indicesClient).when(restClient).indices();
-        doReturn(response).when(indicesClient).getFieldMapping(any(), any());
+        doReturn(response).when(indicesClient).getFieldMapping(any(GetFieldMappingsRequest.class), any());
         doReturn(indexMapping).when(response).mappings();
         doReturn(sourceMap).when(fieldMappingMetaData).sourceAsMap();
 
@@ -94,7 +95,7 @@ public class FieldMappingTypeServiceTest {
         Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>>> indexMapping = new HashMap<>();
 
         doReturn(indicesClient).when(restClient).indices();
-        doReturn(response).when(indicesClient).getFieldMapping(any(), any());
+        doReturn(response).when(indicesClient).getFieldMapping(any(GetFieldMappingsRequest.class), any());
         doReturn(indexMapping).when(response).mappings();
 
         Set<String> fieldTypes = sut.getFieldTypes(restClient, fieldName, indexPattern);
@@ -118,7 +119,7 @@ public class FieldMappingTypeServiceTest {
         indexMapping.put(TYPE, typeMapping);
 
         doReturn(indicesClient).when(restClient).indices();
-        doReturn(response).when(indicesClient).getFieldMapping(any(), any());
+        doReturn(response).when(indicesClient).getFieldMapping(any(GetFieldMappingsRequest.class), any());
         doReturn(indexMapping).when(response).mappings();
 
         Set<String> fieldTypes = sut.getFieldTypes(restClient, fieldName, indexPattern);
@@ -146,7 +147,7 @@ public class FieldMappingTypeServiceTest {
         indexMapping.put(TYPE, typeMapping);
 
         doReturn(indicesClient).when(restClient).indices();
-        doReturn(response).when(indicesClient).getFieldMapping(any(), any());
+        doReturn(response).when(indicesClient).getFieldMapping(any(GetFieldMappingsRequest.class), any());
         doReturn(indexMapping).when(response).mappings();
         doReturn(sourceMap).when(fieldMappingMetaData).sourceAsMap();
 

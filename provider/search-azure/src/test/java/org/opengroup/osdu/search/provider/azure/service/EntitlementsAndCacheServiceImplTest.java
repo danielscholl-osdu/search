@@ -32,10 +32,8 @@ import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 
 import java.util.*;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
@@ -182,6 +180,6 @@ public class EntitlementsAndCacheServiceImplTest {
 
     private void validateAppException(AppException e, int errorCode, String errorMessage) {
         assertEquals(errorCode, e.getError().getCode());
-        assertThat(e.getError().getMessage(), containsString(errorMessage));
+        assertEquals(e.getError().getMessage(), errorMessage);
     }
 }
