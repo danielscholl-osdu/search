@@ -4,8 +4,8 @@ Feature: Search with different queries
   Background:
     Given the elastic search is initialized with the following data
       | kind                                    | index                                   | mappingFile | recordFile | viewerGroup                  | ownerGroup 				           |
-      | tenant1:testquery<timestamp>:well:1.0.0 | tenant1-testquery<timestamp>-well-1.0.0 | records_1   | records_1  | data.default.viewers@opendes | data.default.owners@opendes  |
-      | tenant1:testquery<timestamp>:well:2.0.0 | tenant1-testquery<timestamp>-well-2.0.0 | records_2   | records_2  | data.default.viewers@opendes | data.default.testowners@opendes   |
+      | tenant1:testquery<timestamp>:well:1.0.0 | tenant1-testquery<timestamp>-well-1.0.0 | records_1   | records_1  | data.default.viewers@tenant1 | data.default.owners@tenant1   |
+      | tenant1:testquery<timestamp>:well:2.0.0 | tenant1-testquery<timestamp>-well-2.0.0 | records_2   | records_2  | data.default.viewers@tenant1  | data.default.testowners@tenant1   |
 
   Scenario Outline: Search data in a given kind
     When I send <query> with <kind>

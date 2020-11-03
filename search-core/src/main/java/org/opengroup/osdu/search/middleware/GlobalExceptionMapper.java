@@ -15,6 +15,7 @@
 package org.opengroup.osdu.search.middleware;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import java.util.Objects;
 import javassist.NotFoundException;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
@@ -72,7 +73,7 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
     // ResponseEntityExceptionHandler already has a default implementation for handling HttpMessageNotReadableException, so we are overriding it
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException e, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        AppException appException = new AppException(HttpStatus.BAD_REQUEST.value(), "Bad Request", e.getMessage(), e);
+        AppException appException = new AppException(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Invalid parameters were given on search request", e);
         this.logger.warning(appException.getError().getMessage(), appException);
         HttpStatus httpStatus = HttpStatus.resolve(appException.getError().getCode());
         return new ResponseEntity<>(appException.getError(), httpStatus);
@@ -104,6 +105,16 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<Object> handleGeneralException(Exception e) {
+      if (Objects.nonNull(e) && Objects.nonNull(e.getStackTrace())) {
+        logger.error("handleGeneralException " + e.getMessage());
+        for (StackTraceElement element : e.getStackTrace()) {
+          logger.error("handleGeneralExceptionElement " + element);
+        }
+        if (Objects.nonNull(e.getCause())) {
+          e.getCause().printStackTrace();
+        }
+      }
+
         return this.getErrorResponse(
                 new AppException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Server error.",
                         "An unknown error has occurred.", e));

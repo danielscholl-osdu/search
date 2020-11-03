@@ -32,7 +32,6 @@ public class AzureBootstrapConfig {
     @Value("${MAX_CACHE_VALUE_SIZE}")
     private Integer elasticCacheMaxSize;
 
-
     @Value("${azure.keyvault.url}")
     private String keyVaultURL;
 
@@ -44,7 +43,7 @@ public class AzureBootstrapConfig {
 
     @Bean
     @Named("KEY_VAULT_URL")
-    public String getKeyVaultURL(){
+    public String getKeyVaultURL() {
         return keyVaultURL;
     }
 
