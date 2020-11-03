@@ -16,7 +16,7 @@
 		<groupId>org.opengroup.osdu</groupId>
 		<artifactId>os-search</artifactId>
 		<version>0.0.5-SNAPSHOT</version>
-		<relativePath>../..</relativePath>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>search-ibm</artifactId>
