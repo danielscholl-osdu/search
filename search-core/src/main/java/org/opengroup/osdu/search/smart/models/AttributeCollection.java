@@ -45,7 +45,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 
-import org.elasticsearch.search.fetch.ShardFetchSearchRequest;
 import org.opengroup.osdu.core.common.http.FetchServiceHttpRequest;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.http.HttpResponse;
@@ -55,7 +54,7 @@ import org.opengroup.osdu.core.common.provider.interfaces.IAttributesCache;
 import org.opengroup.osdu.core.common.util.IServiceAccountJwtClient;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.http.IUrlFetchService;
-import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.model.IndexMappingRequest;
 import org.opengroup.osdu.search.smart.attributes.AttributeLoader;
@@ -67,6 +66,8 @@ public class AttributeCollection {
 	private final Gson gson = new Gson();
 	@Inject
 	private ElasticClientHandler elasticClientHandler;
+	@Inject
+	private SearchConfigurationProperties searchConfigurationProperties;
 	@Inject
 	private IUrlFetchService urlFetchService;
 	@Inject
@@ -88,7 +89,7 @@ public class AttributeCollection {
 		
 		List<Attribute> attributes = AttributeLoader.getAttributes();
 		for (Attribute attr : attributes) {
-			String cacheKey = String.format("%s-%s-%s", Config.getDeployedServiceId(),
+			String cacheKey = String.format("%s-%s-%s", searchConfigurationProperties.getDeployedServiceId(),
 					this.headersInfo.getPartitionId(), attr.getName());
 			log.info(String.format("updating the cache with key: %s", cacheKey));
 			Set<String> attrVals = new HashSet<>();
@@ -188,7 +189,7 @@ public class AttributeCollection {
 			FetchServiceHttpRequest request = FetchServiceHttpRequest
 					.builder()
 					.httpMethod(HttpMethods.PUT)
-					.url(Config.getIndexerHostUrl() + endUrl)
+					.url(searchConfigurationProperties.getIndexerHost() + endUrl)
 					.headers(headersInfo)
 					.body(body).build();
 			HttpResponse response = this.urlFetchService.sendRequest(request);
@@ -206,7 +207,7 @@ public class AttributeCollection {
 	
 	@SuppressWarnings("unchecked")
 	public Set<String> getAllAttributes(String dataPartitionId, String attributeName) throws IOException {
-		String cacheKey = String.format("%s-%s-%s", Config.getDeployedServiceId(), dataPartitionId, attributeName);
+		String cacheKey = String.format("%s-%s-%s", searchConfigurationProperties.getDeployedServiceId(), dataPartitionId, attributeName);
 		if (attributes.get(cacheKey) == null) {
 			attributes.put(cacheKey, this.cache.get(cacheKey));
 		}
@@ -218,7 +219,7 @@ public class AttributeCollection {
 	}
 	
    private String checkOrGetAuthorizationHeader() {
-		if (Config.getDeploymentEnvironment() == DeploymentEnvironment.LOCAL) {
+		if (searchConfigurationProperties.getDeploymentEnvironment() == DeploymentEnvironment.LOCAL) {
 	        String authHeader = headersInfo.getAuthorization();
 	            if (Strings.isNullOrEmpty(authHeader)) {
 	                throw new AppException(HttpServletResponse.SC_UNAUTHORIZED, "Invalid authorization header", "Authorization token cannot be empty");

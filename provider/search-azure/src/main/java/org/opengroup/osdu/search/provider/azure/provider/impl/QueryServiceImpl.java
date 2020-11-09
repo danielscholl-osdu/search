@@ -24,7 +24,7 @@ import org.elasticsearch.search.aggregations.support.ValueType;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.search.*;
-import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
@@ -35,8 +35,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static org.opengroup.osdu.core.common.search.Config.isPreDemo;
-
 @Service
 public class QueryServiceImpl extends QueryBase implements IQueryService {
 
@@ -44,6 +42,8 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     private ElasticClientHandler elasticClientHandler;
     @Inject
     private AuditLogger auditLogger;
+    @Inject
+    private SearchConfigurationProperties configurationProperties;
 
     @Override
     public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
@@ -88,10 +88,10 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         sourceBuilder.from(searchRequest.getFrom());
 
         // aggregation: only make it available in pre demo for now
-        if (isPreDemo() && !Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
+        if (configurationProperties.isPreDemo() && !Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
             TermsAggregationBuilder termsAggregationBuilder = new TermsAggregationBuilder(AGGREGATION_NAME, ValueType.STRING);
             termsAggregationBuilder.field(searchRequest.getAggregateBy());
-            termsAggregationBuilder.size(Config.getAggregationSize());
+            termsAggregationBuilder.size(configurationProperties.getAggregationSize());
             sourceBuilder.aggregation(termsAggregationBuilder);
         }
 
