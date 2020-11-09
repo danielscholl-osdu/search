@@ -19,96 +19,7 @@ All documentation for the Azure implementation of `os-search` lives [here](./pro
 
 ## GCP Implementation
 
-### Pre-requisites
-
-* GCloud SDK with java (latest version)
-* JDK 8
-* Lombok 1.16 or later
-* Maven
-
-You will also require Git to work on the project.
-
-### Update the Google cloud SDK to the latest version:
-
-```sh
-gcloud components update
-```
-
-### Setting up the local development environment
-* Update the Google cloud SDK to the latest version:
-
-```sh
-gcloud components update
-```
-
-```sh
-gcloud config set project <YOUR-PROJECT-ID>
-```
-* Perform a basic authentication in the selected project
-
-```sh
-gcloud auth application-default login
-```
-
-### Build project and run unit tests
-* Navigate to search service's root folder and run:
- 
-```sh
-mvn clean install   
-```
-
-* If you wish to see the coverage report then go to testing/target/site/jacoco-aggregate and open index.html
-
-* If you wish to build the project without running tests
-
-```sh
-mvn clean install -DskipTests
-```
-
-* If you wish to run integration tests
-
-```sh
-mvn clean install -P integration-test
-```
-    
-* Running locally
-* Navigate to search service's root folder and run:
-
-```sh
-mvn jetty:run
-```
-
-### Deployment
-* Data-Lake Indexer Service Google Cloud Endpoints on App Engine Standard environment
-  * Edit the appengine-web.xml
-    * Open the [appengine-web.xml](indexer/src/main/webapp/WEB-INF/appengine-web.xml) file in editor, and replace the YOUR-PROJECT-ID `PROJECT` line with Google Cloud Platform project Id. Also update `STORAGE_HOST`, `STORAGE_SCHEMA_HOST`, `IDENTITY_QUERY_ACCESS_HOST` and `IDENTITY_AUTHORIZE_HOST` based on your deployment
-
-  * Deploy
-    ```sh
-    mvn appengine:deploy -pl org.opengroup.osdu.search:indexer -amd
-    ```
-
-  * If you wish to deploy the indexer service without running tests
-    ```sh
-    mvn appengine:deploy -pl org.opengroup.osdu.search:indexer -amd -DskipTests
-    ```
-    
-* Data-Lake Search Google Cloud Endpoints on App Engine Flex environment
-  * Edit the app.yaml
-    * Open the [app.yaml](search/src/main/appengine/app.yaml) file in editor, and replace the YOUR-PROJECT-ID `PROJECT` line with Google Cloud Platform project Id. Also update `SEARCH_HOST`, `STORAGE_HOST`, `STORAGE_SCHEMA_HOST`, `IDENTITY_QUERY_ACCESS_HOST` and `IDENTITY_AUTHORIZE_HOST` based on your deployment
- 
-  * Deploy
-    ```sh
-    mvn appengine:deploy -pl org.opengroup.osdu.search:search -amd
-    ```
-
-  * If you wish to deploy the search service without running tests
-    ```sh
-    mvn appengine:deploy -pl org.opengroup.osdu.search:search -amd -DskipTests
-    ```
-  
-### Cloud Environment Setup
-Refer to [Cloud Environment Setup](docs/setup.md) whenever setting up new services on new google projects
+All documentation for the GCP implementation of `os-search` lives [here](./provider/search-gcp/README.md)
 
 ### Open API spec
 go-swagger brings to the go community a complete suite of fully-featured, high-performance, API components to work with a Swagger API: server, client and data model.
@@ -139,9 +50,7 @@ go-swagger brings to the go community a complete suite of fully-featured, high-p
     7.	Run the following command:
         ```
         swagger generate client -f 'search_openapi.json' -A search_openapi
-        ```
-        
-       
+        ``` 
 
 ### Maintenance
 * Indexer:

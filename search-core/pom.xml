@@ -27,7 +27,7 @@
         <groupId>org.opengroup.osdu</groupId>
         <artifactId>os-search</artifactId>
         <version>0.0.5-SNAPSHOT</version>
-        <relativePath>..</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <properties>
@@ -37,6 +37,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.basedir}</project.main.basedir>
+        <tomcat-embed-core.version>9.0.37</tomcat-embed-core.version>
     </properties>
 
       <dependencies>
@@ -181,17 +182,17 @@
           <dependency>
               <groupId>org.elasticsearch</groupId>
               <artifactId>elasticsearch</artifactId>
-              <version>6.6.2</version>
+              <version>${elasticsearch.version}</version>
           </dependency>
           <dependency>
               <groupId>org.elasticsearch.client</groupId>
               <artifactId>elasticsearch-rest-client</artifactId>
-              <version>6.6.2</version>
+              <version>${elasticsearch.version}</version>
           </dependency>
           <dependency>
               <groupId>org.elasticsearch.client</groupId>
               <artifactId>elasticsearch-rest-high-level-client</artifactId>
-              <version>6.6.2</version>
+              <version>${elasticsearch.version}</version>
           </dependency>
 
           <!--Test-->
@@ -237,7 +238,7 @@
           <dependency>
               <groupId>org.apache.tomcat.embed</groupId>
               <artifactId>tomcat-embed-core</artifactId>
-              <version>9.0.21</version>
+              <version>${tomcat-embed-core.version}</version>
           </dependency>
           <dependency>
               <groupId>io.springfox</groupId>
@@ -265,23 +266,5 @@
               <version>2.7.0</version>
           </dependency>
       </dependencies>
-
-      <repositories>
-            <repository>
-                  <id>${gitlab-server}</id>
-                  <url>https://community.opengroup.org/api/v4/groups/17/-/packages/maven</url>
-            </repository>
-      </repositories>
-
-      <distributionManagement>
-            <repository>
-                  <id>${gitlab-server}</id>
-                  <url>https://community.opengroup.org/api/v4/projects/19/packages/maven</url>
-            </repository>
-            <snapshotRepository>
-                  <id>${gitlab-server}</id>
-                  <url>https://community.opengroup.org/api/v4/projects/19/packages/maven</url>
-            </snapshotRepository>
-      </distributionManagement>
 
 </project>

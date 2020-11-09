@@ -127,7 +127,10 @@ public class ElasticUtils {
 
         // Double check failures
         if (bulkResponse != null && bulkResponse.hasFailures()) {
-            throw new AssertionError("setup failed in data post to Index");
+            String errorMessage = String
+              .format("setup failed in data post to Index. BuildFailureMessage: %s.",
+                  bulkResponse.buildFailureMessage());
+            throw new AssertionError(errorMessage);
         }
 
         try {
