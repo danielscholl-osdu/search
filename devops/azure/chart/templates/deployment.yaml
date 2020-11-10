@@ -41,9 +41,14 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 80
+        resources:
+          requests:
+            cpu: "100m"
+          limits:
+            cpu: "300m"
         readinessProbe:
           httpGet:
-            path: /api/search/v2/swagger-ui.html
+            path: /api/search/v2/actuator/health
             port: 80
         volumeMounts:
         - name: azure-keyvault
@@ -88,6 +93,11 @@ spec:
             secretKeyRef:
               name: central-logging
               key: appinsights
+        - name: REDIS_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: redis-configmap
+              key: search-service
         - name: APPLICATIONINSIGHTS_CONNECTION_STRING
           value: InstrumentationKey=$(appinsights_key)
         - name: cosmosdb_database
