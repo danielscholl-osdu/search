@@ -18,7 +18,6 @@ import com.google.gson.Gson;
 
 import org.opengroup.osdu.core.common.model.search.DeploymentEnvironment;
 import org.opengroup.osdu.core.common.model.http.AppException;
-import org.opengroup.osdu.core.common.search.Config;
 import org.opengroup.osdu.core.common.model.search.CcsQueryRequest;
 import org.opengroup.osdu.core.common.model.search.CcsQueryResponse;
 import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
@@ -31,6 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.provider.interfaces.ICcsQueryService;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
@@ -50,9 +50,11 @@ import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Config.class})
+@PrepareForTest({SearchConfigurationProperties.class})
 public class SearchApiTest {
 
+    @Mock
+    private SearchConfigurationProperties searchConfigurationProperties;
     @Mock
     private IQueryService queryService;
     @Mock
@@ -68,9 +70,8 @@ public class SearchApiTest {
 
     @Before
     public void setup() {
-        mockStatic(Config.class);
         queryRequest = new QueryRequest();
-        when(Config.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.LOCAL);
+        when(searchConfigurationProperties.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.LOCAL);
     }
 
     @Test

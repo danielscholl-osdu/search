@@ -25,8 +25,9 @@ import com.google.api.services.cloudkms.v1.model.DecryptRequest;
 import com.google.api.services.cloudkms.v1.model.DecryptResponse;
 import com.google.api.services.cloudkms.v1.model.EncryptRequest;
 import com.google.api.services.cloudkms.v1.model.EncryptResponse;
+import javax.inject.Inject;
 import org.opengroup.osdu.core.common.search.Preconditions;
-import org.springframework.beans.factory.annotation.Value;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
@@ -37,8 +38,8 @@ import java.nio.charset.StandardCharsets;
 @RequestScope
 public class KmsClient {
 
-    @Value("${GOOGLE_CLOUD_PROJECT}")
-    private String GOOGLE_CLOUD_PROJECT;
+    @Inject
+    private SearchConfigurationProperties properties;
 
     private static final String KEY_NAME = "projects/%s/locations/global/keyRings/%s/cryptoKeys/%s";
 
@@ -50,7 +51,7 @@ public class KmsClient {
         Preconditions.checkNotNullOrEmpty(textToBeEncrypted, "textToBeEncrypted cannot be null");
 
         byte[] plaintext = textToBeEncrypted.getBytes(StandardCharsets.UTF_8);
-        String resourceName = String.format(KEY_NAME, GOOGLE_CLOUD_PROJECT, "csqp", "searchService");
+        String resourceName = String.format(KEY_NAME, properties.getGoogleCloudProject(), "csqp", "searchService");
         CloudKMS kms = createAuthorizedClient();
         EncryptRequest request = new EncryptRequest().encodePlaintext(plaintext);
         EncryptResponse response = kms.projects().locations().keyRings().cryptoKeys()
@@ -67,7 +68,7 @@ public class KmsClient {
         Preconditions.checkNotNullOrEmpty(textToBeDecrypted, "textToBeDecrypted cannot be null");
 
         CloudKMS kms = createAuthorizedClient();
-        String cryptoKeyName = String.format(KEY_NAME, GOOGLE_CLOUD_PROJECT, "csqp", "searchService");
+        String cryptoKeyName = String.format(KEY_NAME, properties.getGoogleCloudProject(), "csqp", "searchService");
         DecryptRequest request = new DecryptRequest().setCiphertext(textToBeDecrypted);
         DecryptResponse response = kms.projects().locations().keyRings().cryptoKeys()
                 .decrypt(cryptoKeyName, request)
