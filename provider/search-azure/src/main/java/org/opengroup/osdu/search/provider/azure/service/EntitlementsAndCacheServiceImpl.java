@@ -14,21 +14,21 @@
 
 package org.opengroup.osdu.search.provider.azure.service;
 
-import org.apache.http.HttpStatus;
-import org.opengroup.osdu.core.common.model.http.AppException;
-import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.cache.ICache;
-import org.opengroup.osdu.core.common.util.Crc32c;
-import org.opengroup.osdu.core.common.model.entitlements.EntitlementsException;
-import org.opengroup.osdu.core.common.model.entitlements.Groups;
-import org.opengroup.osdu.core.common.http.HttpResponse;
-import org.opengroup.osdu.core.common.entitlements.IEntitlementsFactory;
-import org.opengroup.osdu.core.common.entitlements.IEntitlementsService;
-import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
-import org.springframework.stereotype.Service;
+import java.util.Set;
 
 import javax.inject.Inject;
-import java.util.Set;
+
+import org.apache.http.HttpStatus;
+import org.opengroup.osdu.core.common.entitlements.IEntitlementsFactory;
+import org.opengroup.osdu.core.common.entitlements.IEntitlementsService;
+import org.opengroup.osdu.core.common.http.HttpResponse;
+import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
+import org.opengroup.osdu.core.common.model.entitlements.EntitlementsException;
+import org.opengroup.osdu.core.common.model.entitlements.Groups;
+import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.core.common.model.http.DpsHeaders;
+import org.opengroup.osdu.search.provider.azure.cache.GroupCache;
+import org.springframework.stereotype.Service;
 
 @Service
 public class EntitlementsAndCacheServiceImpl implements EntitlementsAndCacheService {
@@ -40,7 +40,7 @@ public class EntitlementsAndCacheServiceImpl implements EntitlementsAndCacheServ
 	private IEntitlementsFactory factory;
 
 	@Inject
-	private ICache<String, Groups> cache;
+	private GroupCache cache;
 
 	@Inject
 	private JaxRsDpsLog logger;
@@ -79,7 +79,7 @@ public class EntitlementsAndCacheServiceImpl implements EntitlementsAndCacheServ
 	}
 
 	protected Groups getGroups(DpsHeaders headers) {
-		String cacheKey = this.getGroupCacheKey(headers);
+		String cacheKey = this.cache.getCacheKey(headers);
 		Groups groups = this.cache.get(cacheKey);
 
 		if (groups == null) {
@@ -100,9 +100,4 @@ public class EntitlementsAndCacheServiceImpl implements EntitlementsAndCacheServ
 		return groups;
 	}
 
-	protected static String getGroupCacheKey(DpsHeaders headers) {
-		String key = String.format("entitlement-groups:%s:%s", headers.getPartitionIdWithFallbackToAccountId(),
-				headers.getAuthorization());
-		return Crc32c.hashToBase64EncodedString(key);
-	}
 }
