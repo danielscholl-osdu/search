@@ -26,10 +26,10 @@ import javax.inject.Named;
 @Configuration
 public class AzureBootstrapConfig {
 
-    @Value("${ELASTIC_CACHE_EXPIRATION}")
+    @Value("${elastic.cache.expiration}")
     private Integer elasticCacheExpiration;
 
-    @Value("${MAX_CACHE_VALUE_SIZE}")
+    @Value("${elastic.cache.maxSize}")
     private Integer elasticCacheMaxSize;
 
     @Value("${azure.keyvault.url}")
@@ -58,6 +58,8 @@ public class AzureBootstrapConfig {
     public Integer getElasticCacheMaxSize() {
         return elasticCacheMaxSize;
     }
+
+
 
     @Bean
     public IEntitlementsFactory entitlementsFactory() {

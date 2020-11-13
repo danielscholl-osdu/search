@@ -63,12 +63,12 @@
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>os-core-common</artifactId>
-            <version>0.3.12</version>
+            <version>0.3.16</version>
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>core-lib-azure</artifactId>
-            <version>0.0.33</version>
+            <version>0.0.41</version>
         </dependency>
         <dependency>
             <groupId>io.projectreactor.netty</groupId>
