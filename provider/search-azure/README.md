@@ -50,6 +50,7 @@ az keyvault secret show --vault-name $KEY_VAULT_NAME --name $KEY_VAULT_SECRET_NA
 | `azure.activedirectory.client-id` | `********` | AAD client application ID | yes | output of infrastructure deployment |
 | `azure.activedirectory.AppIdUri` | `api://${azure.activedirectory.client-id}` | URI for AAD Application | no | -- |
 | `azure.activedirectory.session-stateless` | `true` | Flag run in stateless mode (needed by AAD dependency) | no | -- |
+| `cache.provider` | `redis` | cache provider [vm, redis], by default 'redis' | no | - |
 | `ELASTIC_CACHE_EXPIRATION` | `1` | Credentials cache expiration | no | - |
 | `MAX_CACHE_VALUE_SIZE` | `60` | Cache size | no | - |
 | `KEYVAULT_URI` | ex `https://foo-keyvault.vault.azure.net/` | URI of KeyVault that holds application secrets | no | output of infrastructure deployment |
