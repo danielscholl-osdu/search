@@ -52,7 +52,7 @@ import org.opengroup.osdu.core.common.model.http.HttpResponse;
 import org.opengroup.osdu.core.common.provider.interfaces.IAttributesCache;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.http.IUrlFetchService;
-import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -61,9 +61,11 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.opengroup.osdu.search.smart.attributes.AttributeLoader;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ RestHighLevelClient.class, IndicesClient.class, Config.class, AttributeLoader.class })
+@PrepareForTest({ RestHighLevelClient.class, IndicesClient.class, SearchConfigurationProperties.class, AttributeLoader.class })
 public class AttributesTest {
 
+	@Mock
+	private SearchConfigurationProperties searchConfigurationProperties;
 	@Mock
 	private ElasticClientHandler elasticClientHandler;
 	@Mock
@@ -93,8 +95,8 @@ public class AttributesTest {
 	public void setup() throws IOException {
 		this.restHighLevelClient = PowerMockito.mock(RestHighLevelClient.class);
 		this.indicesClient = PowerMockito.mock(IndicesClient.class);
-		mockStatic(Config.class,AttributeLoader.class);
-		when(Config.getDeployedServiceId()).thenReturn("search");
+		mockStatic(AttributeLoader.class);
+		when(searchConfigurationProperties.getDeployedServiceId()).thenReturn("search");
 		when(AttributeLoader.getAttributes()).thenReturn(new ArrayList<>());
 	}
 
