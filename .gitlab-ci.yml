@@ -26,9 +26,6 @@ variables:
   OSDU_GCP_TENANT_NAME: osdu
   OSDU_GCP_STORAGE_URL: https://os-storage-dot-nice-etching-277309.uc.r.appspot.com/api/storage/v2/
   OSDU_SECURITY_HTTPS_CERTIFICATE_TRUST: 'true'
-  OSDU_GCP_REDIS_SEARCH_PORT: 6379
-  OSDU_GCP_SPRING_PROFILES_ACTIVE: dev
-  OSDU_GCP_INDEXER_HOST_SEARCH: https://os-indexer-dot-nice-etching-277309.uc.r.appspot.com/api/indexer/v2/
 
   IBM_BUILD_SUBDIR: provider/search-ibm
   IBM_INT_TEST_SUBDIR: testing/integration-tests/search-test-ibm
