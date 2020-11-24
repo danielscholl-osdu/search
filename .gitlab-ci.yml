@@ -58,10 +58,6 @@ include:
     file: "cloud-providers/azure.yml"
 
   - project: 'osdu/platform/ci-cd-pipelines'
-    ref: "master"
-    file: 'cloud-providers/osdu-gcp.yml'
-
-  - project: 'osdu/platform/ci-cd-pipelines'
     file: 'cloud-providers/osdu-gcp-cloudrun.yml'
 
 aws-test-java:
