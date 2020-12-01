@@ -40,7 +40,7 @@ public class ElasticRepositoryReference implements IElasticRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticRepositoryReference.class);
     public static final String SEARCH_STORAGE = "SearchSettings";
-    public static final String SEARCH_DATABASE = "search";
+    public static final String SEARCH_DATABASE = "local";
 
     @Override
     public ClusterSettings getElasticClusterSettings(TenantInfo tenantInfo) {
@@ -57,7 +57,7 @@ public class ElasticRepositoryReference implements IElasticRepository {
         Document record = (Document) collection.find(eq("_id", settingId)).first();
         if (Objects.isNull(record)) {
             logger.warn(settingId + " credentials not found at database.");
-            return new ClusterSettings(ELASTIC_HOST, Integer.parseInt(ELASTIC_PORT), ELASTIC_USER_PASSWORD, true, false);
+            return new ClusterSettings(ELASTIC_HOST, Integer.parseInt(ELASTIC_PORT), ELASTIC_USER_PASSWORD, false, false);
         }
 
         ElasticSettingsDoc elasticSettingsDoc = new Gson()
