@@ -1,18 +1,18 @@
 package org.opengroup.osdu.search.provider.reference.di;
 
-import static org.opengroup.osdu.search.provider.reference.provider.persistence.ElasticRepositoryReference.SEARCH_DATABASE;
 import com.google.gson.Gson;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.core.common.provider.interfaces.ITenantFactory;
-import org.opengroup.osdu.search.provider.reference.model.TenantInfoDocument;
 import org.opengroup.osdu.search.provider.reference.provider.persistence.MongoDdmsClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,8 @@ import org.springframework.stereotype.Component;
 public class TenantFactoryImpl implements ITenantFactory {
 
   private static final Logger LOG = LoggerFactory.getLogger(TenantFactoryImpl.class);
-  public static final String TENANT_INFO = "TenantInfo";
+  public static final String TENANT_INFO = "tenantinfo";
+  public static final String MAIN_DATABASE = "main";
 
   @Autowired
   private MongoDdmsClient mongoClient;
@@ -62,23 +63,18 @@ public class TenantFactoryImpl implements ITenantFactory {
   private void initTenants() {
     this.tenants = new HashMap<>();
     MongoCollection<Document> mongoCollection = mongoClient
-        .getMongoCollection(SEARCH_DATABASE, TENANT_INFO);
+        .getMongoCollection(MAIN_DATABASE, TENANT_INFO);
     FindIterable<Document> results = mongoCollection.find();
     if (Objects.isNull(results) && Objects.isNull(results.first())) {
       LOG.error(String.format("Collection \'%s\' is empty.", results));
     }
     for (Document document : results) {
-      TenantInfoDocument tenantInfoDocument = new Gson()
-          .fromJson(document.toJson(), TenantInfoDocument.class);
-      TenantInfo tenantInfo = convertToTenantInfo(tenantInfoDocument);
+      TenantInfo tenantInfo = new Gson().fromJson(document.toJson(),TenantInfo.class);
+      ObjectId id = (ObjectId) document.get("_id");
+      tenantInfo.setId((long) id.getCounter());
+      tenantInfo.setCrmAccountIds((ArrayList<String>) document.get("crmAccountID"));
       this.tenants.put(tenantInfo.getName(), tenantInfo);
     }
-  }
-
-  private TenantInfo convertToTenantInfo(TenantInfoDocument tenantInfoDocument) {
-    TenantInfo tenantInfo = new TenantInfo();
-    tenantInfo.setName(tenantInfoDocument.getId());
-    return tenantInfo;
   }
 }
 
