@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.DeploymentEnvironment;
-import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.cache.CursorCache;
@@ -56,9 +56,11 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({SearchRequest.class, SearchHits.class, RestHighLevelClient.class, Config.class})
+@PrepareForTest({SearchRequest.class, SearchHits.class, RestHighLevelClient.class, SearchConfigurationProperties.class})
 public class ScrollQueryServiceTest {
 
+    @Mock
+    private SearchConfigurationProperties searchConfigurationProperties;
     @Mock
     private ElasticClientHandler elasticClientHandler;
     @Mock
@@ -74,7 +76,7 @@ public class ScrollQueryServiceTest {
     @Mock
     private IProviderHeaderService providerHeaderService;
     @Mock
-    private Config searchConfig;
+    private SearchConfigurationProperties searchConfig;
 
     private RestHighLevelClient restHighLevelClient;
 
@@ -97,7 +99,6 @@ public class ScrollQueryServiceTest {
 
         mockStatic(RestHighLevelClient.class);
         mockStatic(SearchRequest.class);
-        mockStatic(Config.class);
 
         restHighLevelClient = PowerMockito.mock(RestHighLevelClient.class);
         elasticSearchResponse = PowerMockito.mock(SearchResponse.class, RETURNS_DEEP_STUBS);
@@ -112,7 +113,7 @@ public class ScrollQueryServiceTest {
 
         when(providerHeaderService.getDataGroupsHeader()).thenReturn(DATA_GROUPS);
 
-        when(Config.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.LOCAL);
+        when(searchConfigurationProperties.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.LOCAL);
     }
 
     @Test

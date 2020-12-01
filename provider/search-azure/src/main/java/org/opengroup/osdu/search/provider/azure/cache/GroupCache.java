@@ -14,14 +14,11 @@
 
 package org.opengroup.osdu.search.provider.azure.cache;
 
-import org.opengroup.osdu.core.common.cache.VmCache;
+import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.model.entitlements.Groups;
-import org.springframework.stereotype.Component;
+import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 
-@Component
-public class GroupCache extends VmCache<String, Groups> {
+public interface GroupCache extends ICache<String, Groups> {
 
-    public GroupCache() {
-        super(5*60, 1000);
-    }
+  String getCacheKey(DpsHeaders headers);
 }

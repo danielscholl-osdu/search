@@ -30,7 +30,7 @@ import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.provider.interfaces.IKindsCache;
-import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.springframework.context.annotation.Scope;
 
@@ -46,7 +46,8 @@ import javax.inject.Inject;
 public class Kinds {
 
     @Inject
-    public Kinds(ElasticClientHandler elasticClientHandler, IKindsCache cache, DpsHeaders headersInfo, JaxRsDpsLog log) {
+    public Kinds(SearchConfigurationProperties configurationProperties, ElasticClientHandler elasticClientHandler, IKindsCache cache, DpsHeaders headersInfo, JaxRsDpsLog log) {
+        this.configurationProperties = configurationProperties;
         this.elasticClientHandler = elasticClientHandler;
         this.cache = cache;
         this.headersInfo = headersInfo;
@@ -60,11 +61,12 @@ public class Kinds {
     private final JaxRsDpsLog log;
     private static final int AggregationSize = 10000;
     private static final TimeValue REQUEST_TIMEOUT = TimeValue.timeValueMinutes(1);
+    private SearchConfigurationProperties configurationProperties;
 
     @SuppressWarnings("unchecked")
     public Set<String> all(String accountId) throws IOException {
         if (kinds.get(accountId) == null) {
-            String cacheKey = String.format("%s-%s", Config.getDeployedServiceId(), accountId);
+            String cacheKey = String.format("%s-%s", configurationProperties.getDeployedServiceId(), accountId);
             kinds.put(accountId, this.cache.get(cacheKey));
         }
         if (kinds.get(accountId) == null) {
@@ -75,7 +77,7 @@ public class Kinds {
     }
 
     public void cacheSync() throws IOException {
-        String cacheKey = String.format("%s-%s", Config.getDeployedServiceId(), this.headersInfo.getPartitionId());
+        String cacheKey = String.format("%s-%s", configurationProperties.getDeployedServiceId(), this.headersInfo.getPartitionId());
         log.info(String.format("updating the cache with key: %s", cacheKey));
         Set<String> kindVals = this.getTermAggregation("by_kind", RecordMetaAttribute.KIND.getValue());
         this.cache.put(cacheKey, kindVals);

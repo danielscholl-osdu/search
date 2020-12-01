@@ -14,6 +14,11 @@ variables:
   GCP_DOMAIN: cloud.slb-ds.com
   GCP_STORAGE_URL: https://osdu-search-dot-opendes.appspot.com/api/storage/v2/
 
+ # --- osdu gcp specific variables for cloudrun ---
+  OSDU_GCP_SERVICE: search
+  OSDU_GCP_VENDOR: gcp
+  OSDU_GCP_ENV_VARS: ENVIRONMENT=$OSDU_GCP_SPRING_PROFILES_ACTIVE,GOOGLE_CLOUD_PROJECT=$OSDU_GCP_PROJECT,REDIS_SEARCH_HOST=$REDIS_SEARCH_HOST,REDIS_SEARCH_PORT=$OSDU_GCP_REDIS_SEARCH_PORT,INDEXER_HOST=$OSDU_GCP_INDEXER_HOST_SEARCH,AUTHORIZE_API=$OSDU_GCP_AUTHORIZE_API,ENTITLEMENTS_HOST=$OSDU_GCP_ENTITLEMENTS_URL,SECURITY_HTTPS_CERTIFICATE_TRUST=$OSDU_SECURITY_HTTPS_CERTIFICATE_TRUST --vpc-connector=$OSDU_GCP_VPC_CONNECTOR
+  # Variables should be partially removed after migration on cloudrun gcp
   OSDU_GCP_BUILD_SUBDIR: provider/search-gcp
   OSDU_GCP_INT_TEST_SUBDIR: testing/integration-tests/search-test-gcp
   OSDU_GCP_APPLICATION_NAME: os-search
@@ -53,9 +58,11 @@ include:
     file: "cloud-providers/azure.yml"
 
   - project: 'osdu/platform/ci-cd-pipelines'
-    ref: "master"
-    file: 'cloud-providers/osdu-gcp.yml'
-
+    file: 'cloud-providers/osdu-gcp-cloudrun.yml'
 
 aws-test-java:
   tags: ['aws-internal-test']
+
+osdu-gcp-test:
+  variables:
+    OSDU_GCP_TESTING_DIR: "testing/integration-tests"

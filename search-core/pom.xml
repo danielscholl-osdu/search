@@ -27,7 +27,7 @@
         <groupId>org.opengroup.osdu</groupId>
         <artifactId>os-search</artifactId>
         <version>0.0.5-SNAPSHOT</version>
-        <relativePath>..</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <properties>
@@ -44,7 +44,7 @@
           <dependency>
               <groupId>org.opengroup.osdu</groupId>
               <artifactId>os-core-common</artifactId>
-              <version>0.0.18</version>
+              <version>0.3.8</version>
           </dependency>
 
           <dependency>
@@ -266,23 +266,5 @@
               <version>2.7.0</version>
           </dependency>
       </dependencies>
-
-      <repositories>
-            <repository>
-                  <id>${gitlab-server}</id>
-                  <url>https://community.opengroup.org/api/v4/groups/17/-/packages/maven</url>
-            </repository>
-      </repositories>
-
-      <distributionManagement>
-            <repository>
-                  <id>${gitlab-server}</id>
-                  <url>https://community.opengroup.org/api/v4/projects/19/packages/maven</url>
-            </repository>
-            <snapshotRepository>
-                  <id>${gitlab-server}</id>
-                  <url>https://community.opengroup.org/api/v4/projects/19/packages/maven</url>
-            </snapshotRepository>
-      </distributionManagement>
 
 </project>
