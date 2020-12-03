@@ -25,8 +25,9 @@ import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
 import org.opengroup.osdu.core.common.search.Preconditions;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.provider.gcp.provider.kms.KmsClient;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -44,17 +45,14 @@ public class ElasticRepositoryDatastore implements IElasticRepository {
     @Inject
     private DatastoreFactory datastoreFactory;
 
-    @Value("${ELASTIC_DATASTORE_ID}")
-    private String ELASTIC_DATASTORE_ID;
-
-    @Value("${ELASTIC_DATASTORE_KIND}")
-    private String ELASTIC_DATASTORE_KIND;
+    @Autowired
+    private SearchConfigurationProperties properties;
 
     @Override
     public ClusterSettings getElasticClusterSettings(TenantInfo tenantInfo) {
 
         Datastore googleDatastore = this.datastoreFactory.getDatastoreInstance(tenantInfo);
-        Key key = googleDatastore.newKeyFactory().setKind(ELASTIC_DATASTORE_KIND).newKey(ELASTIC_DATASTORE_ID);
+        Key key = googleDatastore.newKeyFactory().setKind(properties.getElasticDatastoreKind()).newKey(properties.getElasticDatastoreId());
         Entity datastoreEntity = googleDatastore.get(key);
 
         if (datastoreEntity == null) {

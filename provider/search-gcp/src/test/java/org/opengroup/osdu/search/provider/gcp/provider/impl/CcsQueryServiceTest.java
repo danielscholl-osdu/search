@@ -17,7 +17,6 @@ package org.opengroup.osdu.search.provider.gcp.provider.impl;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
-import org.opengroup.osdu.core.common.search.Config;
 import org.opengroup.osdu.core.common.model.search.CcsQueryRequest;
 import org.opengroup.osdu.core.common.model.search.CcsQueryResponse;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
@@ -29,6 +28,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.opengroup.osdu.core.common.provider.interfaces.ITenantFactory;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -46,11 +46,14 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Config.class})
+@PrepareForTest({SearchConfigurationProperties.class})
 public class CcsQueryServiceTest {
 
     @InjectMocks
     private CcsQueryServiceImpl ccsQueryService;
+
+    @Mock
+    private SearchConfigurationProperties searchConfigurationProperties;
 
     @Mock
     private IElasticRepository elasticRepository;
@@ -66,8 +69,6 @@ public class CcsQueryServiceTest {
 
     @Before
     public void setup() {
-        mockStatic(Config.class);
-
         Map<String, String> headersMap = new HashMap<>();
         headersMap.put(DpsHeaders.ACCOUNT_ID, "tenant1,common");
         headersMap.put(DpsHeaders.AUTHORIZATION, "Bearer smth");
@@ -83,7 +84,7 @@ public class CcsQueryServiceTest {
         when(elasticRepository.getElasticClusterSettings(any(TenantInfo.class))).thenReturn(new ClusterSettings("", 42, ""));
         when(queryService.queryIndex(any(QueryRequest.class), any(ClusterSettings.class))).thenReturn(createTenantQueryResponse())
                 .thenReturn(createCommonTenantQueryResponse());
-        when(Config.isSmartSearchCcsDisabled()).thenReturn(false);
+        when(searchConfigurationProperties.isSmartSearchCcsDisabled()).thenReturn(false);
         CcsQueryResponse ccsQueryResponse = this.ccsQueryService.makeRequest(new CcsQueryRequest());
         verify(queryService, times(2)).queryIndex(any(QueryRequest.class), any(ClusterSettings.class));
         assertNotNull(ccsQueryResponse);

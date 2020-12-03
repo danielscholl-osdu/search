@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.provider.interfaces.IKindsCache;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -44,11 +45,13 @@ public class KindsTest {
     private ElasticClientHandler elasticClientHandler;
     @Mock
     private DpsHeaders dpsHeaders;
+    @Mock
+    private SearchConfigurationProperties configurationProperties;
 
     @Test
     public void should_return_no_Results_when_notInCache()throws IOException {
         KindsSut sut = setup(false);
-        Set result = sut.all(any());
+        Set result = sut.all("no-tenant");
         verify(cache,times(1)).get(any());
         assertEquals(0, result.size());
     }
@@ -78,12 +81,12 @@ public class KindsTest {
     public KindsSut setup(boolean cacheHit){
         when(dpsHeaders.getPartitionId()).thenReturn("tenant1");
         when(cache.get(any())).thenReturn(cacheHit ? new HashSet() : null);
-        return new KindsSut(elasticClientHandler, cache, dpsHeaders,log);
+        return new KindsSut(configurationProperties, elasticClientHandler, cache, dpsHeaders,log);
     }
 
     class KindsSut extends Kinds{
-        public KindsSut(ElasticClientHandler elasticClientHandler, IKindsCache cache, DpsHeaders headersInfo, JaxRsDpsLog log){
-            super(elasticClientHandler, cache, headersInfo,log);
+        public KindsSut(SearchConfigurationProperties configurationProperties, ElasticClientHandler elasticClientHandler, IKindsCache cache, DpsHeaders headersInfo, JaxRsDpsLog log){
+            super(configurationProperties, elasticClientHandler, cache, headersInfo,log);
         }
 
         public int getTermCallCount = 0;

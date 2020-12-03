@@ -32,15 +32,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.opengroup.osdu.core.common.model.search.DeploymentEnvironment;
 import org.opengroup.osdu.core.common.model.http.AppException;
-import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.middleware.RedirectHttpRequestsHandler;
 import org.opengroup.osdu.search.provider.gcp.provider.impl.ProviderHeaderServiceImpl;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Config.class})
+@PrepareForTest({SearchConfigurationProperties.class})
 public class RedirectHttpRequestsHandlerTest {
+
+	@Mock
+	private SearchConfigurationProperties searchConfigurationProperties;
 
     @Mock
     private ContainerRequestContext context;
@@ -62,15 +65,13 @@ public class RedirectHttpRequestsHandlerTest {
 
     @Before
     public void setup() throws Exception {
-        mockStatic(Config.class);
-        
         doNothing().when(filterChain).doFilter(httpRequest, httpResponse);
     }
 
     @Test
     public void should_throwAppException302WithHttpsLocation_when_client_isNotUsingHttps() throws Exception {
         when(httpRequest.getScheme()).thenReturn("http");
-        when(Config.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.CLOUD);
+        when(searchConfigurationProperties.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.CLOUD);
         try {
             sut.doFilter(httpRequest, httpResponse, filterChain);
             fail("should throw");
