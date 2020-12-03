@@ -18,7 +18,7 @@ import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.provider.interfaces.ITenantFactory;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
-import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.core.common.model.search.CcsQueryRequest;
 import org.opengroup.osdu.core.common.model.search.CcsQueryResponse;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
@@ -49,6 +49,9 @@ public class CcsQueryServiceImpl implements ICcsQueryService {
     @Inject
     private IQueryService queryService;
 
+    @Inject
+    private SearchConfigurationProperties configurationProperties;
+
     @Override
     public CcsQueryResponse makeRequest(final CcsQueryRequest ccsQueryRequest) throws Exception {
         List<String> accounts = Arrays.asList(dpsHeaders.getPartitionIdWithFallbackToAccountId().trim().split("\\s*,\\s*"));
@@ -58,7 +61,7 @@ public class CcsQueryServiceImpl implements ICcsQueryService {
 
     private List<QueryResponse> getTenantResponses(final List<String> accounts, final CcsQueryRequest ccsQueryRequest) throws Exception {
         List<QueryResponse> tenantResponses = new ArrayList<>();
-        if (Config.isSmartSearchCcsDisabled() || accounts.size() == 1) {
+        if (configurationProperties.isSmartSearchCcsDisabled() || accounts.size() == 1) {
             TenantInfo tenant = tenantStorageFactory.getTenantInfo(dpsHeaders.getPartitionIdWithFallbackToAccountId());
             tenantResponses.add(queryService.queryIndex(convertCcsQueryRequestToQueryRequest(ccsQueryRequest),
                     elasticRepository.getElasticClusterSettings(tenant)));

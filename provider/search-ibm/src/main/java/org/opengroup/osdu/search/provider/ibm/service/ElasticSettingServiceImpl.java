@@ -24,7 +24,7 @@ import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
 import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
 import org.opengroup.osdu.core.common.multitenancy.ITenantInfoService;
-import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -44,11 +44,14 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
     @Inject
     private JaxRsDpsLog log;
 
+    @Inject
+    private SearchConfigurationProperties configurationProperties;
+
     @Override
     public ClusterSettings getElasticClusterInformation() {
 
         TenantInfo tenantInfo = this.tenantInfoServiceProvider.get().getTenantInfo();
-        String cacheKey = String.format("%s-%s", Config.getDeployedServiceId(), tenantInfo.getName());
+        String cacheKey = String.format("%s-%s", configurationProperties.getDeployedServiceId(), tenantInfo.getName());
 
         ClusterSettings clusterInfo = this.elasticCredentialCache.get(cacheKey);
         if (clusterInfo != null) {

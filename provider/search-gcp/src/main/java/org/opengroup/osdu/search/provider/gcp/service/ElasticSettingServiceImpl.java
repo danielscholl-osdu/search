@@ -23,7 +23,7 @@ import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
 import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.multitenancy.ITenantInfoService;
-import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.provider.gcp.cache.ElasticCredentialsCache;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +31,9 @@ import javax.inject.Inject;
 
 @Service
 public class ElasticSettingServiceImpl implements IElasticSettingService {
+
+    @Inject
+    private SearchConfigurationProperties searchConfigurationProperties;
 
     @Inject
     private javax.inject.Provider<ITenantInfoService> tenantInfoServiceProvider;
@@ -49,7 +52,7 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
 
         TenantInfo tenantInfo = this.tenantInfoServiceProvider.get().getTenantInfo();
 
-        String cacheKey = String.format("%s-%s", Config.getDeployedServiceId(), tenantInfo.getName());
+        String cacheKey = String.format("%s-%s", searchConfigurationProperties.getDeployedServiceId(), tenantInfo.getName());
         ClusterSettings clusterInfo = this.elasticCredentialCache.get(cacheKey);
         if (clusterInfo != null) {
             return clusterInfo;

@@ -33,7 +33,7 @@ import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryResponse;
-import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
@@ -50,6 +50,8 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     private ElasticClientHandler elasticClientHandler;
     @Inject
     private AuditLogger auditLogger;
+    @Inject
+    private SearchConfigurationProperties configurationProperties;
 
     @Override
     public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
@@ -97,7 +99,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         if (!Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
             TermsAggregationBuilder termsAggregationBuilder = new TermsAggregationBuilder(AGGREGATION_NAME, ValueType.STRING);
             termsAggregationBuilder.field(searchRequest.getAggregateBy());
-            termsAggregationBuilder.size(Config.getAggregationSize());
+            termsAggregationBuilder.size(configurationProperties.getAggregationSize());
             sourceBuilder.aggregation(termsAggregationBuilder);
         }
 
