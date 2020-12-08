@@ -33,7 +33,7 @@ public class DatastoreFactory {
     @Inject
     private DatastoreCredentialCache cache;
 
-    private static Map<String, Datastore> DATASTORE_CLIENTS = new HashMap<>();
+    private static Map<String, Datastore> datastoreClients = new HashMap<>();
 
     private static final RetrySettings RETRY_SETTINGS = RetrySettings.newBuilder()
             .setMaxAttempts(6)
@@ -51,7 +51,7 @@ public class DatastoreFactory {
             .build();
 
     public Datastore getDatastoreInstance(TenantInfo tenantInfo) {
-        if (DATASTORE_CLIENTS.get(tenantInfo.getName()) == null) {
+        if (datastoreClients.get(tenantInfo.getName()) == null) {
             Datastore googleDatastore = DatastoreOptions.newBuilder()
                     .setCredentials(new DatastoreCredential(tenantInfo, this.cache))
                     .setRetrySettings(RETRY_SETTINGS)
@@ -59,8 +59,8 @@ public class DatastoreFactory {
                     .setNamespace(tenantInfo.getName())
                     .setProjectId(tenantInfo.getProjectId())
                     .build().getService();
-            DATASTORE_CLIENTS.put(tenantInfo.getName(), googleDatastore);
+            datastoreClients.put(tenantInfo.getName(), googleDatastore);
         }
-        return DATASTORE_CLIENTS.get(tenantInfo.getName());
+        return datastoreClients.get(tenantInfo.getName());
     }
 }

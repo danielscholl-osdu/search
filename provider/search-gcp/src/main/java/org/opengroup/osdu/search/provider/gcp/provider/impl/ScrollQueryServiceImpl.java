@@ -48,7 +48,7 @@ import java.util.Map;
 @Service
 public class ScrollQueryServiceImpl extends QueryBase implements IScrollQueryService {
 
-    private final TimeValue SEARCH_SCROLL_TIMEOUT = TimeValue.timeValueSeconds(90L);
+    private final TimeValue searchScrollTimeout = TimeValue.timeValueSeconds(90L);
 
     @Inject
     private ElasticClientHandler elasticClientHandler;
@@ -80,7 +80,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                         }
 
                         SearchScrollRequest scrollRequest = new SearchScrollRequest(cursorSettings.getCursor());
-                        scrollRequest.scroll(SEARCH_SCROLL_TIMEOUT);
+                        scrollRequest.scroll(searchScrollTimeout);
                         SearchResponse searchScrollResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
 
                         List<Map<String, Object>> results = getHitsFromSearchResponse(searchScrollResponse);
@@ -109,7 +109,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
         return queryResponse;
     }
 
-    private CursorQueryResponse executeCursorQuery(CursorQueryRequest searchRequest, RestHighLevelClient client) throws AppException {
+    private CursorQueryResponse executeCursorQuery(CursorQueryRequest searchRequest, RestHighLevelClient client) {
 
         SearchResponse searchResponse = this.makeSearchRequest(searchRequest, client);
         List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
@@ -124,7 +124,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
     }
 
     @Override
-    SearchRequest createElasticRequest(Query request) throws AppException, IOException {
+    SearchRequest createElasticRequest(Query request) throws IOException {
 
         // set the indexes to search against
         SearchRequest elasticSearchRequest = new SearchRequest(this.getIndex(request));
@@ -139,7 +139,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
         }
 
         elasticSearchRequest.source(sourceBuilder);
-        elasticSearchRequest.scroll(new Scroll(SEARCH_SCROLL_TIMEOUT));
+        elasticSearchRequest.scroll(new Scroll(searchScrollTimeout));
 
         return elasticSearchRequest;
     }
