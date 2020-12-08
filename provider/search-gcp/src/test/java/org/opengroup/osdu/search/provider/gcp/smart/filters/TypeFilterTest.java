@@ -62,9 +62,9 @@ public class TypeFilterTest {
         setupMock(input);
         Map<String, String> result = sut.values("we", 5);
 
-        assertEquals(result.size(), 2);
-        assertEquals(result.get("well"), "type");
-        assertEquals(result.get("well2"), "type");
+        assertEquals(2, result.size());
+        assertEquals("type", result.get("well"));
+        assertEquals("type", result.get("well2"));
     }
 
     @Test
@@ -80,7 +80,7 @@ public class TypeFilterTest {
         setupMock(input);
         Map<String, String> result = sut.values("we", 1);
 
-        assertEquals(result.size(), 1);
+        assertEquals(1, result.size());
     }
 
     @Test
@@ -93,7 +93,7 @@ public class TypeFilterTest {
         setupMock(input);
         Map<String, String> result = sut.values("we", 1);
 
-        assertEquals(result.size(), 0);
+        assertEquals(0, result.size());
     }
 
     private void setupMock(Set<String> input)throws IOException {

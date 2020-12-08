@@ -58,6 +58,8 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 
 abstract class QueryBase {
 
+    public static final String SEARCH_ERROR_MSG = "Search error";
+    public static final String ERROR_PROCESSING_SEARCH_REQUEST_MSG = "Error processing search request";
     @Inject
     DpsHeaders dpsHeaders;
     @Inject
@@ -78,11 +80,11 @@ abstract class QueryBase {
     // queryableExcludes properties can be returned by query results
     private final Set<String> queryableExcludes = new HashSet<>(Arrays.asList(RecordMetaAttribute.INDEX_STATUS.getValue()));
 
-    private final TimeValue REQUEST_TIMEOUT = TimeValue.timeValueMinutes(1);
+    private final TimeValue requestTimeout = TimeValue.timeValueMinutes(1);
 
     private boolean useGeoShapeQuery = false;
 
-    QueryBuilder buildQuery(String simpleQuery, SpatialFilter spatialFilter, boolean asOwner) throws AppException, IOException {
+    QueryBuilder buildQuery(String simpleQuery, SpatialFilter spatialFilter, boolean asOwner) throws IOException {
 
         QueryBuilder textQueryBuilder = null;
         QueryBuilder spatialQueryBuilder = null;
@@ -144,21 +146,21 @@ abstract class QueryBase {
         return queryStringQuery(query).allowLeadingWildcard(false);
     }
 
-    private QueryBuilder getBoundingBoxQuery(SpatialFilter spatialFilter) throws AppException {
+    private QueryBuilder getBoundingBoxQuery(SpatialFilter spatialFilter) {
 
         GeoPoint topLeft = new GeoPoint(spatialFilter.getByBoundingBox().getTopLeft().getLatitude(), spatialFilter.getByBoundingBox().getTopLeft().getLongitude());
         GeoPoint bottomRight = new GeoPoint(spatialFilter.getByBoundingBox().getBottomRight().getLatitude(), spatialFilter.getByBoundingBox().getBottomRight().getLongitude());
         return geoBoundingBoxQuery(spatialFilter.getField()).setCorners(topLeft, bottomRight);
     }
 
-    private QueryBuilder getDistanceQuery(SpatialFilter spatialFilter) throws AppException {
+    private QueryBuilder getDistanceQuery(SpatialFilter spatialFilter) {
 
         return geoDistanceQuery(spatialFilter.getField())
                 .point(spatialFilter.getByDistance().getPoint().getLatitude(), spatialFilter.getByDistance().getPoint().getLongitude())
                 .distance(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS);
     }
 
-    private QueryBuilder getGeoPolygonQuery(SpatialFilter spatialFilter) throws AppException {
+    private QueryBuilder getGeoPolygonQuery(SpatialFilter spatialFilter) {
 
         List<GeoPoint> points = new ArrayList<>();
         for (Point point : spatialFilter.getByGeoPolygon().getPoints()) {
@@ -184,7 +186,7 @@ abstract class QueryBase {
         return geoWithinQuery(spatialFilter.getField(), new EnvelopeBuilder(topLeft, bottomRight));
     }
 
-    private QueryBuilder getGeoShapeDistanceQuery(SpatialFilter spatialFilter) throws IOException {
+    private QueryBuilder getGeoShapeDistanceQuery(SpatialFilter spatialFilter) {
         // broken functionality in Elasticsearch in current version, fixed in v7.7.0 onwards: https://github.com/elastic/elasticsearch/pull/53466
         throw new AppException(HttpServletResponse.SC_NOT_FOUND, "Distance query is not supported for GeoShape field", "Invalid request");
     }
@@ -240,7 +242,7 @@ abstract class QueryBase {
         QueryBuilder queryBuilder = buildQuery(request.getQuery(), request.getSpatialFilter(), request.isQueryAsOwner());
         sourceBuilder.size(QueryUtils.getResultSizeForQuery(request.getLimit()));
         sourceBuilder.query(queryBuilder);
-        sourceBuilder.timeout(REQUEST_TIMEOUT);
+        sourceBuilder.timeout(requestTimeout);
 
         // set highlighter
         if (request.isReturnHighlightedFields()) {
@@ -300,17 +302,17 @@ abstract class QueryBase {
                 case BAD_REQUEST:
                     throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Bad Request", "Invalid parameters were given on search request", e);
                 case SERVICE_UNAVAILABLE:
-                    throw new AppException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Search error", "Please re-try search after some time.", e);
+                    throw new AppException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, SEARCH_ERROR_MSG, "Please re-try search after some time.", e);
                 default:
-                    throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
+                    throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, SEARCH_ERROR_MSG, ERROR_PROCESSING_SEARCH_REQUEST_MSG, e);
             }
         } catch (IOException e) {
             if (e.getMessage().startsWith("listener timeout after waiting for")) {
-                throw new AppException(HttpServletResponse.SC_GATEWAY_TIMEOUT, "Search error", String.format("Request timed out after waiting for %sm", REQUEST_TIMEOUT.getMinutes()), e);
+                throw new AppException(HttpServletResponse.SC_GATEWAY_TIMEOUT, SEARCH_ERROR_MSG, String.format("Request timed out after waiting for %sm", requestTimeout.getMinutes()), e);
             }
-            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
+            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, SEARCH_ERROR_MSG, ERROR_PROCESSING_SEARCH_REQUEST_MSG, e);
         } catch (Exception e) {
-            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
+            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, SEARCH_ERROR_MSG, ERROR_PROCESSING_SEARCH_REQUEST_MSG, e);
         } finally {
             Long latency = System.currentTimeMillis() - startTime;
             String request = elasticSearchRequest != null ? elasticSearchRequest.source().toString() : searchRequest.toString();
@@ -326,7 +328,7 @@ abstract class QueryBase {
         return indexedTypes.contains(GEO_SHAPE_INDEXED_TYPE);
     }
 
-    abstract SearchRequest createElasticRequest(Query request) throws AppException, IOException;
+    abstract SearchRequest createElasticRequest(Query request) throws IOException;
 
     abstract void querySuccessAuditLogger(Query request);
 
