@@ -19,28 +19,29 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.search.DeploymentEnvironment;
-import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
-import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
-@Ignore
-@RunWith(MockitoJUnitRunner.class)
-@PrepareForTest({SearchConfigurationProperties.class, RestClientBuilder.class, RestClient.class, RestHighLevelClient.class})
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({RestClientBuilder.class, RestClient.class})
 public class ElasticClientHandlerTest {
+
+    private static final boolean SECURITY_HTTPS_CERTIFICATE_TRUST = false;
 
     @Mock
     private SearchConfigurationProperties searchConfigurationProperties;
@@ -53,6 +54,7 @@ public class ElasticClientHandlerTest {
 
     @Mock
     private RestClient restClient;
+
     @Mock
     private JaxRsDpsLog log;
 
@@ -63,8 +65,9 @@ public class ElasticClientHandlerTest {
     public void setup() {
         initMocks(this);
 
-//        mockStatic(SearchConfiguration.class);
-//        mockStatic(RestClient.class);
+        mockStatic(RestClient.class);
+
+        elasticClientHandler.setSecurityHttpsCertificateTrust(SECURITY_HTTPS_CERTIFICATE_TRUST);
     }
 
     @Test
