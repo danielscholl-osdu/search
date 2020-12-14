@@ -52,7 +52,7 @@ public class FieldMappingTypeService {
         }
 
         HashSet<String> fieldTypes = new HashSet<>();
-        String fieldLeafNodeLabel = fieldName.substring(fieldName.lastIndexOf(".") + 1);
+        String fieldLeafNodeLabel = fieldName.substring(fieldName.lastIndexOf('.') + 1);
         GetFieldMappingsRequest request = new GetFieldMappingsRequest();
         request.fields(fieldName);
         if (!Strings.isNullOrEmpty(indexPattern)) request.indices(indexPattern);

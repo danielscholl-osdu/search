@@ -144,7 +144,7 @@ public class QueryServiceTest {
 
         QueryResponse queryResponse = this.sut.queryIndex(searchRequest);
         assertNotNull(queryResponse);
-        assertEquals(queryResponse.getTotalCount(), 1);
+        assertEquals(1, queryResponse.getTotalCount());
     }
 
     @Test
@@ -160,7 +160,7 @@ public class QueryServiceTest {
 
         QueryResponse queryResponse = this.sut.queryIndex(searchRequest);
         assertNotNull(queryResponse);
-        assertEquals(queryResponse.getTotalCount(), 100);
+        assertEquals(100, queryResponse.getTotalCount());
     }
 
     @Test

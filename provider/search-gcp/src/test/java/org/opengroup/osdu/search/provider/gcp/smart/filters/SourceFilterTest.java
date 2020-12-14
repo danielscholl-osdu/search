@@ -58,9 +58,9 @@ public class SourceFilterTest {
         setupMock(input);
         Map<String, String> result = sut.values("i", 5);
 
-        assertEquals(result.size(), 2);
-        assertEquals(result.get("ihs"), "source");
-        assertEquals(result.get("ihs2"), "source");
+        assertEquals(2, result.size());
+        assertEquals("source", result.get("ihs"));
+        assertEquals("source", result.get("ihs2"));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class SourceFilterTest {
         setupMock(input);
         Map<String, String> result = sut.values("i", 1);
 
-        assertEquals(result.size(), 1);
+        assertEquals(1, result.size());
     }
 
     @Test
@@ -87,7 +87,7 @@ public class SourceFilterTest {
         setupMock(input);
         Map<String, String> result = sut.values("i", 1);
 
-        assertEquals(result.size(), 0);
+        assertEquals(0, result.size());
     }
 
     private void setupMock(Set<String> input)throws IOException {

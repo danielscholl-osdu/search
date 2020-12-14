@@ -70,7 +70,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         }
     }
 
-    private QueryResponse executeQuery(QueryRequest searchRequest, RestHighLevelClient client) throws AppException {
+    private QueryResponse executeQuery(QueryRequest searchRequest, RestHighLevelClient client) {
         SearchResponse searchResponse = this.makeSearchRequest(searchRequest, client);
         List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
         List<AggregationResponse> aggregations = getAggregationFromSearchResponse(searchResponse);
@@ -85,7 +85,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     }
 
     @Override
-    SearchRequest createElasticRequest(Query request) throws AppException, IOException {
+    SearchRequest createElasticRequest(Query request) throws IOException {
         QueryRequest searchRequest = (QueryRequest) request;
 
         // set the indexes to search against
