@@ -59,7 +59,7 @@ stages:
       mavenGoal: 'package'
       mavenPublishJUnitResults: true
       serviceCoreMavenOptions: '-P search-core -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
-      mavenOptions: '-P search-azure --settings -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+      mavenOptions: '-P search-azure -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
       copyFileContents: |
         pom.xml
         provider/search-azure/maven/settings.xml
