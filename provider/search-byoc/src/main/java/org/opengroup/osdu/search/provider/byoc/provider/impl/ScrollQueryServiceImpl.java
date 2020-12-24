@@ -90,7 +90,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                         SearchResponse searchScrollResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
 
                         List<Map<String, Object>> results = getHitsFromSearchResponse(searchScrollResponse);
-                        queryResponse.setTotalCount(searchScrollResponse.getHits().getTotalHits());
+                        queryResponse.setTotalCount(searchScrollResponse.getHits().getTotalHits().value);
                         if (results != null) {
                             queryResponse.setResults(results);
                             queryResponse.setCursor(this.refreshCursorCache(searchScrollResponse.getScrollId(), dpsHeaders.getUserEmail()));
@@ -123,7 +123,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
             return CursorQueryResponse.builder()
                     .cursor(refreshCursorCache(searchResponse.getScrollId(), dpsHeaders.getUserEmail()))
                     .results(results)
-                    .totalCount(searchResponse.getHits().getTotalHits())
+                    .totalCount(searchResponse.getHits().getTotalHits().value)
                     .build();
         }
         return CursorQueryResponse.getEmptyResponse();
