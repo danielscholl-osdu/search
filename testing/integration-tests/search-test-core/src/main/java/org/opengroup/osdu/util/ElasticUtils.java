@@ -2,15 +2,23 @@ package org.opengroup.osdu.util;
 
 import com.google.gson.Gson;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import javax.net.ssl.SSLContext;
 import lombok.extern.java.Log;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
@@ -311,7 +319,36 @@ public class ElasticUtils {
             Base64.getEncoder().encodeToString(usernameAndPassword.getBytes()))),
     };
 
+    if ("https".equals(scheme) && true) {
+      log.warning("Elastic client connection uses TrustSelfSignedStrategy()");
+      SSLContext sslContext = createSSLContext();
+      builder.setHttpClientConfigCallback(httpClientBuilder ->
+      {
+        HttpAsyncClientBuilder httpAsyncClientBuilder = httpClientBuilder.setSSLContext(sslContext)
+            .setSSLHostnameVerifier(
+                NoopHostnameVerifier.INSTANCE);
+        return httpAsyncClientBuilder;
+      });
+    }
+
     builder.setDefaultHeaders(defaultHeaders);
     return builder;
   }
+
+  private SSLContext createSSLContext() {
+    SSLContextBuilder sslContextBuilder = new SSLContextBuilder();
+    try {
+      sslContextBuilder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+      return sslContextBuilder.build();
+    } catch (NoSuchAlgorithmException e) {
+      log.severe(e.getMessage());
+    } catch (KeyStoreException e) {
+      log.severe(e.getMessage());
+    } catch (KeyManagementException e) {
+      log.severe(e.getMessage());
+    }
+    return null;
+  }
+
+
 }
