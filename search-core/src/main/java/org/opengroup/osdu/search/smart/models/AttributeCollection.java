@@ -25,14 +25,13 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
-
-import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsRequest;
-import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsResponse;
-import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsResponse.FieldMappingMetaData;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.GetFieldMappingsRequest;
+import org.elasticsearch.client.indices.GetFieldMappingsResponse;
+import org.elasticsearch.client.indices.GetFieldMappingsResponse.FieldMappingMetadata;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
@@ -152,17 +151,16 @@ public class AttributeCollection {
 			GetFieldMappingsRequest request = new GetFieldMappingsRequest();
 			request.fields(fieldName);
 			GetFieldMappingsResponse response = client.indices().getFieldMapping(request, RequestOptions.DEFAULT);
-			Map<String, Map<String, Map<String, FieldMappingMetaData>>> mappings = response.mappings();
+			Map<String, Map<String, FieldMappingMetadata>> mappings = response.mappings();
 			Set<String> sets = mappings.keySet();
 
 			for (String indices : sets) {
 				if (!mappings.get(indices).isEmpty()) {
-					Map<String, Map<String, FieldMappingMetaData>> fieldMappingData = mappings.get(indices);
+					Map<String, FieldMappingMetadata> fieldMappingData = mappings.get(indices);
 
 					for (String key : fieldMappingData.keySet()) {
-						Map<String, FieldMappingMetaData> fieldMapping = fieldMappingData.get(key);
-						FieldMappingMetaData fieldMappingMetaData = fieldMapping.get(fieldName);
-						Map<String, Object> mapping = fieldMappingMetaData.sourceAsMap();
+						FieldMappingMetadata fieldMappingMetadata = fieldMappingData.get(key);
+						Map<String, Object> mapping = fieldMappingMetadata.sourceAsMap();
 						String fieldkey = fieldName.split("\\.")[1];
 						Map<String, Map<String, Map<String, Object>>> keywordMapping = (Map<String, Map<String, Map<String, Object>>>) mapping.get(fieldkey);
 						updatedIndices.add(indices);

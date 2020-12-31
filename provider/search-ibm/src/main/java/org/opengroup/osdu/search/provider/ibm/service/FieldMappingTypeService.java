@@ -59,13 +59,13 @@ public class FieldMappingTypeService {
         request.fields(fieldName);
         if (!Strings.isNullOrEmpty(indexPattern)) request.indices(indexPattern);
         GetFieldMappingsResponse response = restClient.indices().getFieldMapping(request, RequestOptions.DEFAULT);
-        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>>> mappings = response.mappings();
+        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>>> mappings = response.mappings();
 
-        for (Map.Entry<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>>> indexMapping : mappings.entrySet()) {
+        for (Map.Entry<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>>> indexMapping : mappings.entrySet()) {
             if (indexMapping.getValue().isEmpty()) continue;
-            Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>> typeMapping = indexMapping.getValue();
-            Map<String, GetFieldMappingsResponse.FieldMappingMetaData> fieldMapping = typeMapping.values().iterator().next();
-            GetFieldMappingsResponse.FieldMappingMetaData fieldMappingMetaData = fieldMapping.get(fieldName);
+            Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> typeMapping = indexMapping.getValue();
+            Map<String, GetFieldMappingsResponse.FieldMappingMetadata> fieldMapping = typeMapping.values().iterator().next();
+            GetFieldMappingsResponse.FieldMappingMetadata fieldMappingMetaData = fieldMapping.get(fieldName);
             if (fieldMappingMetaData == null) continue;
             Map<String, Object> mapping = fieldMappingMetaData.sourceAsMap();
             LinkedHashMap<String, Object> typeMap = (LinkedHashMap<String, Object>) mapping.get(fieldLeafNodeLabel);

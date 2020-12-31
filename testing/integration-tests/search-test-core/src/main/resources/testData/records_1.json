@@ -19,7 +19,10 @@
       },
       "data": {
         "Field": "OSDU OFFICE - 1",
-        "Location": "18.5204,73.8567",
+        "Location": {
+        "lat":18.5204,
+        "lon":73.8567
+      },
         "LocationGeoShape": {
           "type": "Point",
           "coordinates": [
@@ -64,7 +67,10 @@
       },
       "data": {
         "Field": "OSDU OFFICE - 3",
-        "Location": "29.749655,-95.473476",
+        "Location": {
+          "lat":29.749655,
+          "lon":-95.473476
+        },
         "LocationGeoShape": {
           "type": "Point",
           "coordinates": [
@@ -110,7 +116,10 @@
       },
       "data": {
         "Field": "OSDU OFFICE - 4",
-        "Location": "29.6197,-95.6349",
+        "Location": {
+          "lat":29.6197,
+          "lon":-95.6349
+        },
         "LocationGeoShape": {
           "type": "Point",
           "coordinates": [
