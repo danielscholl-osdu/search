@@ -16,6 +16,8 @@ package org.opengroup.osdu.search.provider.aws.provider.impl;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
@@ -44,6 +46,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static org.elasticsearch.rest.RestStatus.NOT_FOUND;
 
 @Service
 public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQueryService {
@@ -98,8 +102,12 @@ public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQuery
                     }
                 } catch (AppException e) {
                     throw e;
+                } catch (ElasticsearchStatusException e) {
+                    if (e.status() == NOT_FOUND && e.getMessage().startsWith("No search context found for id"))
+                        throw new AppException(HttpStatus.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired", e);
+                    throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
                 } catch (Exception e) {
-                    throw new AppException(HttpServletResponse.SC_NOT_FOUND, "Invalid request", "Invalid scroll request", e);
+                    throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
                 }
             }
             return queryResponse;
