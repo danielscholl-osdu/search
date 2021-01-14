@@ -36,19 +36,36 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
-        <azure.version>2.1.7</azure.version>
         <springboot.version>2.1.7.RELEASE</springboot.version>
+        <osdu.corelibazure.version>0.0.41</osdu.corelibazure.version>
+        <osdu.oscorecommon.version>0.3.16</osdu.oscorecommon.version>
+        <osdu.search-core.version>0.0.5-SNAPSHOT</osdu.search-core.version>
+        <spatial4j.version>0.7</spatial4j.version>
+        <jts-io-common.version>1.15.0</jts-io-common.version>
         <azure.appservice.resourcegroup></azure.appservice.resourcegroup>
         <azure.appservice.plan></azure.appservice.plan>
         <azure.appservice.appname></azure.appservice.appname>
         <azure.appservice.subscription></azure.appservice.subscription>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Inherit managed dependencies from core-lib-azure -->
+            <dependency>
+                <groupId>org.opengroup.osdu</groupId>
+                <artifactId>core-lib-azure</artifactId>
+                <version>${osdu.corelibazure.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>search-core</artifactId>
-            <version>0.0.5-SNAPSHOT</version>
+            <version>${osdu.search-core.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
@@ -68,17 +85,15 @@
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>core-lib-azure</artifactId>
-            <version>0.0.41</version>
+            <version>${osdu.corelibazure.version}</version>
         </dependency>
         <dependency>
             <groupId>io.projectreactor.netty</groupId>
             <artifactId>reactor-netty</artifactId>
-            <version>0.9.5.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
-            <version>3.3.0.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
@@ -122,33 +137,24 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.locationtech.spatial4j</groupId>
             <artifactId>spatial4j</artifactId>
-            <version>0.7</version>
         </dependency>
         <dependency>
             <groupId>org.locationtech.jts.io</groupId>
             <artifactId>jts-io-common</artifactId>
-            <version>1.15.0</version>
+            <version>${jts-io-common.version}</version>
         </dependency>
 
         <!-- Azure dependencies -->
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-spring-boot</artifactId>
-            <version>${azure.version}</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-active-directory-spring-boot-starter</artifactId>
-            <version>${azure.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-servicebus-spring-boot-starter</artifactId>
-            <version>${azure.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

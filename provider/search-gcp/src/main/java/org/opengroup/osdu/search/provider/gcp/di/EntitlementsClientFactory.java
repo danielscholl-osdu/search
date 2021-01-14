@@ -27,18 +27,18 @@ import org.springframework.web.context.annotation.RequestScope;
 public class EntitlementsClientFactory extends AbstractFactoryBean<IEntitlementsFactory> {
 
 	@Value("${AUTHORIZE_API}")
-	private String AUTHORIZE_API;
+	private String authorizeApi;
 
 	@Value("${AUTHORIZE_API_KEY:}")
-	private String AUTHORIZE_API_KEY;
+	private String authorizeApiKey;
 
 	@Override
 	protected IEntitlementsFactory createInstance() throws Exception {
 
 		return new EntitlementsFactory(EntitlementsAPIConfig
 				.builder()
-				.rootUrl(AUTHORIZE_API)
-				.apiKey(AUTHORIZE_API_KEY)
+				.rootUrl(authorizeApi)
+				.apiKey(authorizeApiKey)
 				.build());
 	}
 

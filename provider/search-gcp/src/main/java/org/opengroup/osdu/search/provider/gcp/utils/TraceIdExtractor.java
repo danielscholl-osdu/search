@@ -23,6 +23,9 @@ import java.util.UUID;
 
 public class TraceIdExtractor {
 
+    private TraceIdExtractor() {
+    }
+
     /*
      * "X-Cloud-Trace-Context: TRACE_ID/SPAN_ID;o=TRACE_TRUE" e.g. 105445aa7843bc8bf206b120001000/0;o=1"
      * https://cloud.google.com/trace/docs/support

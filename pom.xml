@@ -26,7 +26,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.16.RELEASE</version>
+        <version>2.1.18.RELEASE</version>
         <relativePath/>
     </parent>
 
@@ -39,6 +39,12 @@
         <snakeyaml.version>1.26</snakeyaml.version>
         <commons-codec.version>1.14</commons-codec.version>
         <hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
+        <httpclient.version>4.5.13</httpclient.version>
+        <woodstox-core.version>5.3.0</woodstox-core.version>
+        <reactor-bom.version>2020.0.0</reactor-bom.version>
+        <log4j-core.version>2.13.2</log4j-core.version>
+        <google-oauth-client.version>1.31.0</google-oauth-client.version>
+        <commons-compress.version>1.20</commons-compress.version>
     </properties>
 
     <licenses>
@@ -58,13 +64,12 @@
         <module>provider/search-ibm</module>
         <module>provider/search-reference</module>
     </modules>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.1.16.RELEASE</version>
+                <version>2.1.18.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -150,7 +155,7 @@
             <dependency>
                 <groupId>org.locationtech.spatial4j</groupId>
                 <artifactId>spatial4j</artifactId>
-                <version>0.6</version>
+                <version>0.7</version>
             </dependency>
             <dependency>
                 <groupId>com.vividsolutions</groupId>
@@ -202,7 +207,7 @@
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-to-slf4j</artifactId>
-                <version>2.13.2</version>
+                <version>${log4j-core.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -263,17 +268,46 @@
                 <artifactId>hibernate-validator</artifactId>
                 <version>${hibernate-validator.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${httpclient.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.woodstox</groupId>
+                <artifactId>woodstox-core</artifactId>
+                <version>${woodstox-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.projectreactor</groupId>
+                <artifactId>reactor-bom</artifactId>
+                <version>${reactor-bom.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.oauth-client</groupId>
+                <artifactId>google-oauth-client</artifactId>
+                <version>${google-oauth-client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>${commons-compress.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j-core.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-dependencies</artifactId>
-            <version>2.1.7.RELEASE</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

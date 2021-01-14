@@ -38,6 +38,18 @@
 			<groupId>org.opengroup.osdu</groupId>
 			<artifactId>search-core</artifactId>
 			<version>0.0.5-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.nimbusds</groupId>
+					<artifactId>nimbus-jose-jwt</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.opengroup.osdu</groupId>
+			<artifactId>os-core-common</artifactId>
+			<version>0.3.8</version>
 		</dependency>
 
 		<dependency>

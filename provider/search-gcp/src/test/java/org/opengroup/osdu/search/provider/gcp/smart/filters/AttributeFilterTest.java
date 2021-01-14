@@ -78,9 +78,9 @@ public class AttributeFilterTest {
 	
 		Map<String, String> result = sut.values("M", 5);
 		assertEquals(3,result.size());
-		assertEquals(result.get("MCCOY"), "Field");
-	    assertEquals(result.get("MILAGRO"), "Field");
-	    assertEquals(result.get("MAI"), "Field");
+		assertEquals("Field", result.get("MCCOY"));
+		assertEquals("Field", result.get("MILAGRO"));
+		assertEquals("Field", result.get("MAI"));
 	}
 
 	@Test
