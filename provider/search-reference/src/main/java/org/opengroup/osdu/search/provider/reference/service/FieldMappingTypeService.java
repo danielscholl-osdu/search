@@ -1,3 +1,20 @@
+/*
+ * Copyright 2021 Google LLC
+ * Copyright 2021 EPAM Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opengroup.osdu.search.provider.reference.service;
 
 import com.google.common.base.Strings;
@@ -26,7 +43,8 @@ public class FieldMappingTypeService {
   @Inject
   private DpsHeaders headers;
 
-  public Set<String> getFieldTypes(RestHighLevelClient restClient, String fieldName, String indexPattern) throws IOException {
+  public Set<String> getFieldTypes(RestHighLevelClient restClient, String fieldName,
+      String indexPattern) throws IOException {
     Preconditions.checkNotNull(restClient, "restClient cannot be null");
     Preconditions.checkNotNullOrEmpty(fieldName, "fieldName cannot be null or empty");
     Preconditions.checkNotNullOrEmpty(indexPattern, "indexPattern cannot be null or empty");
@@ -40,20 +58,35 @@ public class FieldMappingTypeService {
     String fieldLeafNodeLabel = fieldName.substring(fieldName.lastIndexOf(".") + 1);
     GetFieldMappingsRequest request = new GetFieldMappingsRequest();
     request.fields(fieldName);
-    if (!Strings.isNullOrEmpty(indexPattern)) request.indices(indexPattern);
-    GetFieldMappingsResponse response = restClient.indices().getFieldMapping(request, RequestOptions.DEFAULT);
-    Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>>> mappings = response.mappings();
+    if (!Strings.isNullOrEmpty(indexPattern)) {
+      request.indices(indexPattern);
+    }
+    GetFieldMappingsResponse response = restClient.indices()
+        .getFieldMapping(request, RequestOptions.DEFAULT);
+    Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>>> mappings = response
+        .mappings();
 
-    for (Map.Entry<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>>> indexMapping : mappings.entrySet()) {
-      if (indexMapping.getValue().isEmpty()) continue;
-      Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>> typeMapping = indexMapping.getValue();
-      Map<String, GetFieldMappingsResponse.FieldMappingMetaData> fieldMapping = typeMapping.values().iterator().next();
-      GetFieldMappingsResponse.FieldMappingMetaData fieldMappingMetaData = fieldMapping.get(fieldName);
-      if (fieldMappingMetaData == null) continue;
+    for (Map.Entry<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>>> indexMapping : mappings
+        .entrySet()) {
+      if (indexMapping.getValue().isEmpty()) {
+        continue;
+      }
+      Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>> typeMapping = indexMapping
+          .getValue();
+      Map<String, GetFieldMappingsResponse.FieldMappingMetaData> fieldMapping = typeMapping.values()
+          .iterator().next();
+      GetFieldMappingsResponse.FieldMappingMetaData fieldMappingMetaData = fieldMapping
+          .get(fieldName);
+      if (fieldMappingMetaData == null) {
+        continue;
+      }
       Map<String, Object> mapping = fieldMappingMetaData.sourceAsMap();
-      LinkedHashMap<String, Object> typeMap = (LinkedHashMap<String, Object>) mapping.get(fieldLeafNodeLabel);
+      LinkedHashMap<String, Object> typeMap = (LinkedHashMap<String, Object>) mapping
+          .get(fieldLeafNodeLabel);
       Object type = typeMap.get("type");
-      if (type == null) continue;
+      if (type == null) {
+        continue;
+      }
       fieldTypes.add(type.toString());
     }
 
@@ -63,6 +96,8 @@ public class FieldMappingTypeService {
   }
 
   private String getCacheKey(String fieldName, String indexPattern) {
-    return String.format("%s-%s-%s", this.headers.getPartitionIdWithFallbackToAccountId(), indexPattern, fieldName);
+    return String
+        .format("%s-%s-%s", this.headers.getPartitionIdWithFallbackToAccountId(), indexPattern,
+            fieldName);
   }
 }

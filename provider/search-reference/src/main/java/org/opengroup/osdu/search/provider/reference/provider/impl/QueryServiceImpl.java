@@ -1,3 +1,20 @@
+/*
+ * Copyright 2021 Google LLC
+ * Copyright 2021 EPAM Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opengroup.osdu.search.provider.reference.provider.impl;
 
 import java.io.IOException;
@@ -16,23 +33,30 @@ import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryResponse;
-import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
 @Service
 public class QueryServiceImpl extends QueryBase implements IQueryService {
 
+    private final String environment;
+    private final SearchConfigurationProperties searchConfigurationProperties;
+
     @Inject
     private ElasticClientHandler elasticClientHandler;
     @Inject
     private AuditLogger auditLogger;
-    @Value("${ENVIRONMENT}")
-    private String ENVIRONMENT;
+
+    @Autowired
+    public QueryServiceImpl(SearchConfigurationProperties searchConfigurationProperties){
+        this.environment = searchConfigurationProperties.getEnvironment();
+        this.searchConfigurationProperties = searchConfigurationProperties;
+    }
 
     @Override
     public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
@@ -80,7 +104,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         if (isEnvironmentPreDemo() && !(searchRequest.getAggregateBy() == null || searchRequest.getAggregateBy().isEmpty())) {
             TermsAggregationBuilder termsAggregationBuilder = new TermsAggregationBuilder(AGGREGATION_NAME, ValueType.STRING);
             termsAggregationBuilder.field(searchRequest.getAggregateBy());
-            termsAggregationBuilder.size(Config.getAggregationSize());
+            termsAggregationBuilder.size(searchConfigurationProperties.getAggregationSize());
             sourceBuilder.aggregation(termsAggregationBuilder);
         }
 
@@ -100,14 +124,15 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     }
 
     private boolean isEnvironmentLocal() {
-        return "local".equalsIgnoreCase(ENVIRONMENT);
+        return "local".equalsIgnoreCase(environment);
     }
 
     private boolean isEnvironmentPreP4d() {
-        return isEnvironmentLocal() || "dev".equalsIgnoreCase(ENVIRONMENT) || "evt".equalsIgnoreCase(ENVIRONMENT);
+        return isEnvironmentLocal() || "dev".equalsIgnoreCase(environment) || "evt".equalsIgnoreCase(
+            environment);
     }
 
     protected boolean isEnvironmentPreDemo() {
-        return isEnvironmentPreP4d() || "p4d".equalsIgnoreCase(ENVIRONMENT);
+        return isEnvironmentPreP4d() || "p4d".equalsIgnoreCase(environment);
     }
 }

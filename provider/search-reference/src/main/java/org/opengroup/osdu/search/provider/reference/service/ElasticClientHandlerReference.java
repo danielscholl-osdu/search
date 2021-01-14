@@ -1,3 +1,20 @@
+/*
+ * Copyright 2021 Google LLC
+ * Copyright 2021 EPAM Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opengroup.osdu.search.provider.reference.service;
 
 import java.security.KeyManagementException;
@@ -20,9 +37,9 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
@@ -37,11 +54,16 @@ public class ElasticClientHandlerReference extends ElasticClientHandler {
   private static final int REST_CLIENT_SOCKET_TIMEOUT = 60000;
   private static final int REST_CLIENT_RETRY_TIMEOUT = 60000;
 
-  @Value("#{new Boolean('${security.https.certificate.trust}')}")
   private Boolean securityHttpsCertificateTrust;
 
   @Autowired
   private IElasticSettingService elasticSettingService;
+
+  public ElasticClientHandlerReference(
+      SearchConfigurationProperties searchConfigurationProperties) {
+    this.securityHttpsCertificateTrust = Boolean
+        .valueOf(searchConfigurationProperties.getSecurityHttpsCertificateTrust());
+  }
 
   public RestHighLevelClient createRestClient() {
     return getCloudRestClient(elasticSettingService.getElasticClusterInformation());
@@ -93,7 +115,7 @@ public class ElasticClientHandlerReference extends ElasticClientHandler {
   }
 
   public RestClientBuilder createClientBuilder(String host, String basicAuthenticationHeaderVal,
-                                               int port, String protocolScheme, String tls){
+      int port, String protocolScheme, String tls) {
     RestClientBuilder builder = RestClient.builder(new HttpHost(host, port, protocolScheme));
     builder.setRequestConfigCallback(
         requestConfigBuilder -> requestConfigBuilder.setConnectTimeout(REST_CLIENT_CONNECT_TIMEOUT)

@@ -15,18 +15,17 @@
  * limitations under the License.
  */
 
-package org.opengroup.osdu.search.provider.reference.utils;
+package org.opengroup.osdu.search.provider.reference.security;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import org.jboss.resteasy.specimpl.ResteasyHttpHeaders;
-import org.springframework.context.annotation.Bean;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ConfigModule {
-
-  @Bean
-  ResteasyHttpHeaders resteasyHttpHeaders() {
-    return new ResteasyHttpHeaders(new MultivaluedHashMap<>());
-  }
+@ConfigurationProperties
+@Getter
+@Setter
+public class EntitlementsConfig {
+  private String authorizeApi;
 }

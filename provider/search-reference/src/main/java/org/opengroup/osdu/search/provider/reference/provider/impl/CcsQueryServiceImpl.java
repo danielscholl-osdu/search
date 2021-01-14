@@ -1,3 +1,20 @@
+/*
+ * Copyright 2021 Google LLC
+ * Copyright 2021 EPAM Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opengroup.osdu.search.provider.reference.provider.impl;
 
 import java.util.ArrayList;
@@ -18,7 +35,7 @@ import org.opengroup.osdu.core.common.model.search.QueryResponse;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
 import org.opengroup.osdu.core.common.provider.interfaces.ITenantFactory;
-import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.provider.interfaces.ICcsQueryService;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.springframework.stereotype.Service;
@@ -26,6 +43,9 @@ import org.springframework.stereotype.Service;
 // TODO: Remove this temporary implementation when ECE CCS is utilized
 @Service
 public class CcsQueryServiceImpl implements ICcsQueryService {
+
+    @Inject
+    private SearchConfigurationProperties searchConfigurationProperties;
 
     @Inject
     private DpsHeaders dpsHeaders;
@@ -48,7 +68,7 @@ public class CcsQueryServiceImpl implements ICcsQueryService {
 
     private List<QueryResponse> getTenantResponses(final List<String> accounts, final CcsQueryRequest ccsQueryRequest) throws Exception {
         List<QueryResponse> tenantResponses = new ArrayList<>();
-        if (Config.isSmartSearchCcsDisabled() || accounts.size() == 1) {
+        if (searchConfigurationProperties.isSmartSearchCcsDisabled() || accounts.size() == 1) {
             TenantInfo tenant = tenantStorageFactory.getTenantInfo(this.dpsHeaders.getPartitionIdWithFallbackToAccountId());
             tenantResponses.add(queryService.queryIndex(convertCcsQueryRequestToQueryRequest(ccsQueryRequest),
                     elasticRepository.getElasticClusterSettings(tenant)));
