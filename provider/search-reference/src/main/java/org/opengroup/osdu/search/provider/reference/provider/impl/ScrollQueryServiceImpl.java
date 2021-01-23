@@ -1,11 +1,12 @@
-/**
- * Copyright 2020 IBM Corp. All Rights Reserved.
+/*
+ * Copyright 2021 Google LLC
+ * Copyright 2021 EPAM Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,20 +15,16 @@
  * limitations under the License.
  */
 
-package org.opengroup.osdu.search.provider.ibm.provider.impl;
+package org.opengroup.osdu.search.provider.reference.provider.impl;
 
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
-
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
-
-import org.apache.http.HttpStatus;
-import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
@@ -48,11 +45,6 @@ import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-
-import static org.elasticsearch.rest.RestStatus.NOT_FOUND;
-
 @Service
 public class ScrollQueryServiceImpl extends QueryBase implements IScrollQueryService {
 
@@ -67,19 +59,17 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
 
     private final MessageDigest digest;
 
-    public ScrollQueryServiceImpl() throws NoSuchAlgorithmException {
+    ScrollQueryServiceImpl() throws NoSuchAlgorithmException {
         this.digest = MessageDigest.getInstance("MD5");
     }
 
     @Override
     public CursorQueryResponse queryIndex(CursorQueryRequest searchRequest) throws Exception {
-    	
-    	validateTenant(searchRequest);
-    	
-    	CursorQueryResponse queryResponse = CursorQueryResponse.getEmptyResponse();
+
+        CursorQueryResponse queryResponse = CursorQueryResponse.getEmptyResponse();
 
         try (RestHighLevelClient client = this.elasticClientHandler.createRestClient()) {
-            if (Strings.isNullOrEmpty(searchRequest.getCursor())) {
+            if (searchRequest.getCursor() == null || searchRequest.getCursor().isEmpty()) {
                 return this.initCursorQuery(searchRequest, client);
             } else {
                 try {
@@ -94,7 +84,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                         SearchResponse searchScrollResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
 
                         List<Map<String, Object>> results = getHitsFromSearchResponse(searchScrollResponse);
-                        queryResponse.setTotalCount(searchScrollResponse.getHits().getTotalHits().value);
+                        queryResponse.setTotalCount(searchScrollResponse.getHits().getTotalHits());
                         if (results != null) {
                             queryResponse.setResults(results);
                             queryResponse.setCursor(this.refreshCursorCache(searchScrollResponse.getScrollId(), dpsHeaders.getUserEmail()));
@@ -106,12 +96,8 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                     }
                 } catch (AppException e) {
                     throw e;
-                } catch (ElasticsearchStatusException e) {
-                    if (e.status() == NOT_FOUND && e.getMessage().startsWith("No search context found for id"))
-                        throw new AppException(HttpStatus.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired", e);
-                    throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
                 } catch (Exception e) {
-                    throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
+                    throw new AppException(HttpServletResponse.SC_NOT_FOUND, "Invalid request", "Invalid scroll request", e);
                 }
             }
             return queryResponse;
@@ -131,7 +117,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
             return CursorQueryResponse.builder()
                     .cursor(refreshCursorCache(searchResponse.getScrollId(), dpsHeaders.getUserEmail()))
                     .results(results)
-                    .totalCount(searchResponse.getHits().getTotalHits().value)
+                    .totalCount(searchResponse.getHits().getTotalHits())
                     .build();
         }
         return CursorQueryResponse.getEmptyResponse();
@@ -170,11 +156,11 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
 
     @Override
     void querySuccessAuditLogger(Query request) {
-        this.auditLogger.queryIndexWithCursorSuccess(Lists.newArrayList(request.toString()));
+        this.auditLogger.queryIndexWithCursorSuccess(createNewArrayList(request.toString()));
     }
 
     @Override
     void queryFailedAuditLogger(Query request) {
-        this.auditLogger.queryIndexWithCursorFailed(Lists.newArrayList(request.toString()));
+        this.auditLogger.queryIndexWithCursorFailed(createNewArrayList(request.toString()));
     }
 }

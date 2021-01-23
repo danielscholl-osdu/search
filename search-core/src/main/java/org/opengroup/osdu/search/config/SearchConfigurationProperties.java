@@ -53,12 +53,15 @@ public class SearchConfigurationProperties {
 	private String redisSearchHost;
 	private String redisSearchPort = "6379";
 	private String elasticHost;
+	private String elasticPort = "443";
+	private String elasticUserPassword;
 	private String elasticClusterName;
 	private String keyRing;
 	private String kmsKey;
 	private String cronIndexCleanupPattern;
 	private String cronIndexCleanupTenants;
 	private String smartSearchCcsDisabled;
+	private String securityHttpsCertificateTrust;
 
 	private String gaeService;
 	private String gaeVersion;
