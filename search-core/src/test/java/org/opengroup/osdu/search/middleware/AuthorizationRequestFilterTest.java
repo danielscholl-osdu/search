@@ -111,6 +111,7 @@ public class AuthorizationRequestFilterTest {
         when(httpRequest.getMethod()).thenReturn("GET");
         when(httpRequest.getServletPath()).thenReturn("/swagger.js");
         when(httpRequest.getRequestURI()).thenReturn("http://foobar/");
+        org.springframework.test.util.ReflectionTestUtils.setField(sut, "ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS", "custom-domain");
 
         sut.doFilter(httpRequest, httpResponse, filterChain);
 
@@ -132,6 +133,7 @@ public class AuthorizationRequestFilterTest {
         HashMap<String,String> headers =new HashMap<String, String>();
         setupRequestHeaderMock(headers, httpRequest);
         when(this.authorizationService.authorizeAny(dpsHeaders, ROLE1, ROLE2)).thenReturn(authorizationResponse);
+        org.springframework.test.util.ReflectionTestUtils.setField(sut, "ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS", "custom-domain");
 
         sut.doFilter(httpRequest, httpResponse, filterChain);
 
@@ -160,6 +162,7 @@ public class AuthorizationRequestFilterTest {
 
 
         when(this.authorizationService.authorizeAny(dpsHeaders, ROLE1, ROLE2)).thenReturn(authorizationResponse);
+        org.springframework.test.util.ReflectionTestUtils.setField(sut, "ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS", "custom-domain");
 
         sut.doFilter(httpRequest, httpResponse, filterChain);
 
@@ -182,6 +185,7 @@ public class AuthorizationRequestFilterTest {
         HashMap<String,String> headers =new HashMap<String, String>();
         setupRequestHeaderMock(headers, httpRequest);
         when(this.authorizationService.authorizeAny(dpsHeaders, ROLE1, ROLE2)).thenReturn(authorizationResponse);
+        org.springframework.test.util.ReflectionTestUtils.setField(sut, "ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS", "custom-domain");
 
         try {
         	sut.doFilter(httpRequest, httpResponse, filterChain);
@@ -201,6 +205,7 @@ public class AuthorizationRequestFilterTest {
         headers.put(DpsHeaders.ACCOUNT_ID, "tenant1,common");
         dpsHeaders.put(DpsHeaders.ACCOUNT_ID, "tenant1,common");
         setupRequestHeaderMock(headers, httpRequest);
+        org.springframework.test.util.ReflectionTestUtils.setField(sut, "ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS", "custom-domain");
 
 
         try {
@@ -222,6 +227,7 @@ public class AuthorizationRequestFilterTest {
         headers.put(DpsHeaders.ACCOUNT_ID, null);
         dpsHeaders.put(DpsHeaders.ACCOUNT_ID, null);
         setupRequestHeaderMock(headers, httpRequest);
+        org.springframework.test.util.ReflectionTestUtils.setField(sut, "ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS", "custom-domain");
 
         try {
         	sut.doFilter(httpRequest, httpResponse, filterChain);
