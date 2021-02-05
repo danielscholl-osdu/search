@@ -1,3 +1,7 @@
+/* Licensed Materials - Property of IBM              */
+/* (c) Copyright IBM Corp. 2020. All Rights Reserved.*/
+
+
 package org.opengroup.osdu.search.provider.ibm.cache;
 
 import java.util.HashSet;
