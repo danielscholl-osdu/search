@@ -59,6 +59,7 @@ public class KindsTest {
     @Test
     public void should_retrieveKindsFromCache_when_cacheIsPopulated_and_useLocalKindOnSecondCall()throws IOException{
         KindsSut sut = setup(true);
+        org.springframework.test.util.ReflectionTestUtils.setField(sut, "ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS", "custom-domain");
         Set result = sut.all("tenant1");
         verify(cache,times(1)).get(any());
         assertEquals(0, sut.getTermCallCount);
@@ -88,6 +89,8 @@ public class KindsTest {
         public KindsSut(SearchConfigurationProperties configurationProperties, ElasticClientHandler elasticClientHandler, IKindsCache cache, DpsHeaders headersInfo, JaxRsDpsLog log){
             super(configurationProperties, elasticClientHandler, cache, headersInfo,log);
         }
+
+        private String ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS = "domain";
 
         public int getTermCallCount = 0;
 
