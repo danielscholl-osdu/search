@@ -19,28 +19,32 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.search.DeploymentEnvironment;
-import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
-import org.opengroup.osdu.core.common.search.Config;
-import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
-@Ignore
-@RunWith(MockitoJUnitRunner.class)
-@PrepareForTest({Config.class, RestClientBuilder.class, RestClient.class, RestHighLevelClient.class})
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({RestClientBuilder.class, RestClient.class})
 public class ElasticClientHandlerTest {
+
+    private static final boolean SECURITY_HTTPS_CERTIFICATE_TRUST = false;
+
+    @Mock
+    private SearchConfigurationProperties searchConfigurationProperties;
 
     @Mock
     private IElasticSettingService elasticSettingService;
@@ -50,6 +54,7 @@ public class ElasticClientHandlerTest {
 
     @Mock
     private RestClient restClient;
+
     @Mock
     private JaxRsDpsLog log;
 
@@ -60,14 +65,15 @@ public class ElasticClientHandlerTest {
     public void setup() {
         initMocks(this);
 
-//        mockStatic(Config.class);
-//        mockStatic(RestClient.class);
+        mockStatic(RestClient.class);
+
+        elasticClientHandler.setSecurityHttpsCertificateTrust(SECURITY_HTTPS_CERTIFICATE_TRUST);
     }
 
     @Test
     public void createRestClient_when_deployment_env_is_saas() {
         ClusterSettings clusterSettings = new ClusterSettings("H", 1, "U:P");
-        when(Config.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.CLOUD);
+        when(searchConfigurationProperties.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.CLOUD);
         when(elasticSettingService.getElasticClusterInformation()).thenReturn(clusterSettings);
         when(RestClient.builder(new HttpHost("H", 1, "https"))).thenReturn(builder);
         when(builder.setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder.setConnectTimeout(5000).setSocketTimeout(60000))).thenReturn(builder);
@@ -81,7 +87,7 @@ public class ElasticClientHandlerTest {
     @Test(expected = AppException.class)
     public void failed_createRestClientForSaaS_when_restclient_is_null() {
         ClusterSettings clusterSettings = new ClusterSettings("H", 1, "U:P");
-        when(Config.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.CLOUD);
+        when(searchConfigurationProperties.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.CLOUD);
         when(elasticSettingService.getElasticClusterInformation()).thenReturn(clusterSettings);
         when(RestClient.builder(new HttpHost("H", 1, "https"))).thenReturn(builder);
         when(builder.build()).thenReturn(null);
@@ -91,7 +97,7 @@ public class ElasticClientHandlerTest {
 
     @Test(expected = AppException.class)
     public void failed_createRestClientForSaaS_when_getcluster_info_throws_exception() {
-        when(Config.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.CLOUD);
+        when(searchConfigurationProperties.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.CLOUD);
         when(elasticSettingService.getElasticClusterInformation()).thenThrow(new AppException(1, "", ""));
         when(RestClient.builder(new HttpHost("H", 1, "https"))).thenReturn(builder);
 

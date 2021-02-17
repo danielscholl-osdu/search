@@ -14,19 +14,18 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.opengroup.osdu</groupId>
     <artifactId>search-gcp</artifactId>
-    <version>0.0.5-SNAPSHOT</version>
+    <version>0.6.0-SNAPSHOT</version>
     <description>Google cloud implementation of Search service APIs</description>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>org.opengroup.osdu</groupId>
         <artifactId>os-search</artifactId>
-        <version>0.0.5-SNAPSHOT</version>
+        <version>0.6.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -45,7 +44,7 @@
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>search-core</artifactId>
-            <version>0.0.5-SNAPSHOT</version>
+            <version>0.6.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
@@ -55,7 +54,7 @@
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>os-core-common</artifactId>
-            <version>0.0.18</version>
+            <version>0.3.8</version>
         </dependency>
 
         <dependency>
@@ -148,25 +147,13 @@
             <artifactId>jts-io-common</artifactId>
             <version>1.15.0</version>
         </dependency>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <scope>test</scope>
+            <version>2.0.1</version>
+        </dependency>
     </dependencies>
-
-    <repositories>
-        <repository>
-            <id>${gitlab-server}</id>
-            <url>https://community.opengroup.org/api/v4/groups/17/-/packages/maven</url>
-        </repository>
-    </repositories>
-
-    <distributionManagement>
-        <repository>
-            <id>${gitlab-server}</id>
-            <url>https://community.opengroup.org/api/v4/projects/19/packages/maven</url>
-        </repository>
-        <snapshotRepository>
-            <id>${gitlab-server}</id>
-            <url>https://community.opengroup.org/api/v4/projects/19/packages/maven</url>
-        </snapshotRepository>
-    </distributionManagement>
 
     <build>
         <plugins>
@@ -204,6 +191,25 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.7.7.201606060606</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
         </plugins>
     </build>
 </project>

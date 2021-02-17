@@ -16,15 +16,17 @@ package org.opengroup.osdu.search.provider.gcp.cache;
 
 import com.google.auth.oauth2.AccessToken;
 import org.opengroup.osdu.core.common.cache.RedisCache;
-import org.springframework.beans.factory.annotation.Value;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DatastoreCredentialCache extends RedisCache<String, AccessToken> {
 
+    @Autowired
     // Datastore credentials are only valid for 1hr, release the key 2 minutes before the expiration
-    public DatastoreCredentialCache(@Value("${REDIS_SEARCH_HOST}") final String REDIS_SEARCH_HOST,@Value("${REDIS_SEARCH_PORT}") final int REDIS_SEARCH_PORT) {
-        super(REDIS_SEARCH_HOST, REDIS_SEARCH_PORT, 58 * 60, String.class, AccessToken.class);
+    public DatastoreCredentialCache(final SearchConfigurationProperties configurationProperties) {
+        super(configurationProperties.getRedisSearchHost(), Integer.parseInt(configurationProperties.getRedisSearchPort()), 58 * 60, String.class, AccessToken.class);
     }
 
 }

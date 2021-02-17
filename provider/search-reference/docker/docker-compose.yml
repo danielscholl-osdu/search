@@ -1,0 +1,11 @@
+version: "3"
+services:
+  os-search-app:
+    build:
+      args:
+        JAR_FILE: target/search-reference-0.0.5-SNAPSHOT-spring-boot.jar
+      context: ""
+      dockerfile: ../Dockerfile
+    image: gcr.io/osdu-anthos-02/os-search/search-reference
+    ports:
+      - "8080:8080"

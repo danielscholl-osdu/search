@@ -14,7 +14,6 @@
 
 package org.opengroup.osdu.search.provider.gcp.provider.impl;
 
-import com.google.common.collect.Lists;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -27,7 +26,6 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -36,7 +34,7 @@ import org.mockito.Spy;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
-import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.provider.gcp.service.FieldMappingTypeService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
@@ -60,7 +58,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({SearchRequest.class, SearchHits.class, RestHighLevelClient.class, Config.class})
+@PrepareForTest({SearchRequest.class, SearchHits.class, RestHighLevelClient.class})
 public class QueryServiceTest {
 
     @Mock
@@ -88,7 +86,7 @@ public class QueryServiceTest {
     @Mock
     private IProviderHeaderService providerHeaderService;
     @Mock
-    private Config searchConfig;
+    private SearchConfigurationProperties searchConfigurationProperties;
 
     private RestHighLevelClient restHighLevelClient;
 
@@ -111,8 +109,8 @@ public class QueryServiceTest {
         mockStatic(RestHighLevelClient.class);
         mockStatic(SearchRequest.class);
         mockStatic(SearchHits.class);
-        mockStatic(Config.class);
 
+        when(searchConfigurationProperties.getEnvironment()).thenReturn("evt");
         restHighLevelClient = PowerMockito.mock(RestHighLevelClient.class);
         elasticSearchResponse = mock(SearchResponse.class, RETURNS_DEEP_STUBS);
         elasticClientHandler = PowerMockito.mock(ElasticClientHandler.class);
@@ -146,7 +144,7 @@ public class QueryServiceTest {
 
         QueryResponse queryResponse = this.sut.queryIndex(searchRequest);
         assertNotNull(queryResponse);
-        assertEquals(queryResponse.getTotalCount(), 1);
+        assertEquals(1, queryResponse.getTotalCount());
     }
 
     @Test
@@ -162,7 +160,7 @@ public class QueryServiceTest {
 
         QueryResponse queryResponse = this.sut.queryIndex(searchRequest);
         assertNotNull(queryResponse);
-        assertEquals(queryResponse.getTotalCount(), 100);
+        assertEquals(100, queryResponse.getTotalCount());
     }
 
     @Test
@@ -455,7 +453,7 @@ public class QueryServiceTest {
         when(searchRequest.getKind()).thenReturn(kind);
         when(searchRequest.getLimit()).thenReturn(limit);
         when(searchRequest.getFrom()).thenReturn(from);
-        when(searchConfig.getQueryLimitMaximum()).thenReturn(1000);
+        when(searchConfigurationProperties.getQueryLimitMaximum()).thenReturn(1000);
         when(searchRequest.getReturnedFields()).thenReturn(returnedFields);
 
         when(crossTenantUtils.getIndexName(any(), any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
@@ -575,7 +573,7 @@ public class QueryServiceTest {
         when(searchRequest.getKind()).thenReturn("tenant1:welldb:well:1.0.0");
         when(searchRequest.getAggregateBy()).thenReturn("namespace");
         when(crossTenantUtils.getIndexName(any(), any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
-        when(searchConfig.getAggregationSize()).thenReturn(1000);
+        when(searchConfigurationProperties.getAggregationSize()).thenReturn(1000);
         doReturn(true).when(this.sut).isEnvironmentPreDemo();
 
         SearchRequest elasticRequest = this.sut.createElasticRequest(searchRequest);

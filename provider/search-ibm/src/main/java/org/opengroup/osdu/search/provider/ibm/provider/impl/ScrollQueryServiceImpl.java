@@ -1,18 +1,6 @@
-/**
- * Copyright 2020 IBM Corp. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/* Licensed Materials - Property of IBM              */
+/* (c) Copyright IBM Corp. 2020. All Rights Reserved.*/
+
 
 package org.opengroup.osdu.search.provider.ibm.provider.impl;
 
@@ -26,6 +14,8 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.http.HttpStatus;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
@@ -48,6 +38,8 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+
+import static org.elasticsearch.rest.RestStatus.NOT_FOUND;
 
 @Service
 public class ScrollQueryServiceImpl extends QueryBase implements IScrollQueryService {
@@ -102,8 +94,12 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                     }
                 } catch (AppException e) {
                     throw e;
+                } catch (ElasticsearchStatusException e) {
+                    if (e.status() == NOT_FOUND && e.getMessage().startsWith("No search context found for id"))
+                        throw new AppException(HttpStatus.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired", e);
+                    throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
                 } catch (Exception e) {
-                    throw new AppException(HttpServletResponse.SC_NOT_FOUND, "Invalid request", "Invalid scroll request", e);
+                    throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
                 }
             }
             return queryResponse;

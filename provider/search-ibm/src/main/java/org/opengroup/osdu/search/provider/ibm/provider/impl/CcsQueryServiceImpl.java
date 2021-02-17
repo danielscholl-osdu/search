@@ -1,18 +1,5 @@
-/**
- * Copyright 2020 IBM Corp. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/* Licensed Materials - Property of IBM              */
+/* (c) Copyright IBM Corp. 2020. All Rights Reserved.*/
 
 package org.opengroup.osdu.search.provider.ibm.provider.impl;
 
@@ -20,11 +7,11 @@ import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.provider.interfaces.ITenantFactory;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
-import org.opengroup.osdu.core.common.search.Config;
 import org.opengroup.osdu.core.common.model.search.CcsQueryRequest;
 import org.opengroup.osdu.core.common.model.search.CcsQueryResponse;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryResponse;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.provider.interfaces.ICcsQueryService;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.springframework.stereotype.Service;
@@ -50,6 +37,9 @@ public class CcsQueryServiceImpl implements ICcsQueryService {
     @Inject
     private IQueryService queryService;
 
+    @Inject
+    private SearchConfigurationProperties configurationProperties;
+
     @Override
     public CcsQueryResponse makeRequest(final CcsQueryRequest ccsQueryRequest) throws Exception {
         List<String> accounts = Arrays.asList(dpsHeaders.getPartitionIdWithFallbackToAccountId().trim().split("\\s*,\\s*"));
@@ -59,7 +49,7 @@ public class CcsQueryServiceImpl implements ICcsQueryService {
 
     private List<QueryResponse> getTenantResponses(final List<String> accounts, final CcsQueryRequest ccsQueryRequest) throws Exception {
         List<QueryResponse> tenantResponses = new ArrayList<>();
-        if (Config.isSmartSearchCcsDisabled() || accounts.size() == 1) {
+        if (configurationProperties.isSmartSearchCcsDisabled() || accounts.size() == 1) {
             TenantInfo tenant = tenantStorageFactory.getTenantInfo(dpsHeaders.getPartitionIdWithFallbackToAccountId());
             tenantResponses.add(queryService.queryIndex(convertCcsQueryRequestToQueryRequest(ccsQueryRequest),
                     elasticRepository.getElasticClusterSettings(tenant)));

@@ -1,18 +1,6 @@
-/**
- * Copyright 2020 IBM Corp. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/* Licensed Materials - Property of IBM              */
+/* (c) Copyright IBM Corp. 2020. All Rights Reserved.*/
+
 package org.opengroup.osdu.search.provider.ibm.provider.impl;
 
 import java.io.IOException;
@@ -33,7 +21,7 @@ import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryResponse;
-import org.opengroup.osdu.core.common.search.Config;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
@@ -50,6 +38,8 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     private ElasticClientHandler elasticClientHandler;
     @Inject
     private AuditLogger auditLogger;
+    @Inject
+    private SearchConfigurationProperties configurationProperties;
 
     @Override
     public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
@@ -97,7 +87,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         if (!Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
             TermsAggregationBuilder termsAggregationBuilder = new TermsAggregationBuilder(AGGREGATION_NAME, ValueType.STRING);
             termsAggregationBuilder.field(searchRequest.getAggregateBy());
-            termsAggregationBuilder.size(Config.getAggregationSize());
+            termsAggregationBuilder.size(configurationProperties.getAggregationSize());
             sourceBuilder.aggregation(termsAggregationBuilder);
         }
 
