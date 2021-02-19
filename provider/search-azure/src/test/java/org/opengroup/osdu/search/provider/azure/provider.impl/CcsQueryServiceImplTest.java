@@ -30,6 +30,7 @@ import org.opengroup.osdu.core.common.model.search.QueryResponse;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
 import org.opengroup.osdu.core.common.provider.interfaces.ITenantFactory;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 
 import java.util.*;
@@ -73,6 +74,9 @@ public class CcsQueryServiceImplTest {
 
     @Mock
     private IElasticRepository elasticRepository;
+
+    @Mock
+    private SearchConfigurationProperties configurationProperties;
 
     @InjectMocks
     CcsQueryServiceImpl sut;
@@ -149,7 +153,6 @@ public class CcsQueryServiceImplTest {
         doReturn(clusterSettings1).when(elasticRepository).getElasticClusterSettings(eq(tenant1));
         doReturn(clusterSettings2).when(elasticRepository).getElasticClusterSettings(eq(tenant2));
         doReturn(queryResponse1).doReturn(queryResponse2).when(queryService).queryIndex(any(), any());
-
         CcsQueryResponse ccsQueryResponse = sut.makeRequest(ccsQueryRequest);
 
         ArgumentCaptor<QueryRequest> searchRequestArgCaptor = ArgumentCaptor.forClass(QueryRequest.class);

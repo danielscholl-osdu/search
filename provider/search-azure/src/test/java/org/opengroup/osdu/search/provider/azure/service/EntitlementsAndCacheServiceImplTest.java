@@ -29,7 +29,9 @@ import org.opengroup.osdu.core.common.model.entitlements.GroupInfo;
 import org.opengroup.osdu.core.common.model.entitlements.Groups;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
+import org.opengroup.osdu.search.provider.azure.cache.GroupCache;
 
+import javax.inject.Inject;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -52,7 +54,7 @@ public class EntitlementsAndCacheServiceImplTest {
     private DpsHeaders dpsHeaders;
 
     @Mock
-    private ICache<String, Groups> cache;
+    private GroupCache cache;
 
     @Mock
     private IEntitlementsFactory factory;
