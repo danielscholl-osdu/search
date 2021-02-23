@@ -90,7 +90,7 @@ public class Kinds {
         sourceBuilder.size(0);
         sourceBuilder.timeout(REQUEST_TIMEOUT);
         TermsAggregationBuilder aggregation = AggregationBuilders.terms(termAggId)
-                .field(fieldName).size(AggregationSize);
+                .field(fieldName+".keyword").size(AggregationSize);
         sourceBuilder.aggregation(aggregation);
         searchRequest.source(sourceBuilder);
         try (RestHighLevelClient client = this.elasticClientHandler.createRestClient()) {

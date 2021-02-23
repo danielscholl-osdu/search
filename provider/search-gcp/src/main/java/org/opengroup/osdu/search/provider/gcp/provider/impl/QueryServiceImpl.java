@@ -76,7 +76,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         List<AggregationResponse> aggregations = getAggregationFromSearchResponse(searchResponse);
 
         QueryResponse queryResponse = QueryResponse.getEmptyResponse();
-        queryResponse.setTotalCount(searchResponse.getHits().getTotalHits());
+        queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
         if (results != null) {
             queryResponse.setAggregations(aggregations);
             queryResponse.setResults(results);
@@ -97,7 +97,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
 
         // aggregation: only make it available in pre demo for now
         if (isEnvironmentPreDemo() && !Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
-            TermsAggregationBuilder termsAggregationBuilder = new TermsAggregationBuilder(AGGREGATION_NAME, ValueType.STRING);
+            TermsAggregationBuilder termsAggregationBuilder = new TermsAggregationBuilder(AGGREGATION_NAME);
             termsAggregationBuilder.field(searchRequest.getAggregateBy());
             termsAggregationBuilder.size(searchConfigurationProperties.getAggregationSize());
             sourceBuilder.aggregation(termsAggregationBuilder);

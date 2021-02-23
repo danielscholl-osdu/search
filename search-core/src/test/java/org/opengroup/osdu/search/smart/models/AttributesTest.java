@@ -1,17 +1,19 @@
-// Copyright 2017-2019, Schlumberger
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
+/*
+ * Copyright 2020 Google LLC
+ * Copyright 2020 EPAM Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.opengroup.osdu.search.smart.models;
 
 import static org.junit.Assert.fail;
@@ -32,7 +34,7 @@ import java.util.Map;
 
 import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsRequest;
 import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsResponse;
-import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsResponse.FieldMappingMetaData;
+import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsResponse.FieldMappingMetadata;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.IndicesClient;
 import org.elasticsearch.client.RequestOptions;
@@ -124,13 +126,13 @@ public class AttributesTest {
 		builder.field("Field", fields);
 		builder.endObject();
 		BytesReference bytesReference = BytesReference.bytes(builder);
-		FieldMappingMetaData mappingMetaData = new FieldMappingMetaData(index, bytesReference);
-		Map<String, FieldMappingMetaData> mapBuilder = new HashMap<>();
+		FieldMappingMetadata mappingMetaData = new FieldMappingMetadata(index, bytesReference);
+		Map<String, FieldMappingMetadata> mapBuilder = new HashMap<>();
 		mapBuilder.put("data.Field", mappingMetaData);
-		Map<String, Map<String, FieldMappingMetaData>> mappingBuilder = new HashMap<>();
+		Map<String, Map<String, FieldMappingMetadata>> mappingBuilder = new HashMap<>();
 		mappingBuilder.put("any index 1", mapBuilder);
 		mappingBuilder.put("any index 2", mapBuilder);
-		Map<String, Map<String, Map<String, FieldMappingMetaData>>> mapping = new HashMap<>();
+		Map<String, Map<String, Map<String, FieldMappingMetadata>>> mapping = new HashMap<>();
 		mapping.put("indices 1", mappingBuilder);
 		when(searchResponse.getAggregations()).thenReturn(null);
 		when(getFieldMappingsResponse.mappings()).thenReturn(mapping);

@@ -88,7 +88,7 @@ public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQuery
                         SearchResponse searchScrollResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
 
                         List<Map<String, Object>> results = getHitsFromSearchResponse(searchScrollResponse);
-                        queryResponse.setTotalCount(searchScrollResponse.getHits().getTotalHits());
+                        queryResponse.setTotalCount(searchScrollResponse.getHits().getTotalHits().value);
                         if (results != null) {
                             queryResponse.setResults(results);
                             queryResponse.setCursor(this.refreshCursorCache(searchScrollResponse.getScrollId(), dpsHeaders.getUserEmail()));
@@ -129,7 +129,7 @@ public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQuery
             return CursorQueryResponse.builder()
                     .cursor(refreshCursorCache(searchResponse.getScrollId(), dpsHeaders.getUserEmail()))
                     .results(results)
-                    .totalCount(searchResponse.getHits().getTotalHits())
+                    .totalCount(searchResponse.getHits().getTotalHits().value)
                     .build();
         }
         return CursorQueryResponse.getEmptyResponse();
