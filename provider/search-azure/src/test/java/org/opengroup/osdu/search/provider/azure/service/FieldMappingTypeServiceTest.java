@@ -58,18 +58,18 @@ public class FieldMappingTypeServiceTest {
     public void testGetFieldTypes_whenAllMappingsProvided_returnsCorrectFieldTypes() throws IOException {
         RestHighLevelClient restClient = mock(RestHighLevelClient.class);
         GetFieldMappingsResponse response = mock(GetFieldMappingsResponse.class);
-        GetFieldMappingsResponse.FieldMappingMetaData fieldMappingMetaData = mock(GetFieldMappingsResponse.FieldMappingMetaData.class);
+        GetFieldMappingsResponse.FieldMappingMetadata fieldMappingMetaData = mock(GetFieldMappingsResponse.FieldMappingMetadata.class);
         IndicesClient indicesClient = mock(IndicesClient.class);
 
         String fieldName = FIELD + "." + TYPE;
         String indexPattern = "index.pattern";
 
         Map<String, Object> sourceMap = getDummySourceMap();
-        Map<String, GetFieldMappingsResponse.FieldMappingMetaData> fieldMapping = new HashMap<>();
+        Map<String, GetFieldMappingsResponse.FieldMappingMetadata> fieldMapping = new HashMap<>();
         fieldMapping.put(fieldName, fieldMappingMetaData);
-        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>> typeMapping = new HashMap<>();
+        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> typeMapping = new HashMap<>();
         typeMapping.put(FIELD, fieldMapping);
-        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>>> indexMapping = new HashMap<>();
+        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>>> indexMapping = new HashMap<>();
         indexMapping.put(TYPE, typeMapping);
 
         doReturn(indicesClient).when(restClient).indices();
@@ -92,7 +92,7 @@ public class FieldMappingTypeServiceTest {
         String fieldName = FIELD + "." + TYPE;
         String indexPattern = "index.pattern";
 
-        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>>> indexMapping = new HashMap<>();
+        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>>> indexMapping = new HashMap<>();
 
         doReturn(indicesClient).when(restClient).indices();
         doReturn(response).when(indicesClient).getFieldMapping(any(GetFieldMappingsRequest.class), any());
@@ -112,10 +112,10 @@ public class FieldMappingTypeServiceTest {
         String fieldName = FIELD + "." + TYPE;
         String indexPattern = "index.pattern";
 
-        Map<String, GetFieldMappingsResponse.FieldMappingMetaData> fieldMapping = new HashMap<>();
-        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>> typeMapping = new HashMap<>();
+        Map<String, GetFieldMappingsResponse.FieldMappingMetadata> fieldMapping = new HashMap<>();
+        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> typeMapping = new HashMap<>();
         typeMapping.put(FIELD, fieldMapping);
-        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>>> indexMapping = new HashMap<>();
+        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>>> indexMapping = new HashMap<>();
         indexMapping.put(TYPE, typeMapping);
 
         doReturn(indicesClient).when(restClient).indices();
@@ -131,7 +131,7 @@ public class FieldMappingTypeServiceTest {
     public void testGetFieldTypes_whenMissingTypeObjectInTypeMap_returnsEmptyFieldTypes() throws IOException {
         RestHighLevelClient restClient = mock(RestHighLevelClient.class);
         GetFieldMappingsResponse response = mock(GetFieldMappingsResponse.class);
-        GetFieldMappingsResponse.FieldMappingMetaData fieldMappingMetaData = mock(GetFieldMappingsResponse.FieldMappingMetaData.class);
+        GetFieldMappingsResponse.FieldMappingMetadata fieldMappingMetaData = mock(GetFieldMappingsResponse.FieldMappingMetadata.class);
         IndicesClient indicesClient = mock(IndicesClient.class);
 
         String fieldName = FIELD + "." + TYPE;
@@ -139,11 +139,11 @@ public class FieldMappingTypeServiceTest {
 
         Map<String, Object> sourceMap = getDummySourceMap();
         ((LinkedHashMap) sourceMap.get(TYPE)).put(TYPE, null);
-        Map<String, GetFieldMappingsResponse.FieldMappingMetaData> fieldMapping = new HashMap<>();
+        Map<String, GetFieldMappingsResponse.FieldMappingMetadata> fieldMapping = new HashMap<>();
         fieldMapping.put(fieldName, fieldMappingMetaData);
-        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>> typeMapping = new HashMap<>();
+        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> typeMapping = new HashMap<>();
         typeMapping.put(FIELD, fieldMapping);
-        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>>> indexMapping = new HashMap<>();
+        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>>> indexMapping = new HashMap<>();
         indexMapping.put(TYPE, typeMapping);
 
         doReturn(indicesClient).when(restClient).indices();

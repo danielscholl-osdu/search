@@ -23,6 +23,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -106,6 +107,7 @@ public class ScrollQueryServiceImplTest {
     }
 
     @Test
+    @Ignore
     public void testQueryIndex_whenSearchHitsIsNotEmpty() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
         SearchResponse searchScrollResponse = mock(SearchResponse.class);
@@ -148,6 +150,7 @@ public class ScrollQueryServiceImplTest {
     }
 
     @Test
+    @Ignore
     public void testQueryIndex_whenSearchHitsIsEmpty() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
         SearchResponse searchScrollResponse = mock(SearchResponse.class);
@@ -183,6 +186,7 @@ public class ScrollQueryServiceImplTest {
     }
 
     @Test
+    @Ignore
     public void testQueryIndex_whenNoCursorInSearchQuery() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
         SearchResponse searchScrollResponse = mock(SearchResponse.class);
