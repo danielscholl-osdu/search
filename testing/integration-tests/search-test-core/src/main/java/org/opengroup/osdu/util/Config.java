@@ -23,6 +23,8 @@ public class Config {
     private static final String DEFAULT_ENTITLEMENTS_DOMAIN = "";
     private static final String DEFAULT_USER_EMAIL = "user";
 
+    private static final String DEFAULT_SECURITY_HTTPS_CERTIFICATE_TRUST = "false";
+
 
     public static String getOtherRelevantDataCountries() {
         return getEnvironmentVariableOrDefaultValue("OTHER_RELEVANT_DATA_COUNTRIES", DEFAULT_OTHER_RELEVANT_DATA_COUNTRIES);
@@ -86,6 +88,12 @@ public class Config {
 
     public static String getUserEmail() {
         return getEnvironmentVariableOrDefaultValue("USER_EMAIL", DEFAULT_USER_EMAIL);
+    }
+
+    public static boolean isSecurityHttpsCertificateTrust() {
+        return Boolean.parseBoolean(
+            getEnvironmentVariableOrDefaultValue("SECURITY_HTTPS_CERTIFICATE_TRUST",
+                DEFAULT_SECURITY_HTTPS_CERTIFICATE_TRUST));
     }
 
     private static String getEnvironmentVariableOrDefaultValue(String key, String defaultValue) {
