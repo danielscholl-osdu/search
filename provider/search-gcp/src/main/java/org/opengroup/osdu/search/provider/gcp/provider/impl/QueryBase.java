@@ -29,6 +29,9 @@ import org.elasticsearch.common.geo.builders.PolygonBuilder;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.geometry.Geometry;
+import org.elasticsearch.geometry.Polygon;
+import org.elasticsearch.geometry.Rectangle;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
@@ -176,14 +179,16 @@ abstract class QueryBase {
             points.add(new Coordinate(point.getLongitude(), point.getLatitude()));
         }
         CoordinatesBuilder cb = new CoordinatesBuilder().coordinates(points);
-        return geoWithinQuery(spatialFilter.getField(), new PolygonBuilder(cb));
+        Geometry geometry = new PolygonBuilder(cb).buildGeometry();
+        return geoWithinQuery(spatialFilter.getField(), geometry);
     }
 
     private QueryBuilder getGeoShapeBoundingBoxQuery(SpatialFilter spatialFilter) throws IOException {
 
         Coordinate topLeft = new Coordinate(spatialFilter.getByBoundingBox().getTopLeft().getLongitude(), spatialFilter.getByBoundingBox().getTopLeft().getLatitude());
         Coordinate bottomRight = new Coordinate(spatialFilter.getByBoundingBox().getBottomRight().getLongitude(), spatialFilter.getByBoundingBox().getBottomRight().getLatitude());
-        return geoWithinQuery(spatialFilter.getField(), new EnvelopeBuilder(topLeft, bottomRight));
+        Rectangle rectangle = new EnvelopeBuilder(topLeft, bottomRight).buildGeometry();
+        return geoWithinQuery(spatialFilter.getField(), rectangle);
     }
 
     private QueryBuilder getGeoShapeDistanceQuery(SpatialFilter spatialFilter) {

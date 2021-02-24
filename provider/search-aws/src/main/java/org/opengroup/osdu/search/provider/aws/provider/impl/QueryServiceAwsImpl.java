@@ -74,7 +74,7 @@ public class QueryServiceAwsImpl extends QueryBase implements IQueryService {
         List<AggregationResponse> aggregations = getAggregationFromSearchResponse(searchResponse);
 
         QueryResponse queryResponse = QueryResponse.getEmptyResponse();
-        queryResponse.setTotalCount(searchResponse.getHits().getTotalHits());
+        queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
         if (results != null) {
             queryResponse.setAggregations(aggregations);
             queryResponse.setResults(results);
@@ -94,7 +94,7 @@ public class QueryServiceAwsImpl extends QueryBase implements IQueryService {
         sourceBuilder.from(searchRequest.getFrom());
 
         if (StringUtils.isNotEmpty(searchRequest.getAggregateBy())) {
-            TermsAggregationBuilder termsAggregationBuilder = new TermsAggregationBuilder(AGGREGATION_NAME, ValueType.STRING);
+            TermsAggregationBuilder termsAggregationBuilder = new TermsAggregationBuilder(AGGREGATION_NAME);
             termsAggregationBuilder.field(searchRequest.getAggregateBy());
             termsAggregationBuilder.size(configurationProperties.getAggregationSize());
             sourceBuilder.aggregation(termsAggregationBuilder);

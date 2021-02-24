@@ -15,10 +15,12 @@
 package org.opengroup.osdu.search.provider.gcp.service;
 
 import com.google.common.base.Strings;
-import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsRequest;
-import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsResponse;
+import java.util.Map.Entry;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.GetFieldMappingsRequest;
+import org.elasticsearch.client.indices.GetFieldMappingsResponse;
+import org.elasticsearch.client.indices.GetFieldMappingsResponse.FieldMappingMetadata;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.search.Preconditions;
 import org.opengroup.osdu.search.provider.gcp.cache.FieldTypeMappingCache;
@@ -57,13 +59,13 @@ public class FieldMappingTypeService {
         request.fields(fieldName);
         if (!Strings.isNullOrEmpty(indexPattern)) request.indices(indexPattern);
         GetFieldMappingsResponse response = restClient.indices().getFieldMapping(request, RequestOptions.DEFAULT);
-        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>>> mappings = response.mappings();
+        Map<String, Map<String, FieldMappingMetadata>> mappings = response.mappings();
 
-        for (Map.Entry<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>>> indexMapping : mappings.entrySet()) {
+        for (Entry<String, Map<String, FieldMappingMetadata>> indexMapping: mappings.entrySet()) {
             if (indexMapping.getValue().isEmpty()) continue;
-            Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetaData>> typeMapping = indexMapping.getValue();
-            Map<String, GetFieldMappingsResponse.FieldMappingMetaData> fieldMapping = typeMapping.values().iterator().next();
-            GetFieldMappingsResponse.FieldMappingMetaData fieldMappingMetaData = fieldMapping.get(fieldName);
+            Map<String, FieldMappingMetadata> typeMapping = indexMapping.getValue();
+            FieldMappingMetadata fieldMappingMetaData = typeMapping.values().iterator().next();
+
             if (fieldMappingMetaData == null) continue;
             Map<String, Object> mapping = fieldMappingMetaData.sourceAsMap();
             LinkedHashMap<String, Object> typeMap = (LinkedHashMap<String, Object>) mapping.get(fieldLeafNodeLabel);
