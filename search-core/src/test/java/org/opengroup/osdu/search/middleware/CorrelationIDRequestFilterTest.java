@@ -95,7 +95,6 @@ public class CorrelationIDRequestFilterTest {
         HashMap<String,String> headers =new HashMap<String, String>();
         headers.put(DpsHeaders.CORRELATION_ID, CORRELATION_ID);
         setupRequestHeaderMock(headers, httpRequest);
-        org.springframework.test.util.ReflectionTestUtils.setField(sut, "ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS", "custom-domain");
 
 		sut.doFilter(httpRequest, httpResponse, filterChain);
 

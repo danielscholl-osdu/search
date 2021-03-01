@@ -320,7 +320,7 @@
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>os-core-common</artifactId>
-            <version>0.3.28</version>
+            <version>0.3.19</version>
         </dependency>
     </dependencies>
 

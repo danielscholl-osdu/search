@@ -26,12 +26,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpStatus;
 
-import org.opengroup.osdu.core.common.http.ResponseHeadersFactory;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.http.Request;
 import org.opengroup.osdu.core.common.http.ResponseHeaders;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
-import org.springframework.beans.factory.annotation.Value;
 
 
 //@Component
@@ -41,12 +39,6 @@ public class CorrelationIDRequestFilter implements Filter {
 
 	@Inject
 	private DpsHeaders requestHeaders;
-
-	private ResponseHeadersFactory responseHeadersFactory = new ResponseHeadersFactory();
-
-	// defaults to * for any front-end, string must be comma-delimited if more than one domain
-	@Value("${ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS:*}")
-	String ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS;
 
 	@Inject
 	private JaxRsDpsLog logger;
@@ -91,8 +83,8 @@ public class CorrelationIDRequestFilter implements Filter {
 
 		requestHeaders.addCorrelationIdIfMissing();
 
-		Map<String, String> responseHeaders = responseHeadersFactory.getResponseHeaders(ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS);
-		for (Map.Entry<String, String> header : responseHeaders.entrySet()) {
+		Map<String, List<Object>> standardHeaders = ResponseHeaders.STANDARD_RESPONSE_HEADERS;
+		for (Map.Entry<String, List<Object>> header : standardHeaders.entrySet()) {
 			httpResponse.addHeader(header.getKey(), header.getValue().toString());
 		}
 
