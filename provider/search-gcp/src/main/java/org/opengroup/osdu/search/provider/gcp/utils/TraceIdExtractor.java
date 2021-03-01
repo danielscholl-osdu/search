@@ -15,13 +15,13 @@
 package org.opengroup.osdu.search.provider.gcp.utils;
 
 import com.google.common.base.Strings;
-import org.opengroup.osdu.core.gcp.model.AppEngineHeaders;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.Random;
 import java.util.UUID;
 
 public class TraceIdExtractor {
+    public static final String CLOUD_TRACE_CONTEXT = "x-cloud-trace-context";
 
     private TraceIdExtractor() {
     }
@@ -31,7 +31,7 @@ public class TraceIdExtractor {
      * https://cloud.google.com/trace/docs/support
      * */
     public static String getTraceableCloudContext(MultivaluedMap<String, String> requestHeaders) {
-        String traceContextHeader = requestHeaders.getFirst(AppEngineHeaders.CLOUD_TRACE_CONTEXT);
+        String traceContextHeader = requestHeaders.getFirst(CLOUD_TRACE_CONTEXT);
 
         // get new if not found
         if (Strings.isNullOrEmpty(traceContextHeader)) return getNewTraceContext();
