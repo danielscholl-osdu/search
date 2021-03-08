@@ -1,4 +1,4 @@
-// Copyright 2017-2019, Schlumberger
+// Copyright © Microsoft Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.opengroup.osdu.search.provider.azure.service;
+package org.opengroup.osdu.search.provider.byoc.utils;
 
-import org.opengroup.osdu.core.common.model.http.DpsHeaders;
+import org.opengroup.osdu.core.common.util.IServiceAccountJwtClient;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
 
-import java.util.Set;
-
-public interface EntitlementsAndCacheService {
-
-	String authorize(DpsHeaders headers, String... roles);
-	boolean isValidAcl(DpsHeaders headers, Set<String> acls);
+@Component
+@RequestScope
+public class ServiceAccountJwtClientImpl implements IServiceAccountJwtClient {
+    @Override
+    public String getIdToken(String tenantName){
+        return "dont-have-one";
+    }
 }

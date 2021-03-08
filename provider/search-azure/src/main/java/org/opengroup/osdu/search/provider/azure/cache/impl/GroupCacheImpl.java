@@ -20,10 +20,10 @@ import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.model.entitlements.Groups;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.util.Crc32c;
-import org.opengroup.osdu.search.provider.azure.cache.GroupCache;
+import org.opengroup.osdu.search.cache.GroupCache;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("groupsCache")
 public class GroupCacheImpl implements GroupCache {
 
   @Resource(name = "groupCache")

@@ -28,6 +28,7 @@ import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
+import org.opengroup.osdu.search.util.QueryResponseUtil;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -46,6 +47,8 @@ public class QueryServiceAwsImpl extends QueryBase implements IQueryService {
     private AuditLogger auditLogger;
     @Inject
     private SearchConfigurationProperties configurationProperties;
+    @Inject
+    private QueryResponseUtil queryResponseUtil;
 
     @Override
     public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
@@ -77,7 +80,7 @@ public class QueryServiceAwsImpl extends QueryBase implements IQueryService {
         queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
         if (results != null) {
             queryResponse.setAggregations(aggregations);
-            queryResponse.setResults(results);
+            queryResponse.setResults(queryResponseUtil.getQueryResponseResults(results));
         }
         return queryResponse;
     }

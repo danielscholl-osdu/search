@@ -43,9 +43,12 @@ import org.opengroup.osdu.core.common.model.entitlements.AclRole;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.*;
+import org.opengroup.osdu.search.policy.service.IPolicyService;
+import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
 import org.opengroup.osdu.search.provider.aws.service.FieldMappingTypeService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
@@ -69,6 +72,10 @@ abstract class QueryBase {
     private CrossTenantUtils crossTenantUtils;
     @Inject
     private FieldMappingTypeService fieldMappingTypeService;
+    @Autowired(required = false)
+    private IPolicyService iPolicyService;
+    @Inject
+    private PartitionPolicyStatusService statusService;
 
     static final String AGGREGATION_NAME = "agg";
     private static final String GEO_SHAPE_INDEXED_TYPE = "geo_shape";
@@ -115,27 +122,32 @@ abstract class QueryBase {
             }
         }
 
-        // apply authorization filters
-        String groups = dpsHeaders.getHeaders().get(providerHeaderService.getDataGroupsHeader());
-        String[] groupArray = groups.trim().split("\\s*,\\s*");
-        if (asOwner) {
-            authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(
-                    AclRole.OWNERS.getPath(), groupArray));
-        } else {
-            authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(RecordMetaAttribute.X_ACL.getValue(), groupArray));
-        }
-
         if (textQueryBuilder != null) {
             queryBuilder = boolQuery().must(textQueryBuilder);
         }
         if (spatialQueryBuilder != null) {
             queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(spatialQueryBuilder) : boolQuery().must(spatialQueryBuilder);
         }
-        if (authorizationQueryBuilder != null) {
-            queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(authorizationQueryBuilder) : boolQuery().must(authorizationQueryBuilder);
-        }
 
-        return queryBuilder;
+        if(this.iPolicyService != null && this.statusService.policyEnabled(this.dpsHeaders.getPartitionId())) {
+            return queryBuilder;
+        } else {
+            // apply authorization filters
+            String groups = dpsHeaders.getHeaders().get(providerHeaderService.getDataGroupsHeader());
+            String[] groupArray = groups.trim().split("\\s*,\\s*");
+            if (asOwner) {
+                authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(
+                        AclRole.OWNERS.getPath(), groupArray));
+            } else {
+                authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(RecordMetaAttribute.X_ACL.getValue(), groupArray));
+            }
+
+            if (authorizationQueryBuilder != null) {
+                queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(authorizationQueryBuilder) : boolQuery().must(authorizationQueryBuilder);
+            }
+
+            return queryBuilder;
+        }
     }
 
     private QueryBuilder getSimpleQuery(String searchQuery) {

@@ -80,6 +80,7 @@ import org.opengroup.osdu.search.provider.gcp.service.FieldMappingTypeService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
+import org.opengroup.osdu.search.util.QueryResponseUtil;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -114,6 +115,8 @@ public class QueryServiceTest {
   private IProviderHeaderService providerHeaderService;
   @Mock
   private SearchConfigurationProperties searchConfigurationProperties;
+  @Mock
+  private QueryResponseUtil queryResponseUtil;
 
   private RestHighLevelClient restHighLevelClient;
 
@@ -171,6 +174,7 @@ public class QueryServiceTest {
         SearchResponse.Clusters.EMPTY);
 
     doReturn(mockSearchResponse).when(this.sut).makeSearchRequest(any(), any());
+    when(queryResponseUtil.getQueryResponseResults(any())).thenReturn(results);
     doReturn(results).when(this.sut).getHitsFromSearchResponse(any());
 
     QueryResponse queryResponse = this.sut.queryIndex(searchRequest);
