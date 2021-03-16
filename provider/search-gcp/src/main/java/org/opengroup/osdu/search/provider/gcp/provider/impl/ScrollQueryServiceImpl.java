@@ -36,6 +36,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.opengroup.osdu.search.util.QueryResponseUtil;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -60,6 +61,8 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
     private CursorCache cursorCache;
     @Inject
     private AuditLogger auditLogger;
+    @Inject
+    private QueryResponseUtil queryResponseUtil;
 
     private final MessageDigest digest;
 
@@ -124,7 +127,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
         if (results != null) {
             return CursorQueryResponse.builder()
                     .cursor(refreshCursorCache(searchResponse.getScrollId(), dpsHeaders.getUserEmail()))
-                    .results(results)
+                    .results(queryResponseUtil.getQueryResponseResults(results))
                     .totalCount(searchResponse.getHits().getTotalHits().value)
                     .build();
         }

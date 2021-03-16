@@ -24,7 +24,6 @@ import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.indexer.OperationType;
 import org.opengroup.osdu.core.common.model.policy.BatchPolicyResponse;
 import org.opengroup.osdu.core.common.model.policy.PolicyRequest;
-import org.opengroup.osdu.core.common.model.policy.PolicyResponse;
 import org.opengroup.osdu.core.common.model.storage.Record;
 import org.opengroup.osdu.core.common.model.storage.RecordMetadata;
 import org.opengroup.osdu.core.common.policy.IPolicyFactory;
