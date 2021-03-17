@@ -19,3 +19,6 @@ image:
   repository: community.opengroup.org:5555/osdu/platform/system/search-service
   branch: master
   tag: latest
+
+policy:
+  enabled: false
