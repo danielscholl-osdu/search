@@ -28,6 +28,5 @@ Here are steps to enable Policy service for a provider:
   ```
   
 - This is an experimental feature and at this moment has following limitations
-    1. Support is added only for `query` api. Support for `query_with_cursor` will be added in the future
-    2. If the query has `returnedFields` set, it must contain all `acl, kind, legal` and `id`
-    3. In the current implementation, totalCount represents the number of records matching user query before the search policy is applied
+    1. If the query has `returnedFields` set, it must contain all `acl, kind, legal` and `id`
+    2. In the current implementation, totalCount represents the number of records matching user query before the search policy is applied
