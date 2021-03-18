@@ -36,3 +36,7 @@ analyze:
     type: mvn
     target: provider/search-ibm/pom.xml
     path: .
+  - name: search-reference
+    type: mvn
+    target: provider/search-reference/pom.xml
+    path: .
