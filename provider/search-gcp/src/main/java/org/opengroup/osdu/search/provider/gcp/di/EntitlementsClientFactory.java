@@ -14,9 +14,13 @@
 
 package org.opengroup.osdu.search.provider.gcp.di;
 
+import javax.inject.Inject;
+
 import org.opengroup.osdu.core.common.entitlements.EntitlementsAPIConfig;
 import org.opengroup.osdu.core.common.entitlements.EntitlementsFactory;
 import org.opengroup.osdu.core.common.entitlements.IEntitlementsFactory;
+import org.opengroup.osdu.core.common.http.json.HttpResponseBodyMapper;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.stereotype.Component;
@@ -25,21 +29,22 @@ import org.springframework.web.context.annotation.RequestScope;
 @Component
 @RequestScope
 public class EntitlementsClientFactory extends AbstractFactoryBean<IEntitlementsFactory> {
+	@Inject
+	private HttpResponseBodyMapper httpResponseBodyMapper;
 
 	@Value("${AUTHORIZE_API}")
 	private String authorizeApi;
-
 	@Value("${AUTHORIZE_API_KEY:}")
 	private String authorizeApiKey;
 
 	@Override
-	protected IEntitlementsFactory createInstance() throws Exception {
+	protected IEntitlementsFactory createInstance() {
 
 		return new EntitlementsFactory(EntitlementsAPIConfig
 				.builder()
 				.rootUrl(authorizeApi)
 				.apiKey(authorizeApiKey)
-				.build());
+				.build(), httpResponseBodyMapper);
 	}
 
 	@Override
