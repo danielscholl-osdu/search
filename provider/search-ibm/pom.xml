@@ -25,6 +25,7 @@
 	<properties>
 		<os-core-lib-ibm.version>0.0.18</os-core-lib-ibm.version>
 		<start-class>org.opengroup.osdu.search.provider.ibm.app.SearchIBMApplication</start-class>
+		<osdu.oscorecommon.version>0.6.9</osdu.oscorecommon.version>
 	</properties>
 
 
@@ -47,7 +48,7 @@
 		<dependency>
 			<groupId>org.opengroup.osdu</groupId>
 			<artifactId>os-core-common</artifactId>
-			<version>0.3.8</version>
+			<version>${osdu.oscorecommon.version}</version>
 		</dependency>
 
 		<dependency>

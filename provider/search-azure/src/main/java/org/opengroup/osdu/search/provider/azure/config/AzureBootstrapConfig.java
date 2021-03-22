@@ -14,6 +14,7 @@
 
 package org.opengroup.osdu.search.provider.azure.config;
 
+import javax.inject.Inject;
 import org.opengroup.osdu.core.common.entitlements.EntitlementsAPIConfig;
 import org.opengroup.osdu.core.common.entitlements.EntitlementsFactory;
 import org.opengroup.osdu.core.common.entitlements.IEntitlementsFactory;
@@ -64,6 +65,8 @@ public class AzureBootstrapConfig {
         return elasticCacheMaxSize;
     }
 
+    @Autowired
+    private HttpResponseBodyMapper httpResponseBodyMapper;
 
 
     @Bean
