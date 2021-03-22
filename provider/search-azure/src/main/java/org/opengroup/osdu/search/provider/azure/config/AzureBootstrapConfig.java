@@ -44,9 +44,6 @@ public class AzureBootstrapConfig {
     @Value("${AUTHORIZE_API_KEY}")
     private String entitlementsAPIKey;
 
-    @Autowired
-    private HttpResponseBodyMapper httpResponseBodyMapper;
-
     @Bean
     @Named("KEY_VAULT_URL")
     public String getKeyVaultURL() {
@@ -67,7 +64,6 @@ public class AzureBootstrapConfig {
 
     @Autowired
     private HttpResponseBodyMapper httpResponseBodyMapper;
-
 
     @Bean
     public IEntitlementsFactory entitlementsFactory() {
