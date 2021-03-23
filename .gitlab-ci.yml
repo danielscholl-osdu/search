@@ -26,6 +26,7 @@ variables:
   OSDU_GCP_TENANT_NAME: osdu
   OSDU_GCP_STORAGE_URL: https://os-storage-dot-nice-etching-277309.uc.r.appspot.com/api/storage/v2/
   OSDU_SECURITY_HTTPS_CERTIFICATE_TRUST: 'true'
+  OSDU_GCP_TEST_SUBDIR: testing/integration-tests/$OSDU_GCP_SERVICE-test-$OSDU_GCP_VENDOR
 
   IBM_BUILD_SUBDIR: provider/search-ibm
   IBM_INT_TEST_SUBDIR: testing/integration-tests/search-test-ibm
