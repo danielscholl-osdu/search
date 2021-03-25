@@ -26,6 +26,8 @@ import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
+import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -40,10 +42,18 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     private AuditLogger auditLogger;
     @Inject
     private SearchConfigurationProperties configurationProperties;
+    @Inject
+	private TenantInfo tenant;
 
     @Override
     public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
-    	validateTenant(searchRequest);
+    	// validateTenant(searchRequest);
+        try {
+			tenant.getName();
+		} catch (Exception e) {
+			throw new AccessDeniedException("Unauthorized");
+		}
+        
         try (RestHighLevelClient client = this.elasticClientHandler.createRestClient()) {
             QueryResponse queryResponse = this.executeQuery(searchRequest, client);
             return queryResponse;
