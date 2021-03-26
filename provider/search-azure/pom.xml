@@ -36,12 +36,8 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
         <springboot.version>2.1.7.RELEASE</springboot.version>
-<<<<<<< HEAD
-        <osdu.corelibazure.version>0.0.63</osdu.corelibazure.version>
-=======
-        <osdu.corelibazure.version>0.0.41</osdu.corelibazure.version>
->>>>>>> 1bfd7b4bf10d099930a61d0b71e6f5f36ab58734
-        <osdu.oscorecommon.version>0.6.9</osdu.oscorecommon.version>
+        <osdu.corelibazure.version>0.8.0-SNAPSHOT</osdu.corelibazure.version>
+        <osdu.oscorecommon.version>0.8.0-SNAPSHOT</osdu.oscorecommon.version>
         <osdu.search-core.version>0.8.0-SNAPSHOT</osdu.search-core.version>
         <spatial4j.version>0.7</spatial4j.version>
         <jts-io-common.version>1.15.0</jts-io-common.version>
@@ -83,11 +79,7 @@
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>os-core-common</artifactId>
-<<<<<<< HEAD
-            <version>0.6.10</version>
-=======
             <version>${osdu.oscorecommon.version}</version>
->>>>>>> 1bfd7b4bf10d099930a61d0b71e6f5f36ab58734
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
