@@ -43,9 +43,6 @@ public class AzureBootstrapConfig {
     @Value("${AUTHORIZE_API_KEY}")
     private String entitlementsAPIKey;
 
-    @Autowired
-    private HttpResponseBodyMapper mapper;
-
     @Bean
     @Named("KEY_VAULT_URL")
     public String getKeyVaultURL() {
@@ -64,7 +61,8 @@ public class AzureBootstrapConfig {
         return elasticCacheMaxSize;
     }
 
-
+    @Autowired
+    private HttpResponseBodyMapper httpResponseBodyMapper;
 
     @Bean
     public IEntitlementsFactory entitlementsFactory() {
@@ -72,6 +70,6 @@ public class AzureBootstrapConfig {
                 .apiKey(entitlementsAPIKey)
                 .rootUrl(entitlementsAPIEndpoint)
                 .build();
-        return new EntitlementsFactory(apiConfig, mapper);
+        return new EntitlementsFactory(apiConfig, httpResponseBodyMapper);
     }
 }
