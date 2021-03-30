@@ -72,8 +72,6 @@ public class PolicyServiceImpl implements IPolicyService{
     }
 
     private PolicyRequest getSearchPolicy(List<RecordMetadata> recordMetadataList, OperationType operation) {
-        //TODO: confirm SearchPolicy structure and search_input.json from Hrvoje
-
         List<Record> records = new ArrayList<>();
         for(RecordMetadata recordMetadata : recordMetadataList) {
             Record record = new Record();

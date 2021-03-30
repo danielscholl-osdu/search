@@ -94,7 +94,6 @@ abstract class QueryBase {
 
         QueryBuilder textQueryBuilder = null;
         QueryBuilder spatialQueryBuilder = null;
-        QueryBuilder authorizationQueryBuilder;
         QueryBuilder queryBuilder = null;
 
         if (StringUtils.isNotEmpty(simpleQuery)) {
@@ -129,23 +128,29 @@ abstract class QueryBase {
             queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(spatialQueryBuilder) : boolQuery().must(spatialQueryBuilder);
         }
 
+        return modifyQueryIfPolicyEnabled(queryBuilder, asOwner);
+    }
+
+    private QueryBuilder modifyQueryIfPolicyEnabled (QueryBuilder queryBuilder, boolean asOwner) {
         if(this.iPolicyService != null && this.statusService.policyEnabled(this.dpsHeaders.getPartitionId())) {
             return queryBuilder;
         } else {
+            QueryBuilder authorizationQueryBuilder = null;
             // apply authorization filters
+            //bypass for BYOC implementation only.
             String groups = dpsHeaders.getHeaders().get(providerHeaderService.getDataGroupsHeader());
-            String[] groupArray = groups.trim().split("\\s*,\\s*");
-            if (asOwner) {
-                authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(
-                        AclRole.OWNERS.getPath(), groupArray));
-            } else {
-                authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(RecordMetaAttribute.X_ACL.getValue(), groupArray));
+            if (groups != null) {
+                String[] groupArray = groups.trim().split("\\s*,\\s*");
+                if (asOwner) {
+                    authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(
+                            AclRole.OWNERS.getPath(), groupArray));
+                } else {
+                    authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(RecordMetaAttribute.X_ACL.getValue(), groupArray));
+                }
             }
-
             if (authorizationQueryBuilder != null) {
                 queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(authorizationQueryBuilder) : boolQuery().must(authorizationQueryBuilder);
             }
-
             return queryBuilder;
         }
     }

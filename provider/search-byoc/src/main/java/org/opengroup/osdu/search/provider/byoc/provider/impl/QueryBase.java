@@ -83,7 +83,6 @@ abstract class QueryBase {
 
         QueryBuilder textQueryBuilder = null;
         QueryBuilder spatialQueryBuilder = null;
-        QueryBuilder authorizationQueryBuilder = null;
         QueryBuilder queryBuilder = null;
 
         if (!Strings.isNullOrEmpty(simpleQuery)) {
@@ -108,9 +107,14 @@ abstract class QueryBase {
             queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(spatialQueryBuilder) : boolQuery().must(spatialQueryBuilder);
         }
 
+        return modifyQueryIfPolicyEnabled(queryBuilder, asOwner);
+    }
+
+    private QueryBuilder modifyQueryIfPolicyEnabled(QueryBuilder queryBuilder, boolean asOwner) {
         if(this.iPolicyService != null && this.statusService.policyEnabled(this.dpsHeaders.getPartitionId())) {
             return queryBuilder;
         } else {
+            QueryBuilder authorizationQueryBuilder = null;
             // apply authorization filters
             //bypass for BYOC implementation only.
             String groups = dpsHeaders.getHeaders().get(providerHeaderService.getDataGroupsHeader());

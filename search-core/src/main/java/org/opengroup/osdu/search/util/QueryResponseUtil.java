@@ -1,4 +1,4 @@
-// Copyright 2017-2019, Schlumberger
+// Copyright 2017-2021, Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.indexer.OperationType;
 import org.opengroup.osdu.core.common.model.legal.Legal;
+import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
 import org.opengroup.osdu.core.common.model.storage.RecordMetadata;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
@@ -63,7 +64,10 @@ public class QueryResponseUtil {
 
     private boolean requiredFieldsArePresent(List<Map<String, Object>> results) {
         for(Map<String, Object> result : results) {
-            if(!result.containsKey("acl") || !result.containsKey("kind") || !result.containsKey("legal") || !result.containsKey("id"))
+            if(!result.containsKey(RecordMetaAttribute.ACL.getValue())
+                    || !result.containsKey(RecordMetaAttribute.KIND.getValue())
+                    || !result.containsKey(RecordMetaAttribute.LEGAL.getValue())
+                    || !result.containsKey(RecordMetaAttribute.ID.getValue()))
                 return false;
         }
         return true;
