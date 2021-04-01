@@ -16,14 +16,16 @@ package org.opengroup.osdu.search.provider.azure.cache.impl;
 
 import javax.annotation.Resource;
 
+import javax.annotation.Resource;
+
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.model.entitlements.Groups;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.util.Crc32c;
-import org.opengroup.osdu.search.cache.GroupCache;
+import org.opengroup.osdu.search.provider.azure.cache.GroupCache;
 import org.springframework.stereotype.Component;
 
-@Component("groupsCache")
+@Component("simpleGroupCache")
 public class GroupCacheImpl implements GroupCache {
 
   @Resource(name = "groupCache")
@@ -51,7 +53,8 @@ public class GroupCacheImpl implements GroupCache {
 
   public String getCacheKey(DpsHeaders headers) {
     String key = String.format("entitlement-groups:%s:%s", headers.getPartitionIdWithFallbackToAccountId(),
-        headers.getAuthorization());
+            headers.getAuthorization());
     return Crc32c.hashToBase64EncodedString(key);
   }
 }
+

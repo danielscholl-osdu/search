@@ -46,7 +46,7 @@ public class EntitlementsAndCacheServiceImpl implements IEntitlementsExtensionSe
     private IEntitlementsFactory factory;
 
     @Autowired
-    @Qualifier("groupsCache")
+    @Qualifier("simpleGroupCache")
     private ICache<String, Groups> cache;
 
     @Autowired
