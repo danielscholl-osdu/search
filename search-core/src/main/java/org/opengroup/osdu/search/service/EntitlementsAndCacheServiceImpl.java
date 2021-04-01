@@ -28,7 +28,6 @@ import org.opengroup.osdu.core.common.entitlements.IEntitlementsFactory;
 import org.opengroup.osdu.core.common.entitlements.IEntitlementsService;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -46,7 +45,6 @@ public class EntitlementsAndCacheServiceImpl implements IEntitlementsExtensionSe
     private IEntitlementsFactory factory;
 
     @Autowired
-    @Qualifier("simpleGroupCache")
     private ICache<String, Groups> cache;
 
     @Autowired
