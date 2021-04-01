@@ -39,9 +39,10 @@ public class PartitionServiceImpl implements IPartitionService {
     @Override
     public PartitionInfo getPartition(String partitionId) {
         try {
-            this.headers.put(DpsHeaders.AUTHORIZATION, this.tokenService.getIdToken(this.headers.getPartitionId()));
+            DpsHeaders partitionHeaders = DpsHeaders.createFromMap(headers.getHeaders());
+            partitionHeaders.put(DpsHeaders.AUTHORIZATION, this.tokenService.getIdToken(this.headers.getPartitionId()));
 
-            IPartitionProvider serviceClient = this.factory.create(this.headers);
+            IPartitionProvider serviceClient = this.factory.create(partitionHeaders);
             PartitionInfo partitionInfo = serviceClient.get(partitionId);
             return partitionInfo;
         } catch (PartitionException e) {
