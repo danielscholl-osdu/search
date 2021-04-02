@@ -124,6 +124,11 @@ public class Steps extends QuerySteps {
         super.i_should_get_in_response_records(resultCount);
     }
 
+    @Then("^I should get in response (\\d+) records with ([\"(a-zA-Z0-9)\",?]*)$")
+    public void i_should_get_in_response_records_with_fields(int resultCount, List<String> returnedFields) {
+        super.i_should_get_in_response_records(resultCount, returnedFields);
+    }
+
     @Then("^I should get records in right order first record id: \"(.*?)\", last record id: \"(.*?)\"$")
     public void i_should_get_records_in_right_order(String firstRecId, String lastRecId) {
         super.i_should_get_records_in_right_order(firstRecId, lastRecId);

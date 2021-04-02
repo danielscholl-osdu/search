@@ -13,14 +13,14 @@ Feature: Search with different queries
     And I set the offset of starting point as <offset>
     And I set the fields I want in response as <returned_fields>
     And I send request to tenant <tenant>
-    Then I should get in response <count> records
+    Then I should get in response <count> records with <returned_fields>
 
     Examples:
       | tenant    | kind                                      | query                                | limit | offset | returned_fields | count |
       | "tenant1" | "tenant1:testquery<timestamp>:well:1.0.0" | "data.OriginalOperator:OFFICE4"      | None  | None   | All             | 1     |
       | "tenant1" | "tenant1:testquery<timestamp>:well:1.0.0" | None                                 | 0     | None   | NULL            | 3     |
       ######################################Range Query test cases##########################################################################
-      | "tenant1" | "tenant1:testquery<timestamp>:well:1.0.0" | "data.Rank:{1 TO 3}"                 | None  | None   | All             | 1     |
+      | "tenant1" | "tenant1:testquery<timestamp>:well:1.0.0" | "data.Rank:{1 TO 3}"                 | None  | None   | id,index        | 1     |
       | "tenant1" | "tenant1:testquery<timestamp>:well:1.0.0" | "data.Rank:[10 TO 20]"               | None  | None   | All             | 1     |
       | "tenant1" | "tenant1:testquery<timestamp>:well:1.0.0" | "data.Rank:>=2"                      | None  | None   | All             | 2     |
       | "tenant1" | "tenant1:testquery<timestamp>:well:1.0.0" | "data.Established:{* TO 2012-01-01}" | None  | None   | All             | 2     |
