@@ -164,13 +164,6 @@
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
-        <!-- https://github.com/Azure/azure-sdk-for-java/issues/15180 remove this once applicationinsights-spring-boot-starter upgraded to >3.0.0-->
-        <dependency>
-            <groupId>com.nimbusds</groupId>
-            <artifactId>nimbus-jose-jwt</artifactId>
-            <version>7.9</version>
-        </dependency>
-
     </dependencies>
 
     <build>
