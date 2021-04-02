@@ -248,7 +248,9 @@ abstract class QueryBase {
         sourceBuilder.size(QueryUtils.getResultSizeForQuery(request.getLimit()));
         sourceBuilder.query(queryBuilder);
         sourceBuilder.timeout(requestTimeout);
-        sourceBuilder.trackTotalHits(request.isTrackTotalCount());
+        if (request.isTrackTotalCount()) {
+            sourceBuilder.trackTotalHits(request.isTrackTotalCount());
+        }
 
         // set highlighter
         if (request.isReturnHighlightedFields()) {
