@@ -141,7 +141,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
     SearchRequest createElasticRequest(Query request) throws AppException {
 
         // set the indexes to org.opengroup.osdu.search.search against
-        String index = this.crossTenantUtils.getIndexName(request, this.dpsHeaders.getPartitionId());
+        String index = this.crossTenantUtils.getIndexName(request);
         SearchRequest elasticSearchRequest = new SearchRequest(index);
 
         // build query
