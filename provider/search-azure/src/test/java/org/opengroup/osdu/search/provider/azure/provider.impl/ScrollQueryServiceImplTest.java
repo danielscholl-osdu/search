@@ -100,8 +100,7 @@ public class ScrollQueryServiceImplTest {
     @Before
     public void init() {
         doReturn(userId).when(dpsHeaders).getUserEmail();
-        doReturn(dataPartitionId).when(dpsHeaders).getPartitionId();
-        doReturn(indexName).when(crossTenantUtils).getIndexName(any(), eq(dataPartitionId));
+        doReturn(indexName).when(crossTenantUtils).getIndexName(any());
         doReturn(cursorSettings).when(cursorCache).get(anyString());
         doReturn(client).when(elasticClientHandler).createRestClient();
     }

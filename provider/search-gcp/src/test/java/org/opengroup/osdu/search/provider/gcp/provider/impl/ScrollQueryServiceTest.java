@@ -301,7 +301,7 @@ public class ScrollQueryServiceTest {
     when(cursorQueryRequest.getReturnedFields()).thenReturn(returnedFields);
     when(searchConfig.getQueryLimitMaximum()).thenReturn(1000);
 
-    Mockito.when(crossTenantUtils.getIndexName(any(), any()))
+    Mockito.when(crossTenantUtils.getIndexName(any()))
         .thenReturn("tenant1-welldb-well-1.0.0,-.*");
 
     SearchRequest elasticRequest = this.sut.createElasticRequest(cursorQueryRequest);
