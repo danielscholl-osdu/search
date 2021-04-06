@@ -509,7 +509,7 @@ public class QueryServiceTest {
     when(searchConfigurationProperties.getQueryLimitMaximum()).thenReturn(1000);
     when(searchRequest.getReturnedFields()).thenReturn(returnedFields);
 
-    when(crossTenantUtils.getIndexName(any(), any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
+    when(crossTenantUtils.getIndexName(any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
 
     SearchRequest elasticRequest = this.sut.createElasticRequest(searchRequest);
     assertNotNull(elasticRequest);
@@ -548,7 +548,7 @@ public class QueryServiceTest {
     when(searchRequest.getKind()).thenReturn("tenant1:welldb:well:1.0.0");
     when(searchRequest.getReturnedFields()).thenReturn(returnedFields);
 
-    when(crossTenantUtils.getIndexName(any(), any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
+    when(crossTenantUtils.getIndexName(any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
 
     SearchRequest elasticRequest = this.sut.createElasticRequest(searchRequest);
     assertNotNull(elasticRequest);
@@ -577,7 +577,7 @@ public class QueryServiceTest {
   public void should_return_correctElasticRequest_given_noReturnedField() throws IOException {
 
     when(searchRequest.getKind()).thenReturn("tenant1:welldb:well:1.0.0");
-    when(crossTenantUtils.getIndexName(any(), any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
+    when(crossTenantUtils.getIndexName(any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
 
     SearchRequest elasticRequest = this.sut.createElasticRequest(searchRequest);
     assertNotNull(elasticRequest);
@@ -614,7 +614,7 @@ public class QueryServiceTest {
     sortOrders.add(SortOrder.DESC);
     sort.setOrder(sortOrders);
     when(searchRequest.getSort()).thenReturn(sort);
-    when(crossTenantUtils.getIndexName(any(), any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
+    when(crossTenantUtils.getIndexName(any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
 
     SearchRequest elasticRequest = this.sut.createElasticRequest(searchRequest);
     assertNotNull(elasticRequest);
@@ -626,7 +626,7 @@ public class QueryServiceTest {
   public void should_return_correctElasticRequest_given_groupByField() throws IOException {
     when(searchRequest.getKind()).thenReturn("tenant1:welldb:well:1.0.0");
     when(searchRequest.getAggregateBy()).thenReturn("namespace");
-    when(crossTenantUtils.getIndexName(any(), any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
+    when(crossTenantUtils.getIndexName(any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
     when(searchConfigurationProperties.getAggregationSize()).thenReturn(1000);
     doReturn(true).when(this.sut).isEnvironmentPreDemo();
 

@@ -209,7 +209,7 @@ abstract class QueryBase {
     }
 
     String getIndex(Query request) {
-        return this.crossTenantUtils.getIndexName(request, this.dpsHeaders.getPartitionId());
+        return this.crossTenantUtils.getIndexName(request);
     }
 
     List<Map<String, Object>> getHitsFromSearchResponse(SearchResponse searchResponse) {

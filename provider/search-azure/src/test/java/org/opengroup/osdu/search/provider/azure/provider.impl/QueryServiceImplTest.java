@@ -128,8 +128,7 @@ public class QueryServiceImplTest {
     public void init() throws IOException {
         Map<String, Object> hitFields = new HashMap<>();
 
-        doReturn(dataPartitionId).when(dpsHeaders).getPartitionId();
-        doReturn(indexName).when(crossTenantUtils).getIndexName(any(), eq(dataPartitionId));
+        doReturn(indexName).when(crossTenantUtils).getIndexName(any());
         doReturn(client).when(elasticClientHandler).createRestClient();
         doReturn(spatialFilter).when(searchRequest).getSpatialFilter();
         doReturn(fieldName).when(spatialFilter).getField();

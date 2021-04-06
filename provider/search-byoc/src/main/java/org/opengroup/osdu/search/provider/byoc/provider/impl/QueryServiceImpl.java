@@ -94,7 +94,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         QueryRequest searchRequest = (QueryRequest) request;
 
         // set the indexes to org.opengroup.osdu.search.search against
-        String index = this.crossTenantUtils.getIndexName(request, this.dpsHeaders.getPartitionId());
+        String index = this.crossTenantUtils.getIndexName(request);
         SearchRequest elasticSearchRequest = new SearchRequest(index);
 
 
