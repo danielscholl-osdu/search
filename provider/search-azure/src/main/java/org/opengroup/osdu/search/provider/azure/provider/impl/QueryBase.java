@@ -272,16 +272,15 @@ abstract class QueryBase {
         if (returnedFields == null) {
             returnedFields = new ArrayList<>();
         }
-        String[] includesArr = null;
-        String[] excludesArr = null;
         Set<String> returnedFieldsSet = new HashSet<>(returnedFields);
-        includesArr = returnedFieldsSet.toArray(new String[returnedFieldsSet.size()]);
+        String[] includesArr = returnedFieldsSet.toArray(new String[returnedFieldsSet.size()]);
 
         // remove all matching returnedField and queryable from excludes
-        Set<String> shouldNotExclude = Sets.intersection(returnedFieldsSet, queryableExcludes);
-        Set<String> shouldExclude = Sets.difference(queryableExcludes, shouldNotExclude);
-        excludes.addAll(shouldExclude);
-        excludesArr = excludes.toArray(new String[excludes.size()]);
+        Set<String> requestQueryableExcludes = new HashSet<>(queryableExcludes);
+        Set<String> requestExcludes = new HashSet<>(excludes);
+        requestQueryableExcludes.removeAll(returnedFields);
+        requestExcludes.addAll(requestQueryableExcludes);
+        String[] excludesArr = requestExcludes.toArray(new String[requestExcludes.size()]);
 
         sourceBuilder.fetchSource(includesArr, excludesArr);
         return sourceBuilder;
