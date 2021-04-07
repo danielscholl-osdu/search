@@ -42,6 +42,19 @@
 					}
 				}
 			},
+			"index": {
+                "properties": {
+                    "lastUpdateTime": {
+                        "type": "date"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "trace": {
+                        "type": "text"
+                    }
+                }
+            },
 			"data": {
 				"properties": {
 					"Field": {
