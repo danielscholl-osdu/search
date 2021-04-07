@@ -146,6 +146,7 @@ __Note:__ : It can take a delay of atleast 30 seconds once records are successfu
 | sort | Allows you to add one or more sorts on specific fields. The length of fields and the length of order must match. Order value must be either ASC or DESC (case insensitive). For more details, ability and limitation about this feature, please refer to [Sort](#sort_querires) 
 | queryAsOwner | If true, the result only contains the records that the user owns. If false, the result contains all records that the user is entitled to see. Default value is false | 
 | spatialFilter | A spatial filter to apply, please see [Geo-Spatial Queries](#geo-spatial-queries). |
+| trackTotalCount | Tracks accurate record count matching the query if 'true', partial count otherwise. Partial count queries are more performant. Default is 'false' and returns 10000 if matching records are higher than 10000. |
 | returnedFields | The fields on which to project the results. |
 
 __Note:__ Offset + Limit can not be more than the 10,000. See the [Query With Cursor](#query-with-cursor) for more efficient ways to do deep scrolling.
