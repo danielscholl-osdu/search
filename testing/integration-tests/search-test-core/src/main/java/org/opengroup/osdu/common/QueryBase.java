@@ -10,6 +10,7 @@ import org.opengroup.osdu.util.ElasticUtils;
 import org.opengroup.osdu.util.HTTPClient;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -66,6 +67,19 @@ public class QueryBase extends TestsBase {
         ResponseMock response = executeQuery(payload, headers, httpClient.getAccessToken(), ResponseMock.class);
         assertEquals(200, response.getResponseCode());
         assertEquals(resultCount, response.getResults().size());
+    }
+
+    public void i_should_get_in_response_records(int resultCount, List<String> returnedFields) {
+        String payload = requestQuery.toString();
+        ResponseMock response = executeQuery(payload, headers, httpClient.getAccessToken(), ResponseMock.class);
+        assertEquals(200, response.getResponseCode());
+        assertEquals(resultCount, response.getResults().size());
+
+        if(returnedFields.contains("NULL") || returnedFields.contains("All")) { return; }
+
+        for (Map<String, Object> results: response.getResults()) {
+            assertTrue(results.keySet().containsAll(returnedFields));
+        }
     }
 
     public void i_should_get_response_with_reason_message_and_errors(List<Integer> codes, String type, String msg,
