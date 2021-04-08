@@ -31,6 +31,11 @@ export AWS_COGNITO_AUTH_PARAMS_PASSWORD=$ADMIN_PASSWORD
 export AWS_COGNITO_AUTH_PARAMS_USER=$ADMIN_USER
 export AWS_COGNITO_AUTH_PARAMS_USER_NO_ACCESS=$USER_NO_ACCESS
 
+export ELASTIC_HOST=$ELASTIC_HOST
+export ELASTIC_PORT=$ELASTIC_PORT
+export ELASTIC_PASSWORD=$ELASTIC_PASSWORD
+export ELASTIC_USER_NAME=$ELASTIC_USERNAME
+
 #### RUN INTEGRATION TEST #########################################################################
 
 mvn -ntp test -f "$SCRIPT_SOURCE_DIR"/../pom.xml -Dcucumber.options="--plugin junit:target/junit-report.xml"
