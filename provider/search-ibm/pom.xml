@@ -25,7 +25,7 @@
 	<properties>
 		<os-core-lib-ibm.version>0.7.1</os-core-lib-ibm.version>
 		<start-class>org.opengroup.osdu.search.provider.ibm.app.SearchIBMApplication</start-class>
-		<osdu.oscorecommon.version>0.8.2-SNAPSHOT</osdu.oscorecommon.version>
+		<osdu.oscorecommon.version>0.8.0-rc3</osdu.oscorecommon.version>
 	</properties>
 
 
