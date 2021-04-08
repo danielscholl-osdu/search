@@ -23,7 +23,7 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<os-core-lib-ibm.version>0.0.18</os-core-lib-ibm.version>
+		<os-core-lib-ibm.version>0.7.1</os-core-lib-ibm.version>
 		<start-class>org.opengroup.osdu.search.provider.ibm.app.SearchIBMApplication</start-class>
 		<osdu.oscorecommon.version>0.6.9</osdu.oscorecommon.version>
 	</properties>
@@ -42,6 +42,10 @@
 					<groupId>com.nimbusds</groupId>
 					<artifactId>nimbus-jose-jwt</artifactId>
 				</exclusion>
+				<exclusion>
+            		<groupId>javax.servlet</groupId>
+            		<artifactId>javax.servlet-api</artifactId>
+            	</exclusion>
 			</exclusions>
 		</dependency>
 
