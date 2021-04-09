@@ -34,34 +34,60 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
     @Value("${aws.es.port}")
     int port;
 
-    @Value("${aws.es.userNameAndPassword}")
-    String userNameAndPassword;
+    @Value("${aws.es.isHttps}")
+    boolean isHttps;
 
-    @Value("${aws.ssm}")
-    String isEnabledString;
+    @Value("${aws.es.username}")
+    String username;
+
+    @Value("${aws.es.password}")
+    String password;
+
+    String usernameAndPassword;
+
+
+    @Value("${aws.elasticsearch.port}")
+    String portParameter;
 
     @Value("${aws.elasticsearch.host}")
     String hostParameter;
 
-    @Value("${aws.elasticsearch.port}")
-    String portParameter;
+    @Value("${aws.elasticsearch.username}")
+    String usernameParameter;
+
+    @Value("${aws.elasticsearch.password}")
+    String passwordParameter;
+
+    @Value("${aws.ssm}")
+    String ssmEnabledString;
 
     private ParameterStorePropertySource ssm;
 
     @PostConstruct
     private void postConstruct() {
-        Boolean isEnabled = Boolean.parseBoolean(isEnabledString);
-        if(isEnabled) {
+        if( Boolean.parseBoolean(ssmEnabledString)) {
             SSMConfig ssmConfig = new SSMConfig();
             ssm = ssmConfig.amazonSSM();
             host = ssm.getProperty(hostParameter).toString();
-            port = Integer.parseInt(ssm.getProperty(portParameter).toString());
+            port = Integer.parseInt(ssm.getProperty(portParameter).toString());            
+            username = ssm.getProperty(usernameParameter).toString();            
+            password = ssm.getProperty(passwordParameter).toString();            
         }
+        
+        //elastic expects username:password format
+        usernameAndPassword = String.format("%s:%s", username, password);
     }
 
     @Override
     public ClusterSettings getElasticClusterInformation() {
 
-        return new ClusterSettings(host, port, userNameAndPassword);
+        ClusterSettings settings = new ClusterSettings(host, port, usernameAndPassword);
+        
+        if (!isHttps) {
+            settings.setHttps(false);
+            settings.setTls(false);
+        }
+
+        return settings;
     }
 }

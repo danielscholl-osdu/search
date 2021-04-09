@@ -13,12 +13,15 @@
 // limitations under the License.
 
 package org.opengroup.osdu.search.middleware;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import java.util.Objects;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import javassist.NotFoundException;
-import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
+import org.opengroup.osdu.core.common.model.http.AppException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -27,6 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -36,6 +40,9 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.validation.ValidationException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
@@ -60,13 +67,13 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
     // ResponseEntityExceptionHandler already has a default implementation for handling MethodArgumentNotValidException, so we are overriding it
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        String errorMessage = e.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
-        String[] errors = new String[1];
-        errors[0] = errorMessage;
-        AppException appException = new AppException(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Invalid parameters were given on search request", errors, e);
-        this.logger.warning(appException.getError().getMessage(), appException);
-        HttpStatus httpStatus = HttpStatus.resolve(appException.getError().getCode());
-        return new ResponseEntity<>(appException.getError(), httpStatus);
+        List<String> errors = new ArrayList<>();
+        for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
+            errors.add(fieldError.getDefaultMessage());
+        }
+        this.logger.warning("Invalid parameters were given on search request", e);
+        HttpStatus httpStatus = HttpStatus.resolve(org.apache.http.HttpStatus.SC_BAD_REQUEST);
+        return new ResponseEntity<>(this.getValidationResponse(errors), httpStatus);
     }
 
     // Yes, if we are extending ResponseEntityExceptionHandler, this is being caught as HttpMessageNotReadableException type, and not as UnrecognizedPropertyException type
@@ -105,16 +112,6 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<Object> handleGeneralException(Exception e) {
-      if (Objects.nonNull(e) && Objects.nonNull(e.getStackTrace())) {
-        logger.error("handleGeneralException " + e.getMessage());
-        for (StackTraceElement element : e.getStackTrace()) {
-          logger.error("handleGeneralExceptionElement " + element);
-        }
-        if (Objects.nonNull(e.getCause())) {
-          e.getCause().printStackTrace();
-        }
-      }
-
         return this.getErrorResponse(
                 new AppException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Server error.",
                         "An unknown error has occurred.", e));
@@ -139,4 +136,19 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
         }
     }
 
+    private ObjectNode getValidationResponse(List<String> errors) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode node = mapper.createObjectNode();
+        node.put("code", org.apache.http.HttpStatus.SC_BAD_REQUEST);
+        node.put("reason", "Bad Request");
+        node.put("message", "Invalid parameters were given on search request");
+        if (!errors.isEmpty()) {
+            ArrayNode arrayNode = mapper.createArrayNode();
+            for (String error : errors) {
+                arrayNode.add(error);
+            }
+            node.set("errors", arrayNode);
+        }
+        return node;
+    }
 }

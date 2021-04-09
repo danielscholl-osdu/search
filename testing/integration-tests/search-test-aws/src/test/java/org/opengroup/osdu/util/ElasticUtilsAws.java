@@ -14,6 +14,13 @@
 
 package org.opengroup.osdu.util;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.message.BasicHeader;
@@ -22,16 +29,40 @@ import org.elasticsearch.client.RestClientBuilder;
 
 public class ElasticUtilsAws extends ElasticUtils {
 
-    private static final int REST_CLIENT_CONNECT_TIMEOUT = 5000;
+    private static final int REST_CLIENT_CONNECT_TIMEOUT = 60000;
     private static final int REST_CLIENT_SOCKET_TIMEOUT = 60000;
     private static final int REST_CLIENT_RETRY_TIMEOUT = 60000;
 
     @Override
     public RestClientBuilder createClientBuilder(String host, String usernameAndPassword, int port) {
+        port = Integer.parseInt(System.getProperty("ELASTIC_PORT", System.getenv("ELASTIC_PORT")));
         RestClientBuilder builder = RestClient.builder(new HttpHost(host, port, "https"));
         builder.setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder.setConnectTimeout(REST_CLIENT_CONNECT_TIMEOUT)
                 .setSocketTimeout(REST_CLIENT_SOCKET_TIMEOUT));
-        builder.setHttpClientConfigCallback(httpAsyncClientBuilder -> httpAsyncClientBuilder.setSSLHostnameVerifier((s, sslSession) -> true));
+        
+       
+        //dont enforce CA/cert validity for tests
+        SSLContext sslContext;            
+        try {
+            sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{ UnsafeX509ExtendedTrustManager.INSTANCE }, null);
+            builder.setHttpClientConfigCallback(httpClientBuilder -> 
+            httpClientBuilder.setSSLContext(sslContext)
+                            .setSSLHostnameVerifier((s, session) -> true));
+        } catch (NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (KeyManagementException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+
+        String basicEncoded = Base64
+                            .getEncoder().encodeToString(usernameAndPassword.getBytes());
+        String basicAuthenticationHeaderVal = String.format("Basic %s", basicEncoded);
+
+    
 
         Header[] defaultHeaders = new Header[]{
                 new BasicHeader("client.transport.nodes_sampler_interval", "30s"),
@@ -39,7 +70,8 @@ public class ElasticUtilsAws extends ElasticUtils {
                 new BasicHeader("client.transport.sniff", "false"),
                 new BasicHeader("request.headers.X-Found-Cluster", Config.getElasticHost()),
                 new BasicHeader("cluster.name", Config.getElasticHost()),
-                new BasicHeader("xpack.security.transport.ssl.enabled", Boolean.toString(true))
+                new BasicHeader("xpack.security.transport.ssl.enabled", Boolean.toString(true)),
+                new BasicHeader("Authorization", basicAuthenticationHeaderVal),
         };
 
         builder.setDefaultHeaders(defaultHeaders);

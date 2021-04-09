@@ -15,25 +15,77 @@
 package org.opengroup.osdu.search.provider.aws.persistence;
 
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
+
+import javax.annotation.PostConstruct;
+
+import org.opengroup.osdu.core.aws.ssm.ParameterStorePropertySource;
+import org.opengroup.osdu.core.aws.ssm.SSMConfig;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ElasticRepositoryImpl implements IElasticRepository {
-
-    // TODO: Will need to be implemented later
-
+public class ElasticRepositoryImpl implements IElasticRepository {    
+    
     @Value("${aws.es.host}")
     String host;
 
-    int port = 8080;
+    @Value("${aws.es.port}")
+    int port;
 
-    String userNameAndPassword = "testing";
+    @Value("${aws.es.isHttps}")
+    boolean isHttps;
+
+    @Value("${aws.es.username}")
+    String username;
+
+    @Value("${aws.es.password}")
+    String password;
+
+    String usernameAndPassword;
+
+    @Value("${aws.elasticsearch.port}")
+    String portParameter;
+
+    @Value("${aws.elasticsearch.host}")
+    String hostParameter;
+
+    @Value("${aws.elasticsearch.username}")
+    String usernameParameter;
+
+    @Value("${aws.elasticsearch.password}")
+    String passwordParameter;
+
+    @Value("${aws.ssm}")
+    String ssmEnabledString;
+
+    private ParameterStorePropertySource ssm;
+
+    @PostConstruct
+    private void postConstruct() {
+        if( Boolean.parseBoolean(ssmEnabledString)) {
+            SSMConfig ssmConfig = new SSMConfig();
+            ssm = ssmConfig.amazonSSM();
+            host = ssm.getProperty(hostParameter).toString();
+            port = Integer.parseInt(ssm.getProperty(portParameter).toString());            
+            username = ssm.getProperty(usernameParameter).toString();            
+            password = ssm.getProperty(passwordParameter).toString();            
+        }
+        
+        //elastic expects username:password format
+        usernameAndPassword = String.format("%s:%s", username, password);
+    }
 
     @Override
     public ClusterSettings getElasticClusterSettings(TenantInfo tenantInfo) {
-        return new ClusterSettings(host, port, userNameAndPassword);
+        ClusterSettings settings = new ClusterSettings(host, port, usernameAndPassword);
+        
+        if (!isHttps) {
+            settings.setHttps(false);
+            settings.setTls(false);
+        }
+
+        return settings;
     }
 }

@@ -44,7 +44,7 @@
         <log4j-core.version>2.13.2</log4j-core.version>
         <google-oauth-client.version>1.31.0</google-oauth-client.version>
         <commons-compress.version>1.20</commons-compress.version>
-        <osdu.oscorecommon.version>0.8.0-SNAPSHOT</osdu.oscorecommon.version>
+        <osdu.oscorecommon.version>0.8.0-rc3</osdu.oscorecommon.version>
     </properties>
 
     <licenses>
