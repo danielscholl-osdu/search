@@ -49,11 +49,10 @@ public class QueryResponseUtil {
 
     public List<Map<String, Object>> getQueryResponseResults(List<Map<String, Object>> results) {
         if(isPolicyEnabled()) {
-            if(requiredFieldsArePresent(results)) {
+            if(checkIfRequiredFieldsArePresent(results)) {
                 List<RecordMetadata> policyMetadataList = getRecordMetadataListForPolicyEvaluation(results);
                 List<String> policyEvaluatedRecords = iPolicyService.evaluateSearchDataAuthorizationPolicy(policyMetadataList, OperationType.view);
-                List<Map<String, Object>> authorizedResults = processAuthorizedResults(results, policyEvaluatedRecords);
-                return authorizedResults;
+                return processAuthorizedResults(results, policyEvaluatedRecords);
             } else {
                 throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Bad Request", "Returned fields must have acl, kind, legal and id");
             }
@@ -62,7 +61,7 @@ public class QueryResponseUtil {
         }
     }
 
-    private boolean requiredFieldsArePresent(List<Map<String, Object>> results) {
+    private boolean checkIfRequiredFieldsArePresent(List<Map<String, Object>> results) {
         for(Map<String, Object> result : results) {
             if(!result.containsKey(RecordMetaAttribute.ACL.getValue())
                     || !result.containsKey(RecordMetaAttribute.KIND.getValue())
