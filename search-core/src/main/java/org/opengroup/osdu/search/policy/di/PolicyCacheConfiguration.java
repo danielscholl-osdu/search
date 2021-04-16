@@ -15,7 +15,8 @@
 package org.opengroup.osdu.search.policy.di;
 
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -23,16 +24,17 @@ import org.springframework.context.annotation.Lazy;
 import javax.inject.Named;
 
 @Configuration
+@ConfigurationProperties(prefix = "policy.cache")
 @Getter
+@Setter
 @Lazy
 public class PolicyCacheConfiguration {
 
-    @Value("${policy.cache.timeout:5}")
-    private int cacheTimeOut;
+    private int timeout;
 
     @Bean
     @Named("POLICY_CACHE_TIMEOUT")
     public int getPolicyCacheTimeout() {
-        return cacheTimeOut;
+        return timeout;
     }
 }

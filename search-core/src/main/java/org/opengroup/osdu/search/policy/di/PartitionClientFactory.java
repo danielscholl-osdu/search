@@ -14,22 +14,28 @@
 
 package org.opengroup.osdu.search.policy.di;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.opengroup.osdu.core.common.partition.IPartitionFactory;
 import org.opengroup.osdu.core.common.partition.PartitionAPIConfig;
 import org.opengroup.osdu.core.common.partition.PartitionFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 @Component
 @Primary
+@Configuration
+@ConfigurationProperties
+@Getter
+@Setter
 @ConditionalOnProperty(value = "service.policy.enabled", havingValue = "true", matchIfMissing = false)
 public class PartitionClientFactory extends AbstractFactoryBean<IPartitionFactory> {
 
-    @Value("${PARTITION_API}")
-    private String partitionAPIEndpoint;
+    private String PARTITION_API;
 
     @Override
     public Class<?> getObjectType() {
@@ -39,7 +45,7 @@ public class PartitionClientFactory extends AbstractFactoryBean<IPartitionFactor
     @Override
     protected IPartitionFactory createInstance() throws Exception {
         PartitionAPIConfig apiConfig = PartitionAPIConfig.builder()
-                .rootUrl(partitionAPIEndpoint)
+                .rootUrl(PARTITION_API)
                 .build();
         return new PartitionFactory(apiConfig);
     }

@@ -15,18 +15,18 @@
 package org.opengroup.osdu.search.policy.di;
 
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.Setter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@ConfigurationProperties(prefix = "service.policy")
 @Getter
+@Setter
 @ConditionalOnProperty(value = "service.policy.enabled", havingValue = "true", matchIfMissing = false)
 public class PolicyServiceConfiguration {
 
-    @Value("${POLICY_ID:search}")
-    private String policyId;
-
-    @Value("${POLICY_API}")
-    private String policyApiEndpoint;
+    private String id;
+    private String endpoint;
 }

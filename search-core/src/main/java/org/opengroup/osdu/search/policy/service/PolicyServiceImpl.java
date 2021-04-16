@@ -89,7 +89,7 @@ public class PolicyServiceImpl implements IPolicyService{
         searchPolicy.setRecords(records);
 
         PolicyRequest policy = new PolicyRequest();
-        policy.setPolicyId(this.policyServiceConfiguration.getPolicyId());
+        policy.setPolicyId(this.policyServiceConfiguration.getId());
         policy.setInput(new JsonParser().parse(new Gson().toJson(searchPolicy)).getAsJsonObject());
         return policy;
     }

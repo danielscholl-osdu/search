@@ -82,7 +82,7 @@ public class PolicyServiceImplTest {
         Mockito.when(serviceClient.evaluateBatchPolicy(any())).thenReturn(batchPolicyResponse);
         Groups groups = new Groups();
         Mockito.when(entitlementsService.getGroups(any())).thenReturn(groups);
-        Mockito.when(policyServiceConfiguration.getPolicyId()).thenReturn("search");
+        Mockito.when(policyServiceConfiguration.getId()).thenReturn("search");
         List<String> result = sut.evaluateSearchDataAuthorizationPolicy(recordMetadataList, OperationType.view);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals("id:123", result.get(0));

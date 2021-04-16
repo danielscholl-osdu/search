@@ -41,7 +41,7 @@ public class PolicyClientFactory extends AbstractFactoryBean<IPolicyFactory> {
     @Override
     protected IPolicyFactory createInstance() throws Exception {
         PolicyAPIConfig apiConfig = PolicyAPIConfig.builder()
-                .rootUrl(serviceConfiguration.getPolicyApiEndpoint())
+                .rootUrl(serviceConfiguration.getEndpoint())
                 .build();
         return new PolicyFactory(apiConfig, httpResponseBodyMapper);
     }
