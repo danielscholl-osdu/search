@@ -36,6 +36,7 @@ import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
+import org.opengroup.osdu.search.util.QueryResponseUtil;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -60,6 +61,8 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
     private CursorCache cursorCache;
     @Inject
     private AuditLogger auditLogger;
+    @Inject
+    private QueryResponseUtil queryResponseUtil;
 
     private final MessageDigest digest;
 
@@ -125,7 +128,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
         if (results != null) {
             return CursorQueryResponse.builder()
                     .cursor(refreshCursorCache(searchResponse.getScrollId(), dpsHeaders.getUserEmail()))
-                    .results(results)
+                    .results(queryResponseUtil.getQueryResponseResults(results))
                     .totalCount(searchResponse.getHits().getTotalHits().value)
                     .build();
         }

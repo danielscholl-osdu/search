@@ -52,6 +52,8 @@ public class SearchConfigurationProperties {
 	private String indexerQueueHost;
 	private String redisSearchHost;
 	private String redisSearchPort = "6379";
+	private String redisGroupHost;
+	private Integer redisGroupPort = 6379;
 	private String elasticHost;
 	private String elasticPort = "443";
 	private String elasticUserPassword;

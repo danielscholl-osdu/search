@@ -1,4 +1,4 @@
-// Copyright 2017-2019, Schlumberger
+// Copyright © Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.opengroup.osdu.search.provider.azure.service;
+package org.opengroup.osdu.search.service;
 
+import org.opengroup.osdu.core.common.entitlements.IEntitlementsAndCacheService;
+import org.opengroup.osdu.core.common.model.entitlements.Groups;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 
-import java.util.Set;
+public interface IEntitlementsExtensionService extends IEntitlementsAndCacheService {
 
-public interface EntitlementsAndCacheService {
-
-	String authorize(DpsHeaders headers, String... roles);
-	boolean isValidAcl(DpsHeaders headers, Set<String> acls);
+    Groups getGroups(DpsHeaders headers);
 }

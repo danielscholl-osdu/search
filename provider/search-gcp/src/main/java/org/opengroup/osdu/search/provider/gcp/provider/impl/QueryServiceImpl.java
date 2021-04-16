@@ -34,6 +34,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.support.ValueType;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.opengroup.osdu.search.util.QueryResponseUtil;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -52,6 +53,8 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     private ElasticClientHandler elasticClientHandler;
     @Inject
     private AuditLogger auditLogger;
+    @Inject
+    private QueryResponseUtil queryResponseUtil;
 
     @Override
     public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
@@ -79,7 +82,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
         if (results != null) {
             queryResponse.setAggregations(aggregations);
-            queryResponse.setResults(results);
+            queryResponse.setResults(queryResponseUtil.getQueryResponseResults(results));
         }
         return queryResponse;
     }
