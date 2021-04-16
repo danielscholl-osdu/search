@@ -79,6 +79,7 @@ public class PolicyServiceImpl implements IPolicyService{
             record.setKind(recordMetadata.getKind());
             record.setAcl(recordMetadata.getAcl());
             record.setLegal(recordMetadata.getLegal());
+            record.setTags(recordMetadata.getTags());
             records.add(record);
         }
 

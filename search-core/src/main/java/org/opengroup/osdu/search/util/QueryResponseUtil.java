@@ -93,6 +93,9 @@ public class QueryResponseUtil {
             recordMetadata.setKind(result.get("kind").toString());
             recordMetadata.setLegal(gson.fromJson(result.get("legal").toString(), Legal.class));
             recordMetadata.setId(result.get("id").toString());
+            if(result.get("tags") != null) {
+                recordMetadata.setTags(gson.fromJson(result.get("tags").toString(), Map.class));
+            }
             recordMetadataList.add(recordMetadata);
         }
         return recordMetadataList;
