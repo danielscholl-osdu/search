@@ -2,6 +2,7 @@ package org.opengroup.osdu.search.provider.azure.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.opengroup.osdu.azure.logging.CoreLoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,8 @@ import java.io.IOException;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class RequestRejectedExceptionFilter extends GenericFilterBean {
 
+    private static final String LOGGER_NAME = RequestRejectedExceptionFilter.class.getName();
+
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         try {
@@ -29,6 +32,7 @@ public class RequestRejectedExceptionFilter extends GenericFilterBean {
         } catch (RequestRejectedException e) {
             HttpServletRequest request = (HttpServletRequest) req;
             HttpServletResponse response = (HttpServletResponse) res;
+            CoreLoggerFactory.getInstance().getLogger(LOGGER_NAME).info(String.format("Invalid URL: %s | message: %s", this.getRequestURL(request), e.getMessage()));
             this.handleRequestRejectedException(request, response);
         }
     }
@@ -44,5 +48,11 @@ public class RequestRejectedExceptionFilter extends GenericFilterBean {
         response.setStatus(HttpStatus.BAD_REQUEST.value());
         response.setContentType(MediaType.APPLICATION_JSON.toString());
         response.getWriter().append(jsonErrorResponse);
+    }
+
+    private String getRequestURL(HttpServletRequest request) {
+        StringBuilder requestURL = new StringBuilder(request.getRequestURL().toString());
+        String queryString = request.getQueryString();
+        return queryString == null ? requestURL.toString() : requestURL.append('?').append(queryString).toString();
     }
 }
