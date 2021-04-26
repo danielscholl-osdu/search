@@ -32,7 +32,7 @@ public class RequestRejectedExceptionFilter extends GenericFilterBean {
         } catch (RequestRejectedException e) {
             HttpServletRequest request = (HttpServletRequest) req;
             HttpServletResponse response = (HttpServletResponse) res;
-            CoreLoggerFactory.getInstance().getLogger(LOGGER_NAME).info(String.format("Invalid URL: %s | message: %s", this.getRequestURL(request), e.getMessage()));
+            CoreLoggerFactory.getInstance().getLogger(LOGGER_NAME).error(String.format("Invalid URL: %s | message: %s", this.getRequestURL(request), e.getMessage()), e);
             this.handleRequestRejectedException(request, response);
         }
     }
