@@ -32,7 +32,7 @@
     <properties>
         <skip.unit.tests>false</skip.unit.tests>
         <skip.integration.tests>true</skip.integration.tests>
-        <jackson.version>2.11.2</jackson.version>
+        <jackson.version>2.11.4</jackson.version>
         <resteasy.version>3.12.0.Final</resteasy.version>
         <elasticsearch.version>7.8.1</elasticsearch.version>
         <snakeyaml.version>1.26</snakeyaml.version>
@@ -44,7 +44,8 @@
         <log4j-core.version>2.13.2</log4j-core.version>
         <google-oauth-client.version>1.31.0</google-oauth-client.version>
         <commons-compress.version>1.20</commons-compress.version>
-        <osdu.oscorecommon.version>0.9.0-rc3</osdu.oscorecommon.version>
+        <osdu.oscorecommon.version>0.9.0-rc4</osdu.oscorecommon.version>
+        <tomcat-embed-core.version>9.0.45</tomcat-embed-core.version>
     </properties>
 
     <licenses>
@@ -101,6 +102,12 @@
                 <groupId>org.elasticsearch</groupId>
                 <artifactId>elasticsearch</artifactId>
                 <version>${elasticsearch.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.dataformat</groupId>
+                        <artifactId>jackson-dataformat-cbor</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>
@@ -322,6 +329,11 @@
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>os-core-common</artifactId>
             <version>${osdu.oscorecommon.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <version>${tomcat-embed-core.version}</version>
         </dependency>
     </dependencies>
 
