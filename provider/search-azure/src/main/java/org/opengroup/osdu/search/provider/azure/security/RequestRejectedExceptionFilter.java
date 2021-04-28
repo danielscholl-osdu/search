@@ -40,7 +40,7 @@ public class RequestRejectedExceptionFilter extends GenericFilterBean {
     private void handleRequestRejectedException(HttpServletRequest request, HttpServletResponse response) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode node = mapper.createObjectNode();
-        node.put("code", org.apache.http.HttpStatus.SC_BAD_REQUEST);
+        node.put("code", HttpStatus.BAD_REQUEST.value());
         node.put("reason", "Bad Request");
         node.put("message", "Invalid URL was given on request");
         String jsonErrorResponse = mapper.writeValueAsString(node);
