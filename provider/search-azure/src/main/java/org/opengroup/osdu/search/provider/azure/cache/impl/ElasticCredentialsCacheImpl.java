@@ -18,9 +18,13 @@ import javax.annotation.Resource;
 
 import org.opengroup.osdu.azure.cache.ElasticCredentialsCache;
 import org.opengroup.osdu.core.common.cache.ICache;
+import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component("clusterSettingsCache")
 @ConditionalOnProperty(value = "cache.provider", havingValue = "redis")
@@ -29,6 +33,9 @@ public class ElasticCredentialsCacheImpl extends ElasticCredentialsCache {
   @Resource(name = "clusterCache")
   private ICache<String, ClusterSettings> cache;
 
+  @Autowired
+  private JaxRsDpsLog log;
+
   @Override
   public void put(String s, ClusterSettings o) {
     this.cache.put(s, o);
@@ -36,7 +43,7 @@ public class ElasticCredentialsCacheImpl extends ElasticCredentialsCache {
 
   @Override
   public ClusterSettings get(String s) {
-    return this.cache.get(s);
+    return this.cache.getSuppressException(s, Optional.of(this.log));
   }
 
   @Override

@@ -17,15 +17,22 @@ package org.opengroup.osdu.search.provider.azure.cache.impl;
 import javax.annotation.Resource;
 
 import org.opengroup.osdu.core.common.cache.ICache;
+import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.search.cache.CursorCache;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class CursorCacheImpl implements CursorCache {
 
   @Resource(name = "cursorCache")
   private ICache<String, CursorSettings> cache;
+
+  @Autowired
+  private JaxRsDpsLog log;
 
   @Override
   public void put(String s, CursorSettings o) {
@@ -34,7 +41,7 @@ public class CursorCacheImpl implements CursorCache {
 
   @Override
   public CursorSettings get(String s) {
-    return this.cache.get(s);
+    return this.cache.getSuppressException(s, Optional.of(this.log));
   }
 
   @Override
