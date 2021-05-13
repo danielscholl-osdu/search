@@ -36,7 +36,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.basedir}</project.main.basedir>
-        <tomcat-embed-core.version>9.0.37</tomcat-embed-core.version>
         <nimbus-jose-jwt.version>9.1.2</nimbus-jose-jwt.version>
         <elasticsearch.version>7.8.1</elasticsearch.version>
     </properties>
@@ -183,6 +182,12 @@
               <groupId>org.elasticsearch</groupId>
               <artifactId>elasticsearch</artifactId>
               <version>${elasticsearch.version}</version>
+              <exclusions>
+                  <exclusion>
+                      <groupId>com.fasterxml.jackson.dataformat</groupId>
+                      <artifactId>jackson-dataformat-cbor</artifactId>
+                  </exclusion>
+              </exclusions>
           </dependency>
           <dependency>
               <groupId>org.elasticsearch.client</groupId>
@@ -241,11 +246,6 @@
                       <artifactId>spring-boot-starter-tomcat</artifactId>
                   </exclusion>
               </exclusions>
-          </dependency>
-          <dependency>
-              <groupId>org.apache.tomcat.embed</groupId>
-              <artifactId>tomcat-embed-core</artifactId>
-              <version>${tomcat-embed-core.version}</version>
           </dependency>
           <dependency>
               <groupId>io.springfox</groupId>

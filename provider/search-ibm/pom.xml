@@ -25,7 +25,7 @@
 	<properties>
 		<os-core-lib-ibm.version>0.7.1</os-core-lib-ibm.version>
 		<start-class>org.opengroup.osdu.search.provider.ibm.app.SearchIBMApplication</start-class>
-		<osdu.oscorecommon.version>0.8.0-rc3</osdu.oscorecommon.version>
+		<osdu.oscorecommon.version>0.9.0-rc4</osdu.oscorecommon.version>
 	</properties>
 
 
@@ -88,6 +88,12 @@
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.dataformat</groupId>
+					<artifactId>jackson-dataformat-cbor</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
