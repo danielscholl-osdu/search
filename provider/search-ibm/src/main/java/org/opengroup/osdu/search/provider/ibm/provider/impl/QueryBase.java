@@ -194,8 +194,10 @@ abstract class QueryBase {
     }
 
     private QueryBuilder getGeoShapeDistanceQuery(SpatialFilter spatialFilter) throws IOException {
-        // broken functionality in Elasticsearch in current version, fixed in v7.7.0 onwards: https://github.com/elastic/elasticsearch/pull/53466
-        throw new AppException(HttpServletResponse.SC_NOT_FOUND, "Distance query is not supported for GeoShape field", "Invalid request");
+
+        return geoDistanceQuery(spatialFilter.getField())
+                .point(spatialFilter.getByDistance().getPoint().getLatitude(), spatialFilter.getByDistance().getPoint().getLongitude())
+                .distance(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS);
     }
 
     String getIndex(Query request) {
