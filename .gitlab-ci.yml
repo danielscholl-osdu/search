@@ -30,6 +30,7 @@ variables:
 
   IBM_BUILD_SUBDIR: provider/search-ibm
   IBM_INT_TEST_SUBDIR: testing/integration-tests/search-test-ibm
+  DEFAULT_DATA_PARTITION_ID_TENANT1_IBM: tenant1
 
   AZURE_SERVICE: search
   AZURE_BUILD_SUBDIR: provider/search-azure
