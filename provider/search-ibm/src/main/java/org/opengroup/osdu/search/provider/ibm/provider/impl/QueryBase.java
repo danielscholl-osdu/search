@@ -13,6 +13,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.geo.GeoPoint;
+import org.elasticsearch.common.geo.builders.CircleBuilder;
 import org.elasticsearch.common.geo.builders.CoordinatesBuilder;
 import org.elasticsearch.common.geo.builders.EnvelopeBuilder;
 import org.elasticsearch.common.geo.builders.PolygonBuilder;
@@ -194,8 +195,10 @@ abstract class QueryBase {
     }
 
     private QueryBuilder getGeoShapeDistanceQuery(SpatialFilter spatialFilter) throws IOException {
-        // broken functionality in Elasticsearch in current version, fixed in v7.7.0 onwards: https://github.com/elastic/elasticsearch/pull/53466
-        throw new AppException(HttpServletResponse.SC_NOT_FOUND, "Distance query is not supported for GeoShape field", "Invalid request");
+
+        Coordinate center = new Coordinate(spatialFilter.getByDistance().getPoint().getLongitude(), spatialFilter.getByDistance().getPoint().getLatitude());
+        CircleBuilder circleBuilder = new CircleBuilder().center(center).radius(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS);
+        return geoWithinQuery(spatialFilter.getField(), circleBuilder);
     }
 
     String getIndex(Query request) {

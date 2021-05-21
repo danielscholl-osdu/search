@@ -233,40 +233,6 @@ public class QueryServiceImplTest {
         assertEquals(queryResponse.getTotalCount(), 0);
     }
 
-    /*
-    * NOTE [aaljain]: Currently getByDistance is not supported when useGeoShapeQuery is true
-    * This was because of: https://github.com/elastic/elasticsearch/pull/53466 which is now
-    * fixed in ElasticSearch in v7.7.0 onwards and hence can be updated now to support
-    * getByDistance with useGeoShapeQuery.
-    */
-    @Test(expected = AppException.class)
-    public void testQueryBase_useGeoShapeQueryIsTrue_getByDistance_distanceQueryNotSupported_throwsException() throws IOException {
-        Set<String> indexedTypes = new HashSet<>();
-        indexedTypes.add(GEO_SHAPE);
-
-        SpatialFilter.ByDistance distance = getDistance(1.0, dummyPoint);
-
-        doReturn(distance).when(spatialFilter).getByDistance();
-        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
-
-        try {
-            sut.queryIndex(searchRequest);
-        } catch (AppException e) {
-            int errorCode = 500;
-            String errorMessage = "Error processing search request";
-            validateAppException(e, errorCode, errorMessage);
-
-            AppException originalException = (AppException) e.getOriginalException();
-
-            int originalExceptionErrorCode = 404;
-            String originalExceptionErrorMessage = "Distance query is not supported for GeoShape field";
-
-            assertEquals(originalExceptionErrorCode, originalException.getError().getCode());
-            assertEquals(originalException.getError().getReason(), originalExceptionErrorMessage);
-            throw(originalException);
-        }
-    }
-
     @Test
     @Ignore
     public void testQueryBase_useGeoShapeQueryIsFalse_getByDistance() throws IOException {
