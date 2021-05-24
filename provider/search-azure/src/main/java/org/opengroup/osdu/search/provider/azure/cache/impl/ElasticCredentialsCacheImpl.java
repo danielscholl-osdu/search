@@ -14,8 +14,6 @@
 
 package org.opengroup.osdu.search.provider.azure.cache.impl;
 
-import javax.annotation.Resource;
-
 import org.opengroup.osdu.azure.cache.ElasticCredentialsCache;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
@@ -24,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
+import javax.annotation.Resource;
 
 @Component("clusterSettingsCache")
 @ConditionalOnProperty(value = "cache.provider", havingValue = "redis")
@@ -43,7 +41,13 @@ public class ElasticCredentialsCacheImpl extends ElasticCredentialsCache {
 
   @Override
   public ClusterSettings get(String s) {
-    return this.cache.getSuppressException(s, Optional.of(this.log));
+    ClusterSettings cursorSettings = null;
+    try {
+      cursorSettings = this.cache.get(s);
+    } catch (Exception ex) {
+      this.log.error(String.format("Error getting key %s from redis: %s", s, ex));
+    }
+    return cursorSettings;
   }
 
   @Override

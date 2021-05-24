@@ -41,7 +41,13 @@ public class CursorCacheImpl implements CursorCache {
 
   @Override
   public CursorSettings get(String s) {
-    return this.cache.getSuppressException(s, Optional.of(this.log));
+    CursorSettings cursorSettings = null;
+    try {
+      cursorSettings = this.cache.get(s);
+    } catch (Exception ex) {
+      this.log.error(String.format("Error getting key %s from redis: %s", s, ex));
+    }
+    return cursorSettings;
   }
 
   @Override
