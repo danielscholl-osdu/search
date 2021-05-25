@@ -36,11 +36,15 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
         <springboot.version>2.1.7.RELEASE</springboot.version>
-        <osdu.corelibazure.version>0.9.0-rc1</osdu.corelibazure.version>
+        <osdu.corelibazure.version>0.9.0</osdu.corelibazure.version>
         <osdu.oscorecommon.version>0.9.0</osdu.oscorecommon.version>
         <osdu.search-core.version>0.10.0-SNAPSHOT</osdu.search-core.version>
         <spatial4j.version>0.7</spatial4j.version>
         <jts-io-common.version>1.15.0</jts-io-common.version>
+        <reactor-netty.version>1.0.7</reactor-netty.version>
+        <reactor-core.version>3.4.6</reactor-core.version>
+        <jackson-dataformat-xml.version>2.11.4</jackson-dataformat-xml.version>
+        <spring-boot.version>2.1.18.RELEASE</spring-boot.version>
         <azure.appservice.resourcegroup />
         <azure.appservice.plan />
         <azure.appservice.appname />
@@ -49,6 +53,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- Inherit managed dependencies from core-lib-azure -->
             <dependency>
                 <groupId>org.opengroup.osdu</groupId>
@@ -148,12 +159,12 @@
 
         <!-- Azure dependencies -->
         <dependency>
-            <groupId>com.microsoft.azure</groupId>
+            <groupId>com.azure.spring</groupId>
             <artifactId>azure-spring-boot</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-active-directory-spring-boot-starter</artifactId>
+            <groupId>com.azure.spring</groupId>
+            <artifactId>azure-spring-boot-starter-active-directory</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -163,6 +174,22 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>io.projectreactor.netty</groupId>
+            <artifactId>reactor-netty</artifactId>
+            <version>${reactor-netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <version>${reactor-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <version>${jackson-dataformat-xml.version}</version>
         </dependency>
     </dependencies>
 
