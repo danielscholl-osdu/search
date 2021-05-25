@@ -14,6 +14,7 @@
 
 package org.opengroup.osdu.search.provider.azure.cache.impl;
 
+import com.lambdaworks.redis.RedisException;
 import org.opengroup.osdu.azure.cache.ElasticCredentialsCache;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
@@ -44,8 +45,8 @@ public class ElasticCredentialsCacheImpl extends ElasticCredentialsCache {
     ClusterSettings cursorSettings = null;
     try {
       cursorSettings = this.cache.get(s);
-    } catch (Exception ex) {
-      this.log.error(String.format("Error getting key %s from redis: %s", s, ex));
+    } catch (RedisException ex) {
+      this.log.error(String.format("Error getting key %s from redis: %s", s, ex.getMessage()));
     }
     return cursorSettings;
   }

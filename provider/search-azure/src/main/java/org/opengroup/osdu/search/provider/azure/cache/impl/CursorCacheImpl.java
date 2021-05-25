@@ -14,8 +14,7 @@
 
 package org.opengroup.osdu.search.provider.azure.cache.impl;
 
-import javax.annotation.Resource;
-
+import com.lambdaworks.redis.RedisException;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;
@@ -23,7 +22,7 @@ import org.opengroup.osdu.search.cache.CursorCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
+import javax.annotation.Resource;
 
 @Component
 public class CursorCacheImpl implements CursorCache {
@@ -44,8 +43,8 @@ public class CursorCacheImpl implements CursorCache {
     CursorSettings cursorSettings = null;
     try {
       cursorSettings = this.cache.get(s);
-    } catch (Exception ex) {
-      this.log.error(String.format("Error getting key %s from redis: %s", s, ex));
+    } catch (RedisException ex) {
+      this.log.error(String.format("Error getting key %s from redis: %s", s, ex.getMessage()));
     }
     return cursorSettings;
   }
