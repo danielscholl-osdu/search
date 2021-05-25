@@ -48,6 +48,7 @@ import org.opengroup.osdu.core.common.model.search.QueryResponse;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
+import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.provider.azure.service.FieldMappingTypeService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
@@ -70,6 +71,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryServiceImplTest {
@@ -141,6 +143,9 @@ public class QueryServiceImplTest {
     @Spy
     private IAggregationParserUtil aggregationParserUtil = new AggregationParserUtil(properties);
 
+    @Mock
+    private ElasticLoggingConfig elasticLoggingConfig;
+
     @InjectMocks
     private QueryServiceImpl sut;
 
@@ -152,6 +157,8 @@ public class QueryServiceImplTest {
         doReturn(client).when(elasticClientHandler).createRestClient();
         doReturn(spatialFilter).when(searchRequest).getSpatialFilter();
         doReturn(fieldName).when(spatialFilter).getField();
+        when(elasticLoggingConfig.getEnabled()).thenReturn(false);
+        when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
 //        doReturn(searchResponse).when(client).search(any(), any(RequestOptions.class));
 //        doReturn(searchHits).when(searchResponse).getHits();
 //        doReturn(hitFields).when(searchHit).getSourceAsMap();

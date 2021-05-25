@@ -28,7 +28,7 @@ import org.opengroup.osdu.core.common.provider.interfaces.ITenantFactory;
 
 import java.util.*;
 
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;

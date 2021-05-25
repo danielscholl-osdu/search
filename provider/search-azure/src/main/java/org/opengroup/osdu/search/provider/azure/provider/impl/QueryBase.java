@@ -49,6 +49,7 @@ import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.*;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
+import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.provider.azure.service.FieldMappingTypeService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
@@ -86,6 +87,10 @@ abstract class QueryBase {
     @Autowired
     private ISortParserUtil sortParserUtil;
 
+    @Autowired
+    private ElasticLoggingConfig elasticLoggingConfig;
+
+    static final String AGGREGATION_NAME = "agg";
     private static final String GEO_SHAPE_INDEXED_TYPE = "geo_shape";
 
     // if returnedField contains property matching from excludes than query result will NOT include that property
@@ -361,8 +366,10 @@ abstract class QueryBase {
             throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
         } finally {
             Long latency = System.currentTimeMillis() - startTime;
-            String request = elasticSearchRequest != null ? elasticSearchRequest.source().toString() : searchRequest.toString();
-            this.log.info(String.format("elastic latency: %s | elastic request-payload: %s", latency, request));
+            if (elasticLoggingConfig.getEnabled() || latency > elasticLoggingConfig.getThreshold()) {
+                String request = elasticSearchRequest != null ? elasticSearchRequest.source().toString() : searchRequest.toString();
+                this.log.info(String.format("elastic latency: %s | elastic request-payload: %s", latency, request));
+            }
             this.auditLog(searchRequest, searchResponse);
         }
     }
