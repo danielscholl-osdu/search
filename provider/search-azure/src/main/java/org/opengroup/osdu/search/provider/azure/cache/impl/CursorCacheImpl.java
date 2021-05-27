@@ -14,12 +14,9 @@
 
 package org.opengroup.osdu.search.provider.azure.cache.impl;
 
-import com.lambdaworks.redis.RedisException;
 import org.opengroup.osdu.core.common.cache.ICache;
-import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.search.cache.CursorCache;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -27,35 +24,26 @@ import javax.annotation.Resource;
 @Component
 public class CursorCacheImpl implements CursorCache {
 
-  @Resource(name = "cursorCache")
-  private ICache<String, CursorSettings> cache;
+    @Resource(name = "cursorCache")
+    private ICache<String, CursorSettings> cache;
 
-  @Autowired
-  private JaxRsDpsLog log;
-
-  @Override
-  public void put(String s, CursorSettings o) {
-    this.cache.put(s, o);
-  }
-
-  @Override
-  public CursorSettings get(String s) {
-    CursorSettings cursorSettings = null;
-    try {
-      cursorSettings = this.cache.get(s);
-    } catch (RedisException ex) {
-      this.log.error(String.format("Error getting key %s from redis: %s", s, ex.getMessage()));
+    @Override
+    public void put(String s, CursorSettings o) {
+        this.cache.put(s, o);
     }
-    return cursorSettings;
-  }
 
-  @Override
-  public void delete(String s) {
-    this.cache.delete(s);
-  }
+    @Override
+    public CursorSettings get(String s) {
+        return this.cache.get(s);
+    }
 
-  @Override
-  public void clearAll() {
-    this.cache.clearAll();
-  }
+    @Override
+    public void delete(String s) {
+        this.cache.delete(s);
+    }
+
+    @Override
+    public void clearAll() {
+        this.cache.clearAll();
+    }
 }

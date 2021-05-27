@@ -46,7 +46,7 @@ public class ElasticCredentialsCacheImpl extends ElasticCredentialsCache {
     try {
       cursorSettings = this.cache.get(s);
     } catch (RedisException ex) {
-      this.log.error(String.format("Error getting key %s from redis: %s", s, ex.getMessage()));
+      this.log.error(String.format("Error getting key %s from redis: %s", s, ex.getMessage()), ex);
     }
     return cursorSettings;
   }
