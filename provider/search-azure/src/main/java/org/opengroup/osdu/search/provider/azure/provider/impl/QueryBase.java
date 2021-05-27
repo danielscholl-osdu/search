@@ -15,7 +15,6 @@
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
@@ -39,7 +38,6 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.FieldSortBuilder;
-import org.elasticsearch.search.sort.SortOrder;
 import org.locationtech.jts.geom.Coordinate;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.entitlements.AclRole;
@@ -49,6 +47,7 @@ import org.opengroup.osdu.core.common.model.search.*;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
 import org.opengroup.osdu.search.provider.azure.service.FieldMappingTypeService;
+import org.opengroup.osdu.search.provider.azure.service.SortQueryBuilder;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +71,8 @@ abstract class QueryBase {
     private CrossTenantUtils crossTenantUtils;
     @Inject
     private FieldMappingTypeService fieldMappingTypeService;
+    @Inject
+    private SortQueryBuilder sortQueryBuilder;
 
     @Autowired(required = false)
     private IPolicyService iPolicyService;
@@ -130,7 +131,7 @@ abstract class QueryBase {
             queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(spatialQueryBuilder) : boolQuery().must(spatialQueryBuilder);
         }
 
-        if(this.iPolicyService != null && this.statusService.policyEnabled(this.dpsHeaders.getPartitionId())) {
+        if (this.iPolicyService != null && this.statusService.policyEnabled(this.dpsHeaders.getPartitionId())) {
             return queryBuilder;
         } else {
             return getQueryBuilderWithAuthorization(queryBuilder, asOwner);
@@ -272,18 +273,6 @@ abstract class QueryBase {
             sourceBuilder.highlighter(highlightBuilder);
         }
 
-        // sort: text is not suitable for sorting or aggregation, refer to: this: https://github.com/elastic/elasticsearch/issues/28638,
-        // so keyword is recommended for unmappedType in general because it can handle both string and number.
-        // It will ignore the characters longer than the threshold when sorting.
-        if (request.getSort() != null) {
-            for (int idx = 0; idx < request.getSort().getField().size(); idx++) {
-                sourceBuilder.sort(new FieldSortBuilder(request.getSort().getFieldByIndex(idx))
-                        .order(SortOrder.fromString(request.getSort().getOrderByIndex(idx).name()))
-                        .missing("_last")
-                        .unmappedType("keyword"));
-            }
-        }
-
         // set the return fields
         List<String> returnedFields = request.getReturnedFields();
         if (returnedFields == null) {
@@ -312,8 +301,15 @@ abstract class QueryBase {
             if (searchRequest.getSpatialFilter() != null) {
                 useGeoShapeQuery = this.useGeoShapeQuery(client, searchRequest, this.getIndex(searchRequest));
             }
-
             elasticSearchRequest = createElasticRequest(searchRequest);
+
+            if (searchRequest.getSort() != null) {
+                List<FieldSortBuilder> sortBuilders = this.sortQueryBuilder.getSortQuery(client, searchRequest.getSort(), this.getIndex(searchRequest));
+                for (FieldSortBuilder fieldSortBuilder : sortBuilders) {
+                    elasticSearchRequest.source().sort(fieldSortBuilder);
+                }
+            }
+
             startTime = System.currentTimeMillis();
             searchResponse = client.search(elasticSearchRequest, RequestOptions.DEFAULT);
             return searchResponse;

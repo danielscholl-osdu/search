@@ -1,4 +1,4 @@
-// Copyright 2017-2019, Schlumberger
+// Copyright © Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,15 +15,16 @@
 package org.opengroup.osdu.search.provider.azure.service;
 
 import com.google.common.base.Strings;
-import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsRequest;
-import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.GetFieldMappingsRequest;
+import org.elasticsearch.client.indices.GetFieldMappingsResponse;
 import org.opengroup.osdu.core.common.search.Preconditions;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -34,23 +35,15 @@ import java.util.Set;
 public class FieldMappingTypeService {
 
     public Set<String> getFieldTypes(RestHighLevelClient restClient, String fieldName, String indexPattern) throws IOException {
-        Preconditions.checkNotNull(restClient, "restClient cannot be null");
-        Preconditions.checkNotNullOrEmpty(fieldName, "fieldName cannot be null or empty");
-        Preconditions.checkNotNullOrEmpty(indexPattern, "indexPattern cannot be null or empty");
-
         Set<String> fieldTypes = new HashSet<>();
         String fieldLeafNodeLabel = fieldName.substring(fieldName.lastIndexOf(".") + 1);
-        GetFieldMappingsRequest request = new GetFieldMappingsRequest();
-        request.fields(fieldName);
-        if (!Strings.isNullOrEmpty(indexPattern)) request.indices(indexPattern);
-        GetFieldMappingsResponse response = restClient.indices().getFieldMapping(request, RequestOptions.DEFAULT);
-        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>>> mappings = response.mappings();
+        GetFieldMappingsResponse response = this.getFieldMappings(restClient, fieldName, indexPattern);
+        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> mappings = response.mappings();
 
-        for (Map.Entry<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>>> indexMapping : mappings.entrySet()) {
+        for (Map.Entry<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> indexMapping : mappings.entrySet()) {
             if (indexMapping.getValue().isEmpty()) continue;
-            Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> typeMapping = indexMapping.getValue();
-            Map<String, GetFieldMappingsResponse.FieldMappingMetadata> fieldMapping = typeMapping.values().iterator().next();
-            GetFieldMappingsResponse.FieldMappingMetadata fieldMappingMetaData = fieldMapping.get(fieldName);
+            Map<String, GetFieldMappingsResponse.FieldMappingMetadata> typeMapping = indexMapping.getValue();
+            GetFieldMappingsResponse.FieldMappingMetadata fieldMappingMetaData = typeMapping.values().iterator().next();
             if (fieldMappingMetaData == null) continue;
             Map<String, Object> mapping = fieldMappingMetaData.sourceAsMap();
             LinkedHashMap<String, Object> typeMap = (LinkedHashMap<String, Object>) mapping.get(fieldLeafNodeLabel);
@@ -59,5 +52,32 @@ public class FieldMappingTypeService {
             fieldTypes.add(type.toString());
         }
         return fieldTypes;
+    }
+
+    public Map<String, String> getSortableTextFields(RestHighLevelClient restClient, String fieldName, String indexPattern) throws IOException {
+        Map<String, String> fieldTypeMap = new HashMap<>();
+        GetFieldMappingsResponse response = this.getFieldMappings(restClient, fieldName, indexPattern);
+        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> mappings = response.mappings();
+
+        for (Map.Entry<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> indexMapping : mappings.entrySet()) {
+            if (indexMapping.getValue().isEmpty()) continue;
+            Map<String, GetFieldMappingsResponse.FieldMappingMetadata> typeMapping = indexMapping.getValue();
+            GetFieldMappingsResponse.FieldMappingMetadata fieldMappingMetaData = typeMapping.values().iterator().next();
+            if (fieldMappingMetaData == null) continue;
+            String field = fieldMappingMetaData.fullName();
+            fieldTypeMap.put(field.substring(0, field.lastIndexOf(".keyword")), field);
+        }
+        return fieldTypeMap;
+    }
+
+    private GetFieldMappingsResponse getFieldMappings(RestHighLevelClient restClient, String fieldName, String indexPattern) throws IOException {
+        Preconditions.checkNotNull(restClient, "restClient cannot be null");
+        Preconditions.checkNotNullOrEmpty(fieldName, "fieldName cannot be null or empty");
+        Preconditions.checkNotNullOrEmpty(indexPattern, "indexPattern cannot be null or empty");
+
+        GetFieldMappingsRequest request = new GetFieldMappingsRequest();
+        request.fields(fieldName);
+        if (!Strings.isNullOrEmpty(indexPattern)) request.indices(indexPattern);
+        return restClient.indices().getFieldMapping(request, RequestOptions.DEFAULT);
     }
 }
