@@ -24,26 +24,26 @@ import org.springframework.stereotype.Component;
 @Component
 public class CursorCacheImpl implements CursorCache {
 
-    @Resource(name = "cursorCache")
-    private ICache<String, CursorSettings> cache;
+  @Resource(name = "cursorCache")
+  private ICache<String, CursorSettings> cache;
 
-    @Override
-    public void put(String s, CursorSettings o) {
-        this.cache.put(s, o);
-    }
+  @Override
+  public void put(String s, CursorSettings o) {
+    this.cache.put(s, o);
+  }
 
-    @Override
-    public CursorSettings get(String s) {
-        return this.cache.get(s);
-    }
+  @Override
+  public CursorSettings get(String s) {
+    return this.cache.get(s);
+  }
 
-    @Override
-    public void delete(String s) {
-        this.cache.delete(s);
-    }
+  @Override
+  public void delete(String s) {
+    this.cache.delete(s);
+  }
 
-    @Override
-    public void clearAll() {
-        this.cache.clearAll();
-    }
+  @Override
+  public void clearAll() {
+    this.cache.clearAll();
+  }
 }
