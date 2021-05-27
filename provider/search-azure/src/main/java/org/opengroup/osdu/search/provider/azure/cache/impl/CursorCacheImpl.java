@@ -14,12 +14,12 @@
 
 package org.opengroup.osdu.search.provider.azure.cache.impl;
 
+import javax.annotation.Resource;
+
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.search.cache.CursorCache;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
 
 @Component
 public class CursorCacheImpl implements CursorCache {
