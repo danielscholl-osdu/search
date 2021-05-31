@@ -357,7 +357,7 @@ abstract class QueryBase {
     
     // validate tenant from kind with the partition id header
     public void validateTenant(Query searchRequest) {
-        if (!this.getIndex(searchRequest).startsWith(this.dpsHeaders.getPartitionId())) {
+        if (!this.getIndex(searchRequest).startsWith("*") && !this.getIndex(searchRequest).startsWith(this.dpsHeaders.getPartitionId())) {
         	throw new AccessDeniedException("query kind tenant is not that same at the data-partition-id header");
         }
         
