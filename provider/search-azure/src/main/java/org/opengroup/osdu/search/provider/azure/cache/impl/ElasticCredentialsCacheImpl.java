@@ -37,18 +37,22 @@ public class ElasticCredentialsCacheImpl extends ElasticCredentialsCache {
 
   @Override
   public void put(String s, ClusterSettings o) {
-    this.cache.put(s, o);
+    try {
+      this.cache.put(s, o);
+    } catch (RedisException ex) {
+      this.log.error(String.format("Error puttig key %s into redis: %s", s, ex.getMessage()), ex);
+    }
   }
 
   @Override
   public ClusterSettings get(String s) {
-    ClusterSettings cursorSettings = null;
+    ClusterSettings clusterSettings = null;
     try {
-      cursorSettings = this.cache.get(s);
+      clusterSettings = this.cache.get(s);
     } catch (RedisException ex) {
       this.log.error(String.format("Error getting key %s from redis: %s", s, ex.getMessage()), ex);
     }
-    return cursorSettings;
+    return clusterSettings;
   }
 
   @Override

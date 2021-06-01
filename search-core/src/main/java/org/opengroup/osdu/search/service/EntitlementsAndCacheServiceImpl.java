@@ -148,7 +148,11 @@ public class EntitlementsAndCacheServiceImpl implements IEntitlementsExtensionSe
             IEntitlementsService service = this.factory.create(headers);
             try {
                 groups = service.getGroups();
-                this.cache.put(cacheKey, groups);
+                try {
+                    this.cache.put(cacheKey, groups);
+                } catch (RedisException ex) {
+                    this.logger.error(String.format("Error putting key %s into redis: %s", cacheKey, ex.getMessage()), ex);
+                }
                 this.logger.info("Entitlements cache miss");
 
             } catch (EntitlementsException e) {
