@@ -68,16 +68,15 @@ import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.Point;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryResponse;
-import org.opengroup.osdu.core.common.model.search.SortOrder;
-import org.opengroup.osdu.core.common.model.search.SortQuery;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter.ByBoundingBox;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter.ByDistance;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter.ByGeoPolygon;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
-import org.opengroup.osdu.search.provider.gcp.service.FieldMappingTypeService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
+import org.opengroup.osdu.search.service.IFieldMappingTypeService;
+import org.opengroup.osdu.search.query.builder.SortQueryBuilder;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.QueryResponseUtil;
@@ -106,7 +105,9 @@ public class QueryServiceTest {
   @Mock
   private CrossTenantUtils crossTenantUtils;
   @Mock
-  private FieldMappingTypeService fieldMappingTypeService;
+  private IFieldMappingTypeService fieldMappingTypeService;
+  @Mock
+  private SortQueryBuilder sortQueryBuilder;
   @Mock
   private AuditLogger auditLogger;
   @Mock
@@ -599,27 +600,6 @@ public class QueryServiceTest {
 
     List<String> elasticIncludes = Arrays.asList(elasticFetchSourceContext.includes());
     assertEquals(0, elasticIncludes.size());
-  }
-
-  @Test
-  public void should_return_correctElasticRequest_given_sortFields() throws IOException {
-    when(searchRequest.getKind()).thenReturn("tenant1:welldb:well:1.0.0");
-    SortQuery sort = new SortQuery();
-    List<String> sortFields = new ArrayList<>();
-    sortFields.add("id");
-    sortFields.add("namespace");
-    sort.setField(sortFields);
-    List<SortOrder> sortOrders = new ArrayList<>();
-    sortOrders.add(SortOrder.ASC);
-    sortOrders.add(SortOrder.DESC);
-    sort.setOrder(sortOrders);
-    when(searchRequest.getSort()).thenReturn(sort);
-    when(crossTenantUtils.getIndexName(any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
-
-    SearchRequest elasticRequest = this.sut.createElasticRequest(searchRequest);
-    assertNotNull(elasticRequest);
-    assertNotNull(elasticRequest.source().sorts());
-    assertEquals(2, elasticRequest.source().sorts().size());
   }
 
   @Test

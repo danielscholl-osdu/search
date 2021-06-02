@@ -12,29 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.opengroup.osdu.search.provider.azure.service;
+package org.opengroup.osdu.search.service;
 
 import com.google.common.base.Strings;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.GetFieldMappingsRequest;
 import org.elasticsearch.client.indices.GetFieldMappingsResponse;
+import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.search.Preconditions;
+import org.opengroup.osdu.search.cache.IFieldTypeMappingCache;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Component
 @RequestScope
-public class FieldMappingTypeService {
+public class FieldMappingTypeService implements IFieldMappingTypeService {
+
+    @Autowired
+    private IFieldTypeMappingCache typeMappingCache;
+    @Autowired
+    private DpsHeaders headers;
 
     public Set<String> getFieldTypes(RestHighLevelClient restClient, String fieldName, String indexPattern) throws IOException {
+        String cacheKey = this.getCacheKey(fieldName, indexPattern);
+        Map<String, String> cachedTypes = this.typeMappingCache.get(cacheKey);
+        if (cachedTypes != null && cachedTypes.containsKey(fieldName)) {
+            return new HashSet<>(Arrays.asList(cachedTypes.get(fieldName).split(",")));
+        }
+
+        Map<String, String> fieldTypeMap = new HashMap<>();
         Set<String> fieldTypes = new HashSet<>();
         String fieldLeafNodeLabel = fieldName.substring(fieldName.lastIndexOf(".") + 1);
         GetFieldMappingsResponse response = this.getFieldMappings(restClient, fieldName, indexPattern);
@@ -46,15 +57,27 @@ public class FieldMappingTypeService {
             GetFieldMappingsResponse.FieldMappingMetadata fieldMappingMetaData = typeMapping.values().iterator().next();
             if (fieldMappingMetaData == null) continue;
             Map<String, Object> mapping = fieldMappingMetaData.sourceAsMap();
+            if (mapping.isEmpty()) continue;
             LinkedHashMap<String, Object> typeMap = (LinkedHashMap<String, Object>) mapping.get(fieldLeafNodeLabel);
+            if (typeMap == null || typeMap.isEmpty()) continue;
             Object type = typeMap.get("type");
             if (type == null) continue;
             fieldTypes.add(type.toString());
         }
+
+        fieldTypeMap.put(fieldName, String.join(",", fieldTypes));
+        this.typeMappingCache.put(cacheKey, fieldTypeMap);
+
         return fieldTypes;
     }
 
     public Map<String, String> getSortableTextFields(RestHighLevelClient restClient, String fieldName, String indexPattern) throws IOException {
+        String cacheKey = this.getSortableTextFieldCacheKey(fieldName, indexPattern);
+        Map<String, String> cachedTypes = this.typeMappingCache.get(cacheKey);
+        if (cachedTypes != null && !cachedTypes.isEmpty()) {
+            return cachedTypes;
+        }
+
         Map<String, String> fieldTypeMap = new HashMap<>();
         GetFieldMappingsResponse response = this.getFieldMappings(restClient, fieldName, indexPattern);
         Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> mappings = response.mappings();
@@ -67,6 +90,9 @@ public class FieldMappingTypeService {
             String field = fieldMappingMetaData.fullName();
             fieldTypeMap.put(field.substring(0, field.lastIndexOf(".keyword")), field);
         }
+
+        this.typeMappingCache.put(cacheKey, fieldTypeMap);
+
         return fieldTypeMap;
     }
 
@@ -79,5 +105,13 @@ public class FieldMappingTypeService {
         request.fields(fieldName);
         if (!Strings.isNullOrEmpty(indexPattern)) request.indices(indexPattern);
         return restClient.indices().getFieldMapping(request, RequestOptions.DEFAULT);
+    }
+
+    private String getCacheKey(String fieldName, String indexPattern) {
+        return String.format("%s-%s-%s", this.headers.getPartitionIdWithFallbackToAccountId(), indexPattern, fieldName);
+    }
+
+    private String getSortableTextFieldCacheKey(String fieldName, String indexPattern) {
+        return String.format("%s-sortable-text-%s-%s", this.headers.getPartitionIdWithFallbackToAccountId(), indexPattern, fieldName);
     }
 }

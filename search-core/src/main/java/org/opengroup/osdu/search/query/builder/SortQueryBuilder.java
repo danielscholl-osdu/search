@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.opengroup.osdu.search.provider.azure.service;
+package org.opengroup.osdu.search.query.builder;
 
 import joptsimple.internal.Strings;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.opengroup.osdu.core.common.model.search.SortQuery;
+import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +33,7 @@ import java.util.Map;
 public class SortQueryBuilder {
 
     @Autowired
-    private FieldMappingTypeService fieldMappingTypeService;
+    private IFieldMappingTypeService fieldMappingTypeService;
 
     public List<FieldSortBuilder> getSortQuery(RestHighLevelClient restClient, SortQuery sortQuery, String indexPattern) throws IOException {
         List<String> dataFields = new ArrayList<>();
@@ -47,8 +48,11 @@ public class SortQueryBuilder {
         Map<String, String> sortableFieldTypes = this.fieldMappingTypeService.getSortableTextFields(restClient, Strings.join(dataFields, ","), indexPattern);
         List<String> sortableFields = new LinkedList<>();
         sortQuery.getField().forEach(field -> {
-            if (sortableFieldTypes.containsKey(field)) sortableFields.add(sortableFieldTypes.get(field));
-            else sortableFields.add(field);
+            if (sortableFieldTypes.containsKey(field)) {
+                sortableFields.add(sortableFieldTypes.get(field));
+            } else {
+                sortableFields.add(field);
+            }
         });
         sortQuery.setField(sortableFields);
         return getSortQuery(sortQuery);
