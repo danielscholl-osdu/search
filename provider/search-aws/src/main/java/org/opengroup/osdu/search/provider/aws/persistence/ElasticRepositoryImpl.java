@@ -55,7 +55,7 @@ public class ElasticRepositoryImpl implements IElasticRepository {
     @Value("${aws.elasticsearch.host}")
     String hostParameter;
 
-    @Value("${ aws.elasticsearch.credentials.secret}")
+    @Value("${aws.elasticsearch.credentials.secret}")
     String elasticCredentialsSecret;
 
     @Value("${aws.region}")
