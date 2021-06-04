@@ -53,7 +53,7 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
     @Value("${aws.elasticsearch.host}")
     String hostParameter;
 
-    @Value("${ aws.elasticsearch.credentials.secret}")
+    @Value("${aws.elasticsearch.credentials.secret}")
     String elasticCredentialsSecret;
 
     @Value("${aws.region}")
