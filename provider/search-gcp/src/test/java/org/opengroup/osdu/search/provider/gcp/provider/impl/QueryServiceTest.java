@@ -76,11 +76,17 @@ import org.opengroup.osdu.core.common.model.search.SpatialFilter.ByDistance;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter.ByGeoPolygon;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
+import org.opengroup.osdu.search.util.AggregationParserUtil;
+import org.opengroup.osdu.search.util.IAggregationParserUtil;
+import org.opengroup.osdu.search.util.IQueryParserUtil;
+import org.opengroup.osdu.search.util.ISortParserUtil;
+import org.opengroup.osdu.search.util.QueryParserUtil;
 import org.opengroup.osdu.search.provider.gcp.service.FieldMappingTypeService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.QueryResponseUtil;
+import org.opengroup.osdu.search.util.SortParserUtil;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -114,9 +120,15 @@ public class QueryServiceTest {
   @Mock
   private IProviderHeaderService providerHeaderService;
   @Mock
-  private SearchConfigurationProperties searchConfigurationProperties;
-  @Mock
   private QueryResponseUtil queryResponseUtil;
+  @Spy
+  private SearchConfigurationProperties properties = new SearchConfigurationProperties();
+  @Spy
+  private IQueryParserUtil parserService = new QueryParserUtil();
+  @Spy
+  private ISortParserUtil sortParserUtil = new SortParserUtil();
+  @Spy
+  private IAggregationParserUtil aggregationParserUtil = new AggregationParserUtil(properties);
 
   private RestHighLevelClient restHighLevelClient;
 
@@ -140,7 +152,7 @@ public class QueryServiceTest {
     mockStatic(SearchRequest.class);
     mockStatic(SearchHits.class);
 
-    when(searchConfigurationProperties.getEnvironment()).thenReturn("evt");
+    when(properties.getEnvironment()).thenReturn("evt");
     restHighLevelClient = PowerMockito.mock(RestHighLevelClient.class);
     elasticClientHandler = PowerMockito.mock(ElasticClientHandler.class);
 
@@ -321,10 +333,12 @@ public class QueryServiceTest {
     List<QueryBuilder> queryLevelMustClause = queryLevelBuilder.must();
     assertEquals(1, queryLevelMustClause.size());
 
-    QueryStringQueryBuilder queryStringQueryBuilder = (QueryStringQueryBuilder) queryLevelMustClause
-        .get(0);
-    assertNotNull(queryStringQueryBuilder);
-    assertEquals(simpleQuery, queryStringQueryBuilder.queryString());
+    BoolQueryBuilder boolQueryBuilder =  (BoolQueryBuilder)queryLevelMustClause.get(0);
+    List<QueryBuilder> must = boolQueryBuilder.must();
+    QueryStringQueryBuilder queryBuilder = (QueryStringQueryBuilder)must.get(0);
+
+    assertNotNull(boolQueryBuilder);
+    assertEquals(simpleQuery, queryBuilder.queryString());
 
     verifyAcls(topLevelMustClause.get(1), true);
   }
@@ -506,7 +520,6 @@ public class QueryServiceTest {
     when(searchRequest.getKind()).thenReturn(kind);
     when(searchRequest.getLimit()).thenReturn(limit);
     when(searchRequest.getFrom()).thenReturn(from);
-    when(searchConfigurationProperties.getQueryLimitMaximum()).thenReturn(1000);
     when(searchRequest.getReturnedFields()).thenReturn(returnedFields);
 
     when(crossTenantUtils.getIndexName(any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
@@ -627,7 +640,6 @@ public class QueryServiceTest {
     when(searchRequest.getKind()).thenReturn("tenant1:welldb:well:1.0.0");
     when(searchRequest.getAggregateBy()).thenReturn("namespace");
     when(crossTenantUtils.getIndexName(any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
-    when(searchConfigurationProperties.getAggregationSize()).thenReturn(1000);
     doReturn(true).when(this.sut).isEnvironmentPreDemo();
 
     SearchRequest elasticRequest = this.sut.createElasticRequest(searchRequest);

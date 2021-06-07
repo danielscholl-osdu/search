@@ -16,32 +16,27 @@ package org.opengroup.osdu.search.provider.gcp.provider.impl;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-
-import org.opengroup.osdu.core.common.model.search.ClusterSettings;
-import org.opengroup.osdu.core.common.model.http.AppException;
-
-import org.opengroup.osdu.search.config.SearchConfigurationProperties;
-import org.opengroup.osdu.search.provider.interfaces.IQueryService;
-import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.opengroup.osdu.search.logging.AuditLogger;
-import org.opengroup.osdu.core.common.model.search.AggregationResponse;
-import org.opengroup.osdu.core.common.model.search.Query;
-import org.opengroup.osdu.core.common.model.search.QueryRequest;
-import org.opengroup.osdu.core.common.model.search.QueryResponse;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
-import org.elasticsearch.search.aggregations.support.ValueType;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.opengroup.osdu.search.util.QueryResponseUtil;
-import org.springframework.stereotype.Service;
-
-import javax.inject.Inject;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import javax.inject.Inject;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.opengroup.osdu.core.common.model.search.AggregationResponse;
+import org.opengroup.osdu.core.common.model.search.ClusterSettings;
+import org.opengroup.osdu.core.common.model.search.Query;
+import org.opengroup.osdu.core.common.model.search.QueryRequest;
+import org.opengroup.osdu.core.common.model.search.QueryResponse;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
+import org.opengroup.osdu.search.logging.AuditLogger;
+import org.opengroup.osdu.search.provider.interfaces.IQueryService;
+import org.opengroup.osdu.search.util.ElasticClientHandler;
+import org.opengroup.osdu.search.util.IAggregationParserUtil;
+import org.opengroup.osdu.search.util.QueryResponseUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 @Service
@@ -55,6 +50,8 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     private AuditLogger auditLogger;
     @Inject
     private QueryResponseUtil queryResponseUtil;
+    @Autowired
+    private IAggregationParserUtil aggregationParserUtil;
 
     @Override
     public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
@@ -99,11 +96,8 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         sourceBuilder.from(searchRequest.getFrom());
 
         // aggregation: only make it available in pre demo for now
-        if (isEnvironmentPreDemo() && !Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
-            TermsAggregationBuilder termsAggregationBuilder = new TermsAggregationBuilder(AGGREGATION_NAME);
-            termsAggregationBuilder.field(searchRequest.getAggregateBy());
-            termsAggregationBuilder.size(searchConfigurationProperties.getAggregationSize());
-            sourceBuilder.aggregation(termsAggregationBuilder);
+        if (!Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
+            sourceBuilder.aggregation(aggregationParserUtil.parseAggregation(searchRequest.getAggregateBy()));
         }
 
         elasticSearchRequest.source(sourceBuilder);
