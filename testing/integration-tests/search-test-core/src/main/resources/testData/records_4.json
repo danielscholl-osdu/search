@@ -1,0 +1,250 @@
+[{
+    "id": "test:well:1.0.0:1",
+    "kind": "<Kind>",
+    "namespace": "tenant1:testdatasource",
+    "type": "well",
+    "acl": "{viewers=[<Data-Group>], owners=[<Data-Group>]}",
+    "x-acl": [
+        "<Data-Group>"
+    ],
+    "legal": {
+        "legaltags": [
+            "<Legal-Tag>"
+        ],
+        "otherRelevantDataCountries": [
+            "<Country>"
+        ],
+        "status": "compliant"
+    },
+    "data": {
+        "FacilityStates": [{
+            "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "FacilityStateTypeID": "namespace:reference-data--FacilityStateType:SomeUniqueFacilityStateTypeID:"
+        }
+        ],
+        "FacilityNameAliases": [{
+            "AliasName": "Example AliasName",
+            "AliasNameTypeID": "namespace:reference-data--AliasNameType:Regulatory%20Identifier:",
+            "DefinitionOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+            "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00"
+        }
+        ],
+        "SpatialLocation.AppliedOperations": [
+            "conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points converted",
+            "transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed"
+        ],
+        "ResourceLifecycleStatus": "namespace:reference-data--ResourceLifecycleStatus:LOADING:",
+        "DefaultVerticalMeasurementID": "Example DefaultVerticalMeasurementID",
+        "ResourceCurationStatus": "namespace:reference-data--ResourceCurationStatus:CREATED:",
+        "Source": "Example Data Source",
+        "FacilityName": "Example FacilityName",
+        "FacilityID": "Example FacilityID",
+        "FacilitySpecifications": [{
+            "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "FacilitySpecificationQuantity": 12345.6,
+            "FacilitySpecificationDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "FacilitySpecificationIndicator": true,
+            "FacilitySpecificationText": "Example FacilitySpecificationText",
+            "UnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+            "ParameterTypeID": "namespace:reference-data--ParameterType:Slot%20Name:"
+        }
+        ],
+        "VerticalMeasurements": [{
+            "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+            "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
+            "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:SomeUniqueVerticalMeasurementSourceID:",
+            "VerticalReferenceID": "Example VerticalReferenceID",
+            "TerminationDateTime": "2020-02-13T09:13:15.55+0000",
+            "VerticalMeasurementID": "Example VerticalMeasurementID",
+            "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:SomeUniqueVerticalMeasurementPathID:",
+            "EffectiveDateTime": "2020-02-13T09:13:15.55+0000",
+            "VerticalMeasurement": 12345.6,
+            "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:Plug%20Back%20depth:",
+            "VerticalMeasurementDescription": "Example VerticalMeasurementDescription",
+            "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:"
+        }
+        ],
+        "VersionCreationReason": "Example VersionCreationReason",
+        "ResourceSecurityClassification": "namespace:reference-data--ResourceSecurityClassification:RESTRICTED:",
+        "InterestTypeID": "namespace:reference-data--WellInterestType:Operated:",
+        "DataSourceOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+        "SpatialLocation.SpatialParameterTypeID": "namespace:reference-data--SpatialParameterType:Outline:",
+        "ExistenceKind": "namespace:reference-data--ExistenceKind:Prototype:",
+        "SpatialLocation.CoordinateQualityCheckPerformedBy": "Example CoordinateQualityCheckPerformedBy",
+        "SpatialLocation.CoordinateQualityCheckRemarks": [
+            "Example CoordinateQualityCheckRemarks"
+        ],
+        "FacilityOperators": [{
+            "FacilityOperatorID": "Example Facility Operator ID",
+            "TerminationDateTime": "2020-02-13T09:13:15.55+0000",
+            "EffectiveDateTime": "2020-02-13T09:13:15.55+0000",
+            "FacilityOperatorOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:"
+        }
+        ],
+        "FacilityTypeID": "namespace:reference-data--FacilityType:Well:",
+        "NameAliases": [{
+            "AliasName": "Example AliasName",
+            "AliasNameTypeID": "namespace:reference-data--AliasNameType:Regulatory%20Identifier:",
+            "DefinitionOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+            "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00"
+        }
+        ],
+        "DefaultVerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
+        "FacilityEvents": [{
+            "FacilityEventTypeID": "namespace:reference-data--FacilityEventType:Abandon:",
+            "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00"
+        }
+        ],
+        "SpatialLocation.SpatialLocationCoordinatesDate": "2020-02-13T09:13:15.55+0000",
+        "GeoContexts": [{
+            "BasinID": "namespace:master-data--Basin:SomeUniqueBasinID:",
+            "GeoTypeID": "namespace:reference-data--BasinType:SomeUniqueBasinTypeID:"
+        }
+        ],
+        "CurrentOperatorID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+        "SpatialLocation.QualitativeSpatialAccuracyTypeID": "namespace:reference-data--QualitativeSpatialAccuracyType:SomeUniqueQualitativeSpatialAccuracyTypeID:",
+        "SpatialLocation.CoordinateQualityCheckDateTime": "2020-02-13T09:13:15.55+0000",
+        "SpatialLocation.SpatialGeometryTypeID": "namespace:reference-data--SpatialGeometryType:Point:",
+        "OperatingEnvironmentID": "namespace:reference-data--OperatingEnvironment:Onshore:",
+        "ResourceHomeRegionID": "namespace:reference-data--OSDURegion:SomeUniqueOSDURegionID:",
+        "ResourceHostRegionIDs": [
+            "namespace:reference-data--OSDURegion:SomeUniqueOSDURegionID:"
+        ],
+        "InitialOperatorID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+        "SpatialLocation.QuantitativeAccuracyBandID": "namespace:reference-data--QuantitativeAccuracyBand:SomeUniqueQuantitativeAccuracyBandID:"
+    },
+    "index": {
+        "statusCode": 200,
+        "lastUpdateTime": "2018-10-04T10:11:22.303000"
+    }
+}, {
+    "id": "test:well:1.0.0:2",
+    "kind": "<Kind>",
+    "namespace": "tenant1:testdatasource",
+    "type": "well",
+    "acl": "{viewers=[<Data-Group>], owners=[<Data-Group>]}",
+    "x-acl": [
+        "<Data-Group>"
+    ],
+    "legal": {
+        "legaltags": [
+            "<Legal-Tag>"
+        ],
+        "otherRelevantDataCountries": [
+            "<Country>"
+        ],
+        "status": "compliant"
+    },
+    "data": {
+        "FacilityStates": [{
+            "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "FacilityStateTypeID": "namespace:reference-data--FacilityStateType:SomeUniqueFacilityStateTypeID:"
+        }
+        ],
+        "FacilityNameAliases": [{
+            "AliasName": "Example AliasName",
+            "AliasNameTypeID": "namespace:reference-data--AliasNameType:Regulatory%20Identifier:",
+            "DefinitionOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+            "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00"
+        }
+        ],
+        "SpatialLocation.AppliedOperations": [
+            "conversion from ED_1950_UTM_Zone_31N to GCS_European_1950; 1 points converted",
+            "transformation GCS_European_1950 to GCS_WGS_1984 using ED_1950_To_WGS_1984_24; 1 points successfully transformed"
+        ],
+        "ResourceLifecycleStatus": "namespace:reference-data--ResourceLifecycleStatus:LOADING:",
+        "DefaultVerticalMeasurementID": "Example DefaultVerticalMeasurementID",
+        "ResourceCurationStatus": "namespace:reference-data--ResourceCurationStatus:CREATED:",
+        "Source": "Example Data Source",
+        "FacilityName": "Example FacilityName",
+        "FacilityID": "Example FacilityID",
+        "FacilitySpecifications": [{
+            "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "FacilitySpecificationQuantity": 12345.6,
+            "FacilitySpecificationDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "FacilitySpecificationIndicator": true,
+            "FacilitySpecificationText": "Example FacilitySpecificationText",
+            "UnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:",
+            "ParameterTypeID": "namespace:reference-data--ParameterType:Slot%20Name:"
+        }
+        ],
+        "VerticalMeasurements": [{
+            "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+            "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
+            "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:SomeUniqueVerticalMeasurementSourceID:",
+            "VerticalReferenceID": "Example VerticalReferenceID",
+            "TerminationDateTime": "2020-02-13T09:13:15.55+0000",
+            "VerticalMeasurementID": "Example VerticalMeasurementID",
+            "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:SomeUniqueVerticalMeasurementPathID:",
+            "EffectiveDateTime": "2020-02-13T09:13:15.55+0000",
+            "VerticalMeasurement": 12.3,
+            "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:Plug%20Back%20depth:",
+            "VerticalMeasurementDescription": "Example VerticalMeasurementDescription",
+            "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:"
+        }
+        ],
+        "VersionCreationReason": "Example VersionCreationReason",
+        "ResourceSecurityClassification": "namespace:reference-data--ResourceSecurityClassification:RESTRICTED:",
+        "InterestTypeID": "namespace:reference-data--WellInterestType:Operated:",
+        "DataSourceOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+        "SpatialLocation.SpatialParameterTypeID": "namespace:reference-data--SpatialParameterType:Outline:",
+        "ExistenceKind": "namespace:reference-data--ExistenceKind:Prototype:",
+        "SpatialLocation.CoordinateQualityCheckPerformedBy": "Example CoordinateQualityCheckPerformedBy",
+        "SpatialLocation.CoordinateQualityCheckRemarks": [
+            "Example CoordinateQualityCheckRemarks"
+        ],
+        "FacilityOperators": [{
+            "FacilityOperatorID": "Example Facility Operator ID",
+            "TerminationDateTime": "2025-02-13T09:13:15.55+0000",
+            "EffectiveDateTime": "2020-02-13T09:13:15.55+0000",
+            "FacilityOperatorOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:"
+        }
+        ],
+        "FacilityTypeID": "namespace:reference-data--FacilityType:Well:",
+        "NameAliases": [{
+            "AliasName": "Example AliasName",
+            "AliasNameTypeID": "namespace:reference-data--AliasNameType:Regulatory%20Identifier:",
+            "DefinitionOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+            "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00"
+        }
+        ],
+        "DefaultVerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
+        "FacilityEvents": [{
+            "FacilityEventTypeID": "namespace:reference-data--FacilityEventType:Abandon:",
+            "EffectiveDateTime": "2020-02-13T09:13:15.550000+00:00",
+            "TerminationDateTime": "2020-02-13T09:13:15.550000+00:00"
+        }
+        ],
+        "SpatialLocation.SpatialLocationCoordinatesDate": "2020-02-13T09:13:15.55+0000",
+        "GeoContexts": [{
+            "BasinID": "namespace:master-data--Basin:SomeUniqueBasinID:",
+            "GeoTypeID": "namespace:reference-data--BasinType:SomeUniqueBasinTypeID:"
+        }
+        ],
+        "CurrentOperatorID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+        "SpatialLocation.QualitativeSpatialAccuracyTypeID": "namespace:reference-data--QualitativeSpatialAccuracyType:SomeUniqueQualitativeSpatialAccuracyTypeID:",
+        "SpatialLocation.CoordinateQualityCheckDateTime": "2020-02-13T09:13:15.55+0000",
+        "SpatialLocation.SpatialGeometryTypeID": "namespace:reference-data--SpatialGeometryType:Point:",
+        "OperatingEnvironmentID": "namespace:reference-data--OperatingEnvironment:Onshore:",
+        "ResourceHomeRegionID": "namespace:reference-data--OSDURegion:SomeUniqueOSDURegionID:",
+        "ResourceHostRegionIDs": [
+            "namespace:reference-data--OSDURegion:SomeUniqueOSDURegionID:"
+        ],
+        "InitialOperatorID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:",
+        "SpatialLocation.QuantitativeAccuracyBandID": "namespace:reference-data--QuantitativeAccuracyBand:SomeUniqueQuantitativeAccuracyBandID:"
+    },
+    "index": {
+        "statusCode": 200,
+        "lastUpdateTime": "2018-10-04T10:11:22.303000"
+    }
+}
+]

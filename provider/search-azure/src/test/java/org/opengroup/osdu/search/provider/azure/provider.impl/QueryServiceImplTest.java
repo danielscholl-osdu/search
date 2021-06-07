@@ -36,6 +36,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppError;
@@ -45,14 +46,21 @@ import org.opengroup.osdu.core.common.model.search.Point;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryResponse;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.azure.service.FieldMappingTypeService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
+import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 
 import java.io.IOException;
 import java.util.*;
+import org.opengroup.osdu.search.util.IAggregationParserUtil;
+import org.opengroup.osdu.search.util.IQueryParserUtil;
+import org.opengroup.osdu.search.util.ISortParserUtil;
+import org.opengroup.osdu.search.util.QueryParserUtil;
+import org.opengroup.osdu.search.util.SortParserUtil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -120,6 +128,18 @@ public class QueryServiceImplTest {
 
     @Mock
     private FieldMappingTypeService fieldMappingTypeService;
+
+    @Spy
+    private SearchConfigurationProperties properties = new SearchConfigurationProperties();
+
+    @Spy
+    private IQueryParserUtil parserService = new QueryParserUtil();
+
+    @Spy
+    private ISortParserUtil sortParserUtil = new SortParserUtil();
+
+    @Spy
+    private IAggregationParserUtil aggregationParserUtil = new AggregationParserUtil(properties);
 
     @InjectMocks
     private QueryServiceImpl sut;

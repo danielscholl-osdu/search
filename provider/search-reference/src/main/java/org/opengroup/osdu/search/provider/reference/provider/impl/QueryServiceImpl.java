@@ -37,6 +37,7 @@ import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
+import org.opengroup.osdu.search.util.IAggregationParserUtil;
 import org.opengroup.osdu.search.util.QueryResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,8 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     private AuditLogger auditLogger;
     @Inject
     private QueryResponseUtil queryResponseUtil;
+    @Inject
+    private IAggregationParserUtil aggregationParserUtil;
 
     @Autowired
     public QueryServiceImpl(SearchConfigurationProperties searchConfigurationProperties){
@@ -105,10 +108,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
 
         // aggregation: only make it available in pre demo for now
         if (isEnvironmentPreDemo() && !(searchRequest.getAggregateBy() == null || searchRequest.getAggregateBy().isEmpty())) {
-            TermsAggregationBuilder termsAggregationBuilder = new TermsAggregationBuilder(AGGREGATION_NAME, ValueType.STRING);
-            termsAggregationBuilder.field(searchRequest.getAggregateBy());
-            termsAggregationBuilder.size(searchConfigurationProperties.getAggregationSize());
-            sourceBuilder.aggregation(termsAggregationBuilder);
+            sourceBuilder.aggregation(aggregationParserUtil.parseAggregation(searchRequest.getAggregateBy()));
         }
 
         elasticSearchRequest.source(sourceBuilder);
