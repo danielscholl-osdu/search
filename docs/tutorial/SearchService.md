@@ -10,7 +10,11 @@
       + [Grouping](#grouping)
       + [Reserved characters](#reserved-characters)
       + [Wildcards](#wildcards)
+    * [Query by "nested" arrays objects](#nested-queries)  
     * [Sort](#sort-queries)
+      + [Sort by "nested" arrays objects](#nested-sort)
+  * [Aggregation](#aggregation)
+      + [Aggregation by "nested" arrays objects](#nested-aggregation)
     * [Range Queries](#range-queries)
     * [Geo-Spatial Queries](#geo-spatial-queries)
       + [Geo Distance](#geo-distance)
@@ -70,7 +74,7 @@ Data Ecosystem search provides a JSON-style domain-specific language that you ca
 POST /api/search/v2/query
 {
   "kind": "common:welldb:wellbore:1.0.0",
-  "query": "data.Status:Active",
+  "query": "data.Status:Active AND nested(data.VerticalMeasurements)",
   "offset": 0,
   "limit": 30,
   "sort": {
@@ -140,7 +144,7 @@ __Note:__ : It can take a delay of atleast 30 seconds once records are successfu
 | Parameter | Description |
 | :--- | :--- |
 | kind | The kind of the record to query e.g. 'common:welldb:wellbore:1.0.0'. kind is a __required__ field and can be formatted as OSDU-Data-Partition-Id:data-source-id:entity-type:schema-version |
-| query | The query string in Lucene query string syntax. |
+| query | Query string based on Lucene query string syntax, supplemented with a specific format for describing queries to fields of object arrays indexed with the "nested" hint. |
 | offset | The starting offset from which to return results. |
 | limit | The maximum number of results to return from the given offset. If no limit is provided, then it will return __10__ items. Max number of items which can be fetched by the query is __100__. (If you wish to fetch large set of items, please use [query_with_cursor](#query-with-cursor) API). |
 | sort | Allows you to add one or more sorts on specific fields. The length of fields and the length of order must match. Order value must be either ASC or DESC (case insensitive). For more details, ability and limitation about this feature, please refer to [Sort](#sort_querires) 
@@ -318,8 +322,102 @@ If you need to use date in your query, it has to be in one of the following form
  
  For more info please refer [Date format](http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateOptionalTimeParser--)
 
+## Query by "nested" arrays objects <a name="nested-queries"></a>
+Starting from version 0.9.0 we can set "nested" hints in data schemes object array nodes.
+It leads to accurate indexing of those arrays objects in the underlying  Elasticsearch engine,
+which then indexes such hinted arrays' objects as separate documents,
+giving an option to query parent documents by children arrays objects fields data.
+
+Those (say "nested arrays") queries require more complicated syntax in native ES Query DSL
+which we wish to avoid in the OSDU Search query DSL, so we have developed our own simplified dialect
+to describe such requests in the Search service in the form of the ```nested()``` function:
+- for one level "nested array":
+```json
+nested(<path-to-root-nested-array-node>, <root-nested-array-object-fields-query>)
+```
+- for nested (multi-level) "nested array" queries
+```json
+nested(<path-to-root-nested-array-node>, nested(<path-to-subrootA-nested-array-node>, <subrootA-nested-array-object-fields-query>))
+```
+Multi-level nested queries are not limited in their depth. You nest them as required by the certain schema.
+
+Several examples of the root and multi-level nested queries examples you can see in the below paragraphs.
+The syntax of those queries is the same we learned from the above sections.
+The only distinction is that their conditions are scoped by the own fields of objects of the array,
+pointed in the first argument of the current nested(path,(conditions)) function.
+
+### Single-level one condition nested query
+It queries for wellboremarkerset WPCs having any Marker with MarkerMeasuredDepth field value greater than 10000
+```json
+{
+"kind" : "osdu:wks:work-product-component--wellboremarkerset:1.0.0",
+"query":"nested(data.Markers, (MarkerMeasuredDepth:(>10000)))"
+}
+```
+### Single-level several conditions nested query
+It queries for wellboremarkerset WPCs having any Marker with both conditions match:
+(MarkerMeasuredDepth > 10000 AND PositiveVerticalDelta < 13000)
+```json
+{
+"kind" : "osdu:wks:work-product-component--wellboremarkerset:1.0.0",
+"query":"nested(data.Markers, (MarkerMeasuredDepth:(>10000) AND PositiveVerticalDelta:(<13000)))"
+}
+```
+### Combination of single-level nested queries
+It queries for wellboremarkerset WPCs having any Marker with any of conditions match:
+(MarkerMeasuredDepth>10000 OR SurfaceDipAzimuth:<30000)
+```json
+{
+"kind" : "osdu:wks:work-product-component--wellboremarkerset:1.0.0", 
+"query":"nested(data.Markers, (MarkerMeasuredDepth:(>10000))) OR nested(data.Markers, (SurfaceDipAzimuth:(<30000)))"
+}
+```
+### Multi-level nested queries
+Assume we have a schema (not yet exists in OSDU schemas) describing document with "nested" array,
+containing another "nested" array as a value of one of its fields.
+For example, let's fantasize that the data.Markers Marker object has a nested 'Revisions' array of Revision objects
+having two own fields: "RevisionDate" and "RevisionEngeneer". An indexed document might then look like this:
+```json
+"data": {
+    ...
+    "Markers": [
+        {
+        ...
+        "MarkerMeasuredDepth": 12345.6,
+        "PositiveVerticalDelta": 12345.6,
+        "Revisions": [
+          "RevisionDate": "2020-02-13T09:13:15.55+0000",
+          "RevisionEngineer": "John Smith"
+          ] 
+        }
+    ]
+}
+```
+
+We then might wish to search for wellboremarkerset WPCs having any Marker revised on a certain date by a certain engineer:
+
+```json
+{
+"kind" : "osdu:wks:work-product-component--wellboremarkerset:1.0.0", 
+"query":"nested(data.Markers, nested(data.Markers.Revisions, (RevisionDate:\"2020-02-13T09:13:15.55+0000\" AND RevisionEngineer:\"John Smith\")))"
+}
+```
+
+### Nested and "non-nested" queries parts combinations
+We can combine both types of queries in one request, eg:
+```json
+{
+  "kind" : "osdu:wks:work-product-component--wellboremarkerset:1.0.0",
+  "query":"data.Name:\"Example Name\" AND nested(data.Markers, (MarkerMeasuredDepth:(>10000)))"
+}
+```
+
 ## Sort <a name="sort-queries"></a>
-The sort feature supports int, float, double, long and datetime, but it does not support array object, nested object or string field as of now, and for the records contain such types won't return in the response.
+The sort feature supports int, float, double, long and datetime. 
+It does not support array object or string field as of now, and for the records contain such types won't return to the response.
+
+Starting from version 0.9.0 we can set "nested" hints in data schemes object array nodes. 
+And use such way indexed data for sorting. See in below "Sort by nested arrays objects".
 
 The records either does not have the sorted fields or have empty value will be listed last in the result.
 
@@ -344,7 +442,74 @@ The above request payload asks search service to sort on "data.Id" in an ascendi
 **NOTE:** Search service does not validate the provided sort field, whether it exists or is of the supported data types. Different kinds may have attributes with the same names, but are different data types. Therefore, it is the user's responsibility to be aware and validate this in one's own workflow. 
 
 The sort query could be very expensive, especially if the given kind is too broad (e.g. "kind": "*:*:*:*"). The current time-out threshold is 60 seconds; a 504 error ("Request timed out after waiting for 1m") will be returned if the request times out. The suggestion is to make the kind parameter as narrow as possible while using the sort feature.
- 
+
+### Sort by "nested" arrays objects <a name="nested-sort"></a>
+We generally have several objects in each "nested" array. 
+The question is, how to choose the properties of which of them will be used for sorting of the owning documents.
+For this, there is the third parameter "mode" of the sorting function: ```nested(path, field, mode)```.
+The modes are min, max, avg. eg., with 'min' we sort by the less field value of objects of each array.
+
+In the following example we apply two levels of sorting by different fields of the "nested" Markers array objects.  
+For the first level we use 'min' mode and then ASC sorting order, for the second level - 'max' mode and then DESC sorting order. 
+```json
+{
+"kind" : "osdu:wks:work-product-component--wellboremarkerset:1.0.0", 
+"sort": {
+    "field": ["nested(data.Markers, MarkerMeasuredDepth, min)", "nested(data.Markers, SurfaceDipAzimuth, max)"],
+    "order": ["ASC", "DESC"]
+  }
+}
+
+```
+
+## Aggregation <a name="aggregation"></a>
+Aggregation feature leads to "aggregations" node appearing in the result output.
+It contains an array of objects containing two fields: "key" and "count",
+reflecting the set of all distinct values of the field chosen for aggregation with the corresponding occurrences number of each value found.
+
+Let's aggregate wellboremarkerset WPCs by their kind
+```json
+{
+"kind" : "osdu:wks:work-product-component--wellboremarkerset:1.0.0", 
+"aggregateBy": "kind"
+}
+```
+As expected, all wellboremarkerset WOCs belong to the same kind, so, we can see one "key" in the "aggregations" result array:
+```json
+{
+  "results": [
+    {
+      ...
+      "aggregations": [
+        {
+          "key": "osdu:wks:work-product-component--WellboreMarkerSet:1.0.0",
+          "count": 26
+        }
+      ],
+      "totalCount": 26
+    }
+  }
+}
+```
+### Aggregation by "nested" arrays objects <a name="nested-aggregation"></a>
+Let's aggregate wellboremarkerset WPCs by their Markers "nested" array MarkerMeasuredDepth field
+```json
+{
+"kind" : "osdu:wks:work-product-component--wellboremarkerset:1.0.0", 
+"aggregateBy": "nested(data.Markers, MarkerMeasuredDepth)"
+}
+```
+Each wellboremarkerset WPC in our test env index has many Markers with most the same test values.
+This is why we see multiple "keys" with "count" > 1 in the "aggregations" result array:
+{
+"aggregations": [
+    {"key": "3043.0", "count": 48 },
+    ...
+    {"key": "3544.0","count": 48 },
+    ...
+    ]
+}
+
 ## Range Queries <a name="range-queries"></a>
 
 Ranges can be specified for date, numeric or string fields. Inclusive ranges are specified with square brackets `[min TO max]` and exclusive ranges with curly brackets `{min TO max}`. Here are some of the examples:
