@@ -16,6 +16,7 @@ package org.opengroup.osdu.search.api;
 
 import io.swagger.annotations.*;
 
+import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.core.common.model.http.AppError;
@@ -93,8 +94,8 @@ public class SearchApi {
             try{
                 QueryResponse searchResponse = queryService.queryIndex(queryRequest);
                 return new ResponseEntity<QueryResponse>(searchResponse, HttpStatus.OK);
-            } catch (NotFoundException e) {
-                return new ResponseEntity<QueryResponse>(QueryResponse.getEmptyResponse(), HttpStatus.OK);
+            } catch (AppException e) {
+                return handleIndexNotFoundException(e, QueryResponse.getEmptyResponse());
             }
     }
 
@@ -126,8 +127,8 @@ public class SearchApi {
         try{
             CursorQueryResponse searchResponse = scrollQueryService.queryIndex(queryRequest);
             return new ResponseEntity<CursorQueryResponse>(searchResponse, HttpStatus.OK);
-        } catch (NotFoundException e) {
-            return new ResponseEntity<CursorQueryResponse>(CursorQueryResponse.getEmptyResponse(), HttpStatus.OK);
+        } catch (AppException e) {
+            return handleIndexNotFoundException(e, CursorQueryResponse.getEmptyResponse());
         }
     }
 
@@ -159,8 +160,15 @@ public class SearchApi {
         try{
             CcsQueryResponse searchResponse = ccsQueryService.makeRequest(queryRequest);
             return new ResponseEntity<CcsQueryResponse>(searchResponse, HttpStatus.OK);
-        } catch (NotFoundException e) {
-            return new ResponseEntity<CcsQueryResponse>(new CcsQueryResponse(), HttpStatus.OK);
+        } catch (AppException e) {
+            return handleIndexNotFoundException(e, new CcsQueryResponse());
         }
+    }
+
+    private <T> ResponseEntity<T>  handleIndexNotFoundException(AppException e, T response) {
+        if (e.getError().getCode() == HttpStatus.NOT_FOUND.value()
+                && e.getError().getMessage().equals("Resource you are trying to find does not exists"))
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        throw e;
     }
 }
