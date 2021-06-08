@@ -33,6 +33,8 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.bucket.nested.ParsedNested;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
@@ -47,9 +49,11 @@ import org.opengroup.osdu.core.common.model.search.*;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
-import org.opengroup.osdu.search.query.builder.SortQueryBuilder;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
+import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
+import org.opengroup.osdu.search.util.IQueryParserUtil;
+import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.inject.Inject;
@@ -71,14 +75,15 @@ abstract class QueryBase {
     private CrossTenantUtils crossTenantUtils;
     @Inject
     private IFieldMappingTypeService fieldMappingTypeService;
-    @Autowired
-    private SortQueryBuilder sortQueryBuilder;
     @Autowired(required = false)
     private IPolicyService iPolicyService;
     @Inject
     private PartitionPolicyStatusService statusService;
+    @Autowired
+    private IQueryParserUtil queryParserUtil;
+    @Autowired
+    private ISortParserUtil sortParserUtil;
 
-    static final String AGGREGATION_NAME = "agg";
     private static final String GEO_SHAPE_INDEXED_TYPE = "geo_shape";
 
     // if returnedField contains property matching from excludes than query result will NOT include that property
@@ -98,7 +103,7 @@ abstract class QueryBase {
         QueryBuilder queryBuilder = null;
 
         if (!Strings.isNullOrEmpty(simpleQuery)) {
-            textQueryBuilder = getSimpleQuery(simpleQuery);
+            textQueryBuilder = queryParserUtil.buildQueryBuilderFromQueryString(simpleQuery);
         }
 
         // use only one of the spatial request
@@ -242,7 +247,13 @@ abstract class QueryBase {
         List<AggregationResponse> results = null;
 
         if (searchResponse.getAggregations() != null) {
-            Terms kindAgg = searchResponse.getAggregations().get(AGGREGATION_NAME);
+            Terms kindAgg = null;
+            ParsedNested nested = searchResponse.getAggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
+            if(nested != null){
+                kindAgg = (Terms) getTermsAggregationFromNested(nested);
+            }else {
+                kindAgg = searchResponse.getAggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME);
+            }
             if (kindAgg.getBuckets() != null) {
                 results = new ArrayList<>();
                 for (Terms.Bucket bucket : kindAgg.getBuckets()) {
@@ -252,6 +263,15 @@ abstract class QueryBase {
         }
 
         return results;
+    }
+
+    private Aggregation getTermsAggregationFromNested(ParsedNested parsedNested){
+        ParsedNested nested = parsedNested.getAggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
+        if(nested != null){
+            return getTermsAggregationFromNested(nested);
+        }else {
+            return parsedNested.getAggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME);
+        }
     }
 
     SearchSourceBuilder createSearchSourceBuilder(Query request) throws IOException {
@@ -303,7 +323,7 @@ abstract class QueryBase {
             }
             elasticSearchRequest = createElasticRequest(searchRequest);
             if (searchRequest.getSort() != null) {
-                List<FieldSortBuilder> sortBuilders = this.sortQueryBuilder.getSortQuery(client, searchRequest.getSort(), index);
+                List<FieldSortBuilder> sortBuilders = this.sortParserUtil.getSortQuery(client, searchRequest.getSort(), index);
                 for (FieldSortBuilder fieldSortBuilder : sortBuilders) {
                     elasticSearchRequest.source().sort(fieldSortBuilder);
                 }
@@ -323,6 +343,8 @@ abstract class QueryBase {
                 default:
                     throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
             }
+        } catch (AppException e) {
+            throw e;
         } catch (IOException e) {
             if (e.getMessage().startsWith("listener timeout after waiting for")) {
                 throw new AppException(HttpServletResponse.SC_GATEWAY_TIMEOUT, "Search error", String.format("Request timed out after waiting for %sm", REQUEST_TIMEOUT.getMinutes()), e);

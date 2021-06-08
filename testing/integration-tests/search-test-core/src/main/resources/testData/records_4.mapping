@@ -1,0 +1,391 @@
+{
+    "dynamic": "false",
+    "properties": {
+        "acl": {
+            "properties": {
+                "owners": {
+                    "type": "keyword"
+                },
+                "viewers": {
+                    "type": "keyword"
+                }
+            }
+        },
+        "ancestry": {
+            "properties": {
+                "parents": {
+                    "type": "keyword"
+                }
+            }
+        },
+        "data": {
+            "properties": {
+                "CurrentOperatorID": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "DataSourceOrganisationID": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "DefaultVerticalCRSID": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "DefaultVerticalMeasurementID": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "ExistenceKind": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "FacilityEvents": {
+                    "type": "flattened"
+                },
+                "FacilityID": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "FacilityName": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "FacilityNameAliases": {
+                    "type": "object"
+                },
+                "FacilityOperators": {
+                    "type": "nested",
+                    "properties": {
+                        "EffectiveDateTime": {
+                            "type": "date"
+                        },
+                        "FacilityOperatorID": {
+                            "type": "text"
+                        },
+                        "FacilityOperatorOrganisationID": {
+                            "type": "text"
+                        },
+                        "TerminationDateTime": {
+                            "type": "date"
+                        }
+                    }
+                },
+                "FacilitySpecifications": {
+                    "type": "flattened"
+                },
+                "FacilityStates": {
+                    "type": "flattened"
+                },
+                "FacilityTypeID": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "GeoContexts": {
+                    "type": "flattened"
+                },
+                "InitialOperatorID": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "InterestTypeID": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "NameAliases": {
+                    "type": "flattened"
+                },
+                "OperatingEnvironmentID": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "ResourceCurationStatus": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "ResourceHomeRegionID": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "ResourceHostRegionIDs": {
+                    "type": "text"
+                },
+                "ResourceLifecycleStatus": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "ResourceSecurityClassification": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "Source": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "SpatialLocation": {
+                    "properties": {
+                        "AppliedOperations": {
+                            "type": "text"
+                        },
+                        "CoordinateQualityCheckDateTime": {
+                            "type": "date"
+                        },
+                        "CoordinateQualityCheckPerformedBy": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "null_value": "null",
+                                    "ignore_above": 256
+                                }
+                            }
+                        },
+                        "CoordinateQualityCheckRemarks": {
+                            "type": "text"
+                        },
+                        "QualitativeSpatialAccuracyTypeID": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "null_value": "null",
+                                    "ignore_above": 256
+                                }
+                            }
+                        },
+                        "QuantitativeAccuracyBandID": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "null_value": "null",
+                                    "ignore_above": 256
+                                }
+                            }
+                        },
+                        "SpatialGeometryTypeID": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "null_value": "null",
+                                    "ignore_above": 256
+                                }
+                            }
+                        },
+                        "SpatialLocationCoordinatesDate": {
+                            "type": "date"
+                        },
+                        "SpatialParameterTypeID": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "null_value": "null",
+                                    "ignore_above": 256
+                                }
+                            }
+                        },
+                        "Wgs84Coordinates": {
+                            "type": "geo_shape"
+                        }
+                    }
+                },
+                "VersionCreationReason": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "VerticalMeasurements": {
+                    "type": "nested",
+                    "properties": {
+                        "EffectiveDateTime": {
+                            "type": "date"
+                        },
+                        "TerminationDateTime": {
+                            "type": "date"
+                        },
+                        "VerticalCRSID": {
+                            "type": "text"
+                        },
+                        "VerticalMeasurement": {
+                            "type": "double"
+                        },
+                        "VerticalMeasurementDescription": {
+                            "type": "text"
+                        },
+                        "VerticalMeasurementID": {
+                            "type": "text"
+                        },
+                        "VerticalMeasurementPathID": {
+                            "type": "text"
+                        },
+                        "VerticalMeasurementSourceID": {
+                            "type": "text"
+                        },
+                        "VerticalMeasurementTypeID": {
+                            "type": "text"
+                        },
+                        "VerticalMeasurementUnitOfMeasureID": {
+                            "type": "text"
+                        },
+                        "VerticalReferenceID": {
+                            "type": "text"
+                        },
+                        "WellboreTVDTrajectoryID": {
+                            "type": "text"
+                        }
+                    }
+                }
+            }
+        },
+        "id": {
+            "type": "keyword"
+        },
+        "index": {
+            "properties": {
+                "lastUpdateTime": {
+                    "type": "date"
+                },
+                "statusCode": {
+                    "type": "integer"
+                },
+                "trace": {
+                    "type": "text"
+                }
+            }
+        },
+        "kind": {
+            "type": "keyword"
+        },
+        "legal": {
+            "properties": {
+                "legaltags": {
+                    "type": "keyword"
+                },
+                "otherRelevantDataCountries": {
+                    "type": "keyword"
+                },
+                "status": {
+                    "type": "keyword"
+                }
+            }
+        },
+        "namespace": {
+            "type": "keyword"
+        },
+        "tags": {
+            "type": "object"
+        },
+        "type": {
+            "type": "keyword"
+        },
+        "version": {
+            "type": "long"
+        },
+        "x-acl": {
+            "type": "keyword"
+        }
+    }
+}
