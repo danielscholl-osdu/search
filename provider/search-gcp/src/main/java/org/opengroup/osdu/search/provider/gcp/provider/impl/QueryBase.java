@@ -370,6 +370,9 @@ abstract class QueryBase {
             }
             throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, SEARCH_ERROR_MSG, ERROR_PROCESSING_SEARCH_REQUEST_MSG, e);
         } catch (Exception e) {
+            if(e instanceof java.net.SocketTimeoutException){
+                throw new AppException(HttpServletResponse.SC_REQUEST_TIMEOUT, SEARCH_ERROR_MSG, String.format("Request timed out after waiting for %sm", requestTimeout.getMinutes()), e);
+            }
             throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, SEARCH_ERROR_MSG, ERROR_PROCESSING_SEARCH_REQUEST_MSG, e);
         } finally {
             Long latency = System.currentTimeMillis() - startTime;
