@@ -146,7 +146,7 @@ __Note:__ : It can take a delay of atleast 30 seconds once records are successfu
 | kind | The kind of the record to query e.g. 'common:welldb:wellbore:1.0.0'. kind is a __required__ field and can be formatted as OSDU-Data-Partition-Id:data-source-id:entity-type:schema-version |
 | query | Query string based on Lucene query string syntax, supplemented with a specific format for describing queries to fields of object arrays indexed with the "nested" hint. |
 | offset | The starting offset from which to return results. |
-| limit | The maximum number of results to return from the given offset. If no limit is provided, then it will return __10__ items. Max number of items which can be fetched by the query is __100__. (If you wish to fetch large set of items, please use [query_with_cursor](#query-with-cursor) API). |
+| limit | The maximum number of results to return from the given offset. If no limit is provided, then it will return __10__ items. Max number of items which can be fetched by the query is __1000__. (If you wish to fetch large set of items, please use [query_with_cursor](#query-with-cursor) API). |
 | sort | Allows you to add one or more sorts on specific fields. The length of fields and the length of order must match. Order value must be either ASC or DESC (case insensitive). For more details, ability and limitation about this feature, please refer to [Sort](#sort_querires) 
 | queryAsOwner | If true, the result only contains the records that the user owns. If false, the result contains all records that the user is entitled to see. Default value is false | 
 | spatialFilter | A spatial filter to apply, please see [Geo-Spatial Queries](#geo-spatial-queries). |
