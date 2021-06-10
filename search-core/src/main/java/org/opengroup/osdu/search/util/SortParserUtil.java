@@ -1,14 +1,21 @@
 package org.opengroup.osdu.search.util;
 
-import java.util.Objects;
+import java.io.IOException;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import joptsimple.internal.Strings;
 import org.apache.http.HttpStatus;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.NestedSortBuilder;
 import org.elasticsearch.search.sort.SortMode;
 import org.elasticsearch.search.sort.SortOrder;
 import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.core.common.model.search.SortQuery;
+import org.opengroup.osdu.search.service.IFieldMappingTypeService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -25,6 +32,9 @@ public class SortParserUtil implements ISortParserUtil {
     private Pattern oneLevelNestedSort = Pattern.compile("(nested\\()(?<path>.+?),\\s(?<field>.+?),\\s(?<mode>[^)]+)");
     private Pattern multilevelNestedPattern = Pattern.compile("(nested\\()(?<parentpath>.+?),\\s(?<innergroup>nested\\(.+)");
 
+    @Autowired
+    private IFieldMappingTypeService fieldMappingTypeService;
+
     @Override
     public FieldSortBuilder parseSort(String sortString, String sortOrder) {
         if (sortString.contains("nested(")) {
@@ -35,6 +45,41 @@ public class SortParserUtil implements ISortParserUtil {
                 .missing("_last")
                 .unmappedType("keyword");
         }
+    }
+
+    public List<FieldSortBuilder> getSortQuery(RestHighLevelClient restClient, SortQuery sortQuery, String indexPattern) throws IOException {
+        List<String> dataFields = new ArrayList<>();
+        for (String field: sortQuery.getField()) {
+            if(field.startsWith("data.")) dataFields.add(field + ".keyword");
+        }
+
+        if (dataFields.isEmpty()) {
+            return getSortQuery(sortQuery);
+        }
+
+        Map<String, String> sortableFieldTypes = this.fieldMappingTypeService.getSortableTextFields(restClient, Strings.join(dataFields, ","), indexPattern);
+        List<String> sortableFields = new LinkedList<>();
+        sortQuery.getField().forEach(field -> {
+            if (sortableFieldTypes.containsKey(field)) {
+                sortableFields.add(sortableFieldTypes.get(field));
+            } else {
+                sortableFields.add(field);
+            }
+        });
+        sortQuery.setField(sortableFields);
+        return getSortQuery(sortQuery);
+    }
+
+    // sort: text is not suitable for sorting or aggregation, refer to: this: https://github.com/elastic/elasticsearch/issues/28638,
+    // so keyword is recommended for unmappedType in general because it can handle both string and number.
+    // It will ignore the characters longer than the threshold when sorting.
+    private List<FieldSortBuilder> getSortQuery(SortQuery sortQuery) {
+        List<FieldSortBuilder> out = new ArrayList<>();
+
+        for (int idx = 0; idx < sortQuery.getField().size(); idx++) {
+            out.add(this.parseSort(sortQuery.getFieldByIndex(idx), sortQuery.getOrderByIndex(idx).name()));
+        }
+        return out;
     }
 
     private FieldSortBuilder parseNestedSort(String sortString, String sortOrder) {

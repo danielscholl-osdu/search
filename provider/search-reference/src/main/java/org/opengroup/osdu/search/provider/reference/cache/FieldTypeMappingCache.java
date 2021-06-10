@@ -17,20 +17,22 @@
 
 package org.opengroup.osdu.search.provider.reference.cache;
 
-import java.util.HashSet;
+import java.util.Map;
+
 import org.opengroup.osdu.core.common.cache.RedisCache;
+import org.opengroup.osdu.search.cache.IFieldTypeMappingCache;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class FieldTypeMappingCache extends RedisCache<String, HashSet> {
+public class FieldTypeMappingCache extends RedisCache<String, Map> implements IFieldTypeMappingCache {
 
   @Autowired
   public FieldTypeMappingCache(final SearchConfigurationProperties configurationProperties) {
     super(configurationProperties.getRedisSearchHost(),
         Integer.parseInt(configurationProperties.getRedisSearchPort()),
         1440 * 60,
-        String.class, HashSet.class);
+        String.class, Map.class);
   }
 }

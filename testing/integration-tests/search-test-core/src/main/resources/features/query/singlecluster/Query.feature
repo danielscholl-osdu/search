@@ -162,10 +162,10 @@ Feature: Search with different queries
     And I want the results sorted by <sort>
     Then I should get records in right order first record id: <first_record_id>, last record id: <last_record_id>
     Examples:
-      | kind                                            | query | sort                                                                                      | first_record_id     | last_record_id      |
-      | "tenant1:testquery<timestamp>:well:*"           | None  | {"field":["id"],"order":["ASC"]}                                                          | "test:well:1.0.0:1" | "test:well:2.0.0:3" |
-      | "tenant1:testquery<timestamp>:well:*"           | None  | {"field":["id"],"order":["DESC"]}                                                         | "test:well:2.0.0:3" | "test:well:1.0.0:1" |
-      | "tenant1:testquery<timestamp>:well:*"           | None  | {"field":["namespace","data.Rank"],"order":["ASC","DESC"]}                                | "test:well:1.0.0:3" | "test:well:2.0.0:1" |
+      | kind                                      | query       | sort                                                                         | first_record_id       | last_record_id        |
+      | "tenant1:testquery<timestamp>:well:*"     | None        | {"field":["data.OriginalOperator"],"order":["ASC"]}                          | "test:well:1.0.0:1"   | "test:well:2.0.0:3"   |
+      | "tenant1:testquery<timestamp>:well:*"     | None        | {"field":["id"],"order":["DESC"]}                                            | "test:well:2.0.0:3"   | "test:well:1.0.0:1"   |
+      | "tenant1:testquery<timestamp>:well:*"     | None        | {"field":["namespace","data.Rank"],"order":["ASC","DESC"]}                   | "test:well:1.0.0:3"   | "test:well:2.0.0:1"   |
       | "tenant1:testnestedquery<timestamp>:well:2.0.0" | None  | {"field":["nested(data.VerticalMeasurements, VerticalMeasurement, min)"],"order":["ASC"]} | "test:well:1.0.0:2" | "test:well:1.0.0:1" |
       | "tenant1:testnestedquery<timestamp>:well:2.0.0" | None  | {"field":["nested(data.FacilityOperators, TerminationDateTime, min)"],"order":["DESC"]}   | "test:well:1.0.0:2" | "test:well:1.0.0:1" |
 
@@ -210,7 +210,7 @@ Feature: Search with different queries
       | "tenant1:testquery<timestamp>:well:1.0.0"       | None                                                           | "data.Rank"                                              | 3     |
       | "tenant1:testnestedquery<timestamp>:well:2.0.0" | None                                                           | "nested(data.VerticalMeasurements, VerticalMeasurement)" | 2     |
       | "tenant1:testnestedquery<timestamp>:well:2.0.0" | nested(data.VerticalMeasurements, (VerticalMeasurement:(<15))) | "nested(data.VerticalMeasurements, VerticalMeasurement)" | 1     |
-    
+
   Scenario Outline: Search data in a given kind with nested queries
     When I send <query> with <kind>
     And I send request to tenant <tenant>

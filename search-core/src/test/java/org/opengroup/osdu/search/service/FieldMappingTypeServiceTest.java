@@ -12,24 +12,35 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.opengroup.osdu.search.provider.azure.service;
+package org.opengroup.osdu.search.service;
 
-import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsRequest;
-import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsResponse;
 import org.elasticsearch.client.IndicesClient;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.GetFieldMappingsRequest;
+import org.elasticsearch.client.indices.GetFieldMappingsResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.opengroup.osdu.core.common.model.http.DpsHeaders;
+import org.opengroup.osdu.search.cache.IFieldTypeMappingCache;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FieldMappingTypeServiceTest {
@@ -45,6 +56,10 @@ public class FieldMappingTypeServiceTest {
         }
     }
 
+    @Mock
+    private IFieldTypeMappingCache cache;
+    @Mock
+    private DpsHeaders headers;
     @InjectMocks
     private FieldMappingTypeService sut;
 
@@ -65,11 +80,9 @@ public class FieldMappingTypeServiceTest {
         String indexPattern = "index.pattern";
 
         Map<String, Object> sourceMap = getDummySourceMap();
-        Map<String, GetFieldMappingsResponse.FieldMappingMetadata> fieldMapping = new HashMap<>();
-        fieldMapping.put(fieldName, fieldMappingMetaData);
-        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> typeMapping = new HashMap<>();
-        typeMapping.put(FIELD, fieldMapping);
-        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>>> indexMapping = new HashMap<>();
+        Map<String, GetFieldMappingsResponse.FieldMappingMetadata> typeMapping = new HashMap<>();
+        typeMapping.put(FIELD, fieldMappingMetaData);
+        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> indexMapping = new HashMap<>();
         indexMapping.put(TYPE, typeMapping);
 
         doReturn(indicesClient).when(restClient).indices();
@@ -108,14 +121,14 @@ public class FieldMappingTypeServiceTest {
         RestHighLevelClient restClient = mock(RestHighLevelClient.class);
         GetFieldMappingsResponse response = mock(GetFieldMappingsResponse.class);
         IndicesClient indicesClient = mock(IndicesClient.class);
+        GetFieldMappingsResponse.FieldMappingMetadata fieldMappingMetaData = mock(GetFieldMappingsResponse.FieldMappingMetadata.class);
 
         String fieldName = FIELD + "." + TYPE;
         String indexPattern = "index.pattern";
 
-        Map<String, GetFieldMappingsResponse.FieldMappingMetadata> fieldMapping = new HashMap<>();
-        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> typeMapping = new HashMap<>();
-        typeMapping.put(FIELD, fieldMapping);
-        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>>> indexMapping = new HashMap<>();
+        Map<String, GetFieldMappingsResponse.FieldMappingMetadata> typeMapping = new HashMap<>();
+        typeMapping.put(FIELD, fieldMappingMetaData);
+        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> indexMapping = new HashMap<>();
         indexMapping.put(TYPE, typeMapping);
 
         doReturn(indicesClient).when(restClient).indices();
@@ -139,11 +152,9 @@ public class FieldMappingTypeServiceTest {
 
         Map<String, Object> sourceMap = getDummySourceMap();
         ((LinkedHashMap) sourceMap.get(TYPE)).put(TYPE, null);
-        Map<String, GetFieldMappingsResponse.FieldMappingMetadata> fieldMapping = new HashMap<>();
-        fieldMapping.put(fieldName, fieldMappingMetaData);
-        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> typeMapping = new HashMap<>();
-        typeMapping.put(FIELD, fieldMapping);
-        Map<String, Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>>> indexMapping = new HashMap<>();
+        Map<String, GetFieldMappingsResponse.FieldMappingMetadata> typeMapping = new HashMap<>();
+        typeMapping.put(FIELD, fieldMappingMetaData);
+        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> indexMapping = new HashMap<>();
         indexMapping.put(TYPE, typeMapping);
 
         doReturn(indicesClient).when(restClient).indices();
@@ -154,6 +165,21 @@ public class FieldMappingTypeServiceTest {
         Set<String> fieldTypes = sut.getFieldTypes(restClient, fieldName, indexPattern);
 
         assertEquals(fieldTypes.size(), 0);
+    }
+
+    @Test
+    public void should_getValid_typeMapping_fromCache() throws IOException {
+        RestHighLevelClient restClient = mock(RestHighLevelClient.class);
+        IndicesClient indicesClient = mock(IndicesClient.class);
+
+        Map<String, String> cachedTypes = new HashMap<>();
+        cachedTypes.put("dummyField", "geo_point");
+
+        when(this.cache.get(any())).thenReturn(cachedTypes);
+
+        Set<String> fieldTypes = this.sut.getFieldTypes(restClient, "dummyField", "dummyPattern");
+        assertNotNull(fieldTypes);
+        verify(indicesClient, never()).getFieldMapping(any(GetFieldMappingsRequest.class), any(RequestOptions.class));
     }
 
     private Map<String, Object> getDummySourceMap() {

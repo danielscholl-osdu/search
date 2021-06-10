@@ -1,105 +1,175 @@
 {
-"dynamic":false,
-		"properties": {
-			"id": {
-				"type": "keyword"
-			},
-			"kind": {
-				"type": "keyword"
-			},
-			"namespace": {
-				"type": "keyword"
-			},
-			"type": {
-				"type": "keyword"
-			},
-			"version": {
-				"type": "keyword"
-			},
-			"x-acl": {
-				"type": "keyword"
-			},
-			"acl": {
-				"properties": {
-					"owners": {
-						"type": "keyword"
-					},
-					"viewers": {
-						"type": "keyword"
-					}
-				}
-			},
-			"legal": {
-				"properties": {
-					"legaltags": {
-						"type": "keyword"
-					},
-					"otherRelevantDataCountries": {
-						"type": "keyword"
-					},
-					"status": {
-						"type": "keyword"
-					}
-				}
-			},
-            "index": {
-                 "properties": {
-                     "lastUpdateTime": {
-                         "type": "date"
-                     },
-                     "statusCode": {
-                         "type": "integer"
-                     },
-                     "trace": {
-                         "type": "text"
-                     }
-                 }
-            },
-			"data": {
-				"properties": {
-					"Field": {
-						"type": "text"
-					},
-					"Location": {
-						"type": "geo_point"
-					},
-                    "LocationGeoShape": {
-                        "type": "geo_shape"
-                    },
-					"Basin": {
-						"type": "text"
-					},
-					"County": {
-						"type": "text"
-					},
-					"State": {
-						"type": "text"
-					},
-					"Country": {
-						"type": "text"
-					},
-					"WellStatus": {
-						"type": "text"
-					},
-					"OriginalOperator": {
-						"type": "text"
-					},
-					"WellName": {
-						"type": "text"
-					},
-					"WellType": {
-						"type": "text"
-					},
-					"EmptyAttribute": {
-						"type": "text"
-					},
-					"Rank": {
-						"type": "integer"
-					},
-					"Established": {
-						"type": "date"
-					}
-				}
-			}
-		}
+    "dynamic":false,
+    "properties":{
+        "id":{
+            "type":"keyword"
+        },
+        "kind":{
+            "type":"keyword"
+        },
+        "namespace":{
+            "type":"keyword"
+        },
+        "type":{
+            "type":"keyword"
+        },
+        "version":{
+            "type":"keyword"
+        },
+        "x-acl":{
+            "type":"keyword"
+        },
+        "acl":{
+            "properties":{
+                "owners":{
+                    "type":"keyword"
+                },
+                "viewers":{
+                    "type":"keyword"
+                }
+            }
+        },
+        "legal":{
+            "properties":{
+                "legaltags":{
+                    "type":"keyword"
+                },
+                "otherRelevantDataCountries":{
+                    "type":"keyword"
+                },
+                "status":{
+                    "type":"keyword"
+                }
+            }
+        },
+        "index":{
+            "properties":{
+                "lastUpdateTime":{
+                    "type":"date"
+                },
+                "statusCode":{
+                    "type":"integer"
+                },
+                "trace":{
+                    "type":"text"
+                }
+            }
+        },
+        "data":{
+            "properties":{
+                "Field":{
+                    "type":"text",
+                    "fields":{
+                        "keyword":{
+                            "type":"keyword",
+                            "null_value":"null",
+                            "ignore_above":256
+                        }
+                    }
+                },
+                "Location":{
+                    "type":"geo_point"
+                },
+                "LocationGeoShape":{
+                    "type":"geo_shape"
+                },
+                "Basin":{
+                    "type":"text",
+                    "fields":{
+                        "keyword":{
+                            "type":"keyword",
+                            "null_value":"null",
+                            "ignore_above":256
+                        }
+                    }
+                },
+                "County":{
+                    "type":"text",
+                    "fields":{
+                        "keyword":{
+                            "type":"keyword",
+                            "null_value":"null",
+                            "ignore_above":256
+                        }
+                    }
+                },
+                "State":{
+                    "type":"text",
+                    "fields":{
+                        "keyword":{
+                            "type":"keyword",
+                            "null_value":"null",
+                            "ignore_above":256
+                        }
+                    }
+                },
+                "Country":{
+                    "type":"text",
+                    "fields":{
+                        "keyword":{
+                            "type":"keyword",
+                            "null_value":"null",
+                            "ignore_above":256
+                        }
+                    }
+                },
+                "WellStatus":{
+                    "type":"text",
+                    "fields":{
+                        "keyword":{
+                            "type":"keyword",
+                            "null_value":"null",
+                            "ignore_above":256
+                        }
+                    }
+                },
+                "OriginalOperator":{
+                    "type":"text",
+                    "fields":{
+                        "keyword":{
+                            "type":"keyword",
+                            "null_value":"null",
+                            "ignore_above":256
+                        }
+                    }
+                },
+                "WellName":{
+                    "type":"text",
+                    "fields":{
+                        "keyword":{
+                            "type":"keyword",
+                            "null_value":"null",
+                            "ignore_above":256
+                        }
+                    }
+                },
+                "WellType":{
+                    "type":"text",
+                    "fields":{
+                        "keyword":{
+                            "type":"keyword",
+                            "null_value":"null",
+                            "ignore_above":256
+                        }
+                    }
+                },
+                "EmptyAttribute":{
+                    "type":"text",
+                    "fields":{
+                        "keyword":{
+                            "type":"keyword",
+                            "null_value":"null",
+                            "ignore_above":256
+                        }
+                    }
+                },
+                "Rank":{
+                    "type":"integer"
+                },
+                "Established":{
+                    "type":"date"
+                }
+            }
+        }
+    }
 }
