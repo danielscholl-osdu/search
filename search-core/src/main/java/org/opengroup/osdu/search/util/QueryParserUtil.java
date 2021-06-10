@@ -86,9 +86,9 @@ public class QueryParserUtil implements IQueryParserUtil {
                     token = new StringBuilder();
                 }
                 height--;
-                if(height < 0){
+                if (height < 0) {
                     throw new AppException(HttpStatus.SC_BAD_REQUEST, "Malformed query",
-                        String.format("Malformed closing parentheses in query part: \"%s\", at position: %d", queryString,position));
+                        String.format("Malformed closing parentheses in query part: \"%s\", at position: %d", queryString, position));
                 }
             } else if (height == 0 && token.length() > 0 && (andPositions.contains(position + 1) || orPositions.contains(position + 1))) {
                 tokens.add(token.toString());
@@ -101,9 +101,9 @@ public class QueryParserUtil implements IQueryParserUtil {
             tokens.add(token.toString());
         }
 
-        if(height > 0){
+        if (height > 0) {
             throw new AppException(HttpStatus.SC_BAD_REQUEST, "Malformed query",
-                String.format("Malformed parentheses in query part: \"%s\", %d of closing brackets missing", queryString,height));
+                String.format("Malformed parentheses in query part: \"%s\", %d of closing brackets missing", queryString, height));
         }
 
         return transformStringTokensToQueryNode(tokens);
@@ -152,12 +152,12 @@ public class QueryParserUtil implements IQueryParserUtil {
         Matcher beginQueryMatcher = beginStringQueryNestedPattern.matcher(stringQuery);
         if (beginQueryMatcher.find()) {
             String incompletePath = beginQueryMatcher.group(INCOMPLETE_PATH_GROUP);
-            stringQuery = stringQuery.replace(incompletePath, nestedPath + "." + incompletePath);
+            stringQuery = stringQuery.replaceFirst(incompletePath, nestedPath + "." + incompletePath);
         }
         Matcher stringQueryMatcher = intermediateStringQueryNestedPattern.matcher(stringQuery);
         while (stringQueryMatcher.find()) {
             String incompletePath = stringQueryMatcher.group(INCOMPLETE_PATH_GROUP);
-            stringQuery = stringQuery.replace(incompletePath, nestedPath + "." + incompletePath);
+            stringQuery = stringQuery.replaceFirst(incompletePath, nestedPath + "." + incompletePath);
         }
         stringQuery = trimTrailingBrackets(stringQuery);
         return new NestedQueryNode(stringQuery, boolOperator, null, nestedPath);
