@@ -297,7 +297,7 @@ definitions:
         type: integer
         format: int32
         minimum: 0
-        description: The maximum number of results to return from the given offset. If no limit is provided, then it will return 10 items. Max number of items which can be fetched by the query is 100.
+        description: The maximum number of results to return from the given offset. If no limit is provided, then it will return 10 items. Max number of items which can be fetched by the query is 1000.
       query:
         type: string
         description: The query string in Lucene query string syntax.
@@ -369,7 +369,7 @@ definitions:
         type: integer
         format: int32
         minimum: 0
-        description: The maximum number of results to return from the given offset. If no limit is provided, then it will return 10 items. Max number of items which can be fetched by the query is 100.
+        description: The maximum number of results to return from the given offset. If no limit is provided, then it will return 10 items. Max number of items which can be fetched by the query is 1000.
       query:
         type: string
         description: The query string in Lucene query string syntax.
