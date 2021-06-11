@@ -20,8 +20,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -30,12 +32,15 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.search.TotalHits.Relation;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -56,6 +61,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
+import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,12 +71,7 @@ import org.mockito.Spy;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.model.search.Point;
-import org.opengroup.osdu.core.common.model.search.QueryRequest;
-import org.opengroup.osdu.core.common.model.search.QueryResponse;
-import org.opengroup.osdu.core.common.model.search.SortOrder;
-import org.opengroup.osdu.core.common.model.search.SortQuery;
-import org.opengroup.osdu.core.common.model.search.SpatialFilter;
+import org.opengroup.osdu.core.common.model.search.*;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter.ByBoundingBox;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter.ByDistance;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter.ByGeoPolygon;
@@ -81,8 +82,8 @@ import org.opengroup.osdu.search.util.IAggregationParserUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.QueryParserUtil;
-import org.opengroup.osdu.search.provider.gcp.service.FieldMappingTypeService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
+import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.QueryResponseUtil;
@@ -112,7 +113,7 @@ public class QueryServiceTest {
   @Mock
   private CrossTenantUtils crossTenantUtils;
   @Mock
-  private FieldMappingTypeService fieldMappingTypeService;
+  private IFieldMappingTypeService fieldMappingTypeService;
   @Mock
   private AuditLogger auditLogger;
   @Mock
@@ -367,6 +368,34 @@ public class QueryServiceTest {
     verifyAcls(topLevelMustClause.get(0), false);
   }
 
+  @Test(expected = AppException.class)
+  public void testQueryBase_whenUnsupportedSortRequested_statusBadRequest_throwsException() throws IOException {
+    String fieldName = "field";
+    String indexName = "index";
+    String dummySortError = "Text fields are not optimised for operations that require per-document field data like aggregations and sorting, so these operations are disabled by default. Please use a keyword field instead";
+    ElasticsearchStatusException exception = new ElasticsearchStatusException("blah", RestStatus.BAD_REQUEST, new ElasticsearchException(dummySortError));
+
+    doThrow(exception).when(restHighLevelClient).search(any(), any(RequestOptions.class));
+    doReturn(new HashSet<>()).when(fieldMappingTypeService).getFieldTypes(eq(restHighLevelClient), eq(fieldName), eq(indexName));
+    SortQuery sortQuery = new SortQuery();
+    sortQuery.setField(Collections.singletonList("name"));
+    sortQuery.setOrder(Collections.singletonList(SortOrder.DESC));
+    when(searchRequest.getSort()).thenReturn(sortQuery);
+    when(sortParserUtil.getSortQuery(restHighLevelClient, sortQuery, indexName))
+            .thenReturn(Collections.singletonList(new FieldSortBuilder("name").order(org.elasticsearch.search.sort.SortOrder.DESC)));
+
+    try {
+      this.sut.makeSearchRequest(searchRequest, restHighLevelClient);
+    } catch (AppException e) {
+      int errorCode = 400;
+      String errorMessage = "Sort is not supported for one or more of the requested fields";
+      assertEquals(e.getError().getCode(), errorCode);
+      assertEquals(e.getError().getMessage(), errorMessage);
+
+      throw(e);
+    }
+  }
+
   @Test
   public void should_return_boundingBoxQuery_given_spatialCriteria() throws IOException {
 
@@ -612,27 +641,6 @@ public class QueryServiceTest {
 
     List<String> elasticIncludes = Arrays.asList(elasticFetchSourceContext.includes());
     assertEquals(0, elasticIncludes.size());
-  }
-
-  @Test
-  public void should_return_correctElasticRequest_given_sortFields() throws IOException {
-    when(searchRequest.getKind()).thenReturn("tenant1:welldb:well:1.0.0");
-    SortQuery sort = new SortQuery();
-    List<String> sortFields = new ArrayList<>();
-    sortFields.add("id");
-    sortFields.add("namespace");
-    sort.setField(sortFields);
-    List<SortOrder> sortOrders = new ArrayList<>();
-    sortOrders.add(SortOrder.ASC);
-    sortOrders.add(SortOrder.DESC);
-    sort.setOrder(sortOrders);
-    when(searchRequest.getSort()).thenReturn(sort);
-    when(crossTenantUtils.getIndexName(any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
-
-    SearchRequest elasticRequest = this.sut.createElasticRequest(searchRequest);
-    assertNotNull(elasticRequest);
-    assertNotNull(elasticRequest.source().sorts());
-    assertEquals(2, elasticRequest.source().sorts().size());
   }
 
   @Test

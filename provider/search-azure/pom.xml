@@ -37,7 +37,7 @@
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
         <springboot.version>2.1.7.RELEASE</springboot.version>
         <osdu.corelibazure.version>0.9.0-rc1</osdu.corelibazure.version>
-        <osdu.oscorecommon.version>0.9.0-rc4</osdu.oscorecommon.version>
+        <osdu.oscorecommon.version>0.9.0</osdu.oscorecommon.version>
         <osdu.search-core.version>0.10.0-SNAPSHOT</osdu.search-core.version>
         <spatial4j.version>0.7</spatial4j.version>
         <jts-io-common.version>1.15.0</jts-io-common.version>

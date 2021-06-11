@@ -1,14 +1,32 @@
 package org.opengroup.osdu.search.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.NestedSortBuilder;
 import org.elasticsearch.search.sort.SortMode;
 import org.elasticsearch.search.sort.SortOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.core.common.model.search.SortQuery;
+import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RunWith(MockitoJUnitRunner.class)
 public class SortParserUtilTest {
 
     private final String order = "ASC";
@@ -19,6 +37,11 @@ public class SortParserUtilTest {
     private final String malformedMultilevelNestedSortString = "nested(data.NestedTest, nested(data.NestedTest.NestedInnerTest,))";
 
     private SortParserUtil sortParserUtil = new SortParserUtil();
+
+    @Mock
+    private IFieldMappingTypeService fieldMappingTypeService;
+    @InjectMocks
+    private SortParserUtil sut;
 
     @Test
     public void testSimpleSortString() {
@@ -70,5 +93,49 @@ public class SortParserUtilTest {
     @Test(expected = AppException.class)
     public void testMalformedMultilevelNestedSortString() {
         FieldSortBuilder actualFileSortBuilder = sortParserUtil.parseSort(malformedMultilevelNestedSortString, order);
+    }
+
+    @Test
+    public void should_return_validSortQuery_given_sortFields() throws IOException {
+        RestHighLevelClient restClient = mock(RestHighLevelClient.class);
+
+        SortQuery sort = new SortQuery();
+        List<String> sortFields = new ArrayList<>();
+        sortFields.add("id");
+        sortFields.add("namespace");
+        sort.setField(sortFields);
+        List<org.opengroup.osdu.core.common.model.search.SortOrder> sortOrders = new ArrayList<>();
+        sortOrders.add(org.opengroup.osdu.core.common.model.search.SortOrder.ASC);
+        sortOrders.add(org.opengroup.osdu.core.common.model.search.SortOrder.DESC);
+        sort.setOrder(sortOrders);
+
+        List<FieldSortBuilder> sortQuery = this.sut.getSortQuery(restClient, sort, "osdu:wks:work-product-component--wellboremarkerset:1.0.0");
+        assertNotNull(sortQuery);
+        assertEquals(2, sortQuery.size());
+    }
+
+    @Test
+    public void should_return_validSortQuery_given_dataSortFields() throws IOException {
+        RestHighLevelClient restClient = mock(RestHighLevelClient.class);
+
+        SortQuery sort = new SortQuery();
+        List<String> sortFields = new ArrayList<>();
+        sortFields.add("data.Country");
+        sortFields.add("data.ProductionRate");
+        sort.setField(sortFields);
+        List<org.opengroup.osdu.core.common.model.search.SortOrder> sortOrders = new ArrayList<>();
+        sortOrders.add(org.opengroup.osdu.core.common.model.search.SortOrder.ASC);
+        sortOrders.add(org.opengroup.osdu.core.common.model.search.SortOrder.DESC);
+        sort.setOrder(sortOrders);
+
+        Map<String, String> keywordMap = new HashMap<>();
+        keywordMap.put("data.Country", "data.Country.keyword");
+        when(this.fieldMappingTypeService.getSortableTextFields(any(), any(), any())).thenReturn(keywordMap);
+
+        List<FieldSortBuilder> sortQuery = this.sut.getSortQuery(restClient, sort, "osdu:wks:work-product-component--wellboremarkerset:1.0.0");
+        assertNotNull(sortQuery);
+        assertEquals(2, sortQuery.size());
+        assertEquals("data.Country.keyword", sortQuery.get(0).getFieldName());
+        assertEquals("data.ProductionRate", sortQuery.get(1).getFieldName());
     }
 }

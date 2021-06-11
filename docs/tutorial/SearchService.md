@@ -146,7 +146,7 @@ __Note:__ : It can take a delay of atleast 30 seconds once records are successfu
 | kind | The kind of the record to query e.g. 'common:welldb:wellbore:1.0.0'. kind is a __required__ field and can be formatted as OSDU-Data-Partition-Id:data-source-id:entity-type:schema-version |
 | query | Query string based on Lucene query string syntax, supplemented with a specific format for describing queries to fields of object arrays indexed with the "nested" hint. |
 | offset | The starting offset from which to return results. |
-| limit | The maximum number of results to return from the given offset. If no limit is provided, then it will return __10__ items. Max number of items which can be fetched by the query is __100__. (If you wish to fetch large set of items, please use [query_with_cursor](#query-with-cursor) API). |
+| limit | The maximum number of results to return from the given offset. If no limit is provided, then it will return __10__ items. Max number of items which can be fetched by the query is __1000__. (If you wish to fetch large set of items, please use [query_with_cursor](#query-with-cursor) API). |
 | sort | Allows you to add one or more sorts on specific fields. The length of fields and the length of order must match. Order value must be either ASC or DESC (case insensitive). For more details, ability and limitation about this feature, please refer to [Sort](#sort_querires) 
 | queryAsOwner | If true, the result only contains the records that the user owns. If false, the result contains all records that the user is entitled to see. Default value is false | 
 | spatialFilter | A spatial filter to apply, please see [Geo-Spatial Queries](#geo-spatial-queries). |
@@ -413,11 +413,7 @@ We can combine both types of queries in one request, eg:
 ```
 
 ## Sort <a name="sort-queries"></a>
-The sort feature supports int, float, double, long and datetime. 
-It does not support array object or string field as of now, and for the records contain such types won't return to the response.
-
-Starting from version 0.9.0 we can set "nested" hints in data schemes object array nodes. 
-And use such way indexed data for sorting. See in below "Sort by nested arrays objects".
+Starting from version 0.9.0 we can set "nested" hints in data schemes object array nodes and use such way indexed data for sorting. See in below "Sort by nested arrays objects".
 
 The records either does not have the sorted fields or have empty value will be listed last in the result.
 
@@ -437,7 +433,7 @@ E.g. Given
   }
 }
 ``` 
-The above request payload asks search service to sort on "data.Id" in an ascending order, and the expected response will have "totalCount: 10" (instead of 20, please note that the 10 returned records are only from common:welldb:wellbore:1.0.0 because the data.Id in common:welldb:well:1.0.0 is of data type string, which is not currently supported - and therefore, will not be returned) and should list the 5 records which have empty data.Id value at last.
+The above request payload asks search service to sort on "data.Id" in ascending order, and the expected response will have "totalCount: 10" (instead of 20, please note that the 10 returned records are only from common:welldb:wellbore:1.0.0 because the data.Id in common:welldb:well:1.0.0 is of data type string, which is not currently supported - and therefore, will not be returned) and should list the 5 records which have empty data.Id value at last.
 
 **NOTE:** Search service does not validate the provided sort field, whether it exists or is of the supported data types. Different kinds may have attributes with the same names, but are different data types. Therefore, it is the user's responsibility to be aware and validate this in one's own workflow. 
 
