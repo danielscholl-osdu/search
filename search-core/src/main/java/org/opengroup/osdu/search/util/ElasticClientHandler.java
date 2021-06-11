@@ -14,7 +14,7 @@
 
 package org.opengroup.osdu.search.util;
 
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
@@ -40,7 +40,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 @Component
-@Log
+@Slf4j
 public class ElasticClientHandler {
 
     // Elastic cluster Rest client settings
@@ -74,7 +74,7 @@ public class ElasticClientHandler {
         try {
             cluster = clusterSettings.getHost();
             host = clusterSettings.getHost();
-            log.info("Elastic host " + clusterSettings.getHost());
+            log.debug("Elastic host " + clusterSettings.getHost());
             port = clusterSettings.getPort();
             if (!clusterSettings.isHttps()) {
                 protocolScheme = "http";
@@ -121,12 +121,12 @@ public class ElasticClientHandler {
                 new BasicHeader("xpack.security.transport.ssl.enabled", tls),
                 new BasicHeader("Authorization", basicAuthenticationHeaderVal),
         };
-        log.info(String.format(
+        log.debug(String.format(
                 "Elastic client connection uses protocolScheme = %s with a flag "
                         + "'security.https.certificate.trust' = %s",
                 protocolScheme, securityHttpsCertificateTrust));
         if ("https".equals(protocolScheme) && securityHttpsCertificateTrust) {
-            log.warning("Elastic client connection uses TrustSelfSignedStrategy()");
+            log.warn("Elastic client connection uses TrustSelfSignedStrategy()");
             SSLContext sslContext = createSSLContext();
             builder.setHttpClientConfigCallback(httpClientBuilder ->
             {

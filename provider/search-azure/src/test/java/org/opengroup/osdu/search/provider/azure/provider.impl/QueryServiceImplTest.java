@@ -52,8 +52,9 @@ import org.opengroup.osdu.core.common.model.search.SortQuery;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
-import org.opengroup.osdu.search.service.FieldMappingTypeService;
+import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
+import org.opengroup.osdu.search.service.FieldMappingTypeService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
@@ -68,13 +69,7 @@ import org.opengroup.osdu.search.util.SortParserUtil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryServiceImplTest {
@@ -146,6 +141,9 @@ public class QueryServiceImplTest {
     @Spy
     private IAggregationParserUtil aggregationParserUtil = new AggregationParserUtil(properties);
 
+    @Mock
+    private ElasticLoggingConfig elasticLoggingConfig;
+
     @InjectMocks
     private QueryServiceImpl sut;
 
@@ -157,6 +155,8 @@ public class QueryServiceImplTest {
         doReturn(client).when(elasticClientHandler).createRestClient();
         doReturn(spatialFilter).when(searchRequest).getSpatialFilter();
         doReturn(fieldName).when(spatialFilter).getField();
+        when(elasticLoggingConfig.getEnabled()).thenReturn(false);
+        when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
 //        doReturn(searchResponse).when(client).search(any(), any(RequestOptions.class));
 //        doReturn(searchHits).when(searchResponse).getHits();
 //        doReturn(hitFields).when(searchHit).getSourceAsMap();
