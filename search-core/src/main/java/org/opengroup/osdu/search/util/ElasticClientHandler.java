@@ -146,7 +146,7 @@ public class ElasticClientHandler {
             sslContextBuilder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
             return sslContextBuilder.build();
         } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
-            log.severe(e.getMessage());
+            log.error(e.getMessage());
         }
         return null;
     }
