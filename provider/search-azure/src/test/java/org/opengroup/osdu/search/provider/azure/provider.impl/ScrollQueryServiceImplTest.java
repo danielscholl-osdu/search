@@ -37,6 +37,7 @@ import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.*;
 import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.search.logging.AuditLogger;
+import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
@@ -45,12 +46,8 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScrollQueryServiceImplTest {
@@ -93,6 +90,8 @@ public class ScrollQueryServiceImplTest {
 
     @Mock
     private CrossTenantUtils crossTenantUtils;
+    @Mock
+    private ElasticLoggingConfig elasticLoggingConfig;
 
     @InjectMocks
     private ScrollQueryServiceImpl sut;
@@ -103,6 +102,8 @@ public class ScrollQueryServiceImplTest {
         doReturn(indexName).when(crossTenantUtils).getIndexName(any());
         doReturn(cursorSettings).when(cursorCache).get(anyString());
         doReturn(client).when(elasticClientHandler).createRestClient();
+        when(elasticLoggingConfig.getEnabled()).thenReturn(false);
+        when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
     }
 
     @Test

@@ -1,0 +1,15 @@
+# Default values for legal-deploy.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+app:
+  requests_cpu: "0.25"
+  requests_memory: "128M"
+  limits_cpu: "1"
+  limits_memory: "1G"
+  serviceAccountName: ""
+  image: ""
+
+conf:
+  configmap: "search-config"
+  app_name: "search"

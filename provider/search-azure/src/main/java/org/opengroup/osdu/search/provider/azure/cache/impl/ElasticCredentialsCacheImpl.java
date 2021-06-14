@@ -14,13 +14,16 @@
 
 package org.opengroup.osdu.search.provider.azure.cache.impl;
 
-import javax.annotation.Resource;
-
+import com.lambdaworks.redis.RedisException;
 import org.opengroup.osdu.azure.cache.ElasticCredentialsCache;
 import org.opengroup.osdu.core.common.cache.ICache;
+import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 
 @Component("clusterSettingsCache")
 @ConditionalOnProperty(value = "cache.provider", havingValue = "redis")
@@ -29,14 +32,27 @@ public class ElasticCredentialsCacheImpl extends ElasticCredentialsCache {
   @Resource(name = "clusterCache")
   private ICache<String, ClusterSettings> cache;
 
+  @Autowired
+  private JaxRsDpsLog log;
+
   @Override
   public void put(String s, ClusterSettings o) {
-    this.cache.put(s, o);
+    try {
+      this.cache.put(s, o);
+    } catch (RedisException ex) {
+      this.log.error(String.format("Error puttig key %s into redis: %s", s, ex.getMessage()), ex);
+    }
   }
 
   @Override
   public ClusterSettings get(String s) {
-    return this.cache.get(s);
+    ClusterSettings clusterSettings = null;
+    try {
+      clusterSettings = this.cache.get(s);
+    } catch (RedisException ex) {
+      this.log.error(String.format("Error getting key %s from redis: %s", s, ex.getMessage()), ex);
+    }
+    return clusterSettings;
   }
 
   @Override

@@ -24,7 +24,7 @@ import static org.elasticsearch.index.query.QueryBuilders.geoPolygonQuery;
 import static org.elasticsearch.index.query.QueryBuilders.geoWithinQuery;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
-import com.google.common.collect.Sets;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +41,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.builders.CoordinatesBuilder;
 import org.elasticsearch.common.geo.builders.EnvelopeBuilder;
@@ -52,12 +53,13 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.bucket.nested.ParsedNested;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.FieldSortBuilder;
-import org.elasticsearch.search.sort.SortOrder;
 import org.locationtech.jts.geom.Coordinate;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.entitlements.AclRole;
@@ -71,9 +73,12 @@ import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
-import org.opengroup.osdu.search.provider.reference.service.FieldMappingTypeService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
+import org.opengroup.osdu.search.service.IFieldMappingTypeService;
+import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
+import org.opengroup.osdu.search.util.IQueryParserUtil;
+import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
 abstract class QueryBase {
@@ -87,14 +92,16 @@ abstract class QueryBase {
     @Inject
     private CrossTenantUtils crossTenantUtils;
     @Inject
-    private FieldMappingTypeService fieldMappingTypeService;
-
+    private IFieldMappingTypeService fieldMappingTypeService;
     @Autowired(required = false)
     private IPolicyService iPolicyService;
     @Inject
     private PartitionPolicyStatusService statusService;
+    @Autowired
+    private IQueryParserUtil queryParserUtil;
+    @Autowired
+    private ISortParserUtil sortParserUtil;
 
-    static final String AGGREGATION_NAME = "agg";
     private static final String GEO_SHAPE_INDEXED_TYPE = "geo_shape";
 
     // if returnedField contains property matching from excludes than query result will NOT include that property
@@ -113,8 +120,8 @@ abstract class QueryBase {
         QueryBuilder spatialQueryBuilder = null;
         QueryBuilder queryBuilder = null;
 
-        if (!(simpleQuery == null || simpleQuery.isEmpty())) {
-            textQueryBuilder = getSimpleQuery(simpleQuery);
+        if (!Strings.isNullOrEmpty(simpleQuery)) {
+            textQueryBuilder = queryParserUtil.buildQueryBuilderFromQueryString(simpleQuery);
         }
 
         // use only one of the spatial request
@@ -256,7 +263,13 @@ abstract class QueryBase {
         List<AggregationResponse> results = null;
 
         if (searchResponse.getAggregations() != null) {
-            Terms kindAgg = searchResponse.getAggregations().get(AGGREGATION_NAME);
+            Terms kindAgg = null;
+            ParsedNested nested = searchResponse.getAggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
+            if(nested != null){
+                kindAgg = (Terms) getTermsAggregationFromNested(nested);
+            }else {
+                kindAgg = searchResponse.getAggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME);
+            }
             if (kindAgg.getBuckets() != null) {
                 results = new ArrayList<>();
                 for (Terms.Bucket bucket : kindAgg.getBuckets()) {
@@ -266,6 +279,15 @@ abstract class QueryBase {
         }
 
         return results;
+    }
+
+    private Aggregation getTermsAggregationFromNested(ParsedNested parsedNested){
+        ParsedNested nested = parsedNested.getAggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
+        if(nested != null){
+            return getTermsAggregationFromNested(nested);
+        }else {
+            return parsedNested.getAggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME);
+        }
     }
 
     SearchSourceBuilder createSearchSourceBuilder(Query request) throws IOException {
@@ -284,18 +306,6 @@ abstract class QueryBase {
         if (request.isReturnHighlightedFields()) {
             HighlightBuilder highlightBuilder = new HighlightBuilder().field("*", 200, 5);
             sourceBuilder.highlighter(highlightBuilder);
-        }
-
-        // sort: text is not suitable for sorting or aggregation, refer to: this: https://github.com/elastic/elasticsearch/issues/28638,
-        // so keyword is recommended for unmappedType in general because it can handle both string and number.
-        // It will ignore the characters longer than the threshold when sorting.
-        if (request.getSort() != null) {
-            for (int idx = 0; idx < request.getSort().getField().size(); idx++) {
-                sourceBuilder.sort(new FieldSortBuilder(request.getSort().getFieldByIndex(idx))
-                        .order(SortOrder.fromString(request.getSort().getOrderByIndex(idx).name()))
-                        .missing("_last")
-                        .unmappedType("keyword"));
-            }
         }
 
         // set the return fields
@@ -322,11 +332,18 @@ abstract class QueryBase {
         SearchRequest elasticSearchRequest = null;
         SearchResponse searchResponse = null;
         try {
+            String index = this.getIndex(searchRequest);
             if (searchRequest.getSpatialFilter() != null) {
-                useGeoShapeQuery = this.useGeoShapeQuery(client, searchRequest, this.getIndex(searchRequest));
+                useGeoShapeQuery = this.useGeoShapeQuery(client, searchRequest, index);
+            }
+            elasticSearchRequest = createElasticRequest(searchRequest);
+            if (searchRequest.getSort() != null) {
+                List<FieldSortBuilder> sortBuilders = this.sortParserUtil.getSortQuery(client, searchRequest.getSort(), index);
+                for (FieldSortBuilder fieldSortBuilder : sortBuilders) {
+                    elasticSearchRequest.source().sort(fieldSortBuilder);
+                }
             }
 
-            elasticSearchRequest = createElasticRequest(searchRequest);
             startTime = System.currentTimeMillis();
             searchResponse = client.search(elasticSearchRequest, RequestOptions.DEFAULT);
             return searchResponse;
@@ -335,12 +352,14 @@ abstract class QueryBase {
                 case NOT_FOUND:
                     throw new AppException(HttpServletResponse.SC_NOT_FOUND, "Not Found", "Resource you are trying to find does not exists", e);
                 case BAD_REQUEST:
-                    throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Bad Request", "Invalid parameters were given on search request", e);
+                    throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Bad Request", getDetailedBadRequestMessage(elasticSearchRequest, e), e);
                 case SERVICE_UNAVAILABLE:
                     throw new AppException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Search error", "Please re-try search after some time.", e);
                 default:
                     throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
             }
+        } catch (AppException e) {
+            throw e;
         } catch (IOException e) {
             if (e.getMessage().startsWith("listener timeout after waiting for")) {
                 throw new AppException(HttpServletResponse.SC_GATEWAY_TIMEOUT, "Search error", String.format("Request timed out after waiting for %sm", REQUEST_TIMEOUT.getMinutes()), e);
@@ -384,5 +403,27 @@ abstract class QueryBase {
             return;
         }
         this.queryFailedAuditLogger(searchRequest);
+    }
+
+    private String getDetailedBadRequestMessage(SearchRequest searchRequest, Exception e) {
+        String defaultErrorMessage = "Invalid parameters were given on search request";
+        if (e.getCause() == null) return defaultErrorMessage;
+        String msg = getKeywordFieldErrorMessage(searchRequest, e.getCause().getMessage());
+        if (msg != null) return msg;
+        return defaultErrorMessage;
+    }
+
+    private String getKeywordFieldErrorMessage(SearchRequest searchRequest, String msg) {
+        if (msg == null) return null;
+        if (msg.contains("Text fields are not optimised for operations that require per-document field data like aggregations and sorting")
+                || msg.contains("can't sort on geo_shape field without using specific sorting feature, like geo_distance")) {
+            if (searchRequest.source().sorts() != null && !searchRequest.source().sorts().isEmpty()) {
+                return "Sort is not supported for one or more of the requested fields";
+            }
+            if (searchRequest.source().aggregations() != null && searchRequest.source().aggregations().count() > 0) {
+                return "Aggregations are not supported for one or more of the specified fields";
+            }
+        }
+        return null;
     }
 }

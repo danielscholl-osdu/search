@@ -14,6 +14,7 @@
 
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -28,6 +29,7 @@ import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
+import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -36,6 +38,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppError;
@@ -44,24 +47,29 @@ import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.Point;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryResponse;
+import org.opengroup.osdu.core.common.model.search.SortOrder;
+import org.opengroup.osdu.core.common.model.search.SortQuery;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
-import org.opengroup.osdu.search.provider.azure.service.FieldMappingTypeService;
+import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
+import org.opengroup.osdu.search.service.FieldMappingTypeService;
+import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 
 import java.io.IOException;
 import java.util.*;
+import org.opengroup.osdu.search.util.IAggregationParserUtil;
+import org.opengroup.osdu.search.util.IQueryParserUtil;
+import org.opengroup.osdu.search.util.ISortParserUtil;
+import org.opengroup.osdu.search.util.QueryParserUtil;
+import org.opengroup.osdu.search.util.SortParserUtil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryServiceImplTest {
@@ -121,6 +129,21 @@ public class QueryServiceImplTest {
     @Mock
     private FieldMappingTypeService fieldMappingTypeService;
 
+    @Spy
+    private SearchConfigurationProperties properties = new SearchConfigurationProperties();
+
+    @Spy
+    private IQueryParserUtil parserService = new QueryParserUtil();
+
+    @Spy
+    private ISortParserUtil sortParserUtil = new SortParserUtil();
+
+    @Spy
+    private IAggregationParserUtil aggregationParserUtil = new AggregationParserUtil(properties);
+
+    @Mock
+    private ElasticLoggingConfig elasticLoggingConfig;
+
     @InjectMocks
     private QueryServiceImpl sut;
 
@@ -132,6 +155,8 @@ public class QueryServiceImplTest {
         doReturn(client).when(elasticClientHandler).createRestClient();
         doReturn(spatialFilter).when(searchRequest).getSpatialFilter();
         doReturn(fieldName).when(spatialFilter).getField();
+        when(elasticLoggingConfig.getEnabled()).thenReturn(false);
+        when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
 //        doReturn(searchResponse).when(client).search(any(), any(RequestOptions.class));
 //        doReturn(searchHits).when(searchResponse).getHits();
 //        doReturn(hitFields).when(searchHit).getSourceAsMap();
@@ -355,6 +380,30 @@ public class QueryServiceImplTest {
         } catch (AppException e) {
             int errorCode = 400;
             String errorMessage = "Invalid parameters were given on search request";
+            validateAppException(e, errorCode, errorMessage);
+            throw(e);
+        }
+    }
+
+    @Test(expected = AppException.class)
+    public void testQueryBase_whenUnsupportedSortRequested_statusBadRequest_throwsException() throws IOException {
+        String dummySortError = "Text fields are not optimised for operations that require per-document field data like aggregations and sorting, so these operations are disabled by default. Please use a keyword field instead";
+        ElasticsearchStatusException exception = new ElasticsearchStatusException("blah", RestStatus.BAD_REQUEST, new ElasticsearchException(dummySortError));
+
+        doThrow(exception).when(client).search(any(), any(RequestOptions.class));
+        doReturn(new HashSet<>()).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
+        SortQuery sortQuery = new SortQuery();
+        sortQuery.setField(Collections.singletonList("data.name"));
+        sortQuery.setOrder(Collections.singletonList(SortOrder.DESC));
+        when(searchRequest.getSort()).thenReturn(sortQuery);
+        doReturn(Collections.singletonList(new FieldSortBuilder("data.name").order(org.elasticsearch.search.sort.SortOrder.DESC)))
+                .when(sortParserUtil).getSortQuery(eq(client), eq(sortQuery), eq(indexName));
+
+        try {
+            sut.queryIndex(searchRequest);
+        } catch (AppException e) {
+            int errorCode = 400;
+            String errorMessage = "Sort is not supported for one or more of the requested fields";
             validateAppException(e, errorCode, errorMessage);
             throw(e);
         }
