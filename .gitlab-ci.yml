@@ -63,6 +63,9 @@ include:
   - project: 'osdu/platform/ci-cd-pipelines'
     file: 'cloud-providers/osdu-gcp-cloudrun.yml'
 
+  - project: 'osdu/platform/ci-cd-pipelines'
+    file: 'publishing/pages.yml'
+
 aws-test-java:
   tags: ['aws-internal-test']
 
