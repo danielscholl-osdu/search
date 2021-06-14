@@ -1,0 +1,21 @@
+# Default values for configmap.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+data:
+  log_level: "INFO"
+  environment: "dev"
+  google_cloud_project_id: ""
+  redis_group_host: ""
+  redis_search_host: ""
+  redis_search_port: "6379"
+  indexer_host: ""
+  authorize_api: ""
+  security_https_certificate_trust: "true"
+  audiences: ""
+  partition_api: ""
+  policy_api: ""
+
+conf:
+  configmap: "search-config"
+  app_name: "search"
