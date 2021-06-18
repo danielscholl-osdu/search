@@ -1,9 +1,9 @@
-# Default values for configmap.
+# Default values for search configmap.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 data:
-  log_level: "INFO"
+  log_level: ""
   environment: "dev"
   google_cloud_project_id: ""
   redis_group_host: ""
