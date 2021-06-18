@@ -4,7 +4,7 @@ metadata:
   labels:
     app: "{{ .Values.conf.app_name }}"
   name: "{{ .Values.conf.app_name }}"
-  namespace: {{ .Release.Namespace }}
+  namespace: "{{ .Release.Namespace }}"
 spec:
   selector:
     matchLabels:
@@ -17,73 +17,10 @@ spec:
     spec:
       containers:
         - name: "{{ .Values.conf.app_name }}"
-          image: "{{ .Values.app.image }}"
-          env:
-            - name: "LOG_LEVEL"
-              valueFrom:
-                configMapKeyRef:
-                  key: LOG_LEVEL
-                  name: "{{ .Values.conf.configmap }}"
-            - name: "ENVIRONMENT"
-              valueFrom:
-                configMapKeyRef:
-                  key: ENVIRONMENT
-                  name: "{{ .Values.conf.configmap }}"
-            - name: "GOOGLE_CLOUD_PROJECT"
-              valueFrom:
-                configMapKeyRef:
-                  key: GOOGLE_CLOUD_PROJECT
-                  name: "{{ .Values.conf.configmap }}"
-            - name: "REDIS_GROUP_HOST"
-              valueFrom:
-                configMapKeyRef:
-                  key: REDIS_GROUP_HOST
-                  name: "{{ .Values.conf.configmap }}"
-            - name: "REDIS_SEARCH_HOST"
-              valueFrom:
-                configMapKeyRef:
-                  key: REDIS_SEARCH_HOST
-                  name: "{{ .Values.conf.configmap }}"
-            - name: "REDIS_SEARCH_PORT"
-              valueFrom:
-                configMapKeyRef:
-                  key: REDIS_SEARCH_PORT
-                  name: "{{ .Values.conf.configmap }}"
-            - name: "INDEXER_HOST"
-              valueFrom:
-                configMapKeyRef:
-                  key: INDEXER_HOST
-                  name: "{{ .Values.conf.configmap }}"
-            - name: "AUTHORIZE_API"
-              valueFrom:
-                configMapKeyRef:
-                  key: AUTHORIZE_API
-                  name: "{{ .Values.conf.configmap }}"
-            - name: "ENTITLEMENTS_HOST"
-              valueFrom:
-                configMapKeyRef:
-                  key: ENTITLEMENTS_HOST
-                  name: "{{ .Values.conf.configmap }}"
-            - name: "SECURITY_HTTPS_CERTIFICATE_TRUST"
-              valueFrom:
-                configMapKeyRef:
-                  key: SECURITY_HTTPS_CERTIFICATE_TRUST
-                  name: "{{ .Values.conf.configmap }}"
-            - name: "GOOGLE_AUDIENCES"
-              valueFrom:
-                configMapKeyRef:
-                  key: GOOGLE_AUDIENCES
-                  name: "{{ .Values.conf.configmap }}"
-            - name: "PARTITION_API"
-              valueFrom:
-                configMapKeyRef:
-                  key: PARTITION_API
-                  name: "{{ .Values.conf.configmap }}"
-            - name: "POLICY_API"
-              valueFrom:
-                configMapKeyRef:
-                  key: POLICY_API
-                  name: "{{ .Values.conf.configmap }}"
+          image: "{{ .Values.data.image }}"
+          envFrom:
+          - configMapRef:
+              name: "{{ .Values.conf.configmap }}"
           securityContext:
             allowPrivilegeEscalation: false
             runAsUser: 0
@@ -91,9 +28,9 @@ spec:
             - containerPort: 8080
           resources:
             requests:
-              cpu: "{{ .Values.app.requests_cpu }}"
-              memory: "{{ .Values.app.requests_memory }}"
+              cpu: "{{ .Values.data.requests_cpu }}"
+              memory: "{{ .Values.data.requests_memory }}"
             limits:
-              cpu: "{{ .Values.app.limits_cpu }}"
-              memory: "{{ .Values.app.limits_memory }}"
-      serviceAccountName: "{{ .Values.app.serviceAccountName }}"
+              cpu: "{{ .Values.data.limits_cpu }}"
+              memory: "{{ .Values.data.limits_memory }}"
+      serviceAccountName: "{{ .Values.data.serviceAccountName }}"

@@ -2,19 +2,19 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    app: {{ .Values.conf.app_name }}
-  name: {{ .Values.conf.configmap }}
-  namespace: {{ .Release.Namespace }}
+    app: "{{ .Values.conf.app_name }}"
+  name: "{{ .Values.conf.configmap }}"
+  namespace: "{{ .Release.Namespace }}"
 data:
   LOG_LEVEL: "{{ .Values.data.log_level }}"
-  ENVIRONMENT: {{ .Values.data.environment }}
-  GOOGLE_CLOUD_PROJECT: {{ .Values.data.google_cloud_project_id }}
+  ENVIRONMENT: "{{ .Values.data.environment }}"
+  GOOGLE_CLOUD_PROJECT: "{{ .Values.data.google_cloud_project_id }}"
   REDIS_GROUP_HOST: "{{ .Values.data.redis_group_host }}"
   REDIS_SEARCH_HOST: "{{ .Values.data.redis_search_host }}"
   REDIS_SEARCH_PORT:  "{{ .Values.data.redis_search_port }}"
-  INDEXER_HOST: {{ .Values.data.indexer_host }}
-  AUTHORIZE_API: {{ .Values.data.authorize_api }}
-  ENTITLEMENTS_HOST: {{ .Values.data.authorize_api }}
+  INDEXER_HOST: "{{ .Values.data.indexer_host }}"
+  AUTHORIZE_API: "{{ .Values.data.authorize_api }}"
+  ENTITLEMENTS_HOST: "{{ .Values.data.authorize_api }}"
   SECURITY_HTTPS_CERTIFICATE_TRUST: "{{ .Values.data.security_https_certificate_trust }}"
   GOOGLE_AUDIENCES: "{{ .Values.data.audiences }}"
   PARTITION_API: "{{ .Values.data.partition_api }}"
