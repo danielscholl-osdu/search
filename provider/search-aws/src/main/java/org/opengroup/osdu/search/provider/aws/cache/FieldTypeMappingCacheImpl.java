@@ -15,6 +15,7 @@
 package org.opengroup.osdu.search.provider.aws.cache;
 
 import org.opengroup.osdu.core.common.cache.RedisCache;
+import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.search.cache.IFieldTypeMappingCache;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -34,9 +35,11 @@ public class FieldTypeMappingCacheImpl implements IFieldTypeMappingCache {
      * @param REDIS_SEARCH_PORT - the port of the Cursor Cache Redis cluster.
      */
     public FieldTypeMappingCacheImpl(@Value("${aws.elasticache.cluster.cursor.endpoint}") final String REDIS_SEARCH_HOST,
-                                     @Value("${aws.elasticache.cluster.cursor.port}") final String REDIS_SEARCH_PORT) {
-        cache = new RedisCache<String, Map>(REDIS_SEARCH_HOST, Integer.parseInt(REDIS_SEARCH_PORT),
-                5 * 60, String.class, Map.class);
+                                     @Value("${aws.elasticache.cluster.cursor.port}") final String REDIS_SEARCH_PORT,
+                                     @Value("${aws.elasticache.cluster.cursor.key}") final String REDIS_SEARCH_KEY,
+                                     @Value("${aws.elasticache.cluster.cursor.expiration}") final String INDEX_CACHE_EXPIRATION) {
+        cache = new RedisCache<String, Map>(REDIS_SEARCH_HOST, Integer.parseInt(REDIS_SEARCH_PORT), REDIS_SEARCH_KEY,
+                Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60, String.class, Map.class);
     }
 
     /**
