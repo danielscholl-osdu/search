@@ -64,14 +64,15 @@ limitations under the License.
         </server>
     </servers>
 
-    <mirrors>
-        <mirror>
-            <id>aws-osdu-dev-maven</id>
-            <name>aws-osdu-dev-maven</name>
-            <url>https://osdu-dev-${AWS_ACCOUNT_ID}.d.codeartifact.us-east-1.amazonaws.com/maven/osdu-maven/</url>
-            <mirrorOf>central,!gitlab-os-core-common-maven,!gitlab-os-core-lib-aws-maven</mirrorOf>
-        </mirror>
-    </mirrors>
+    <!-- CodeArtifact doesn't support external repos yet that aren't Maven Central.  ETA Q4 2020. -->
+    <!-- <mirrors> -->
+    <!-- <mirror> -->
+    <!-- <id>aws-osdu-dev-maven</id> -->
+    <!-- <name>aws-osdu-dev-maven</name> -->
+    <!-- <url>https://osdu-dev-888733619319.d.codeartifact.us-east-1.amazonaws.com/maven/osdu-maven/</url> -->
+    <!-- <mirrorOf>*,!gitlab-os-core-common-maven</mirrorOf> -->
+    <!-- </mirror> -->
+    <!-- </mirrors> -->
 
     <activeProfiles>
         <activeProfile>credentialsConfiguration</activeProfile>
