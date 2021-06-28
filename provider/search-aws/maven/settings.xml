@@ -28,16 +28,16 @@ limitations under the License.
             </activation>
             <repositories>
                 <repository>
-                    <id>aws-osdu-dev-maven</id>
-                    <url>${env.AWS_OSDU_DEV_MAVEN_URL}</url>
-                </repository>
-                <repository>
                     <id>gitlab-os-core-common-maven</id>
                     <url>https://community.opengroup.org/api/v4/projects/67/packages/maven</url>
                 </repository>
                 <repository>
                     <id>gitlab-os-core-lib-aws-maven</id>
                     <url>https://community.opengroup.org/api/v4/projects/68/packages/maven</url>
+                </repository>
+                <repository>
+                    <id>aws-osdu-dev-maven</id>
+                    <url>${env.AWS_OSDU_DEV_MAVEN_URL}</url>
                 </repository>
             </repositories>
         </profile>
