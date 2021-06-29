@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.inject.Inject;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
+import org.opengroup.osdu.core.gcp.multitenancy.credentials.DatastoreCredential;
 import org.opengroup.osdu.search.provider.gcp.cache.DatastoreCredentialCache;
 import org.springframework.stereotype.Component;
 import org.threeten.bp.Duration;
@@ -53,7 +54,7 @@ public class DatastoreFactory {
     public Datastore getDatastoreInstance(TenantInfo tenantInfo) {
         if (datastoreClients.get(tenantInfo.getName()) == null) {
             Datastore googleDatastore = DatastoreOptions.newBuilder()
-                    .setCredentials(new DatastoreCredential(tenantInfo, this.cache))
+                    .setCredentials(new DatastoreCredential(tenantInfo))
                     .setRetrySettings(RETRY_SETTINGS)
                     .setTransportOptions(TRANSPORT_OPTIONS)
                     .setNamespace(tenantInfo.getName())
