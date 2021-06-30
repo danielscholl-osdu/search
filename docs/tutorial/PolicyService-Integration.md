@@ -23,6 +23,7 @@ Here are steps to enable Policy service for a provider:
 - Add and provide values for following runtime configuration in `application.properties`
   ```
   service.policy.enabled=true
+  service.policy.id=search //policy_id from ${policy_service_endpoint}/api/policy/v1/policies.
   service.policy.endpoint=${policy_service_endpoint}
   policy.cache.timeout=<timeout_in_minutes>
   PARTITION_API=${partition_service_endpoint}
