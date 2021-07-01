@@ -30,7 +30,9 @@ In order to run the service locally or remotely, you will need to have the follo
 | `GOOGLE_APPLICATION_CREDENTIALS` | ex `/path/to/directory/service-key.json` | Service account credentials, you only need this if running locally | yes | https://console.cloud.google.com/iam-admin/serviceaccounts |
 | `SECURITY_HTTPS_CERTIFICATE_TRUST` | ex `false` | Elastic client connection uses TrustSelfSignedStrategy(), if it is 'true' | false | output of infrastructure deployment |
 | `SERVICE_PARTITION_ENABLED` | `true` OR `false` | Allow to configure TenantInfo provision by Partition service | no | - |
-| `PARTITION_API` | ex `http://localhost:8080/api/partition/v1` | Partition service endpoint | no | - |
+| `PARTITION_API` | ex `http://localhost:8080/api/partition/v1` | Partition service endpoint | no | output of infrastructure deployment |
+| `POLICY_API` | ex `http://localhost:8080/api/policy/v1/` | Police service endpoint | no | output of infrastructure deployment |
+| `POLICY_ID` | ex `search` | policeId from ex `http://localhost:8080/api/policy/v1/policies`. Look at `POLICY_API` | no | - |
 
 ### Run Locally
 Check that maven is installed:
@@ -190,9 +192,9 @@ Create king ring and key in the ***master project***
     		--purpose encryption
 ```
 
-Add **Cloud KMS CryptoKey Encrypter/Decrypter** role to the **App Engine default service account** of the ***master project*** through IAM - Role tab
+Add **Cloud KMS CryptoKey Encrypter/Decrypter** role to the **default service account** of the ***master project*** through IAM - Role tab
 
-Add **Cloud KMS Encrypt/Decrypt** role to the **App Engine default service account** of ***master project***
+Add **Cloud KMS Encrypt/Decrypt** role to the **default service account** of ***master project*** through IAM - Role tab
 
 #### Memory Store (Redis Instance) Setup
 
