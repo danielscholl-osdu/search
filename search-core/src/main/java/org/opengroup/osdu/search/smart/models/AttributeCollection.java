@@ -90,7 +90,7 @@ public class AttributeCollection {
 		for (Attribute attr : attributes) {
 			String cacheKey = String.format("%s-%s-%s", searchConfigurationProperties.getDeployedServiceId(),
 					this.headersInfo.getPartitionId(), attr.getName());
-			log.info(String.format("updating the cache with key: %s", cacheKey));
+			log.debug(String.format("updating the cache with key: %s", cacheKey));
 			Set<String> attrVals = new HashSet<>();
 			for (String fieldName : attr.getSchemaMapping()) {
 				attrVals.addAll(this.getTermAggregationForField("by_" + fieldName, fieldName));
@@ -194,7 +194,7 @@ public class AttributeCollection {
 			if (response.getResponseCode() != 200)
 				log.warning(String.format("Failed to update field: %s | indices:  %s", fieldName, indicesSet));
 			else
-				log.info(String.format("Updated field: %s | indices:  %s", fieldName, indicesSet));
+				log.debug(String.format("Updated field: %s | indices:  %s", fieldName, indicesSet));
 		}
 	}
 
