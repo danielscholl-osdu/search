@@ -85,10 +85,11 @@ public class FieldMappingTypeService implements IFieldMappingTypeService {
         for (Map.Entry<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> indexMapping : mappings.entrySet()) {
             if (indexMapping.getValue().isEmpty()) continue;
             Map<String, GetFieldMappingsResponse.FieldMappingMetadata> typeMapping = indexMapping.getValue();
-            GetFieldMappingsResponse.FieldMappingMetadata fieldMappingMetaData = typeMapping.values().iterator().next();
-            if (fieldMappingMetaData == null) continue;
-            String field = fieldMappingMetaData.fullName();
-            fieldTypeMap.put(field.substring(0, field.lastIndexOf(".keyword")), field);
+            for (Map.Entry<String, GetFieldMappingsResponse.FieldMappingMetadata> fieldMappingMetadataEntry : typeMapping.entrySet()) {
+                if (fieldMappingMetadataEntry.getValue() == null) continue;
+                String field = fieldMappingMetadataEntry.getValue().fullName();
+                fieldTypeMap.put(field.substring(0, field.lastIndexOf(".keyword")), field);
+            }
         }
 
         this.typeMappingCache.put(cacheKey, fieldTypeMap);

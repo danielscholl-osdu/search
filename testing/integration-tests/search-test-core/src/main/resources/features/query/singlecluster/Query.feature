@@ -163,7 +163,7 @@ Feature: Search with different queries
     Then I should get records in right order first record id: <first_record_id>, last record id: <last_record_id>
     Examples:
       | kind                                      | query       | sort                                                                         | first_record_id       | last_record_id        |
-      | "tenant1:testquery<timestamp>:well:*"     | None        | {"field":["data.OriginalOperator"],"order":["ASC"]}                          | "test:well:1.0.0:1"   | "test:well:2.0.0:3"   |
+      | "tenant1:testquery<timestamp>:well:*"     | None        | {"field":["data.OriginalOperator","data.WellType"],"order":["ASC", "ASC"]}   | "test:well:1.0.0:1"   | "test:well:2.0.0:3"   |
       | "tenant1:testquery<timestamp>:well:*"     | None        | {"field":["id"],"order":["DESC"]}                                            | "test:well:2.0.0:3"   | "test:well:1.0.0:1"   |
       | "tenant1:testquery<timestamp>:well:*"     | None        | {"field":["namespace","data.Rank"],"order":["ASC","DESC"]}                   | "test:well:1.0.0:3"   | "test:well:2.0.0:1"   |
       | "tenant1:testnestedquery<timestamp>:well:2.0.0" | None  | {"field":["nested(data.VerticalMeasurements, VerticalMeasurement, min)"],"order":["ASC"]} | "test:well:1.0.0:2" | "test:well:1.0.0:1" |
