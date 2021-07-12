@@ -85,7 +85,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                     return this.initCursorQuery(searchRequest, client);
                 } catch (AppException e) {
                     if (this.exceptionParser.parseException(e).stream().anyMatch(r -> r.contains("Trying to create too many scroll contexts. Must be less than or equal to:"))) {
-                        throw new AppException(429, "Too many request", "Too many cursor request, please re-try after some time.", e);
+                        throw new AppException(429, "Too many requests", "Too many cursor requests, please re-try after some time.", e);
                     }
                     throw e;
                 }
