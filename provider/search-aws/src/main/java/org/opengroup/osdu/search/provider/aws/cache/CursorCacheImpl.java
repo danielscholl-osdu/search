@@ -34,8 +34,9 @@ public class CursorCacheImpl implements CursorCache {
      */
     public CursorCacheImpl(@Value("${aws.elasticache.cluster.cursor.endpoint}") final String REDIS_SEARCH_HOST,
                           @Value("${aws.elasticache.cluster.cursor.port}") final String REDIS_SEARCH_PORT,
+                          @Value("${aws.elasticache.cluster.cursor.key}") final String REDIS_SEARCH_KEY,
                           @Value("${aws.elasticache.cluster.cursor.expiration}") final String INDEX_CACHE_EXPIRATION) {
-        cache = new RedisCache<String, CursorSettings>(REDIS_SEARCH_HOST, Integer.parseInt(REDIS_SEARCH_PORT),
+        cache = new RedisCache<String, CursorSettings>(REDIS_SEARCH_HOST, Integer.parseInt(REDIS_SEARCH_PORT), REDIS_SEARCH_KEY,
                 Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60, String.class, CursorSettings.class);
     }
 
