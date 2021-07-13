@@ -14,6 +14,9 @@
 
 package org.opengroup.osdu.search.provider.aws.persistence;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 
 import javax.annotation.PostConstruct;
@@ -24,6 +27,7 @@ import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.opengroup.osdu.core.aws.secrets.SecretsManager;
 
 @Component
 public class ElasticRepositoryImpl implements IElasticRepository {    
@@ -51,16 +55,19 @@ public class ElasticRepositoryImpl implements IElasticRepository {
     @Value("${aws.elasticsearch.host}")
     String hostParameter;
 
-    @Value("${aws.elasticsearch.username}")
-    String usernameParameter;
+    @Value("${aws.elasticsearch.credentials.secret}")
+    String elasticCredentialsSecret;
 
-    @Value("${aws.elasticsearch.password}")
-    String passwordParameter;
+    @Value("${aws.region}")
+    private String amazonRegion;
+
 
     @Value("${aws.ssm}")
     String ssmEnabledString;
 
     private ParameterStorePropertySource ssm;
+
+
 
     @PostConstruct
     private void postConstruct() {
@@ -68,10 +75,12 @@ public class ElasticRepositoryImpl implements IElasticRepository {
             SSMConfig ssmConfig = new SSMConfig();
             ssm = ssmConfig.amazonSSM();
             host = ssm.getProperty(hostParameter).toString();
-            port = Integer.parseInt(ssm.getProperty(portParameter).toString());            
-            username = ssm.getProperty(usernameParameter).toString();            
-            password = ssm.getProperty(passwordParameter).toString();            
+            port = Integer.parseInt(ssm.getProperty(portParameter).toString());
+
         }
+        SecretsManager sm = new SecretsManager();
+        username = sm.getSecret(elasticCredentialsSecret,amazonRegion,"username");
+        password = sm.getSecret(elasticCredentialsSecret,amazonRegion,"password");
         
         //elastic expects username:password format
         usernameAndPassword = String.format("%s:%s", username, password);
