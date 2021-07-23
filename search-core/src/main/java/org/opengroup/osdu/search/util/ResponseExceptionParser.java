@@ -37,7 +37,10 @@ public class ResponseExceptionParser {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     public List<String> parseException(AppException e) {
-        Exception cause = e.getOriginalException();
+        return parseException(e.getOriginalException());
+    }
+
+    public List<String> parseException(Exception cause) {
         if (cause == null || cause.getSuppressed() == null) {
             return new ArrayList<>();
         }

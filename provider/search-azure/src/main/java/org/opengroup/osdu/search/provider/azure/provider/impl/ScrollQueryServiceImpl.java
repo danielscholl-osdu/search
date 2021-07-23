@@ -116,7 +116,9 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                 } catch (AppException e) {
                     throw e;
                 } catch (ElasticsearchStatusException e) {
-                    if (e.status() == NOT_FOUND && e.getMessage().startsWith("No search context found for id"))
+                    String invalidScrollMessage = "No search context found for id";
+                    if (e.status() == NOT_FOUND
+                            && (e.getMessage().startsWith(invalidScrollMessage)) || this.exceptionParser.parseException(e).stream().anyMatch(r -> r.contains(invalidScrollMessage)))
                         throw new AppException(HttpStatus.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired", e);
                     throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
                 } catch (Exception e) {
