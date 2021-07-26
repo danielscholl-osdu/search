@@ -411,13 +411,13 @@ The following software have components provided under the terms of this license:
 - spring-boot-test (from https://spring.io/projects/spring-boot)
 - spring-boot-test-autoconfigure (from https://spring.io/projects/spring-boot)
 - spring-security-config (from http://spring.io/spring-security)
-- spring-security-core (from https://spring.io/spring-security)
+- spring-security-core (from https://repo1.maven.org/maven2/org/springframework/security/spring-security-core)
 - spring-security-oauth2-client (from http://spring.io/spring-security)
 - spring-security-oauth2-core (from http://spring.io/spring-security)
 - spring-security-oauth2-jose (from http://spring.io/spring-security)
 - spring-security-oauth2-resource-server (from http://spring.io/spring-security)
 - spring-security-test (from http://spring.io/spring-security)
-- spring-security-web (from https://spring.io/spring-security)
+- spring-security-web (from https://repo1.maven.org/maven2/org/springframework/security/spring-security-web)
 - springfox-core (from https://github.com/springfox/springfox)
 - springfox-schema (from https://github.com/springfox/springfox)
 - springfox-spi (from https://github.com/springfox/springfox)
@@ -834,7 +834,7 @@ The following software have components provided under the terms of this license:
 - msal4j (from https://github.com/AzureAD/microsoft-authentication-library-for-java)
 - msal4j-persistence-extension (from https://github.com/AzureAD/microsoft-authentication-extensions-for-java)
 - server (from https://github.com/elastic/elasticsearch)
-- spring-security-core (from https://spring.io/spring-security)
+- spring-security-core (from https://repo1.maven.org/maven2/org/springframework/security/spring-security-core)
 
 ========================================================================
 MPL-1.1
