@@ -54,6 +54,15 @@ public class SortParserUtilTest {
     }
 
     @Test
+    public void testScoreSortString() {
+        String SCORE_FIELD = "_score";
+        FieldSortBuilder actualFieldSortBuilder = sortParserUtil.parseSort(SCORE_FIELD, order);
+        FieldSortBuilder expectedSortBuilder = new FieldSortBuilder(SCORE_FIELD)
+                .order(SortOrder.valueOf(order));
+        assertEquals(expectedSortBuilder, actualFieldSortBuilder);
+    }
+
+    @Test
     public void testSimpleNestedSortString() {
         FieldSortBuilder actualFileSortBuilder = sortParserUtil.parseSort(simpleNestedSortString, order);
         NestedSortBuilder nestedSortBuilder = new NestedSortBuilder("data.NestedTest");

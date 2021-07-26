@@ -1,10 +1,5 @@
 package org.opengroup.osdu.search.util;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import joptsimple.internal.Strings;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -18,11 +13,21 @@ import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @Component
 public class SortParserUtil implements ISortParserUtil {
 
+    private static final String SCORE_FIELD = "_score";
     private static final String BAD_SORT_MESSAGE =
-        "Must be in format: nested(<path>, <field>, <mode>) OR nested(<parent_path>, .....nested(<child_path>, <field>, <mode>))";
+            "Must be in format: nested(<path>, <field>, <mode>) OR nested(<parent_path>, .....nested(<child_path>, <field>, <mode>))";
     private static final String PATH_GROUP = "path";
     private static final String FIELD_GROUP = "field";
     private static final String MODE_GROUP = "mode";
@@ -40,17 +45,21 @@ public class SortParserUtil implements ISortParserUtil {
         if (sortString.contains("nested(")) {
             return parseNestedSort(sortString, sortOrder);
         } else {
+            if (sortString.equalsIgnoreCase(SCORE_FIELD)) {
+                return new FieldSortBuilder(sortString)
+                        .order(SortOrder.fromString(sortOrder));
+            }
             return new FieldSortBuilder(sortString)
-                .order(SortOrder.fromString(sortOrder))
-                .missing("_last")
-                .unmappedType("keyword");
+                    .order(SortOrder.fromString(sortOrder))
+                    .missing("_last")
+                    .unmappedType("keyword");
         }
     }
 
     public List<FieldSortBuilder> getSortQuery(RestHighLevelClient restClient, SortQuery sortQuery, String indexPattern) throws IOException {
         List<String> dataFields = new ArrayList<>();
-        for (String field: sortQuery.getField()) {
-            if(field.startsWith("data.")) dataFields.add(field + ".keyword");
+        for (String field : sortQuery.getField()) {
+            if (field.startsWith("data.")) dataFields.add(field + ".keyword");
         }
 
         if (dataFields.isEmpty()) {
@@ -107,11 +116,11 @@ public class SortParserUtil implements ISortParserUtil {
                 nestedSortBuilder = new NestedSortBuilder(path);
             }
             return new FieldSortBuilder(path + "." + field)
-                .setNestedSort(nestedSortBuilder)
-                .sortMode(SortMode.fromString(mode))
-                .order(SortOrder.fromString(sortOrder))
-                .missing("_last")
-                .unmappedType("keyword");
+                    .setNestedSort(nestedSortBuilder)
+                    .sortMode(SortMode.fromString(mode))
+                    .order(SortOrder.fromString(sortOrder))
+                    .missing("_last")
+                    .unmappedType("keyword");
         }
         throw new AppException(HttpStatus.SC_BAD_REQUEST, String.format("Malformed nested sort : %s", sortString), BAD_SORT_MESSAGE);
     }
@@ -129,7 +138,7 @@ public class SortParserUtil implements ISortParserUtil {
             return new NestedSortBuilder(path);
         }
         throw new AppException(HttpStatus.SC_BAD_REQUEST, String.format("Malformed nested sort group : %s", group),
-            BAD_SORT_MESSAGE);
+                BAD_SORT_MESSAGE);
     }
 }
 
