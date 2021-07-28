@@ -20,13 +20,13 @@
     <parent>
         <groupId>org.opengroup.osdu</groupId>
         <artifactId>os-search</artifactId>
-        <version>0.10.0-SNAPSHOT</version>
+        <version>0.11.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <packaging>jar</packaging>
     <artifactId>search-azure</artifactId>
-    <version>0.10.0-SNAPSHOT</version>
+    <version>0.11.0-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -36,9 +36,9 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
         <springboot.version>2.1.7.RELEASE</springboot.version>
-        <osdu.corelibazure.version>0.9.0</osdu.corelibazure.version>
-        <osdu.oscorecommon.version>0.9.0</osdu.oscorecommon.version>
-        <osdu.search-core.version>0.10.0-SNAPSHOT</osdu.search-core.version>
+        <osdu.corelibazure.version>0.10.1</osdu.corelibazure.version>
+        <osdu.oscorecommon.version>0.10.0</osdu.oscorecommon.version>
+        <osdu.search-core.version>0.11.0-SNAPSHOT</osdu.search-core.version>
         <spatial4j.version>0.7</spatial4j.version>
         <jts-io-common.version>1.15.0</jts-io-common.version>
         <reactor-netty.version>1.0.7</reactor-netty.version>

@@ -149,7 +149,7 @@ public class EntitlementsAndCacheServiceImpl implements IEntitlementsExtensionSe
             try {
                 groups = service.getGroups();
                 this.cache.put(cacheKey, groups);
-                this.logger.info("Entitlements cache miss");
+                this.logger.debug("Entitlements cache miss");
             } catch (EntitlementsException e) {
                 e.printStackTrace();
                 HttpResponse response = e.getHttpResponse();

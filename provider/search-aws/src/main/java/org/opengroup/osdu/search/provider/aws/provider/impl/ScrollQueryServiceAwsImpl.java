@@ -36,6 +36,8 @@ import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.QueryResponseUtil;
+import org.opengroup.osdu.search.util.ResponseExceptionParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -63,6 +65,8 @@ public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQuery
     private AuditLogger auditLogger;
     @Inject
     private QueryResponseUtil queryResponseUtil;
+    @Autowired
+    private ResponseExceptionParser exceptionParser;
 
     private final MessageDigest digest;
 
@@ -77,7 +81,14 @@ public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQuery
 
         try (RestHighLevelClient client = this.elasticClientHandler.createRestClient()) {
             if (StringUtils.isEmpty(searchRequest.getCursor())) {
-                return this.initCursorQuery(searchRequest, client);
+                try {
+                    return this.initCursorQuery(searchRequest, client);
+                } catch (AppException e) {
+                    if (this.exceptionParser.parseException(e).stream().anyMatch(r -> r.contains("Trying to create too many scroll contexts. Must be less than or equal to:"))) {
+                        throw new AppException(429, "Too many requests", "Too many cursor requests, please re-try after some time.", e);
+                    }
+                    throw e;
+                }
             } else {
                 try {
                     CursorSettings cursorSettings = this.cursorCache.get(searchRequest.getCursor());

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import javassist.NotFoundException;
+import org.elasticsearch.client.ResponseException;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import javax.validation.ValidationException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
@@ -127,6 +127,9 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
             this.logger.warning(exceptionMsg, e);
         }
 
+        // log suppressed exception from Elastic's ResponseException if any
+        this.logSuppressedElasticException(e);
+
         // Support for non standard HttpStatus Codes
         HttpStatus httpStatus = HttpStatus.resolve(e.getError().getCode());
         if (httpStatus == null) {
@@ -151,4 +154,14 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
         }
         return node;
     }
+
+    private void logSuppressedElasticException(AppException e) {
+        Exception cause = e.getOriginalException();
+        if (cause != null && cause.getSuppressed() != null) {
+            for (Throwable t : cause.getSuppressed()) {
+                if (t instanceof ResponseException) this.logger.error(t.getMessage(), (ResponseException) t);
+            }
+        }
+    }
 }
+

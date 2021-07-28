@@ -78,7 +78,7 @@ public class Kinds {
 
     public void cacheSync() throws IOException {
         String cacheKey = String.format("%s-%s", configurationProperties.getDeployedServiceId(), this.headersInfo.getPartitionId());
-        log.info(String.format("updating the cache with key: %s", cacheKey));
+        log.debug(String.format("updating the cache with key: %s", cacheKey));
         Set<String> kindVals = this.getTermAggregation("by_kind", RecordMetaAttribute.KIND.getValue());
         this.cache.put(cacheKey, kindVals);
     }
