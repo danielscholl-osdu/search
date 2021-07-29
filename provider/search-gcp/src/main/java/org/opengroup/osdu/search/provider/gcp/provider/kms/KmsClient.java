@@ -51,7 +51,7 @@ public class KmsClient {
         Preconditions.checkNotNullOrEmpty(textToBeEncrypted, "textToBeEncrypted cannot be null");
 
         byte[] plaintext = textToBeEncrypted.getBytes(StandardCharsets.UTF_8);
-        String resourceName = String.format(KEY_NAME, properties.getGoogleCloudProject(), "csqp", "searchService");
+        String resourceName = String.format(KEY_NAME, properties.getGoogleCloudProject(), properties.getKeyRing(), properties.getKmsKey());
         CloudKMS kms = createAuthorizedClient();
         EncryptRequest request = new EncryptRequest().encodePlaintext(plaintext);
         EncryptResponse response = kms.projects().locations().keyRings().cryptoKeys()
@@ -68,7 +68,7 @@ public class KmsClient {
         Preconditions.checkNotNullOrEmpty(textToBeDecrypted, "textToBeDecrypted cannot be null");
 
         CloudKMS kms = createAuthorizedClient();
-        String cryptoKeyName = String.format(KEY_NAME, properties.getGoogleCloudProject(), "csqp", "searchService");
+        String cryptoKeyName = String.format(KEY_NAME, properties.getGoogleCloudProject(), properties.getKeyRing(), properties.getKmsKey());
         DecryptRequest request = new DecryptRequest().setCiphertext(textToBeDecrypted);
         DecryptResponse response = kms.projects().locations().keyRings().cryptoKeys()
                 .decrypt(cryptoKeyName, request)
