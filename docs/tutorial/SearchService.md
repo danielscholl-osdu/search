@@ -346,6 +346,8 @@ The syntax of those queries is the same we learned from the above sections.
 The only distinction is that their conditions are scoped by the own fields of objects of the array,
 pointed in the first argument of the current nested(path,(conditions)) function.
 
+For more details, ability and limitation about this feature, please refer to [ArrayOfObjects](#docs/tutorial/ArrayOfObjects.md)
+
 ### Single-level one condition nested query
 It queries for wellboremarkerset WPCs having any Marker with MarkerMeasuredDepth field value greater than 10000
 ```json
@@ -457,6 +459,7 @@ For the first level we use 'min' mode and then ASC sorting order, for the second
 }
 
 ```
+For more details, ability and limitation about this feature, please refer to [ArrayOfObjects](#docs/tutorial/ArrayOfObjects.md)
 
 ## Aggregation <a name="aggregation"></a>
 Aggregation feature leads to "aggregations" node appearing in the result output.
@@ -505,6 +508,8 @@ This is why we see multiple "keys" with "count" > 1 in the "aggregations" result
     ...
     ]
 }
+
+For more details, ability and limitation about this feature, please refer to [ArrayOfObjects](#docs/tutorial/ArrayOfObjects.md)
 
 ## Range Queries <a name="range-queries"></a>
 
