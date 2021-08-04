@@ -14,11 +14,13 @@
 
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.text.Text;
+import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
@@ -270,6 +272,28 @@ public class ScrollQueryServiceImplTest {
             assertEquals(error.getMessage(), "The given cursor is invalid or expired");
             assertEquals(error.getCode(), errorCode);
             throw(e);
+        }
+    }
+
+    @Test
+    public void testQueryIndex_whenCursorNotFound_thenThrowException() throws Exception {
+        CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
+        doReturn("cursor").when(searchRequest).getCursor();
+        doReturn(userId).when(cursorSettings).getUserId();
+
+        ElasticsearchStatusException exception = mock(ElasticsearchStatusException.class);
+        doReturn(RestStatus.NOT_FOUND).when(exception).status();
+        doReturn("No search context found for id [47500324]").when(exception).getMessage();
+        doThrow(exception).when(client).scroll(any(), any(RequestOptions.class));
+
+        try {
+            sut.queryIndex(searchRequest);
+        } catch (AppException e) {
+            int errorCode = 400;
+            AppError error = e.getError();
+            assertEquals(error.getReason(), "Can't find the given cursor");
+            assertEquals(error.getMessage(), "The given cursor is invalid or expired");
+            assertEquals(error.getCode(), errorCode);
         }
     }
 
