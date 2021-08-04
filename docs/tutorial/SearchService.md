@@ -346,6 +346,8 @@ The syntax of those queries is the same we learned from the above sections.
 The only distinction is that their conditions are scoped by the own fields of objects of the array,
 pointed in the first argument of the current nested(path,(conditions)) function.
 
+For more details, ability and limitation about this feature, please refer to [ArrayOfObjects](#docs/tutorial/ArrayOfObjects.md)
+
 ### Single-level one condition nested query
 It queries for wellboremarkerset WPCs having any Marker with MarkerMeasuredDepth field value greater than 10000
 ```json
@@ -435,9 +437,23 @@ E.g. Given
 ``` 
 The above request payload asks search service to sort on "data.Id" in ascending order, and the expected response will have "totalCount: 10" (instead of 20, please note that the 10 returned records are only from common:welldb:wellbore:1.0.0 because the data.Id in common:welldb:well:1.0.0 is of data type string, which is not currently supported - and therefore, will not be returned) and should list the 5 records which have empty data.Id value at last.
 
-**NOTE:** Search service does not validate the provided sort field, whether it exists or is of the supported data types. Different kinds may have attributes with the same names, but are different data types. Therefore, it is the user's responsibility to be aware and validate this in one's own workflow. 
+Search results are by default ordered by relevancy `_score` in descending order. Users are not required to provide any sort query for this. Users can also make request to query record in reverse relevancy order.
+
+```json
+{
+  "kind": "*:*:*:*",
+  "query": "well",
+  "sort": {
+    "field": ["_score"],
+    "order": ["ASC"]
+  }
+}
+```
+
+**NOTE:** Search service does not validate the provided sort field, whether it exists or is of the supported data types. Different kinds may have attributes with the same names, but are different data types. Therefore, it is the user's responsibility to be aware and validate this in one's own workflow.
 
 The sort query could be very expensive, especially if the given kind is too broad (e.g. "kind": "*:*:*:*"). The current time-out threshold is 60 seconds; a 504 error ("Request timed out after waiting for 1m") will be returned if the request times out. The suggestion is to make the kind parameter as narrow as possible while using the sort feature.
+
 
 ### Sort by "nested" arrays objects <a name="nested-sort"></a>
 We generally have several objects in each "nested" array. 
@@ -457,6 +473,7 @@ For the first level we use 'min' mode and then ASC sorting order, for the second
 }
 
 ```
+For more details, ability and limitation about this feature, please refer to [ArrayOfObjects](#docs/tutorial/ArrayOfObjects.md)
 
 ## Aggregation <a name="aggregation"></a>
 Aggregation feature leads to "aggregations" node appearing in the result output.
@@ -505,6 +522,8 @@ This is why we see multiple "keys" with "count" > 1 in the "aggregations" result
     ...
     ]
 }
+
+For more details, ability and limitation about this feature, please refer to [ArrayOfObjects](#docs/tutorial/ArrayOfObjects.md)
 
 ## Range Queries <a name="range-queries"></a>
 
