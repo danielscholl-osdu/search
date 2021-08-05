@@ -69,8 +69,9 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
         host = provider.getParameterAsString(hostParameter);
         port = Integer.parseInt(provider.getParameterAsString(portParameter));
         Type mapType = new TypeToken<Map<String, String>>(){}.getType();
-        Map<String, String[]> val = new Gson().fromJson(provider.getParameterAsString(elasticCredentialsSecret), mapType);
+        Map<String, String> val = new Gson().fromJson(provider.getParameterAsString(elasticCredentialsSecret), mapType);
         username = val.get("username").toString();
+
         password = val.get("password").toString();
 
         //elastic expects username:password format
