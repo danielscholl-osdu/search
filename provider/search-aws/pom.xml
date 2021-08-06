@@ -36,9 +36,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
-        <aws.version>1.11.637</aws.version>
+        <aws.version>1.11.1018</aws.version>
         <deployment.environment>dev</deployment.environment>
-        <version.number>0.0.4-SNAPSHOT</version.number>
         <osdu.oscorecommon.version>0.10.0</osdu.oscorecommon.version>
     </properties>
 
