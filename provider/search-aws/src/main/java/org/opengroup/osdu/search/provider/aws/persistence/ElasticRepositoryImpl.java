@@ -76,9 +76,9 @@ public class ElasticRepositoryImpl implements IElasticRepository {
         host = provider.getParameterAsString(hostParameter);
         port = Integer.parseInt(provider.getParameterAsString(portParameter));
         Type mapType = new TypeToken<Map<String, String>>(){}.getType();
-        Map<String, String[]> val = new Gson().fromJson(provider.getParameterAsString(elasticCredentialsSecret), mapType);
-        username = val.get("username").toString();
-        password = val.get("password").toString();
+        Map<String, String> val = new Gson().fromJson(provider.getParameterAsString(elasticCredentialsSecret), mapType);
+        username = val.get("username");
+        password = val.get("password");
         
         //elastic expects username:password format
         usernameAndPassword = String.format("%s:%s", username, password);
