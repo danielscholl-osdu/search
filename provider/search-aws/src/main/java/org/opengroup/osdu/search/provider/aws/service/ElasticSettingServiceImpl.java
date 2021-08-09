@@ -64,7 +64,7 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
     @Value("${aws.ssm}")
     String ssmEnabledString;
     @PostConstruct
-    private void postConstruct() {
+    private void postConstruct() throws Exception {
         K8sLocalParameterProvider provider = new K8sLocalParameterProvider();
         host = provider.getParameterAsString(hostParameter);
         port = Integer.parseInt(provider.getParameterAsString(portParameter));
