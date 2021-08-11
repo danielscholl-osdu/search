@@ -73,13 +73,17 @@ public class ElasticRepositoryImpl implements IElasticRepository {
     @PostConstruct
     private void postConstruct() throws  Exception{
         K8sLocalParameterProvider provider = new K8sLocalParameterProvider();
-        host = provider.getParameterAsString(hostParameter);
-        port = Integer.parseInt(provider.getParameterAsString(portParameter));
-        Type mapType = new TypeToken<Map<String, String>>(){}.getType();
-        Map<String, String> val = new Gson().fromJson(provider.getParameterAsString(elasticCredentialsSecret), mapType);
-        username = val.get("username");
-        password = val.get("password");
-        
+        if (provider.getLocalMode()) {
+            // local mode, use the injected application.properties value for host and port etc
+        }else {
+            host = provider.getParameterAsString(hostParameter);
+            port = Integer.parseInt(provider.getParameterAsString(portParameter));
+            Type mapType = new TypeToken<Map<String, String>>() {
+            }.getType();
+            Map<String, String> val = new Gson().fromJson(provider.getParameterAsString(elasticCredentialsSecret), mapType);
+            username = val.get("username");
+            password = val.get("password");
+        }
         //elastic expects username:password format
         usernameAndPassword = String.format("%s:%s", username, password);
     }

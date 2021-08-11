@@ -55,9 +55,6 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
     @Value("${aws.elasticsearch.host}")
     String hostParameter;
 
-    @Value("${aws.elasticsearch.credentials.secret}")
-    String elasticCredentialsSecret;
-
     @Value("${aws.region}")
     private String amazonRegion;
 
@@ -68,12 +65,9 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
         K8sLocalParameterProvider provider = new K8sLocalParameterProvider();
         host = provider.getParameterAsString(hostParameter);
         port = Integer.parseInt(provider.getParameterAsString(portParameter));
-        Type mapType = new TypeToken<Map<String, String>>(){}.getType();
-        Map<String, String> val = new Gson().fromJson(provider.getParameterAsString(elasticCredentialsSecret), mapType);
-        username = val.get("username").toString();
-
-        password = val.get("password").toString();
-
+        Map<String, String>val = provider.getCredentialsAsMap("elasticsearch_credentials");
+        username = val.getOrDefault("username", username);
+        password = val.getOrDefault("password", password);
         //elastic expects username:password format
         usernameAndPassword = String.format("%s:%s", username, password);
     }
