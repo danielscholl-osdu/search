@@ -5,6 +5,7 @@
 package org.opengroup.osdu.search.provider.ibm.provider.impl;
 
 
+import java.util.ArrayList;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
@@ -39,6 +40,11 @@ public class CrossTenantInfoServiceImpl implements ITenantInfoService, ICrossTen
             throw AppException.createUnauthorized(String.format("could not retrieve tenant info for data partition id: %s", primaryAccountId));
         }
         return tenantInfo;
+    }
+
+    @Override
+    public List<TenantInfo> getAllTenantInfos() {
+        return new ArrayList<>(tenantFactory.listTenantInfo());
     }
 
     @Override

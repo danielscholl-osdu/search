@@ -22,6 +22,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
+        <osdu.oscorecommon.version>0.11.0-SNAPSHOT</osdu.oscorecommon.version>
     </properties>
 
     <dependencies>
@@ -33,7 +34,7 @@
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>os-core-common</artifactId>
-            <version>0.10.0</version>
+            <version>${osdu.oscorecommon.version}</version>
         </dependency>
 
         <dependency>
