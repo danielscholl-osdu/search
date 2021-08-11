@@ -15,6 +15,7 @@
 package org.opengroup.osdu.search.provider.byoc.provider.impl;
 
 
+import java.util.ArrayList;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.multitenancy.ITenantInfoService;
@@ -44,6 +45,11 @@ public class CrossTenantInfoServiceImpl implements ITenantInfoService, ICrossTen
             throw AppException.createUnauthorized(String.format("could not retrieve tenant info for data partition id: %s", primaryAccountId));
         }
         return tenantInfo;
+    }
+
+    @Override
+    public List<TenantInfo> getAllTenantInfos() {
+        return new ArrayList<>(tenantFactory.listTenantInfo());
     }
 
     @Override

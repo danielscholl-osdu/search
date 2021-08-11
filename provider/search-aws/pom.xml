@@ -39,7 +39,7 @@
         <aws.version>1.11.637</aws.version>
         <deployment.environment>dev</deployment.environment>
         <version.number>0.0.4-SNAPSHOT</version.number>
-        <osdu.oscorecommon.version>0.10.0</osdu.oscorecommon.version>
+        <osdu.oscorecommon.version>0.11.0-SNAPSHOT</osdu.oscorecommon.version>
     </properties>
 
     <dependencies>
