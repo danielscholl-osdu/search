@@ -66,8 +66,11 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
         host = provider.getParameterAsString(hostParameter);
         port = Integer.parseInt(provider.getParameterAsString(portParameter));
         Map<String, String>val = provider.getCredentialsAsMap("elasticsearch_credentials");
-        username = val.getOrDefault("username", username);
-        password = val.getOrDefault("password", password);
+        if (val != null){
+            username = val.get("username");
+            password = val.get("password");
+        }
+
         //elastic expects username:password format
         usernameAndPassword = String.format("%s:%s", username, password);
     }
