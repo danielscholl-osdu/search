@@ -14,8 +14,6 @@
 
 package org.opengroup.osdu.search.provider.aws.service;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.opengroup.osdu.core.aws.ssm.K8sLocalParameterProvider;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
@@ -24,7 +22,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.lang.reflect.Type;
 import java.util.Map;
 
 @Primary

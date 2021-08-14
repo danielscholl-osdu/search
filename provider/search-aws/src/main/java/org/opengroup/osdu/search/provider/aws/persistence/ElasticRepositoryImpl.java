@@ -13,26 +13,13 @@
 // limitations under the License.
 
 package org.opengroup.osdu.search.provider.aws.persistence;
-
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-
-
 import org.opengroup.osdu.core.aws.ssm.K8sLocalParameterProvider;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
-
 import javax.annotation.PostConstruct;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-
-import java.lang.reflect.Type;
 import java.util.Map;
 
 @Component
