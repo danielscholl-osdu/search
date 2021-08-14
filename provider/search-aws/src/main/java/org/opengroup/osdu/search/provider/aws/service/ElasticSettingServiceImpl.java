@@ -45,26 +45,17 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
 
     @Value("${aws.es.password}")
     String password;
-
     String usernameAndPassword;
-
-
-    @Value("${aws.elasticsearch.port}")
-    String portParameter;
-
-    @Value("${aws.elasticsearch.host}")
-    String hostParameter;
 
     @Value("${aws.region}")
     private String amazonRegion;
 
-    @Value("${aws.ssm}")
-    String ssmEnabledString;
+
     @PostConstruct
     private void postConstruct() throws Exception {
         K8sLocalParameterProvider provider = new K8sLocalParameterProvider();
-        host = provider.getParameterAsString(hostParameter);
-        port = Integer.parseInt(provider.getParameterAsString(portParameter));
+        host = provider.getParameterAsStringOrDefault("elasticsearch_host", host);
+        port = Integer.parseInt(provider.getParameterAsStringOrDefault("elasticsearch_port", port));
         Map<String, String>val = provider.getCredentialsAsMap("elasticsearch_credentials");
         if (val != null){
             username = val.get("username");

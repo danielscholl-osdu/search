@@ -55,35 +55,21 @@ public class ElasticRepositoryImpl implements IElasticRepository {
 
     String usernameAndPassword;
 
-    @Value("${aws.elasticsearch.port}")
-    String portParameter;
-
-    @Value("${aws.elasticsearch.host}")
-    String hostParameter;
-
-    @Value("${aws.elasticsearch.credentials.secret}")
-    String elasticCredentialsSecret;
-
     @Value("${aws.region}")
     private String amazonRegion;
-
-
 
 
     @PostConstruct
     private void postConstruct() throws  Exception{
         K8sLocalParameterProvider provider = new K8sLocalParameterProvider();
-        if (provider.getLocalMode()) {
-            // local mode, use the injected application.properties value for host and port etc
-        }else {
-            host = provider.getParameterAsString(hostParameter);
-            port = Integer.parseInt(provider.getParameterAsString(portParameter));
-            Type mapType = new TypeToken<Map<String, String>>() {
-            }.getType();
-            Map<String, String> val = new Gson().fromJson(provider.getParameterAsString(elasticCredentialsSecret), mapType);
+        host = provider.getParameterAsStringOrDefault("elasticsearch_host", host);
+        port = Integer.parseInt(provider.getParameterAsStringOrDefault("elasticsearch_port", port));
+        Map<String, String>val = provider.getCredentialsAsMap("elasticsearch_credentials");
+        if (val != null){
             username = val.get("username");
             password = val.get("password");
         }
+
         //elastic expects username:password format
         usernameAndPassword = String.format("%s:%s", username, password);
     }
