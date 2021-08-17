@@ -14,6 +14,7 @@
 
 package org.opengroup.osdu.search.provider.aws.cache;
 
+import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.cache.RedisCache;
 import org.opengroup.osdu.core.common.provider.interfaces.IIndexCache;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,19 +23,25 @@ import org.springframework.stereotype.Component;
 @Component
 public class IndexCacheImpl implements IIndexCache<String, Boolean>, AutoCloseable {
 
-    private RedisCache<String, Boolean> cache;
-
+    private ICache<String, Boolean> cache;
+    private Boolean local;
     public IndexCacheImpl(@Value("${aws.elasticache.cluster.index.endpoint}") final String REDIS_SEARCH_HOST,
                           @Value("${aws.elasticache.cluster.index.port}") final String REDIS_SEARCH_PORT,
                           @Value("${aws.elasticache.cluster.index.key}") final String REDIS_SEARCH_KEY,
                           @Value("${aws.elasticache.cluster.index.expiration}") final String INDEX_CACHE_EXPIRATION) {
         cache = new RedisCache<>(REDIS_SEARCH_HOST, Integer.parseInt(REDIS_SEARCH_PORT), REDIS_SEARCH_KEY,
                 Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60, String.class, Boolean.class);
+        local = cache.getClass() != RedisCache.class;
     }
 
     @Override
     public void close() throws Exception {
-        this.cache.close();
+        if (this.local){
+                // local dummy cache, no need to close
+        }else{
+            ((RedisCache)this.cache).close();
+        }
+
     }
 
     @Override
