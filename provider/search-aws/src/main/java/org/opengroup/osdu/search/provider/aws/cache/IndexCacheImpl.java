@@ -40,7 +40,6 @@ public class IndexCacheImpl implements IIndexCache<String, Boolean>, AutoCloseab
         }else{
             ((RedisCache)this.cache).close();
         }
-
     }
 
     @Override

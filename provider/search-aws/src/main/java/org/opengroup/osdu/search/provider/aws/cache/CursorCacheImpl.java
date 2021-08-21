@@ -14,6 +14,10 @@
 
 package org.opengroup.osdu.search.provider.aws.cache;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.opengroup.osdu.core.aws.cache.AwsElasticCache;
+import org.opengroup.osdu.core.aws.ssm.K8sParameterNotFoundException;
+import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.cache.RedisCache;
 import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;
@@ -23,21 +27,25 @@ import org.springframework.stereotype.Component;
 @Component
 public class CursorCacheImpl implements CursorCache {
 
-    private RedisCache<String, CursorSettings> cache;
+    private ICache<String, CursorSettings> cache;
+    private Boolean local;
 
+    public void close() throws Exception {
+        if (this.local){
+            // local dummy cache, no need to close
+        }else{
+            ((RedisCache)this.cache).close();
+        }
+    }
     /**
      * Initializes a Cursor Cache with Redis connection parameters specified in the application
      * properties file.
-     * @param REDIS_SEARCH_HOST - the hostname of the Cursor Cache Redis cluster.
-     * @param REDIS_SEARCH_PORT - the port of the Cursor Cache Redis cluster.
+     *
      * @param INDEX_CACHE_EXPIRATION - the expiration time for the Cursor Cache Redis cluster.
      */
-    public CursorCacheImpl(@Value("${aws.elasticache.cluster.cursor.endpoint}") final String REDIS_SEARCH_HOST,
-                          @Value("${aws.elasticache.cluster.cursor.port}") final String REDIS_SEARCH_PORT,
-                          @Value("${aws.elasticache.cluster.cursor.key}") final String REDIS_SEARCH_KEY,
-                          @Value("${aws.elasticache.cluster.cursor.expiration}") final String INDEX_CACHE_EXPIRATION) {
-        cache = new RedisCache<String, CursorSettings>(REDIS_SEARCH_HOST, Integer.parseInt(REDIS_SEARCH_PORT), REDIS_SEARCH_KEY,
-                Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60, String.class, CursorSettings.class);
+    public CursorCacheImpl(@Value("${aws.elasticache.cluster.cursor.expiration}") final String INDEX_CACHE_EXPIRATION) throws K8sParameterNotFoundException, JsonProcessingException {
+        cache = AwsElasticCache.RedisCache(Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60, String.class, CursorSettings.class);
+        local = cache.getClass() != RedisCache.class;
     }
 
     /**

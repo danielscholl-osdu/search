@@ -14,8 +14,11 @@
 
 package org.opengroup.osdu.search.provider.aws.cache;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.opengroup.osdu.core.aws.cache.AwsElasticCache;
+import org.opengroup.osdu.core.aws.ssm.K8sParameterNotFoundException;
+import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.cache.RedisCache;
-import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.search.cache.IFieldTypeMappingCache;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -25,21 +28,16 @@ import java.util.Map;
 @Component
 public class FieldTypeMappingCacheImpl implements IFieldTypeMappingCache {
 
-    private RedisCache<String, Map> cache;
-
+    private ICache<String,Map> cache;
+    private Boolean local;
     /**
      * Initializes a Cursor Cache with Redis connection parameters specified in the application
      * properties file.
      *
-     * @param REDIS_SEARCH_HOST - the hostname of the Cursor Cache Redis cluster.
-     * @param REDIS_SEARCH_PORT - the port of the Cursor Cache Redis cluster.
      */
-    public FieldTypeMappingCacheImpl(@Value("${aws.elasticache.cluster.cursor.endpoint}") final String REDIS_SEARCH_HOST,
-                                     @Value("${aws.elasticache.cluster.cursor.port}") final String REDIS_SEARCH_PORT,
-                                     @Value("${aws.elasticache.cluster.cursor.key}") final String REDIS_SEARCH_KEY,
-                                     @Value("${aws.elasticache.cluster.cursor.expiration}") final String INDEX_CACHE_EXPIRATION) {
-        cache = new RedisCache<String, Map>(REDIS_SEARCH_HOST, Integer.parseInt(REDIS_SEARCH_PORT), REDIS_SEARCH_KEY,
-                Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60, String.class, Map.class);
+    public FieldTypeMappingCacheImpl(@Value("${aws.elasticache.cluster.cursor.expiration}") final String INDEX_CACHE_EXPIRATION) throws K8sParameterNotFoundException, JsonProcessingException {
+        cache = AwsElasticCache.RedisCache(Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60, String.class, Map.class);
+        local = cache.getClass() != RedisCache.class;
     }
 
     /**
