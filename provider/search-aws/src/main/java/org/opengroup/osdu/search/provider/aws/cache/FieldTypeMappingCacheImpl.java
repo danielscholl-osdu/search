@@ -15,7 +15,7 @@
 package org.opengroup.osdu.search.provider.aws.cache;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.opengroup.osdu.core.aws.cache.AwsElasticCache;
+import org.opengroup.osdu.core.aws.cache.AwsRedisCache;
 import org.opengroup.osdu.core.aws.ssm.K8sParameterNotFoundException;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.cache.RedisCache;
@@ -36,7 +36,7 @@ public class FieldTypeMappingCacheImpl implements IFieldTypeMappingCache {
      *
      */
     public FieldTypeMappingCacheImpl(@Value("${aws.elasticache.cluster.cursor.expiration}") final String INDEX_CACHE_EXPIRATION) throws K8sParameterNotFoundException, JsonProcessingException {
-        cache = AwsElasticCache.RedisCache(Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60, String.class, Map.class);
+        cache = AwsRedisCache.RedisCache(Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60, String.class, Map.class);
         local = cache.getClass() != RedisCache.class;
     }
 

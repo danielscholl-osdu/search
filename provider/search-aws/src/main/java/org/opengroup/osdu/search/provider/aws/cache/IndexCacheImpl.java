@@ -15,7 +15,7 @@
 package org.opengroup.osdu.search.provider.aws.cache;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.opengroup.osdu.core.aws.cache.AwsElasticCache;
+import org.opengroup.osdu.core.aws.cache.AwsRedisCache;
 import org.opengroup.osdu.core.aws.ssm.K8sParameterNotFoundException;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.cache.RedisCache;
@@ -29,7 +29,7 @@ public class IndexCacheImpl implements IIndexCache<String, Boolean>, AutoCloseab
     private ICache<String, Boolean> cache;
     private Boolean local;
     public IndexCacheImpl(@Value("${aws.elasticache.cluster.index.expiration}") final String INDEX_CACHE_EXPIRATION) throws K8sParameterNotFoundException, JsonProcessingException {
-        cache = cache = AwsElasticCache.RedisCache(Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60, String.class, Boolean.class);
+        cache = cache = AwsRedisCache.RedisCache(Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60, String.class, Boolean.class);
         local = cache.getClass() != RedisCache.class;
     }
 
