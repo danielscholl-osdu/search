@@ -16,9 +16,12 @@ package org.opengroup.osdu.search.provider.aws.cache;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.opengroup.osdu.core.aws.cache.AwsRedisCache;
+import org.opengroup.osdu.core.aws.cache.DummyCache;
+import org.opengroup.osdu.core.aws.ssm.K8sLocalParameterProvider;
 import org.opengroup.osdu.core.aws.ssm.K8sParameterNotFoundException;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.cache.RedisCache;
+import org.opengroup.osdu.core.common.cache.VmCache;
 import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +34,7 @@ public class CursorCacheImpl implements CursorCache {
     private Boolean local;
 
     public void close() throws Exception {
+
         if (this.local){
             // local dummy cache, no need to close
         }else{
@@ -44,7 +48,20 @@ public class CursorCacheImpl implements CursorCache {
      * @param INDEX_CACHE_EXPIRATION - the expiration time for the Cursor Cache Redis cluster.
      */
     public CursorCacheImpl(@Value("${aws.elasticache.cluster.cursor.expiration}") final String INDEX_CACHE_EXPIRATION) throws K8sParameterNotFoundException, JsonProcessingException {
-        cache = AwsRedisCache.RedisCache(Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60, String.class, CursorSettings.class);
+        int expTimeSeconds = Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60;
+        K8sLocalParameterProvider provider = new K8sLocalParameterProvider();
+        if (provider.getLocalMode()){
+            if (Boolean.parseBoolean(System.getenv("DISABLE_CACHE"))){
+                cache =  new DummyCache();
+            }
+            this.cache = new VmCache<>(expTimeSeconds, 10);
+        }else {
+            String host = provider.getParameterAsString("CACHE_CLUSTER_ENDPOINT");
+            int port = Integer.parseInt(provider.getParameterAsString("CACHE_CLUSTER_PORT"));
+            String password = provider.getCredentialsAsMap("CACHE_CLUSTER_KEY").get("token");
+
+            cache = new RedisCache(host, port, password, expTimeSeconds, String.class, CursorSettings.class);
+        }
         local = cache.getClass() != RedisCache.class;
     }
 
