@@ -47,7 +47,7 @@ public class CursorCacheImpl implements CursorCache {
         if (this.local){
             // local dummy cache, no need to close
         }else{
-            ((RedisCache)this.cache).close();
+            ((AutoCloseable)this.cache).close();
         }
     }
     /**
