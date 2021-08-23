@@ -60,7 +60,7 @@ public class IndexCacheImpl implements IIndexCache<String, Boolean>, AutoCloseab
             }
             cache = new RedisCache(host, port, password, expTimeSeconds, String.class, Boolean.class);
         }
-        local = cache.getClass() != RedisCache.class;
+        local = cache.getClass() != AutoCloseable.class;
     }
 
     @Override

@@ -76,7 +76,7 @@ public class CursorCacheImpl implements CursorCache {
             }
             cache = new RedisCache(host, port, password, expTimeSeconds, String.class, CursorSettings.class);
         }
-        local = cache.getClass() != RedisCache.class;
+        local = cache.getClass() != AutoCloseable.class;
     }
 
     /**
