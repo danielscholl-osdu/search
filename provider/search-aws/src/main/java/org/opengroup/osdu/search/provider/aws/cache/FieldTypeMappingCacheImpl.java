@@ -15,10 +15,13 @@
 package org.opengroup.osdu.search.provider.aws.cache;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.opengroup.osdu.core.aws.cache.AwsRedisCache;
+import org.opengroup.osdu.core.aws.cache.DummyCache;
+import org.opengroup.osdu.core.aws.ssm.K8sLocalParameterProvider;
 import org.opengroup.osdu.core.aws.ssm.K8sParameterNotFoundException;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.cache.RedisCache;
+import org.opengroup.osdu.core.common.cache.VmCache;
+import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.search.cache.IFieldTypeMappingCache;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -36,7 +39,20 @@ public class FieldTypeMappingCacheImpl implements IFieldTypeMappingCache {
      *
      */
     public FieldTypeMappingCacheImpl(@Value("${aws.elasticache.cluster.cursor.expiration}") final String INDEX_CACHE_EXPIRATION) throws K8sParameterNotFoundException, JsonProcessingException {
-        cache = AwsRedisCache.RedisCache(Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60, String.class, Map.class);
+        int expTimeSeconds = Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60;
+        K8sLocalParameterProvider provider = new K8sLocalParameterProvider();
+        if (provider.getLocalMode()){
+            if (Boolean.parseBoolean(System.getenv("DISABLE_CACHE"))){
+                cache =  new DummyCache();
+            }
+            this.cache = new VmCache<>(expTimeSeconds, 10);
+        }else {
+            String host = provider.getParameterAsString("CACHE_CLUSTER_ENDPOINT");
+            int port = Integer.parseInt(provider.getParameterAsString("CACHE_CLUSTER_PORT"));
+            String password = provider.getCredentialsAsMap("CACHE_CLUSTER_KEY").get("token");
+
+            cache = new RedisCache(host, port, password, expTimeSeconds, String.class, Map.class);
+        }
         local = cache.getClass() != RedisCache.class;
     }
 
