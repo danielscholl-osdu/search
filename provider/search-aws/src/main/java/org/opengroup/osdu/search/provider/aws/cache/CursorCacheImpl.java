@@ -62,8 +62,9 @@ public class CursorCacheImpl implements CursorCache {
         if (provider.getLocalMode()){
             if (Boolean.parseBoolean(System.getenv("DISABLE_CACHE"))){
                 cache =  new DummyCache();
+            }else {
+                this.cache = new VmCache<>(expTimeSeconds, 10);
             }
-            this.cache = new VmCache<>(expTimeSeconds, 10);
         }else {
             String host = provider.getParameterAsStringOrDefault("CACHE_CLUSTER_ENDPOINT", REDIS_SEARCH_HOST);
             int port = Integer.parseInt(provider.getParameterAsStringOrDefault("CACHE_CLUSTER_PORT", REDIS_SEARCH_PORT));
