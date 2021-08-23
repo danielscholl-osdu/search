@@ -66,7 +66,7 @@ public class FieldTypeMappingCacheImpl implements IFieldTypeMappingCache {
             }
             cache = new RedisCache(host, port, password, expTimeSeconds, String.class, Map.class);
         }
-        local = cache.getClass() != AutoCloseable.class;
+        local = cache instanceof AutoCloseable;
     }
 
     /**
