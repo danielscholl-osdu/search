@@ -30,7 +30,14 @@ import java.util.Map;
 
 @Component
 public class FieldTypeMappingCacheImpl implements IFieldTypeMappingCache {
-
+    @Value("${aws.elasticache.cluster.cursor.endpoint}")
+    String REDIS_SEARCH_HOST;
+    @Value("${aws.elasticache.cluster.cursor.port}")
+    String REDIS_SEARCH_PORT;
+    @Value("${aws.elasticache.cluster.cursor.key}")
+    String REDIS_SEARCH_KEY;
+    @Value("${aws.elasticache.cluster.cursor.expiration}")
+    String INDEX_CACHE_EXPIRATION;
     private ICache<String,Map> cache;
     private Boolean local;
     /**
@@ -38,19 +45,25 @@ public class FieldTypeMappingCacheImpl implements IFieldTypeMappingCache {
      * properties file.
      *
      */
-    public FieldTypeMappingCacheImpl(@Value("${aws.elasticache.cluster.cursor.expiration}") final String INDEX_CACHE_EXPIRATION) throws K8sParameterNotFoundException, JsonProcessingException {
+    public FieldTypeMappingCacheImpl() throws K8sParameterNotFoundException, JsonProcessingException {
         int expTimeSeconds = Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60;
         K8sLocalParameterProvider provider = new K8sLocalParameterProvider();
         if (provider.getLocalMode()){
+
             if (Boolean.parseBoolean(System.getenv("DISABLE_CACHE"))){
                 cache =  new DummyCache();
             }
             this.cache = new VmCache<>(expTimeSeconds, 10);
         }else {
-            String host = provider.getParameterAsString("CACHE_CLUSTER_ENDPOINT");
-            int port = Integer.parseInt(provider.getParameterAsString("CACHE_CLUSTER_PORT"));
-            String password = provider.getCredentialsAsMap("CACHE_CLUSTER_KEY").get("token");
-
+            String host = provider.getParameterAsStringOrDefault("CACHE_CLUSTER_ENDPOINT", REDIS_SEARCH_HOST);
+            int port = Integer.parseInt(provider.getParameterAsStringOrDefault("CACHE_CLUSTER_PORT", REDIS_SEARCH_PORT));
+            Map<String, String > credential =provider.getCredentialsAsMap("CACHE_CLUSTER_KEY");
+            String password;
+            if (credential !=null){
+                password = credential.get("token");
+            }else{
+                password = REDIS_SEARCH_KEY;
+            }
             cache = new RedisCache(host, port, password, expTimeSeconds, String.class, Map.class);
         }
         local = cache.getClass() != RedisCache.class;
