@@ -30,11 +30,11 @@ import java.util.Map;
 
 @Component
 public class CursorCacheImpl implements CursorCache {
-    @Value ("${aws.elasticache.cluster.cursor.endpoint}")
+    @Value ("${aws.elasticache.cluster.cursor.endpoint:null}")
     String REDIS_SEARCH_HOST;
-    @Value("${aws.elasticache.cluster.cursor.port}")
+    @Value("${aws.elasticache.cluster.cursor.port:null}")
     String REDIS_SEARCH_PORT;
-    @Value("${aws.elasticache.cluster.cursor.key}")
+    @Value("${aws.elasticache.cluster.cursor.key:null}")
     String REDIS_SEARCH_KEY;
     @Value("${aws.elasticache.cluster.cursor.expiration}")
     String INDEX_CACHE_EXPIRATION;
