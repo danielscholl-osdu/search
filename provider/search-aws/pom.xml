@@ -36,7 +36,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
-        <aws.version>1.11.637</aws.version>
+        <aws.version>1.11.1018</aws.version>
         <deployment.environment>dev</deployment.environment>
         <version.number>0.0.4-SNAPSHOT</version.number>
         <osdu.oscorecommon.version>0.11.0-SNAPSHOT</osdu.oscorecommon.version>
@@ -52,7 +52,7 @@
         <dependency>
             <groupId>org.opengroup.osdu.core.aws</groupId>
             <artifactId>os-core-lib-aws</artifactId>
-            <version>0.3.17</version>
+            <version>0.11.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
@@ -164,6 +164,18 @@
                     <useSystemClassLoader>false</useSystemClassLoader>
                     <threadCount>1</threadCount>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>6.2.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

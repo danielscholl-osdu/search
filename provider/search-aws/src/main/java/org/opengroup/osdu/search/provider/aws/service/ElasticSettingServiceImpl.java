@@ -14,9 +14,7 @@
 
 package org.opengroup.osdu.search.provider.aws.service;
 
-import org.opengroup.osdu.core.aws.secrets.SecretsManager;
-import org.opengroup.osdu.core.aws.ssm.ParameterStorePropertySource;
-import org.opengroup.osdu.core.aws.ssm.SSMConfig;
+import org.opengroup.osdu.core.aws.ssm.K8sLocalParameterProvider;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +22,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.Map;
 
 @Primary
 @Component
@@ -43,42 +42,23 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
 
     @Value("${aws.es.password}")
     String password;
-
     String usernameAndPassword;
-
-
-    @Value("${aws.elasticsearch.port}")
-    String portParameter;
-
-    @Value("${aws.elasticsearch.host}")
-    String hostParameter;
-
-    @Value("${aws.elasticsearch.credentials.secret}")
-    String elasticCredentialsSecret;
 
     @Value("${aws.region}")
     private String amazonRegion;
 
-    @Value("${aws.ssm}")
-    String ssmEnabledString;
-
-    private ParameterStorePropertySource ssm;
-
 
     @PostConstruct
-    private void postConstruct() {
-        if( Boolean.parseBoolean(ssmEnabledString)) {
-            SSMConfig ssmConfig = new SSMConfig();
-            ssm = ssmConfig.amazonSSM();
-            host = ssm.getProperty(hostParameter).toString();
-            port = Integer.parseInt(ssm.getProperty(portParameter).toString());
-
+    private void postConstruct() throws Exception {
+        K8sLocalParameterProvider provider = new K8sLocalParameterProvider();
+        host = provider.getParameterAsStringOrDefault("elasticsearch_host", host);
+        port = Integer.parseInt(provider.getParameterAsStringOrDefault("elasticsearch_port", String.valueOf(port)));
+        Map<String, String>val = provider.getCredentialsAsMap("elasticsearch_credentials");
+        if (val != null){
+            username = val.get("username");
+            password = val.get("password");
         }
 
-        SecretsManager sm = new SecretsManager();
-        username = sm.getSecret(elasticCredentialsSecret,amazonRegion,"username");
-        password = sm.getSecret(elasticCredentialsSecret,amazonRegion,"password");
-        
         //elastic expects username:password format
         usernameAndPassword = String.format("%s:%s", username, password);
     }
