@@ -46,7 +46,7 @@ public class FieldTypeMappingCacheImpl implements IFieldTypeMappingCache {
      *
      */
     public FieldTypeMappingCacheImpl() throws K8sParameterNotFoundException, JsonProcessingException {
-        int expTimeSeconds = Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60;
+        int expTimeSeconds = 60 * 60;
         K8sLocalParameterProvider provider = new K8sLocalParameterProvider();
         if (provider.getLocalMode()){
 
