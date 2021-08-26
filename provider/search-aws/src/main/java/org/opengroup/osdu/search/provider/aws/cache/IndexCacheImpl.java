@@ -30,11 +30,11 @@ import java.util.Map;
 
 @Component
 public class IndexCacheImpl implements IIndexCache<String, Boolean>, AutoCloseable {
-    @Value ("${aws.elasticache.cluster.cursor.endpoint:null}")
+    @Value ("${aws.elasticache.cluster.cursor.endpoint}")
     String REDIS_SEARCH_HOST;
-    @Value("${aws.elasticache.cluster.cursor.port:null}")
+    @Value("${aws.elasticache.cluster.cursor.port}")
     String REDIS_SEARCH_PORT;
-    @Value("${aws.elasticache.cluster.cursor.key:null}")
+    @Value("${aws.elasticache.cluster.cursor.key}")
     String REDIS_SEARCH_KEY;
     @Value("${aws.elasticache.cluster.cursor.expiration}")
     String INDEX_CACHE_EXPIRATION;
