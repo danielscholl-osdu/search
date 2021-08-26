@@ -41,7 +41,7 @@ public class IndexCacheImpl implements IIndexCache<String, Boolean>, AutoCloseab
     private ICache<String, Boolean> cache;
     private Boolean local;
     public IndexCacheImpl(@Value("${aws.elasticache.cluster.index.expiration}") final String INDEX_CACHE_EXPIRATION) throws K8sParameterNotFoundException, JsonProcessingException {
-        int expTimeSeconds = Integer.parseInt(INDEX_CACHE_EXPIRATION) * 60;
+        int expTimeSeconds = 60 * 60;
         K8sLocalParameterProvider provider = new K8sLocalParameterProvider();
         if (provider.getLocalMode()){
             if (Boolean.parseBoolean(System.getenv("DISABLE_CACHE"))){
