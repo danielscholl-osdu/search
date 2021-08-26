@@ -19,3 +19,4 @@ data:
   GOOGLE_AUDIENCES: "{{ .Values.data.audiences }}"
   PARTITION_API: "{{ .Values.data.partition_api }}"
   POLICY_API: "{{ .Values.data.policy_api }}"
+  POLICY_ID: "{{ .Values.data.policy_id }}"

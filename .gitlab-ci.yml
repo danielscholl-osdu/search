@@ -17,17 +17,16 @@ variables:
  # --- osdu gcp specific variables for cloudrun ---
   OSDU_GCP_SERVICE: search
   OSDU_GCP_VENDOR: gcp
-  OSDU_GCP_ENV_VARS: ENVIRONMENT=$OSDU_GCP_SPRING_PROFILES_ACTIVE,GOOGLE_CLOUD_PROJECT=$OSDU_GCP_PROJECT,REDIS_SEARCH_HOST=$REDIS_SEARCH_HOST,REDIS_SEARCH_PORT=$OSDU_GCP_REDIS_SEARCH_PORT,REDIS_GROUP_HOST=$REDIS_GROUP_HOST,INDEXER_HOST=$OSDU_GCP_INDEXER_HOST_SEARCH,AUTHORIZE_API=$OSDU_GCP_ENTITLEMENTS_V2_URL,ENTITLEMENTS_HOST=$OSDU_GCP_ENTITLEMENTS_V2_URL,SECURITY_HTTPS_CERTIFICATE_TRUST=$OSDU_SECURITY_HTTPS_CERTIFICATE_TRUST,GOOGLE_AUDIENCES=$GOOGLE_AUDIENCE,PARTITION_API=$OSDU_GCP_PARTITION_API,POLICY_API=$OSDU_GCP_POLICY_API,POLICY_ID=search --vpc-connector=$OSDU_GCP_VPC_CONNECTOR
   # Variables should be partially removed after migration on cloudrun gcp
   OSDU_GCP_BUILD_SUBDIR: provider/search-gcp
   OSDU_GCP_INT_TEST_SUBDIR: testing/integration-tests/search-test-gcp
-  OSDU_GCP_APPLICATION_NAME: os-search
-  OSDU_GCP_PROJECT: nice-etching-277309
   OSDU_GCP_TENANT_NAME: osdu
-  OSDU_GCP_STORAGE_URL: https://os-storage-dot-nice-etching-277309.uc.r.appspot.com/api/storage/v2/
-  OSDU_SECURITY_HTTPS_CERTIFICATE_TRUST: 'true'
   OSDU_GCP_TEST_SUBDIR: testing/integration-tests/$OSDU_GCP_SERVICE-test-$OSDU_GCP_VENDOR
   OSDU_GCP_HELM_PACKAGE_CHARTS: "devops/gcp/deploy devops/gcp/configmap"
+  OSDU_GCP_HELM_CONFIG_SERVICE: search-config
+  OSDU_GCP_HELM_DEPLOYMENT_SERVICE: search-deploy
+  OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.log_level=INFO --set data.google_cloud_project_id=$OSDU_GCP_PROJECT --set data.redis_search_host=$REDIS_SEARCH_HOST --set data.redis_group_host=$REDIS_GROUP_HOST --set data.indexer_host=$OSDU_GCP_INDEXER_API --set data.authorize_api=$OSDU_GCP_AUTHORIZE_API --set data.audiences=$GOOGLE_AUDIENCE --set data.partition_api=$OSDU_GCP_PARTITION_API --set data.policy_api=$OSDU_GCP_POLICY_API"
+  OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA --set data.serviceAccountName=workload-identity-search"
 
   IBM_BUILD_SUBDIR: provider/search-ibm
   IBM_INT_TEST_SUBDIR: testing/integration-tests/search-test-ibm
@@ -61,7 +60,7 @@ include:
     file: "cloud-providers/azure.yml"
 
   - project: 'osdu/platform/ci-cd-pipelines'
-    file: 'cloud-providers/osdu-gcp-cloudrun.yml'
+    file: 'cloud-providers/osdu-gcp-gke.yml'
 
   - project: 'osdu/platform/ci-cd-pipelines'
     file: 'publishing/pages.yml'
