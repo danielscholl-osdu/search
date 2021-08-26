@@ -4,7 +4,7 @@ variables:
   AWS_SERVICE: search
   AWS_ENVIRONMENT: dev
   AWS_DEPLOY_TARGET: EKS
-  AWS_EKS_DEPLOYMENT_NAME: os-storage
+  AWS_EKS_DEPLOYMENT_NAME: os-search
 
   GCP_BUILD_SUBDIR: provider/search-gcp
   GCP_INT_TEST_SUBDIR: testing/integration-tests/search-test-gcp
