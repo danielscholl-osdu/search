@@ -15,6 +15,7 @@ data:
   audiences: ""
   partition_api: ""
   policy_api: ""
+  policy_id: "search"
 
 conf:
   configmap: "search-config"

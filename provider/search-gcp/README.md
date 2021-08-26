@@ -33,6 +33,8 @@ In order to run the service locally or remotely, you will need to have the follo
 | `PARTITION_API` | ex `http://localhost:8080/api/partition/v1` | Partition service endpoint | no | output of infrastructure deployment |
 | `POLICY_API` | ex `http://localhost:8080/api/policy/v1/` | Police service endpoint | no | output of infrastructure deployment |
 | `POLICY_ID` | ex `search` | policeId from ex `http://localhost:8080/api/policy/v1/policies`. Look at `POLICY_API` | no | - |
+| `KEY_RING` | by default `csqp` | Key ring used by Search service to decrypt elastic setting | no | https://console.cloud.google.com/security/kms/keyrings |
+| `KMS_KEY` |  by default `searchService` | Key in key ring used by Search service to decrypt elastic setting | no | https://console.cloud.google.com/security/kms/keyrings |
 
 ### Run Locally
 Check that maven is installed:

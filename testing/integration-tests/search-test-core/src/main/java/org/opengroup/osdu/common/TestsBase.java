@@ -167,7 +167,7 @@ public abstract class TestsBase {
         }else {
             log.info("Got response type: null");
         }
-        assertEquals("application/json; charset=UTF-8", clientResponse.getType().toString());
+        assertTrue(clientResponse.getType().toString().contains(MediaType.APPLICATION_JSON));
         String responseEntity = clientResponse.getEntity(String.class);
 
         T response = new Gson().fromJson(responseEntity, typeParameterClass);

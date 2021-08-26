@@ -17,6 +17,7 @@
 
 package org.opengroup.osdu.search.provider.reference.provider.impl;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import javax.inject.Inject;
@@ -45,6 +46,11 @@ public class CrossTenantInfoServiceImpl implements ITenantInfoService, ICrossTen
             throw AppException.createUnauthorized(String.format("could not retrieve tenant info for data partition id: %s", primaryAccountId));
         }
         return tenantInfo;
+    }
+
+    @Override
+    public List<TenantInfo> getAllTenantInfos() {
+        return new ArrayList<>(tenantFactory.listTenantInfo());
     }
 
     @Override

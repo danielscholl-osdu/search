@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.search.TotalHits.Relation;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchResponseSections;
@@ -42,6 +44,7 @@ import org.elasticsearch.action.search.ShardSearchFailure;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -55,6 +58,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.opengroup.osdu.core.common.model.http.AppError;
+import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
 import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
@@ -337,6 +342,25 @@ public class ScrollQueryServiceTest {
 
     QueryBuilder elasticQueryBuilder = elasticSearchSourceBuilder.query();
     assertNotNull(elasticQueryBuilder);
+  }
+
+  @Test
+  public void testQueryIndex_whenCursorNotFound_thenThrowException() throws Exception {
+    CursorSettings cursorSettings = CursorSettings.builder().cursor("cursor").userId(USER_EMAIL).build();
+    when(this.cursorQueryRequest.getCursor()).thenReturn("cursor");
+
+    ElasticsearchStatusException exception = new ElasticsearchStatusException("No search context found for id [47500324]", RestStatus.NOT_FOUND);
+    doThrow(exception).when(restHighLevelClient).scroll(any(), any(RequestOptions.class));
+
+    try {
+      sut.queryIndex(cursorQueryRequest);
+    } catch (AppException e) {
+      int errorCode = 400;
+      AppError error = e.getError();
+      assertEquals(error.getReason(), "Can't find the given cursor");
+      assertEquals(error.getMessage(), "The given cursor is invalid or expired");
+      assertEquals(error.getCode(), errorCode);
+    }
   }
 
   private SearchResponse createSearchResponse(long totalHitsCount, String scrollId) {
