@@ -28,16 +28,16 @@ limitations under the License.
             </activation>
             <repositories>
                 <repository>
-                    <id>aws-osdu-dev-maven</id>
-                    <url>${env.AWS_OSDU_DEV_MAVEN_URL}</url>
-                </repository>
-                <repository>
                     <id>gitlab-os-core-common-maven</id>
                     <url>https://community.opengroup.org/api/v4/projects/67/packages/maven</url>
                 </repository>
                 <repository>
                     <id>gitlab-os-core-lib-aws-maven</id>
                     <url>https://community.opengroup.org/api/v4/projects/68/packages/maven</url>
+                </repository>
+                <repository>
+                    <id>aws-osdu-dev-maven</id>
+                    <url>${env.AWS_OSDU_DEV_MAVEN_URL}</url>
                 </repository>
             </repositories>
         </profile>
@@ -52,6 +52,17 @@ limitations under the License.
                 <aws.secretKey>no-default</aws.secretKey>
                 <azure.devops.username>Another-Access-Token-2021</azure.devops.username>
                 <azure.devops.token>no-default</azure.devops.token>
+            </properties>
+        </profile>
+        <profile>
+            <id>sonar</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <sonar.host.url>
+                    ${env.SONAR_URL}
+                </sonar.host.url>
             </properties>
         </profile>
     </profiles>

@@ -14,9 +14,12 @@
 
 package org.opengroup.osdu.search.provider.gcp.provider.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 import org.opengroup.osdu.core.common.model.http.AppException;
@@ -47,6 +50,11 @@ public class CrossTenantInfoServiceImpl implements ITenantInfoService, ICrossTen
     }
 
     @Override
+    public List<TenantInfo> getAllTenantInfos() {
+        return new ArrayList<>(tenantFactory.listTenantInfo());
+    }
+
+    @Override
     public List<TenantInfo> getAllTenantsFromPartitionId() {
         List<TenantInfo> tenantInfos = new LinkedList<>();
 
@@ -58,5 +66,4 @@ public class CrossTenantInfoServiceImpl implements ITenantInfoService, ICrossTen
         }
         return tenantInfos;
     }
-
 }

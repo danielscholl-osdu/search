@@ -25,6 +25,9 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
+
+import org.apache.http.HttpStatus;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
@@ -47,6 +50,8 @@ import org.opengroup.osdu.search.util.QueryResponseUtil;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import static org.elasticsearch.rest.RestStatus.NOT_FOUND;
 
 @Service
 public class ScrollQueryServiceImpl extends QueryBase implements IScrollQueryService {
@@ -110,6 +115,12 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                     }
                 } catch (AppException e) {
                     throw e;
+                } catch (ElasticsearchStatusException e) {
+                    String invalidScrollMessage = "No search context found for id";
+                    if (e.status() == NOT_FOUND
+                            && (e.getMessage().startsWith(invalidScrollMessage)) || this.exceptionParser.parseException(e).stream().anyMatch(r -> r.contains(invalidScrollMessage)))
+                        throw new AppException(HttpStatus.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired", e);
+                    throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
                 } catch (Exception e) {
                     throw new AppException(HttpServletResponse.SC_NOT_FOUND, "Invalid request", "Invalid scroll request", e);
                 }
