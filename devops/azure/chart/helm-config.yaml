@@ -17,3 +17,5 @@ image:
 
 policy:
   enabled: #{POLICY_ENABLED}#
+
+istioDnsHost: #{ISTIO_DNS_HOST}#
