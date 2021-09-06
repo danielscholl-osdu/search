@@ -27,16 +27,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ElasticSettingSchema {
 
-    @NotEmpty
-    private String host;
+  @NotEmpty
+  private String host;
 
-    @NotEmpty
-    private String port;
+  @NotEmpty
+  private String port;
 
-    @NotEmpty
-    private String usernameAndPassword;
+  @NotEmpty
+  private String usernameAndPassword;
 
-    @NotEmpty
-    private boolean isHttps;  
+  @NotEmpty
+  private boolean isHttps;
 
 }

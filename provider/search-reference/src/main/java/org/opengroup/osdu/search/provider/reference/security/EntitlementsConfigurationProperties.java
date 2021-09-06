@@ -15,20 +15,17 @@
  * limitations under the License.
  */
 
-package org.opengroup.osdu.search.provider.reference.model;
+package org.opengroup.osdu.search.provider.reference.security;
 
-import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Document(collection = "TenantInfo")
-public class TenantInfoDocument {
-
-  private String id;
-  private List<String> groups;
+@Configuration
+@ConfigurationProperties
+@Getter
+@Setter
+public class EntitlementsConfigurationProperties {
+  private String authorizeApi;
 }
