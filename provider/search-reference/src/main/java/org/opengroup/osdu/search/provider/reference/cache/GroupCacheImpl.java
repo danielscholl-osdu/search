@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-package org.opengroup.osdu.search.provider.reference.security;
+package org.opengroup.osdu.search.provider.reference.cache;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import org.opengroup.osdu.core.common.cache.RedisCache;
+import org.opengroup.osdu.core.common.model.entitlements.Groups;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
+import org.springframework.stereotype.Component;
 
-@Configuration
-@ConfigurationProperties
-@Getter
-@Setter
-public class EntitlementsConfig {
-  private String authorizeApi;
+@Component
+public class GroupCacheImpl extends RedisCache<String, Groups> {
+
+    public GroupCacheImpl(SearchConfigurationProperties properties) {
+        super(properties.getRedisGroupHost(), properties.getRedisGroupPort(), 30, String.class, Groups.class);
+    }
 }

@@ -1,5 +1,6 @@
-# Search and Indexer Service
-os-search-gcp is a [Spring Boot](https://spring.io/projects/spring-boot) service that hosts CRUD APIs that enable the execution of OSDU R2 domain searches against Elasticsearch.
+# Search Service
+os-search-reference is a [Spring Boot](https://spring.io/projects/spring-boot) service that hosts CRUD APIs that enable the execution of OSDU hybrid cloud searches against Elasticsearch.
+
 
 ## Getting Started
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
@@ -27,13 +28,17 @@ In order to run the service locally or remotely, you will need to have the follo
 | `REDIS_SEARCH_PORT` | ex `6379` | Redis host for search | no | https://console.cloud.google.com/memorystore/redis/instances |
 | `GOOGLE_CLOUD_PROJECT` | ex `opendes` | Google Cloud Project Id| no | output of infrastructure deployment |
 | `GOOGLE_AUDIENCES` | ex `*****.apps.googleusercontent.com` | Client ID for getting access to cloud resources | yes | https://console.cloud.google.com/apis/credentials |
-| `GOOGLE_APPLICATION_CREDENTIALS` | ex `/path/to/directory/service-key.json` | Service account credentials, you only need this if running locally | yes | https://console.cloud.google.com/iam-admin/serviceaccounts |
 | `SECURITY_HTTPS_CERTIFICATE_TRUST` | ex `false` | Elastic client connection uses TrustSelfSignedStrategy(), if it is 'true' | false | output of infrastructure deployment |
 | `PARTITION_API` | ex `http://localhost:8080/api/partition/v1` | Partition service endpoint | no | output of infrastructure deployment |
 | `POLICY_API` | ex `http://localhost:8080/api/policy/v1/` | Police service endpoint | no | output of infrastructure deployment |
 | `POLICY_ID` | ex `search` | policeId from ex `http://localhost:8080/api/policy/v1/policies`. Look at `POLICY_API` | no | - |
 | `KEY_RING` | by default `csqp` | Key ring used by Search service to decrypt elastic setting | no | https://console.cloud.google.com/security/kms/keyrings |
 | `KMS_KEY` |  by default `searchService` | Key in key ring used by Search service to decrypt elastic setting | no | https://console.cloud.google.com/security/kms/keyrings |
+| `MONGO_DB_URL` | ex `mongodb://localhost:27017` | Mongo DB Url| yes | output of infrastructure deployment |
+| `MONGO_DB_USER` | ex `mongouser` | Mongo DB userName| yes | output of infrastructure deployment |
+| `MONGO_DB_PASSWORD` | ex `mongopassword` | Mongo DB userPassword| yes | output of infrastructure deployment |
+| `MONGO_DB_NAME` | ex `mongoDBName` | Mongo DB DbName| yes | output of infrastructure deployment |
+| `MB_RABBITMQ_URI` | ex `amqp://guest:guest@127.0.0.1:5672` | MessageBroker RabbitMQ URI | yes | https://console.cloud.google.com/iam-admin/serviceaccounts |
 
 ### Run Locally
 Check that maven is installed:
@@ -111,7 +116,7 @@ mvn clean install -DskipTests
 After configuring your environment as specified above, you can follow these steps to build and run the application. These steps should be invoked from the *repository root.*
 
 ```bash
-cd provider/search-gcp/ && mvn spring-boot:run
+cd provider/search-reference/ && mvn spring-boot:run
 ```
 
 ## Testing
@@ -162,20 +167,9 @@ $ (cd testing/search-test-gcp/ && mvn clean test)
 ```
 
 ## Deployment
+GKE Google Documentation: https://cloud.google.com/build/docs/deploying-builds/deploy-gke
+Anthos Google Documentation: https://cloud.google.com/anthos/multicluster-management/gateway/tutorials/cloud-build-integration
 
-* Data-Lake Search Google Cloud Endpoints on App Engine Flex environment
-  * Edit the app.yaml
-    * Open the [app.yaml](search/src/main/appengine/app.yaml) file in editor, and replace the YOUR-PROJECT-ID `PROJECT` line with Google Cloud Platform project Id. Also update `SEARCH_HOST`, `STORAGE_HOST`, `STORAGE_SCHEMA_HOST`, `IDENTITY_QUERY_ACCESS_HOST` and `IDENTITY_AUTHORIZE_HOST` based on your deployment
- 
-  * Deploy
-    ```sh
-    mvn appengine:deploy -pl org.opengroup.osdu.search:search -amd
-    ```
-
-  * If you wish to deploy the search service without running tests
-    ```sh
-    mvn appengine:deploy -pl org.opengroup.osdu.search:search -amd -DskipTests
-    ```
 
 #### Cloud KMS Setup
 
