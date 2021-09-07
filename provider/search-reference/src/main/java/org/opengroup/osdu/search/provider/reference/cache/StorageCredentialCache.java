@@ -18,20 +18,18 @@
 package org.opengroup.osdu.search.provider.reference.cache;
 
 import org.opengroup.osdu.core.common.cache.RedisCache;
-import org.opengroup.osdu.core.common.model.search.CursorSettings;
-import org.opengroup.osdu.search.cache.CursorCache;
+import org.opengroup.osdu.core.gcp.multitenancy.credentials.GcsCredential;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CursorCacheImpl extends RedisCache<String, CursorSettings> implements CursorCache {
+public class StorageCredentialCache extends RedisCache<String, GcsCredential> {
 
   @Autowired
-  public CursorCacheImpl(SearchConfigurationProperties searchConfigurationProperties) {
-    super(searchConfigurationProperties.getRedisSearchHost(),
-        Integer.parseInt(searchConfigurationProperties.getRedisSearchPort()),
-        searchConfigurationProperties.getCursorCacheExpiration(), String.class,
-        CursorSettings.class);
+  public StorageCredentialCache(final SearchConfigurationProperties configurationProperties) {
+    super(configurationProperties.getRedisSearchHost(),
+        Integer.parseInt(configurationProperties.getRedisSearchPort()), 58 * 60, String.class,
+        GcsCredential.class);
   }
 }
