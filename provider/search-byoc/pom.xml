@@ -38,7 +38,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
-        <osdu.oscorecommon.version>0.11.0-SNAPSHOT</osdu.oscorecommon.version>
+        <osdu.oscorecommon.version>0.12.0-rc1</osdu.oscorecommon.version>
     </properties>
 
     <dependencies>
