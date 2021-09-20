@@ -25,4 +25,4 @@ image:
 policy:
   enabled: true
 
-istioDnsHost: #{ISTIO_DNS_HOST}#
+istioDnsHost: ""
