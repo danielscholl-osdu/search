@@ -38,7 +38,7 @@
         <project.main.basedir>${project.basedir}</project.main.basedir>
         <nimbus-jose-jwt.version>9.1.2</nimbus-jose-jwt.version>
         <elasticsearch.version>7.8.1</elasticsearch.version>
-        <osdu.oscorecommon.version>0.11.0-SNAPSHOT</osdu.oscorecommon.version>
+        <osdu.oscorecommon.version>0.11.0</osdu.oscorecommon.version>
     </properties>
 
       <dependencies>
