@@ -24,3 +24,5 @@ image:
 
 policy:
   enabled: true
+
+istioDnsHost: ""
