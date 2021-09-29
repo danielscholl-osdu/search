@@ -18,14 +18,14 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.opengroup.osdu</groupId>
     <artifactId>search-gcp</artifactId>
-    <version>0.11.0-SNAPSHOT</version>
+    <version>0.12.0-SNAPSHOT</version>
     <description>Google cloud implementation of Search service APIs</description>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>org.opengroup.osdu</groupId>
         <artifactId>os-search</artifactId>
-        <version>0.11.0-SNAPSHOT</version>
+        <version>0.12.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -37,7 +37,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
-        <osdu.oscorecommon.version>0.11.0-SNAPSHOT</osdu.oscorecommon.version>
+        <osdu.oscorecommon.version>0.11.0</osdu.oscorecommon.version>
     </properties>
 
     <dependencies>
@@ -45,7 +45,7 @@
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>search-core</artifactId>
-            <version>0.11.0-SNAPSHOT</version>
+            <version>0.12.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
