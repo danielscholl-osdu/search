@@ -19,18 +19,17 @@ import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Key;
+import javax.inject.Inject;
 import org.apache.http.HttpStatus;
-import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
-import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.core.common.model.search.ClusterSettings;
+import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
+import org.opengroup.osdu.core.common.provider.interfaces.IKmsClient;
 import org.opengroup.osdu.core.common.search.Preconditions;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
-import org.opengroup.osdu.search.provider.gcp.provider.kms.KmsClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.inject.Inject;
 
 @Component
 public class ElasticRepositoryDatastore implements IElasticRepository {
@@ -40,7 +39,7 @@ public class ElasticRepositoryDatastore implements IElasticRepository {
     static final String XPACK_RESTCLIENT_CONFIGURATION = "configuration";
 
     @Inject
-    private KmsClient kmsClient;
+    private IKmsClient kmsClient;
 
     @Inject
     private DatastoreFactory datastoreFactory;
@@ -56,7 +55,8 @@ public class ElasticRepositoryDatastore implements IElasticRepository {
         Entity datastoreEntity = googleDatastore.get(key);
 
         if (datastoreEntity == null) {
-            throw new AppException(HttpStatus.SC_NOT_FOUND, "Cluster setting not found", "The requested cluster setting was not found in datastore.", String.format("Cluster setting with key: '%s' does not exist in datastore.", key.getName()));
+            throw new AppException(HttpStatus.SC_NOT_FOUND, "Cluster setting not found", "The requested cluster setting was not found in datastore.",
+                String.format("Cluster setting with key: '%s' does not exist in datastore.", key.getName()));
         }
 
         String encryptedHost = null;
@@ -81,9 +81,11 @@ public class ElasticRepositoryDatastore implements IElasticRepository {
             return new ClusterSettings(host, port, usernameAndPassword);
         } catch (GoogleJsonResponseException e) {
             String debuggingInfo = String.format("Host: %s | port: %s | configuration: %s", encryptedHost, encryptedPort, encryptedConfiguration);
-            throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Cluster setting decryption error", "An error has occurred decrypting cluster settings.", debuggingInfo, e);
+            throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Cluster setting decryption error",
+                "An error has occurred decrypting cluster settings.", debuggingInfo, e);
         } catch (Exception e) {
-            throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Cluster setting fetch error", "An error has occurred fetching cluster settings from the datastore.", e);
+            throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Cluster setting fetch error",
+                "An error has occurred fetching cluster settings from the datastore.", e);
         }
     }
 }
