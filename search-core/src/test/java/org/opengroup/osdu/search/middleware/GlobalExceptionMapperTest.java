@@ -32,8 +32,9 @@ import org.springframework.security.access.AccessDeniedException;
 
 import javax.validation.ValidationException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import java.io.IOException;
+
+import static org.junit.Assert.*;
 import static org.powermock.api.mockito.PowerMockito.mock;
 
 @RunWith(PowerMockRunner.class)
@@ -126,5 +127,23 @@ public class GlobalExceptionMapperTest {
 
         ResponseEntity<Object> response = sut.handleAccessDeniedException(exception);
         assertEquals(HttpStatus.SC_UNAUTHORIZED, response.getStatusCodeValue());
+    }
+
+    @Test
+    public void should_returnNullResponse_when_BrokenPipeIOExceptionIsCaptured() {
+        IOException ioException = new IOException("Broken pipe");
+
+        ResponseEntity response = this.sut.handleIOException(ioException);
+
+        assertNull(response);
+    }
+
+    @Test
+    public void should_returnServiceUnavailable_when_IOExceptionIsCaptured() {
+        IOException ioException = new IOException("Not broken yet");
+
+        ResponseEntity response = this.sut.handleIOException(ioException);
+
+        assertEquals(HttpStatus.SC_SERVICE_UNAVAILABLE, response.getStatusCodeValue());
     }
 }
