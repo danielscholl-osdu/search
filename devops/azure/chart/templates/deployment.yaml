@@ -45,13 +45,6 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 80
-        resources:
-          requests:
-            cpu: "1000m"
-            memory: "4Gi"
-          limits:
-            cpu: "1000m"
-            memory: "4Gi"
         readinessProbe:
           httpGet:
             path: /actuator/health
