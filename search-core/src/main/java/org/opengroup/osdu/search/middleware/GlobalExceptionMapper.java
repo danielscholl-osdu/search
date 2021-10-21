@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import javassist.NotFoundException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.elasticsearch.client.ResponseException;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
@@ -41,6 +43,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.validation.ValidationException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -108,6 +111,17 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException e) {
         return this.getErrorResponse(
                 new AppException(HttpStatus.UNAUTHORIZED.value(), "Access denied", "The user is not authorized to perform this action", e));
+    }
+
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<Object> handleIOException(IOException e) {
+        if (StringUtils.containsIgnoreCase(ExceptionUtils.getRootCauseMessage(e), "Broken pipe")) {
+            this.logger.warning("Client closed the connection while request still being processed");
+            return null;
+        } else {
+            return this.getErrorResponse(
+                    new AppException(HttpStatus.SERVICE_UNAVAILABLE.value(), "Unknown error", e.getMessage(), e));
+        }
     }
 
     @ExceptionHandler(Exception.class)
