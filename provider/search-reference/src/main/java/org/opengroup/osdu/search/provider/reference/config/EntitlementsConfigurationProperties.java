@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.opengroup.osdu.search.provider.reference.security;
+package org.opengroup.osdu.search.provider.reference.config;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -27,5 +27,8 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 public class EntitlementsConfigurationProperties {
+
   private String authorizeApi;
+  private String authorizeApiKey;
+
 }

@@ -17,40 +17,37 @@
 
 package org.opengroup.osdu.search.provider.reference.di;
 
-import javax.inject.Inject;
+import lombok.RequiredArgsConstructor;
 import org.opengroup.osdu.core.common.entitlements.EntitlementsAPIConfig;
 import org.opengroup.osdu.core.common.entitlements.EntitlementsFactory;
 import org.opengroup.osdu.core.common.entitlements.IEntitlementsFactory;
 import org.opengroup.osdu.core.common.http.json.HttpResponseBodyMapper;
-import org.springframework.beans.factory.annotation.Value;
+import org.opengroup.osdu.search.provider.reference.config.EntitlementsConfigurationProperties;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
 @Component
 @RequestScope
+@RequiredArgsConstructor
 public class EntitlementsClientFactory extends AbstractFactoryBean<IEntitlementsFactory> {
 
-  @Inject
-  private HttpResponseBodyMapper httpResponseBodyMapper;
-
-  @Value("${AUTHORIZE_API}")
-  private String authorizeApi;
-  @Value("${AUTHORIZE_API_KEY:}")
-  private String authorizeApiKey;
+  private final HttpResponseBodyMapper httpResponseBodyMapper;
+  private final EntitlementsConfigurationProperties configurationProperties;
 
   @Override
   protected IEntitlementsFactory createInstance() {
 
     return new EntitlementsFactory(EntitlementsAPIConfig
         .builder()
-        .rootUrl(authorizeApi)
-        .apiKey(authorizeApiKey)
-        .build(), httpResponseBodyMapper);
+        .rootUrl(this.configurationProperties.getAuthorizeApi())
+        .apiKey(this.configurationProperties.getAuthorizeApiKey())
+        .build(), this.httpResponseBodyMapper);
   }
 
   @Override
   public Class<?> getObjectType() {
     return IEntitlementsFactory.class;
   }
+
 }
