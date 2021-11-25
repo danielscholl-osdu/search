@@ -19,7 +19,7 @@ package org.opengroup.osdu.search.provider.reference.di;
 
 import lombok.RequiredArgsConstructor;
 import org.opengroup.osdu.core.common.util.IServiceAccountJwtClient;
-import org.springframework.beans.factory.annotation.Value;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.stereotype.Component;
 
@@ -28,8 +28,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class GCPJwtClientProvider extends AbstractFactoryBean<IServiceAccountJwtClient> {
 
-  @Value("${GOOGLE_AUDIENCES}")
-  private String audience;
+  private final SearchConfigurationProperties searchConfigurationProperties;
 
   @Override
   public Class<?> getObjectType() {
@@ -38,7 +37,7 @@ public class GCPJwtClientProvider extends AbstractFactoryBean<IServiceAccountJwt
 
   @Override
   protected IServiceAccountJwtClient createInstance() throws Exception {
-    GcpServiceAccountJwtClient serviceAccountJwtClient = new GcpServiceAccountJwtClient(audience);
-    return serviceAccountJwtClient;
+    return new GcpServiceAccountJwtClient(this.searchConfigurationProperties.getGoogleAudiences());
   }
+
 }

@@ -23,6 +23,7 @@ import static com.mongodb.util.JSON.serialize;
 import com.google.gson.Gson;
 import com.mongodb.client.MongoCollection;
 import java.util.Objects;
+import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpStatus;
 import org.bson.Document;
 import org.opengroup.osdu.core.common.model.http.AppException;
@@ -33,43 +34,40 @@ import org.opengroup.osdu.core.common.search.Preconditions;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class ElasticRepositoryReference implements IElasticRepository {
 
   private static final Logger logger = LoggerFactory.getLogger(ElasticRepositoryReference.class);
 
-  public static final String SEARCH_STORAGE = "SearchSettings";
-  public static final String SEARCH_DATABASE = "local";
+  public static final String ELASTIC_SETTINGS_DATABASE = "local";
+  public static final String ELASTIC_SETTINGS_COLLECTION = "SearchSettings";
 
-  private MongoDdmsClient mongoClient;
-  private SearchConfigurationProperties searchConfigurationProperties;
+  private static final String MISSING_TENANT_INFO_REASON = "TenantInfo is null";
+  private static final String MISSING_TENANT_INFO_MESSAGE = "TenantInfo is missing.";
 
-  @Autowired
-  public ElasticRepositoryReference(MongoDdmsClient mongoClient,
-      SearchConfigurationProperties searchConfigurationProperties) {
-    this.mongoClient = mongoClient;
-    this.searchConfigurationProperties = searchConfigurationProperties;
-  }
+  private final MongoDdmsClient mongoClient;
+  private final SearchConfigurationProperties searchConfigurationProperties;
 
   @Override
   public ClusterSettings getElasticClusterSettings(TenantInfo tenantInfo) {
 
     if (Objects.isNull(tenantInfo)) {
-      throw new AppException(HttpStatus.SC_NOT_FOUND, "TenantInfo is null", "");
+      throw new AppException(HttpStatus.SC_NOT_FOUND, MISSING_TENANT_INFO_REASON,
+          MISSING_TENANT_INFO_MESSAGE);
     }
 
     String settingId = tenantInfo.getName().concat("-")
         .concat(searchConfigurationProperties.getElasticDatastoreId());
 
     MongoCollection<Document> collection = this.mongoClient
-        .getMongoCollection(SEARCH_DATABASE, SEARCH_STORAGE);
+        .getMongoCollection(ELASTIC_SETTINGS_DATABASE, ELASTIC_SETTINGS_COLLECTION);
 
-    Document record = (Document) collection.find(eq("_id", settingId)).first();
+    Document record = collection.find(eq("_id", settingId)).first();
     if (Objects.isNull(record)) {
-      logger.warn(settingId + " credentials not found at database.");
+      logger.warn(String.format("%s credentials not found at database.", settingId));
       return new ClusterSettings(searchConfigurationProperties.getElasticHost(),
           Integer.parseInt(searchConfigurationProperties.getElasticPort()),
           searchConfigurationProperties.getElasticUserPassword(), false, false);
