@@ -24,13 +24,56 @@ public class QueryParserUtil implements IQueryParserUtil {
     public static final String QUERY_GROUP = "query";
     public static final String INCOMPLETE_PATH_GROUP = "incompletepath";
 
-    private Pattern isMultilevelNestedPattern = Pattern.compile("(nested\\()((.+?)nested\\()+");
-    private Pattern multiLevelNestedPattern =
-        Pattern.compile("((?<operator>AND|OR|NOT)(\\s|\\s\\())*(nested\\()(?<parentpath>.+?),\\S*(?<innernodes>.+?\\)\\)\\)+)");
-    private Pattern oneLevelNestedPattern = Pattern.compile("((?<operator>AND|OR|NOT)(\\s|\\s\\())*(nested\\()(?<path>.+?),\\S*(?<query>\\s\\(.+)");
-    private Pattern beginStringQueryNestedPattern = Pattern.compile("\\((?<incompletepath>\\S+?):");
-    private Pattern intermediateStringQueryNestedPattern = Pattern.compile("(AND|OR|NOT)\\s(?<incompletepath>\\S+?):");
-    private Pattern intermediatePattern = Pattern.compile("\\A(?<operator>AND|OR|NOT)(?<query>.+)");
+    /**
+     * Match example:
+     *  "nested(data.NestedTest, nested(...."
+     */
+    private static Pattern isMultilevelNestedPattern = Pattern.compile("(nested\\()((.+?)nested\\()+");
+
+    /**
+     * Match example:
+     *  "AND nested(data.NestedTest, nested(data.NestedTest.NestedInnerTest, (DateTimeInnerTest:(>2024) AND NumberInnerTest:(>14))))"
+     * Groups:
+     *  <operator>: "AND"
+     *  <parentpath>: "data.NestedTest"
+     *  <innernodes>:  "nested(data.NestedTest.NestedInnerTest, (DateTimeInnerTest:(>2024) AND NumberInnerTest:(>14))))"
+     */
+    private static Pattern multiLevelNestedPattern = Pattern.compile("((?<operator>AND|OR|NOT)(\\s|\\s\\())*(nested\\()(?<parentpath>.+?),\\S*(?<innernodes>.+?\\)\\)\\)+)");
+
+    /**
+     * Match example:
+     *  "OR nested(data.NestedTest, (StringTest:\"test*\"))"
+     * Groups:
+     *  <operator>: "OR"
+     *  <path>: "data.NestedTest"
+     *  <query>: "(StringTest:\"test*\"))"
+     */
+
+    private static Pattern oneLevelNestedPattern = Pattern.compile("((?<operator>AND|OR|NOT)(\\s|\\s\\())*(nested\\()(?<path>.+?),\\S*(?<query>\\s\\(.+)");
+    /**
+     * Match example:
+     *  (NumberTest:
+     * Groups:
+     *  <incompletepath>: NumberTest
+     */
+
+    private static Pattern beginStringQueryNestedPattern = Pattern.compile("\\((?<incompletepath>\\S+?):");
+    /**
+     * Match example:
+     *  AND StringTest:
+     * Groups:
+     *  <incompletepath>: StringTest
+     */
+    private static Pattern intermediateStringQueryNestedPattern = Pattern.compile("(AND|OR|NOT)\\s(?<incompletepath>\\S+?):");
+
+    /**
+     * Match example:
+     *   AND TEXAS
+     * Groups:
+     *  <operator>: AND
+     *  <query>: TEXAS
+     */
+    private static Pattern intermediatePattern = Pattern.compile("\\A(?<operator>AND|OR|NOT)(?<query>.+)");
 
     @Override
     public QueryBuilder buildQueryBuilderFromQueryString(String query) {
@@ -157,7 +200,7 @@ public class QueryParserUtil implements IQueryParserUtil {
         Matcher stringQueryMatcher = intermediateStringQueryNestedPattern.matcher(stringQuery);
         while (stringQueryMatcher.find()) {
             String incompletePath = stringQueryMatcher.group(INCOMPLETE_PATH_GROUP);
-            stringQuery = stringQuery.replaceFirst(incompletePath, nestedPath + "." + incompletePath);
+            stringQuery = stringQuery.replaceFirst(" " + incompletePath, " " + nestedPath + "." + incompletePath);
         }
         stringQuery = trimTrailingBrackets(stringQuery);
         return new NestedQueryNode(stringQuery, boolOperator, null, nestedPath);

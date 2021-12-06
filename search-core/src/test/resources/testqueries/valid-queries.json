@@ -9,6 +9,7 @@
     "combined-simple-nested-query": "data.First:\"Example*\" OR nested(data.NestedTest, (StringTest:\"Example*\")) AND data.Second:\"test string\"",
     "multilevel-nested-query": "(nested(data.FirstLevel, nested(data.FirstLevel.SecondLevel, nested(data.FirstLevel.SecondLevel.ThirdLevel, (ThirdLevelNumberTest:\"12345.0\")))))",
     "combined-multilevel-nested-query": "nested(data.ParentNested, nested(data.ParentNested.FirstInnerNested, (NumberTest:(12345.0 OR 0) AND StringTest:\"test string\")) OR nested(data.ParentNested.SecondInnerNested, (NumberTest:\"12345.0\" AND StringTest:\"test string\")))",
-    "combined-nested-query-with-not": "nested(data.ParentNested, nested(data.ParentNested.FirstInnerNested, (NumberTest:(12345.0 OR 0) AND StringTest:\"test string\")) NOT nested(data.ParentNested.SecondInnerNested, (NumberTest:\"12345.0\" AND StringTest:\"test string\")))"
+    "combined-nested-query-with-not": "nested(data.ParentNested, nested(data.ParentNested.FirstInnerNested, (NumberTest:(12345.0 OR 0) AND StringTest:\"test string\")) NOT nested(data.ParentNested.SecondInnerNested, (NumberTest:\"12345.0\" AND StringTest:\"test string\")))",
+    "nested-query-with-similar-inner-properties": "nested(data.VerticalMeasurements, (VerticalMeasurementID:\"Rotary Table\" AND VerticalMeasurement:(>30)))"
 }
 
