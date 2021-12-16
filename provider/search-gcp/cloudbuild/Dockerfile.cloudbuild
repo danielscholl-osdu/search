@@ -9,5 +9,5 @@ ENV PORT $PORT
 # Copy the jar to the production image from the builder stage.
 COPY provider/search-${PROVIDER_NAME}/target/search-${PROVIDER_NAME}-*-spring-boot.jar search-${PROVIDER_NAME}.jar
 # Run the web service on container startup.
-CMD java -Djava.security.egd=file:/dev/./urandom -Dserver.port=${PORT} -jar /app/search-${PROVIDER_NAME}.jar
+CMD java -Djava.security.egd=file:/dev/./urandom -Dserver.port=${PORT} -Dlog4j.formatMsgNoLookups=true -jar /app/search-${PROVIDER_NAME}.jar
 
