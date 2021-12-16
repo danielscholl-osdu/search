@@ -182,7 +182,7 @@
             "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:SomeUniqueVerticalMeasurementSourceID:",
             "VerticalReferenceID": "Example VerticalReferenceID",
             "TerminationDateTime": "2020-02-13T09:13:15.55+0000",
-            "VerticalMeasurementID": "Example VerticalMeasurementID",
+            "VerticalMeasurementID": "Other Example VerticalMeasurementID",
             "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:SomeUniqueVerticalMeasurementPathID:",
             "EffectiveDateTime": "2020-02-13T09:13:15.55+0000",
             "VerticalMeasurement": 12.3,

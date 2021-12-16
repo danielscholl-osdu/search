@@ -147,8 +147,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
 
   private CursorQueryResponse initCursorQuery(CursorQueryRequest searchRequest,
       RestHighLevelClient client) {
-    CursorQueryResponse queryResponse = this.executeCursorQuery(searchRequest, client);
-    return queryResponse;
+    return this.executeCursorQuery(searchRequest, client);
   }
 
   private CursorQueryResponse executeCursorQuery(CursorQueryRequest searchRequest,

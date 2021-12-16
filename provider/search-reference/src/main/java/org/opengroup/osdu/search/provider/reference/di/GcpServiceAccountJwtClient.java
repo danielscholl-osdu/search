@@ -30,6 +30,9 @@ import org.opengroup.osdu.core.common.util.IServiceAccountJwtClient;
 //TODO temp fix for policy integration
 public class GcpServiceAccountJwtClient implements IServiceAccountJwtClient {
 
+  private static final String MISCONFIGURED_CREDENTIALS_ERROR_REASON = "Misconfigured credentials";
+  private static final String MISCONFIGURED_CREDENTIALS_ERROR_MESSAGE = "GcpServiceAccountJwtClient have misconfigured token provider";
+
   private IdTokenProvider idTokenProvider;
 
   private String targetAudience;
@@ -51,8 +54,9 @@ public class GcpServiceAccountJwtClient implements IServiceAccountJwtClient {
         if (adcCreds instanceof IdTokenProvider) {
           this.idTokenProvider = (IdTokenProvider) adcCreds;
         } else {
-          throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Misconfigured credentials",
-              "GcpServiceAccountJwtClient have misconfigured token provider");
+          throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR,
+              MISCONFIGURED_CREDENTIALS_ERROR_REASON,
+              MISCONFIGURED_CREDENTIALS_ERROR_MESSAGE);
         }
       }
       IdTokenCredentials tokenCredential = IdTokenCredentials.newBuilder()
@@ -62,8 +66,9 @@ public class GcpServiceAccountJwtClient implements IServiceAccountJwtClient {
       AccessToken accessToken = tokenCredential.refreshAccessToken();
       return accessToken.getTokenValue();
     } catch (IOException e) {
-      throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Misconfigured credentials",
-          "GcpServiceAccountJwtClient have misconfigured token provider", e);
+      throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR,
+          MISCONFIGURED_CREDENTIALS_ERROR_REASON,
+          MISCONFIGURED_CREDENTIALS_ERROR_MESSAGE, e);
     }
   }
 }

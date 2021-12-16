@@ -17,18 +17,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http
         .csrf().disable()
-        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER)
-        .and()
-        .authorizeRequests()
-            .antMatchers("/", "/index.html",
-                    "/v2/api-docs",
-                    "/health/**",
-                    "/configuration/ui",
-                    "/swagger-resources/**",
-                    "/configuration/security",
-                    "/swagger",
-                    "/swagger-ui.html",
-                    "/webjars/**").permitAll()
-            .anyRequest().authenticated().and().oauth2ResourceServer().jwt();
+        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER);
+        // .and()
+        // .authorizeRequests()
+        //     .antMatchers("/", "/index.html",
+        //             "/v2/api-docs",
+        //             "/health/**",
+        //             "/configuration/ui",
+        //             "/swagger-resources/**",
+        //             "/configuration/security",
+        //             "/swagger",
+        //             "/swagger-ui.html",
+        //             "/webjars/**").permitAll()
+        //     .anyRequest().authenticated().and().oauth2ResourceServer().jwt();
 	}
 }

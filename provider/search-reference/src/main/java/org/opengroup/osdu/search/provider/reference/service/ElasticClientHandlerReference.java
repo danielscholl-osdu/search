@@ -28,7 +28,6 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.elasticsearch.client.RestClient;
@@ -65,10 +64,12 @@ public class ElasticClientHandlerReference extends ElasticClientHandler {
         .valueOf(searchConfigurationProperties.getSecurityHttpsCertificateTrust());
   }
 
+  @Override
   public RestHighLevelClient createRestClient() {
     return getCloudRestClient(elasticSettingService.getElasticClusterInformation());
   }
 
+  @Override
   public RestHighLevelClient createRestClient(final ClusterSettings clusterSettings) {
     return getCloudRestClient(clusterSettings);
   }
@@ -114,6 +115,7 @@ public class ElasticClientHandlerReference extends ElasticClientHandler {
     }
   }
 
+  @Override
   public RestClientBuilder createClientBuilder(String host, String basicAuthenticationHeaderVal,
       int port, String protocolScheme, String tls) {
     RestClientBuilder builder = RestClient.builder(new HttpHost(host, port, protocolScheme));
@@ -138,12 +140,9 @@ public class ElasticClientHandlerReference extends ElasticClientHandler {
       log.warning("Elastic client connection uses TrustSelfSignedStrategy()");
       SSLContext sslContext = createSSLContext();
       builder.setHttpClientConfigCallback(httpClientBuilder ->
-      {
-        HttpAsyncClientBuilder httpAsyncClientBuilder = httpClientBuilder.setSSLContext(sslContext)
-            .setSSLHostnameVerifier(
-                NoopHostnameVerifier.INSTANCE);
-        return httpAsyncClientBuilder;
-      });
+          httpClientBuilder.setSSLContext(sslContext)
+              .setSSLHostnameVerifier(
+                  NoopHostnameVerifier.INSTANCE));
     }
     builder.setDefaultHeaders(defaultHeaders);
     return builder;
@@ -154,11 +153,7 @@ public class ElasticClientHandlerReference extends ElasticClientHandler {
     try {
       sslContextBuilder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
       return sslContextBuilder.build();
-    } catch (NoSuchAlgorithmException e) {
-      log.severe(e.getMessage());
-    } catch (KeyStoreException e) {
-      log.severe(e.getMessage());
-    } catch (KeyManagementException e) {
+    } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
       log.severe(e.getMessage());
     }
     return null;
