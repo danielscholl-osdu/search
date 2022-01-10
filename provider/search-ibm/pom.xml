@@ -23,10 +23,9 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<os-core-lib-ibm.version>0.13.0-rc5</os-core-lib-ibm.version>
+		<os-core-lib-ibm.version>0.13.0-rc6</os-core-lib-ibm.version>
 		<start-class>org.opengroup.osdu.search.provider.ibm.app.SearchIBMApplication</start-class>
 	</properties>
-
 
 	<dependencies>
 
