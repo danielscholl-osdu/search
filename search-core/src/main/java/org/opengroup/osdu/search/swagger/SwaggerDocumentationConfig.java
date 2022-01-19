@@ -3,13 +3,14 @@ package org.opengroup.osdu.search.swagger;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import springfox.documentation.builders.ParameterBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.schema.ModelRef;
+import springfox.documentation.builders.RequestParameterBuilder;
+import springfox.documentation.oas.annotations.EnableOpenApi;
 import springfox.documentation.service.ApiKey;
 import springfox.documentation.service.AuthorizationScope;
-import springfox.documentation.service.Parameter;
+import springfox.documentation.service.ParameterType;
+import springfox.documentation.service.RequestParameter;
 import springfox.documentation.service.SecurityReference;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.service.contexts.SecurityContext;
@@ -21,25 +22,23 @@ import java.util.Collections;
 import java.util.List;
 
 @Configuration
-@EnableSwagger2
+@EnableOpenApi
 public class SwaggerDocumentationConfig {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String DEFAULT_INCLUDE_PATTERN = "/.*";
 
     @Bean
     public Docket api() {
-        ParameterBuilder builder = new ParameterBuilder();
-        List<Parameter> parameters = new ArrayList<>();
+    	RequestParameterBuilder builder = new RequestParameterBuilder();
+    	List<RequestParameter> parameters = new ArrayList<>();
         builder.name(DpsHeaders.DATA_PARTITION_ID)
                 .description("tenant. This should be same value as first field in 'kind' field")
-                .defaultValue("opendes")
-                .modelRef(new ModelRef("string"))
-                .parameterType("header")
+                .in(ParameterType.HEADER)
                 .required(true)
                 .build();
         parameters.add(builder.build());
-        return new Docket(DocumentationType.SWAGGER_2)
-                .globalOperationParameters(parameters)
+        return new Docket(DocumentationType.OAS_30)
+            	.globalRequestParameters(parameters)
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("org.opengroup.osdu.search.api"))
                 .build()
@@ -48,13 +47,13 @@ public class SwaggerDocumentationConfig {
     }
 
     private ApiKey apiKey() {
-        return new ApiKey("JWT", AUTHORIZATION_HEADER, "header");
+        return new ApiKey(AUTHORIZATION_HEADER, AUTHORIZATION_HEADER, "header");
     }
 
     private SecurityContext securityContext() {
         return SecurityContext.builder()
                 .securityReferences(defaultAuth())
-                .forPaths(PathSelectors.regex(DEFAULT_INCLUDE_PATTERN))
+                .operationSelector(o -> PathSelectors.regex(DEFAULT_INCLUDE_PATTERN).test(o.requestMappingPattern()))
                 .build();
     }
 
