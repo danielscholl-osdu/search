@@ -16,6 +16,7 @@ package org.opengroup.osdu.search.api;
 
 import com.google.gson.Gson;
 
+import org.apache.http.HttpStatus;
 import org.opengroup.osdu.core.common.model.search.DeploymentEnvironment;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.search.CcsQueryRequest;
@@ -30,6 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.opengroup.osdu.search.config.CcsQueryConfig;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.provider.interfaces.ICcsQueryService;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
@@ -63,6 +65,8 @@ public class SearchApiTest {
     private IScrollQueryService scrollQueryService;
     @Mock
     private CursorQueryRequest cursorQueryRequest;
+    @Mock
+    private CcsQueryConfig ccsQueryConfig;
     @InjectMocks
     private SearchApi sut;
 
@@ -232,6 +236,7 @@ public class SearchApiTest {
         CcsQueryRequest ccsQuery = new CcsQueryRequest();
         ccsQuery.setKind("tenant1:welldb:well:1.0.2");
         CcsQueryResponse queryResponse = new CcsQueryResponse();
+        when(this.ccsQueryConfig.isDisabled()).thenReturn(false);
         when(this.ccsQueryService.makeRequest(ccsQuery)).thenReturn(queryResponse);
 
         ResponseEntity<CcsQueryResponse> response = this.sut.ccsQuery(ccsQuery);
@@ -241,5 +246,20 @@ public class SearchApiTest {
         assertEquals(0, apiResponse.getTotalCount());
         assertEquals(0, apiResponse.getResults().size());
         assertEquals(HttpServletResponse.SC_OK, response.getStatusCodeValue());
+    }
+
+    @Test
+    public void should_returnHttp404_when_ccsQueryApiIsDisabled() throws Exception {
+        when(this.ccsQueryConfig.isDisabled()).thenReturn(true);
+
+        CcsQueryRequest ccsQuery = new CcsQueryRequest();
+        ccsQuery.setKind("tenant1:welldb:well:1.0.2");
+        try {
+            ResponseEntity<CcsQueryResponse> response = this.sut.ccsQuery(ccsQuery);
+            fail("Should not succeed");
+        } catch (AppException e){
+            assertEquals(HttpStatus.SC_NOT_FOUND, e.getError().getCode());
+            assertEquals("This API has been deprecated", e.getError().getReason());
+        }
     }
 }
