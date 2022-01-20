@@ -16,7 +16,7 @@ variables:
   GCP_DOMAIN: cloud.slb-ds.com
   GCP_STORAGE_URL: https://osdu-search-dot-opendes.appspot.com/api/storage/v2/
 
- # --- osdu gcp specific variables for cloudrun ---
+  # --- osdu gcp specific variables for cloudrun ---
   OSDU_GCP_SERVICE: search
   OSDU_GCP_VENDOR: gcp
   # Variables should be partially removed after migration on cloudrun gcp
@@ -28,6 +28,7 @@ variables:
   OSDU_GCP_HELM_CONFIG_SERVICE: search-config
   OSDU_GCP_HELM_DEPLOYMENT_SERVICE: search-deploy
   OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.log_level=INFO --set data.google_cloud_project_id=$OSDU_GCP_PROJECT --set data.redis_search_host=$REDIS_SEARCH_HOST --set data.redis_group_host=$REDIS_GROUP_HOST --set data.indexer_host=$OSDU_GCP_INDEXER_API --set data.authorize_api=$OSDU_GCP_AUTHORIZE_API --set data.audiences=$GOOGLE_AUDIENCE --set data.partition_api=$OSDU_GCP_PARTITION_API --set data.policy_api=$OSDU_GCP_POLICY_API"
+  OSDU_GCP_HELM_CONFIG_SERVICE_VARS_DEV2: "--set data.log_level=INFO --set data.google_cloud_project_id=$OSDU_GCP_PROJECT --set data.redis_search_host=$REDIS_SEARCH_HOST --set data.redis_group_host=$REDIS_GROUP_HOST --set data.indexer_host=$OSDU_GCP_INDEXER_API --set data.authorize_api=$OSDU_GCP_AUTHORIZE_API --set data.audiences=$GOOGLE_AUDIENCE --set data.partition_api=$OSDU_GCP_PARTITION_API --set data.policy_api=$OSDU_GCP_POLICY_API"
   OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA --set data.serviceAccountName=$OSDU_GCP_SERVICE-k8s"
 
   IBM_BUILD_SUBDIR: provider/search-ibm
@@ -37,7 +38,6 @@ variables:
   AZURE_SERVICE: search
   AZURE_BUILD_SUBDIR: provider/search-azure
   AZURE_TEST_SUBDIR: testing/integration-tests/search-test-azure
-
 
 include:
   - project: "osdu/platform/ci-cd-pipelines"
@@ -64,15 +64,20 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/azure.yml"
 
-  - project: 'osdu/platform/ci-cd-pipelines'
-    file: 'cloud-providers/osdu-gcp-gke.yml'
+  - project: "osdu/platform/ci-cd-pipelines"
+    ref: "gcp-fix-hardcoded-values"
+    file: "cloud-providers/osdu-gcp-gke.yml"
 
-  - project: 'osdu/platform/ci-cd-pipelines'
-    file: 'publishing/pages.yml'
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "publishing/pages.yml"
 
 aws-test-java:
-  tags: ['aws-internal-test']
+  tags: ["aws-internal-test"]
 
 osdu-gcp-test:
+  variables:
+    OSDU_GCP_TESTING_DIR: "testing/integration-tests"
+
+osdu-gcp-dev2-test:
   variables:
     OSDU_GCP_TESTING_DIR: "testing/integration-tests"
