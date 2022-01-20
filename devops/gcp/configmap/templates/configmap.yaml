@@ -20,3 +20,5 @@ data:
   PARTITION_API: "{{ .Values.data.partition_api }}"
   POLICY_API: "{{ .Values.data.policy_api }}"
   POLICY_ID: "{{ .Values.data.policy_id }}"
+  KEY_RING: "{{ .Values.data.key_ring }}"
+  KMS_KEY: "{{ .Values.data.kms_key }}"

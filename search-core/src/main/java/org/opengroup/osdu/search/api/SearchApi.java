@@ -15,24 +15,16 @@
 package org.opengroup.osdu.search.api;
 
 import io.swagger.annotations.*;
-
+import org.opengroup.osdu.core.common.SwaggerDoc;
+import org.opengroup.osdu.core.common.model.http.AppError;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
-import org.opengroup.osdu.core.common.model.http.AppError;
 import org.opengroup.osdu.core.common.model.search.*;
-import org.opengroup.osdu.core.common.SwaggerDoc;
-import org.opengroup.osdu.core.common.model.search.SearchServiceRole;
-
+import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
+import org.opengroup.osdu.search.config.CcsQueryConfig;
 import org.opengroup.osdu.search.provider.interfaces.ICcsQueryService;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
-
-import javassist.NotFoundException;
-
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,6 +35,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.annotation.RequestScope;
 
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -65,6 +59,8 @@ public class SearchApi {
     private IScrollQueryService scrollQueryService;
     @Inject
     private ICcsQueryService ccsQueryService;
+    @Inject
+    private CcsQueryConfig ccsQueryConfig;
 
     @PostMapping("/query")
     @PreAuthorize("@authorizationFilter.hasPermission('" + SearchServiceRole.ADMIN + "', '" + SearchServiceRole.USER + "')")
@@ -132,6 +128,7 @@ public class SearchApi {
         }
     }
 
+    // This endpoint is deprecated as of M10. In M11 this endpoint will be deleted
     @PostMapping("/ccs/query")
     @PreAuthorize("@authorizationFilter.hasPermission('" + SearchServiceRole.ADMIN + "', '" + SearchServiceRole.USER + "')")
     @ApiOperation(
@@ -156,7 +153,13 @@ public class SearchApi {
                     code = HttpServletResponse.SC_BAD_GATEWAY,
                     message = SwaggerDoc.RESPONSE_BAD_GATEWAY,
                     response = String.class)})
+    @Deprecated
     public ResponseEntity<CcsQueryResponse> ccsQuery(@NotNull(message = SwaggerDoc.REQUEST_VALIDATION_NOT_NULL_BODY) @RequestBody @Valid CcsQueryRequest queryRequest) throws Exception {
+
+        if (ccsQueryConfig.isDisabled()) {
+            throw new AppException(HttpStatus.NOT_FOUND.value(), "This API has been deprecated", "Unable to perform action");
+        }
+
         try{
             CcsQueryResponse searchResponse = ccsQueryService.makeRequest(queryRequest);
             return new ResponseEntity<CcsQueryResponse>(searchResponse, HttpStatus.OK);
