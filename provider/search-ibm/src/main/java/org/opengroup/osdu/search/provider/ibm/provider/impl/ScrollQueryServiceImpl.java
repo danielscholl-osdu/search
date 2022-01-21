@@ -69,7 +69,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
     @Override
     public CursorQueryResponse queryIndex(CursorQueryRequest searchRequest) throws Exception {
     	
-    	validateTenant(searchRequest);
+    	//validateTenant(searchRequest);
     	
     	CursorQueryResponse queryResponse = CursorQueryResponse.getEmptyResponse();
 
