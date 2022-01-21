@@ -97,7 +97,6 @@ The following software have components provided under the terms of this license:
 - IBM COS SDK For Java (from https://github.com/ibm/ibm-cos-sdk-java)
 - IBM COS SDK for Java - Core (from https://github.com/ibm/ibm-cos-sdk-java)
 - J2ObjC Annotations (from https://github.com/google/j2objc/)
-- JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from https://repo1.maven.org/maven2/org/jboss/spec/javax/ws/rs/jboss-jaxrs-api_2.1_spec)
 - JBoss Logging 3 (from http://www.jboss.org)
 - JCIP Annotations under Apache License (from http://stephenc.github.com/jcip-annotations)
 - JCL 1.2 implemented over SLF4J (from http://www.slf4j.org)
@@ -292,6 +291,7 @@ The following software have components provided under the terms of this license:
 - javatuples (from http://www.javatuples.org)
 - javax.inject (from http://code.google.com/p/atinject/)
 - javax.ws.rs-api (from http://jax-rs-spec.java.net)
+- jboss-jakarta-jaxrs-api_spec (from https://repo1.maven.org/maven2/org/jboss/spec/javax/ws/rs/jboss-jaxrs-api_2.1_spec)
 - jersey-container-servlet (from https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet)
 - jersey-container-servlet-core (from https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet-core)
 - jersey-core (from https://repo1.maven.org/maven2/com/sun/jersey/jersey-core)
@@ -445,7 +445,6 @@ CDDL-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- ASM library repackaged as OSGi bundle (from https://repo1.maven.org/maven2/org/glassfish/hk2/external/asm-all-repackaged)
 - Class Model for Hk2 (from https://repo1.maven.org/maven2/org/glassfish/hk2/class-model)
 - HK2 Implementation Utilities (from https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-utils)
 - HK2 Spring Bridge (from https://repo1.maven.org/maven2/org/glassfish/hk2/spring-bridge)
@@ -458,6 +457,7 @@ The following software have components provided under the terms of this license:
 - Run Level Service (from https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-runlevel)
 - ServiceLocator Default Implementation (from https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-locator)
 - aopalliance-repackaged (from https://repo1.maven.org/maven2/org/glassfish/hk2/external/aopalliance-repackaged)
+- asm-all-repackaged (from https://repo1.maven.org/maven2/org/glassfish/hk2/external/asm-all-repackaged)
 - javax.ws.rs-api (from http://jax-rs-spec.java.net)
 - jersey-client (from https://repo1.maven.org/maven2/com/sun/jersey/jersey-client)
 - jersey-container-servlet (from https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet)
@@ -525,15 +525,14 @@ EPL-2.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from https://repo1.maven.org/maven2/org/jboss/spec/javax/ws/rs/jboss-jaxrs-api_2.1_spec)
 - JBoss Jakarta Annotations API (from https://github.com/jboss/jboss-jakarta-annotations-api_spec)
+- jboss-jakarta-jaxrs-api_spec (from https://repo1.maven.org/maven2/org/jboss/spec/javax/ws/rs/jboss-jaxrs-api_2.1_spec)
 
 ========================================================================
 GPL-2.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- ASM library repackaged as OSGi bundle (from https://repo1.maven.org/maven2/org/glassfish/hk2/external/asm-all-repackaged)
 - Class Model for Hk2 (from https://repo1.maven.org/maven2/org/glassfish/hk2/class-model)
 - Expression Language 3.0 (from http://el-spec.java.net, http://uel.java.net)
 - Expression Language 3.0 API (from http://uel-spec.java.net)
@@ -551,6 +550,7 @@ The following software have components provided under the terms of this license:
 - Run Level Service (from https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-runlevel)
 - ServiceLocator Default Implementation (from https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-locator)
 - aopalliance-repackaged (from https://repo1.maven.org/maven2/org/glassfish/hk2/external/aopalliance-repackaged)
+- asm-all-repackaged (from https://repo1.maven.org/maven2/org/glassfish/hk2/external/asm-all-repackaged)
 - javax.annotation-api (from http://jcp.org/en/jsr/detail?id=250)
 - javax.ws.rs-api (from http://jax-rs-spec.java.net)
 - jersey-client (from https://repo1.maven.org/maven2/com/sun/jersey/jersey-client)
@@ -583,7 +583,6 @@ The following software have components provided under the terms of this license:
 - Expression Language 3.0 (from http://el-spec.java.net, http://uel.java.net)
 - Expression Language 3.0 API (from http://uel-spec.java.net)
 - HK2 Implementation Utilities (from https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-utils)
-- JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from https://repo1.maven.org/maven2/org/jboss/spec/javax/ws/rs/jboss-jaxrs-api_2.1_spec)
 - JBoss Jakarta Annotations API (from https://github.com/jboss/jboss-jakarta-annotations-api_spec)
 - JSR 353 (JSON Processing) Default Provider (from http://jsonp.java.net)
 - Jakarta Servlet (from http://servlet-spec.java.net, https://projects.eclipse.org/projects/ee4j.servlet)
@@ -614,10 +613,10 @@ GPL-3.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from https://repo1.maven.org/maven2/org/jboss/spec/javax/ws/rs/jboss-jaxrs-api_2.1_spec)
 - JBoss Jakarta Annotations API (from https://github.com/jboss/jboss-jakarta-annotations-api_spec)
 - Project Lombok (from http://projectlombok.org, https://projectlombok.org)
 - javax.ws.rs-api (from http://jax-rs-spec.java.net)
+- jboss-jakarta-jaxrs-api_spec (from https://repo1.maven.org/maven2/org/jboss/spec/javax/ws/rs/jboss-jaxrs-api_2.1_spec)
 - jersey-client (from https://repo1.maven.org/maven2/com/sun/jersey/jersey-client)
 - jersey-core (from https://repo1.maven.org/maven2/com/sun/jersey/jersey-core)
 
