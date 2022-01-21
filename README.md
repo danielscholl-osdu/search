@@ -21,6 +21,10 @@ All documentation for the Azure implementation of `os-search` lives [here](./pro
 
 All documentation for the GCP implementation of `os-search` lives [here](./provider/search-gcp/README.md)
 
+## AWS Implementation
+
+All documentation for the AWS implementation of `os-search` lives [here](./provider/search-aws/README.md)
+
 ### Open API spec
 go-swagger brings to the go community a complete suite of fully-featured, high-performance, API components to work with a Swagger API: server, client and data model.
 * How to generate go client libraries?
