@@ -126,6 +126,7 @@ The following software have components provided under the terms of this license:
 - Jackson-dataformat-YAML (from https://github.com/FasterXML/jackson, https://github.com/FasterXML/jackson-dataformats-text)
 - Jackson-module-parameter-names (from https://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-parameter-names)
 - Jakarta Bean Validation API (from https://beanvalidation.org)
+- Jakarta Expression Language Implementation (from https://projects.eclipse.org/projects/ee4j.el)
 - Jakarta Servlet (from http://servlet-spec.java.net, https://projects.eclipse.org/projects/ee4j.servlet)
 - Java Native Access (from https://github.com/java-native-access/jna, https://github.com/twall/jna)
 - Java Native Access Platform (from https://github.com/java-native-access/jna)
@@ -180,8 +181,11 @@ The following software have components provided under the terms of this license:
 - Netty/Handler/Proxy (from https://repo1.maven.org/maven2/io/netty/netty-handler-proxy)
 - Netty/Resolver (from https://repo1.maven.org/maven2/io/netty/netty-resolver)
 - Netty/Resolver/DNS (from https://repo1.maven.org/maven2/io/netty/netty-resolver-dns)
+- Netty/Resolver/DNS/Classes/MacOS (from https://repo1.maven.org/maven2/io/netty/netty-resolver-dns-classes-macos)
 - Netty/TomcatNative [BoringSSL - Static] (from https://repo1.maven.org/maven2/io/netty/netty-tcnative-boringssl-static)
 - Netty/Transport (from https://repo1.maven.org/maven2/io/netty/netty-transport)
+- Netty/Transport/Classes/Epoll (from https://repo1.maven.org/maven2/io/netty/netty-transport-classes-epoll)
+- Netty/Transport/Classes/KQueue (from https://repo1.maven.org/maven2/io/netty/netty-transport-classes-kqueue)
 - Netty/Transport/Native/Unix/Common (from https://repo1.maven.org/maven2/io/netty/netty-transport-native-unix-common)
 - Nimbus Content Type (from https://bitbucket.org/connect2id/nimbus-content-type)
 - Nimbus JOSE+JWT (from https://bitbucket.org/connect2id/nimbus-jose-jwt, https://bitbucket.org/nimbusds/nimbus-jose-jwt)
@@ -312,10 +316,10 @@ The following software have components provided under the terms of this license:
 - mapper-extras (from https://github.com/elastic/elasticsearch)
 - micrometer-core (from https://github.com/micrometer-metrics/micrometer)
 - micrometer-registry-azure-monitor (from https://github.com/micrometer-metrics/micrometer)
-- nio-multipart-parser
-- nio-stream-storage (from https://github.com/synchronoss/nio-stream-storage)
 - null (from https://github.com/fge/msg-simple)
+- org.apiguardian:apiguardian-api (from https://github.com/apiguardian-team/apiguardian)
 - org.conscrypt:conscrypt-openjdk-uber (from https://conscrypt.org/)
+- org.opentest4j:opentest4j (from https://github.com/ota4j-team/opentest4j)
 - org.xmlunit:xmlunit-core (from http://www.xmlunit.org/, https://www.xmlunit.org/)
 - parent-join (from https://github.com/elastic/elasticsearch)
 - perfmark:perfmark-api (from https://github.com/perfmark/perfmark)
@@ -391,15 +395,18 @@ The following software have components provided under the terms of this license:
 - Google Auth Library for Java - OAuth2 HTTP (from https://repo1.maven.org/maven2/com/google/auth/google-auth-library-oauth2-http)
 - HdrHistogram (from http://hdrhistogram.github.io/HdrHistogram/)
 - Jakarta Activation (from https://repo1.maven.org/maven2/com/sun/activation/jakarta.activation)
-- Jakarta XML Binding API (from https://repo1.maven.org/maven2/org/jboss/spec/javax/xml/bind/jboss-jaxb-api_2.3_spec)
+- Jakarta Activation API jar (from https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api)
+- Jakarta XML Binding API (from https://repo1.maven.org/maven2/jakarta/xml/bind/jakarta.xml.bind-api, https://repo1.maven.org/maven2/org/jboss/spec/javax/xml/bind/jboss-jaxb-api_2.3_spec)
 - Lucene Common Analyzers (from https://repo1.maven.org/maven2/org/apache/lucene/lucene-analyzers-common)
 - Lucene Core (from https://repo1.maven.org/maven2/org/apache/lucene/lucene-core)
 - Lucene Suggest (from https://repo1.maven.org/maven2/org/apache/lucene/lucene-suggest)
+- Microsoft Application Insights Java SDK Core (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Microsoft Application Insights Java SDK Spring Boot starter (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Microsoft Application Insights Java SDK Web Module (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Microsoft Application Insights Log4j 2 Appender (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Mockito (from http://mockito.org, http://www.mockito.org, https://github.com/mockito/mockito)
 - Netty/Codec/HTTP (from https://repo1.maven.org/maven2/io/netty/netty-codec-http)
+- Netty/Transport/Classes/KQueue (from https://repo1.maven.org/maven2/io/netty/netty-transport-classes-kqueue)
 - Protocol Buffer Java API (from http://code.google.com/p/protobuf, https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java)
 - Protocol Buffers [Util] (from https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java-util)
 - Reflections (from http://code.google.com/p/reflections/, http://github.com/ronmamo/reflections)
@@ -508,6 +515,14 @@ The following software have components provided under the terms of this license:
 - AspectJ Weaver (from http://www.aspectj.org, https://www.eclipse.org/aspectj/)
 - JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from https://repo1.maven.org/maven2/org/jboss/spec/javax/ws/rs/jboss-jaxrs-api_2.1_spec)
 - JBoss Jakarta Annotations API (from https://github.com/jboss/jboss-jakarta-annotations-api_spec)
+- JUnit Jupiter (Aggregator) (from https://junit.org/junit5/)
+- JUnit Jupiter API (from http://junit.org/junit5/, https://junit.org/junit5/)
+- JUnit Jupiter Engine (from http://junit.org/junit5/, https://junit.org/junit5/)
+- JUnit Jupiter Params (from http://junit.org/junit5/, https://junit.org/junit5/)
+- JUnit Platform Commons (from http://junit.org/junit5/, https://junit.org/junit5/)
+- JUnit Platform Engine API (from http://junit.org/junit5/, https://junit.org/junit5/)
+- Jakarta Annotations API (from https://projects.eclipse.org/projects/ee4j.ca)
+- Jakarta Expression Language Implementation (from https://projects.eclipse.org/projects/ee4j.el)
 - Logback Classic Module (from http://logback.qos.ch, https://repo1.maven.org/maven2/ch/qos/logback/logback-classic)
 - Logback Contrib :: JSON :: Classic (from https://repo1.maven.org/maven2/ch/qos/logback/contrib/logback-json-classic)
 - Logback Contrib :: JSON :: Core (from https://repo1.maven.org/maven2/ch/qos/logback/contrib/logback-json-core)
@@ -586,6 +601,8 @@ The following software have components provided under the terms of this license:
 - JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from https://repo1.maven.org/maven2/org/jboss/spec/javax/ws/rs/jboss-jaxrs-api_2.1_spec)
 - JBoss Jakarta Annotations API (from https://github.com/jboss/jboss-jakarta-annotations-api_spec)
 - JSR 353 (JSON Processing) Default Provider (from http://jsonp.java.net)
+- Jakarta Annotations API (from https://projects.eclipse.org/projects/ee4j.ca)
+- Jakarta Expression Language Implementation (from https://projects.eclipse.org/projects/ee4j.el)
 - Jakarta Servlet (from http://servlet-spec.java.net, https://projects.eclipse.org/projects/ee4j.servlet)
 - Java Architecture for XML Binding (from http://jaxb.java.net/, https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api)
 - JavaBeans Activation Framework
@@ -616,6 +633,8 @@ The following software have components provided under the terms of this license:
 
 - JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from https://repo1.maven.org/maven2/org/jboss/spec/javax/ws/rs/jboss-jaxrs-api_2.1_spec)
 - JBoss Jakarta Annotations API (from https://github.com/jboss/jboss-jakarta-annotations-api_spec)
+- Jakarta Annotations API (from https://projects.eclipse.org/projects/ee4j.ca)
+- Jakarta Expression Language Implementation (from https://projects.eclipse.org/projects/ee4j.el)
 - Project Lombok (from http://projectlombok.org, https://projectlombok.org)
 - javax.ws.rs-api (from http://jax-rs-spec.java.net)
 - jersey-client (from https://repo1.maven.org/maven2/com/sun/jersey/jersey-client)
@@ -720,6 +739,7 @@ The following software have components provided under the terms of this license:
 - azure-documentdb (from http://azure.microsoft.com/en-us/services/documentdb/, https://azure.microsoft.com/en-us/services/cosmos-db/)
 - documentdb-bulkexecutor (from http://azure.microsoft.com/en-us/services/documentdb/)
 - micrometer-core (from https://github.com/micrometer-metrics/micrometer)
+- mockito-junit-jupiter (from https://github.com/mockito/mockito)
 - msal4j (from https://github.com/AzureAD/microsoft-authentication-library-for-java)
 - msal4j-persistence-extension (from https://github.com/AzureAD/microsoft-authentication-extensions-for-java)
 
@@ -739,19 +759,13 @@ The following software have components provided under the terms of this license:
 - OkHttp (from https://github.com/square/okhttp, https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp, https://square.github.io/okhttp/)
 
 ========================================================================
-MS-RL
-========================================================================
-The following software have components provided under the terms of this license:
-
-- Microsoft Application Insights Java SDK Core (from https://github.com/Microsoft/ApplicationInsights-Java)
-
-========================================================================
 PHP-3.01
 ========================================================================
 The following software have components provided under the terms of this license:
 
 - Jakarta Activation (from https://repo1.maven.org/maven2/com/sun/activation/jakarta.activation)
-- Jakarta XML Binding API (from https://repo1.maven.org/maven2/org/jboss/spec/javax/xml/bind/jboss-jaxb-api_2.3_spec)
+- Jakarta Activation API jar (from https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api)
+- Jakarta XML Binding API (from https://repo1.maven.org/maven2/jakarta/xml/bind/jakarta.xml.bind-api, https://repo1.maven.org/maven2/org/jboss/spec/javax/xml/bind/jboss-jaxb-api_2.3_spec)
 
 ========================================================================
 Public-Domain
@@ -813,8 +827,15 @@ The following software have components provided under the terms of this license:
 - Byte Buddy (without dependencies) (from https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy)
 - Checker Qual (from https://checkerframework.org)
 - JSON in Java (from https://github.com/douglascrockford/JSON-java)
+- JUnit Jupiter (Aggregator) (from https://junit.org/junit5/)
+- JUnit Jupiter API (from http://junit.org/junit5/, https://junit.org/junit5/)
+- JUnit Jupiter Engine (from http://junit.org/junit5/, https://junit.org/junit5/)
+- JUnit Jupiter Params (from http://junit.org/junit5/, https://junit.org/junit5/)
+- JUnit Platform Commons (from http://junit.org/junit5/, https://junit.org/junit5/)
+- JUnit Platform Engine API (from http://junit.org/junit5/, https://junit.org/junit5/)
 - Jakarta Activation (from https://repo1.maven.org/maven2/com/sun/activation/jakarta.activation)
-- Jakarta XML Binding API (from https://repo1.maven.org/maven2/org/jboss/spec/javax/xml/bind/jboss-jaxb-api_2.3_spec)
+- Jakarta Activation API jar (from https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api)
+- Jakarta XML Binding API (from https://repo1.maven.org/maven2/jakarta/xml/bind/jakarta.xml.bind-api, https://repo1.maven.org/maven2/org/jboss/spec/javax/xml/bind/jboss-jaxb-api_2.3_spec)
 - Spongy Castle (from http://rtyley.github.io/spongycastle/)
 - System Rules (from http://stefanbirkner.github.io/system-rules/)
 - jackson-coreutils (from https://github.com/fge/jackson-coreutils)
