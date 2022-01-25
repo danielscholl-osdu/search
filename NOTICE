@@ -371,6 +371,8 @@ The following software have components provided under the terms of this license:
 
 - API Common (from https://github.com/googleapis, https://github.com/googleapis/api-common-java)
 - GAX (Google Api eXtensions) (from https://github.com/googleapis, https://github.com/googleapis/gax-java)
+- Hamcrest (from http://hamcrest.org/JavaHamcrest/)
+- Hamcrest Core (from https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core)
 - HdrHistogram (from http://hdrhistogram.github.io/HdrHistogram/)
 - Lucene Common Analyzers (from https://repo1.maven.org/maven2/org/apache/lucene/lucene-analyzers-common)
 - Reflections (from http://code.google.com/p/reflections/, http://github.com/ronmamo/reflections)
@@ -389,10 +391,13 @@ The following software have components provided under the terms of this license:
 - ASM library repackaged as OSGi bundle (from https://repo1.maven.org/maven2/org/glassfish/hk2/external/asm-all-repackaged)
 - Apache Commons Codec (from https://commons.apache.org/proper/commons-codec/)
 - Apache Commons Compress (from http://commons.apache.org/compress/, http://commons.apache.org/proper/commons-compress/, https://commons.apache.org/proper/commons-compress/)
+- AspectJ Weaver (from http://www.aspectj.org, https://www.eclipse.org/aspectj/)
 - GAX (Google Api eXtensions) (from https://github.com/googleapis, https://github.com/googleapis/gax-java)
 - Google APIs Client Library for Java (from https://repo1.maven.org/maven2/com/google/api-client/google-api-client)
 - Google Auth Library for Java - Credentials (from https://repo1.maven.org/maven2/com/google/auth/google-auth-library-credentials)
 - Google Auth Library for Java - OAuth2 HTTP (from https://repo1.maven.org/maven2/com/google/auth/google-auth-library-oauth2-http)
+- Hamcrest (from http://hamcrest.org/JavaHamcrest/)
+- Hamcrest Core (from https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core)
 - HdrHistogram (from http://hdrhistogram.github.io/HdrHistogram/)
 - Jakarta Activation (from https://repo1.maven.org/maven2/com/sun/activation/jakarta.activation)
 - Jakarta Activation API jar (from https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api)
@@ -542,6 +547,14 @@ The following software have components provided under the terms of this license:
 
 - JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from https://repo1.maven.org/maven2/org/jboss/spec/javax/ws/rs/jboss-jaxrs-api_2.1_spec)
 - JBoss Jakarta Annotations API (from https://github.com/jboss/jboss-jakarta-annotations-api_spec)
+- JUnit Jupiter (Aggregator) (from https://junit.org/junit5/)
+- JUnit Jupiter API (from http://junit.org/junit5/, https://junit.org/junit5/)
+- JUnit Jupiter Engine (from http://junit.org/junit5/, https://junit.org/junit5/)
+- JUnit Jupiter Params (from http://junit.org/junit5/, https://junit.org/junit5/)
+- JUnit Platform Commons (from http://junit.org/junit5/, https://junit.org/junit5/)
+- JUnit Platform Engine API (from http://junit.org/junit5/, https://junit.org/junit5/)
+- Jakarta Annotations API (from https://projects.eclipse.org/projects/ee4j.ca)
+- Jakarta Expression Language Implementation (from https://projects.eclipse.org/projects/ee4j.el)
 
 ========================================================================
 GPL-2.0-only
