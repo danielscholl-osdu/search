@@ -17,6 +17,8 @@ package org.opengroup.osdu.search.validation;
 import org.junit.Test;
 import org.opengroup.osdu.core.common.model.search.validation.MultiKindValidator;
 
+import java.util.ArrayList;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -38,6 +40,16 @@ public class MultiKindValidatorTest {
         assertFalse(validator.isValid("without:version:value", null));
         assertFalse(validator.isValid("123:321:value", null));
         assertFalse(validator.isValid("a:b:c:d:321", null));
+
+        ArrayList validKinds = new ArrayList();
+        validKinds.add("tenant:valid:kind:1.0.0");
+        validKinds.add("*:*:*:*");
+        validKinds.add("*:valid:kind:1.0.0");
+        ArrayList invalidKinds = new ArrayList(validKinds);
+        invalidKinds.add("a:b:c:d:321");
+
+        assertTrue(validator.isValid(validKinds, null));
+        assertFalse(validator.isValid(invalidKinds, null));
     }
 
     @Test
