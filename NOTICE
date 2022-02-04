@@ -338,7 +338,7 @@ The following software have components provided under the terms of this license:
 - rxjava (from https://github.com/ReactiveX/RxJava)
 - spring-security-oauth2-client (from http://spring.io/spring-security, https://spring.io/spring-security)
 - spring-security-oauth2-core (from http://spring.io/spring-security, https://spring.io/spring-security)
-- spring-security-oauth2-jose (from http://spring.io/spring-security, https://spring.io/spring-security)
+- spring-security-oauth2-jose (from http://spring.io/spring-security, https://spring.io/projects/spring-security, https://spring.io/spring-security)
 - spring-security-test (from http://spring.io/spring-security, https://spring.io/projects/spring-security, https://spring.io/spring-security)
 - springfox-bean-validators (from https://github.com/springfox/springfox)
 - springfox-boot-starter (from https://github.com/springfox/springfox)
