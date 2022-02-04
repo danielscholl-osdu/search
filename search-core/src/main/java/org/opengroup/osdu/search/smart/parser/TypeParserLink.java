@@ -15,6 +15,7 @@
 package org.opengroup.osdu.search.smart.parser;
 
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
+import org.opengroup.osdu.core.common.util.KindParser;
 import org.opengroup.osdu.search.smart.filters.TypeFilter;
 import org.opengroup.osdu.search.smart.models.Filter;
 
@@ -27,7 +28,8 @@ public class TypeParserLink extends ParserLinkBase {
 
     @Override
     public QueryRequest append(Filter filter, QueryRequest qr) {
-        qr.setKind(qr.getKind().replace("%t", filter.getValue()));
+        String kind = KindParser.parse(qr.getKind()).get(0);
+        qr.setKind(kind.replace("%t", filter.getValue()));
         return qr;
     }
 }

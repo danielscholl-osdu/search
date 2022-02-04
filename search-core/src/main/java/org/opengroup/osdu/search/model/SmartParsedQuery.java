@@ -42,7 +42,7 @@ public class SmartParsedQuery {
     @NotBlank(message = SwaggerDoc.KIND_VALIDATION_CAN_NOT_BE_NULL_OR_EMPTY)
     @ApiModelProperty(value = SwaggerDoc.KIND_REQUEST_DESCRIPTION, required = true, example = SwaggerDoc.KIND_EXAMPLE)
     @ValidMultiKind
-    private String kind;
+    private Object kind;
 
     @ApiModelProperty(value = SwaggerDoc.QUERY_DESCRIPTION)
     @JsonRawValue
