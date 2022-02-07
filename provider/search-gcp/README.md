@@ -20,20 +20,14 @@ In order to run the service locally or remotely, you will need to have the follo
 | `LOG_PREFIX` | `service` | Logging prefix | no | - |
 | `SERVER_SERVLET_CONTEXPATH` | `/api/search/v2/` | Servlet context path | no | - |
 | `AUTHORIZE_API` | ex `https://entitlements.com/entitlements/v1` | Entitlements API endpoint | no | output of infrastructure deployment |
-| `ENTITLEMENTS_HOST` | ex `https://entitlements.com/entitlements/v1` | Entitlements API endpoint | no | output of infrastructure deployment |
-| `LEGALTAG_API` | ex `https://legal.com/api/legal/v1` | Legal API endpoint | no | output of infrastructure deployment |
-| `INDEXER_HOST` | ex `https://os-indexer-dot-opendes.appspot.com/api/indexer/v2/` | Indexer API endpoint | no | output of infrastructure deployment |
 | `REDIS_SEARCH_HOST` | ex `records-changed` | Redis host for search | no | https://console.cloud.google.com/memorystore/redis/instances |
 | `REDIS_SEARCH_PORT` | ex `6379` | Redis host for search | no | https://console.cloud.google.com/memorystore/redis/instances |
-| `GOOGLE_CLOUD_PROJECT` | ex `opendes` | Google Cloud Project Id| no | output of infrastructure deployment |
 | `GOOGLE_AUDIENCES` | ex `*****.apps.googleusercontent.com` | Client ID for getting access to cloud resources | yes | https://console.cloud.google.com/apis/credentials |
 | `GOOGLE_APPLICATION_CREDENTIALS` | ex `/path/to/directory/service-key.json` | Service account credentials, you only need this if running locally | yes | https://console.cloud.google.com/iam-admin/serviceaccounts |
 | `SECURITY_HTTPS_CERTIFICATE_TRUST` | ex `false` | Elastic client connection uses TrustSelfSignedStrategy(), if it is 'true' | false | output of infrastructure deployment |
 | `PARTITION_API` | ex `http://localhost:8080/api/partition/v1` | Partition service endpoint | no | output of infrastructure deployment |
 | `POLICY_API` | ex `http://localhost:8080/api/policy/v1/` | Police service endpoint | no | output of infrastructure deployment |
 | `POLICY_ID` | ex `search` | policeId from ex `http://localhost:8080/api/policy/v1/policies`. Look at `POLICY_API` | no | - |
-| `KEY_RING` | by default `csqp` | Key ring used by Search service to decrypt elastic setting | no | https://console.cloud.google.com/security/kms/keyrings |
-| `KMS_KEY` |  by default `searchService` | Key in key ring used by Search service to decrypt elastic setting | no | https://console.cloud.google.com/security/kms/keyrings |
 
 ### Run Locally
 Check that maven is installed:
@@ -129,13 +123,10 @@ You will need to have the following environment variables defined.
 
 | name | value | description | sensitive? | source |
 | ---  | ---   | ---         | ---        | ---    |
-| `ENTITLEMENTS_HOST` | ex `https://entitlements.com/entitlements/v1` | Entitlements API endpoint | no | output of infrastructure deployment |
 | `ELASTIC_PASSWORD` | `********` | Password for Elasticsearch | yes | output of infrastructure deployment |
 | `ELASTIC_USER_NAME` | `********` | User name for Elasticsearch | yes | output of infrastructure deployment |
 | `ELASTIC_HOST` | ex `elastic.domain.com` | Host Elasticsearch | yes | output of infrastructure deployment |
 | `ELASTIC_PORT` | ex `9243` | Port Elasticsearch | yes | output of infrastructure deployment |
-| `GCLOUD_PROJECT` | ex `opendes` | Google Cloud Project Id| no | output of infrastructure deployment |
-| `INDEXER_HOST` | ex `https://os-indexer-dot-opendes.appspot.com/api/indexer/v2/` | Indexer API endpoint | no | output of infrastructure deployment |
 | `DATA_GROUP` | `opendes` | The service account to this group and substitute | no | - |
 | `ENTITLEMENTS_DOMAIN` | ex `opendes-gcp.projects.com` | OSDU R2 to run tests under  | no | - |
 | `INTEGRATION_TEST_AUDIENCE` | `********` | client application ID | yes | https://console.cloud.google.com/apis/credentials |
@@ -176,26 +167,6 @@ $ (cd testing/search-test-gcp/ && mvn clean test)
     ```sh
     mvn appengine:deploy -pl org.opengroup.osdu.search:search -amd -DskipTests
     ```
-
-#### Cloud KMS Setup
-
-Enable cloud KMS on master project
-
-Create king ring and key in the ***master project***
-
-```bash
-    gcloud services enable cloudkms.googleapis.com
-    export KEYRING_NAME="csqp"
-    export CRYPTOKEY_NAME="searchService"
-    gcloud kms keyrings create $KEYRING_NAME --location global
-    gcloud kms keys create $CRYPTOKEY_NAME --location global \
-    		--keyring $KEYRING_NAME \
-    		--purpose encryption
-```
-
-Add **Cloud KMS CryptoKey Encrypter/Decrypter** role to the **default service account** of the ***master project*** through IAM - Role tab
-
-Add **Cloud KMS Encrypt/Decrypt** role to the **default service account** of ***master project*** through IAM - Role tab
 
 #### Memory Store (Redis Instance) Setup
 

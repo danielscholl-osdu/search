@@ -15,18 +15,19 @@
  *  limitations under the License.
  */
 
-package org.opengroup.osdu.search.provider.gcp.cache;
+package org.opengroup.osdu.search.provider.gcp.config;
 
-import org.opengroup.osdu.core.common.cache.RedisCache;
-import org.opengroup.osdu.core.common.model.entitlements.Groups;
-import org.opengroup.osdu.search.config.SearchConfigurationProperties;
-import org.springframework.stereotype.Component;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
-@Component
-public class GroupCacheImpl extends RedisCache<String, Groups> {
+@Configuration
+@ConfigurationProperties
+@Getter
+@Setter
+public class AppProperties {
 
-  public GroupCacheImpl(SearchConfigurationProperties properties) {
-    super(properties.getRedisGroupHost(), properties.getRedisGroupPort(), 30, String.class,
-        Groups.class);
-  }
+  private String authorizeApi;
+  private String authorizeApiKey;
 }

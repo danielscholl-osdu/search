@@ -17,25 +17,19 @@
 
 package org.opengroup.osdu.search.provider.gcp.di;
 
-import java.util.Objects;
-import org.opengroup.osdu.core.auth.TokenProvider;
-import org.opengroup.osdu.core.common.util.IServiceAccountJwtClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.opengroup.osdu.core.common.partition.IPartitionProvider;
+import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
+import org.opengroup.osdu.core.destination.elastic.ElasticSearchDestinationResolver;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-//TODO temp fix for policy integration
-@Component
-public class GcpServiceAccountJwtClient implements IServiceAccountJwtClient {
+@Configuration
+public class ElasticSearchConfig {
 
-  @Autowired(required = false)
-  private TokenProvider tokenProvider;
-
-  @Override
-  public String getIdToken(String serviceAccount) {
-    if (Objects.nonNull(this.tokenProvider)) {
-      return this.tokenProvider.getIdToken();
-    } else {
-      return "";
-    }
+  @Bean
+  public IElasticRepository elasticRepository(ElasticSearchConfigurationProperties properties,
+      IPartitionProvider partitionProvider) {
+    return new ElasticSearchDestinationResolver(properties.getElasticsearchPropertiesPrefix(),
+        partitionProvider);
   }
 }
