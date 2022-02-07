@@ -20,6 +20,8 @@ Feature: Search with different queries
       | tenant    | kind                                      | query                                | limit | offset | returned_fields | count |
       | "tenant1" | "tenant1:testquery<timestamp>:well:1.0.0" | "data.OriginalOperator:OFFICE4"      | None  | None   | All             | 1     |
       | "tenant1" | "tenant1:testquery<timestamp>:well:1.0.0" | None                                 | 0     | None   | NULL            | 3     |
+      | "tenant1" | "tenant1:testquery<timestamp>:well:2.0.0" | None                                 | 0     | None   | NULL            | 3     |
+      | "tenant1" | ["tenant1:testquery<timestamp>:well:1.0.0", "tenant1:testquery<timestamp>:well:2.0.0"] | None | 0 | None | NULL     | 6     |
       ######################################Range Query test cases##########################################################################
       | "tenant1" | "tenant1:testquery<timestamp>:well:1.0.0" | "data.Rank:{1 TO 3}"                 | None  | None   | id,index        | 1     |
       | "tenant1" | "tenant1:testquery<timestamp>:well:1.0.0" | "data.Rank:[10 TO 20]"               | None  | None   | All             | 1     |
@@ -42,6 +44,8 @@ Feature: Search with different queries
       | tenant    | kind                                      | query | limit | offset | response_code | reponse_type    | response_message                                    | errors                                     |
       | "tenant1" | "tenant1:testquery<timestamp>:well:1.0.0" | None  | -1    | None   | 400           | "Bad Request"   | "Invalid parameters were given on search request"   | "'limit' must be equal or greater than 0"  |
       | "tenant1" | "invalid"                                 | None  | 1     | None   | 400           | "Bad Request"   | "Invalid parameters were given on search request"   | "Not a valid record kind format. Found: invalid"  |
+      | "tenant1" | 123456789                                 | None  | 1     | None   | 400           | "Bad Request"   | "Invalid parameters were given on search request"   | "Not a valid record kind type. Found: 123456789"  |
+      | "tenant1" | []                                        | None  | 1     | None   | 400           | "Bad Request"   | "Invalid parameters were given on search request"   | "Record kind can't be null or empty. Found: []"  |
       | "tenant1" | "tenant1:testquery<timestamp>:well:1.0.0" | None  | 1     | -1     | 400           | "Bad Request"   | "Invalid parameters were given on search request"   | "'offset' must be equal or greater than 0" |
       | "tenant2" | "tenant1:testquery<timestamp>:well:1.0.0" | None  | None  | None   | 401           | "Access denied" | "The user is not authorized to perform this action" | ""                                         |
 
