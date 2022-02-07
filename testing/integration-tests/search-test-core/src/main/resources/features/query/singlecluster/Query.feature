@@ -41,7 +41,7 @@ Feature: Search with different queries
     Examples:
       | tenant    | kind                                      | query | limit | offset | response_code | reponse_type    | response_message                                    | errors                                     |
       | "tenant1" | "tenant1:testquery<timestamp>:well:1.0.0" | None  | -1    | None   | 400           | "Bad Request"   | "Invalid parameters were given on search request"   | "'limit' must be equal or greater than 0"  |
-      | "tenant1" | "invalid"                                 | None  | 1     | None   | 400           | "Bad Request"   | "Invalid parameters were given on search request"   | "'kind' format is invalid. Found: invalid"  |
+      | "tenant1" | "invalid"                                 | None  | 1     | None   | 400           | "Bad Request"   | "Invalid parameters were given on search request"   | "Not a valid record kind format. Found: invalid"  |
       | "tenant1" | "tenant1:testquery<timestamp>:well:1.0.0" | None  | 1     | -1     | 400           | "Bad Request"   | "Invalid parameters were given on search request"   | "'offset' must be equal or greater than 0" |
       | "tenant2" | "tenant1:testquery<timestamp>:well:1.0.0" | None  | None  | None   | 401           | "Access denied" | "The user is not authorized to perform this action" | ""                                         |
 
