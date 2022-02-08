@@ -16,3 +16,4 @@ data:
   PARTITION_API: "{{ .Values.data.partition_api }}"
   POLICY_API: "{{ .Values.data.policy_api }}"
   POLICY_ID: "{{ .Values.data.policy_id }}"
+  SPRING_PROFILES_ACTIVE: "{{ .Values.data.spring_profiles_active }}"

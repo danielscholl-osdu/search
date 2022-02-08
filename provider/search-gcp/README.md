@@ -13,7 +13,15 @@ Pre-requisites
 * Maven
  
 ### Installation
-In order to run the service locally or remotely, you will need to have the following environment variables defined.
+Define the following environment variables.
+
+Must have:
+
+| name | value | description | sensitive? | source |
+| ---  | ---   | ---         | ---        | ---    |
+| `SPRING_PROFILES_ACTIVE` |  `gcp` or `anthos` | Spring profile that activate default configuration for GCP environment | false | - |
+
+Defined in default application property file but possible to override:
 
 | name | value | description | sensitive? | source |
 | ---  | ---   | ---         | ---        | ---    |
@@ -28,6 +36,7 @@ In order to run the service locally or remotely, you will need to have the follo
 | `PARTITION_API` | ex `http://localhost:8080/api/partition/v1` | Partition service endpoint | no | output of infrastructure deployment |
 | `POLICY_API` | ex `http://localhost:8080/api/policy/v1/` | Police service endpoint | no | output of infrastructure deployment |
 | `POLICY_ID` | ex `search` | policeId from ex `http://localhost:8080/api/policy/v1/policies`. Look at `POLICY_API` | no | - |
+| `INDEXER_HOST` | ex `https://os-indexer-dot-opendes.appspot.com/api/indexer/v2/` | Indexer API endpoint | no | output of infrastructure deployment |
 
 ### Run Locally
 Check that maven is installed:
@@ -123,14 +132,16 @@ You will need to have the following environment variables defined.
 
 | name | value | description | sensitive? | source |
 | ---  | ---   | ---         | ---        | ---    |
+| `ENTITLEMENTS_HOST` | ex `https://entitlements.com/entitlements/v1` | Entitlements API endpoint | no | output of infrastructure deployment |
 | `ELASTIC_PASSWORD` | `********` | Password for Elasticsearch | yes | output of infrastructure deployment |
 | `ELASTIC_USER_NAME` | `********` | User name for Elasticsearch | yes | output of infrastructure deployment |
 | `ELASTIC_HOST` | ex `elastic.domain.com` | Host Elasticsearch | yes | output of infrastructure deployment |
 | `ELASTIC_PORT` | ex `9243` | Port Elasticsearch | yes | output of infrastructure deployment |
+| `GCLOUD_PROJECT` | ex `opendes` | Google Cloud Project Id| no | output of infrastructure deployment |
+| `INDEXER_HOST` | ex `https://os-indexer-dot-opendes.appspot.com/api/indexer/v2/` | Indexer API endpoint | no | output of infrastructure deployment |
 | `DATA_GROUP` | `opendes` | The service account to this group and substitute | no | - |
 | `ENTITLEMENTS_DOMAIN` | ex `opendes-gcp.projects.com` | OSDU R2 to run tests under  | no | - |
-| `INTEGRATION_TEST_AUDIENCE` | `********` | client application ID | yes | https://console.cloud.google.com/apis/credentials |
-| `OTHER_RELEVANT_DATA_COUNTRIES` | ex `US` | a other relevant data countries (for LEGAL_TAG) | no | - |
+| `INTEGRATION_TEST_AUDIENCE` | `********` | client application ID | yes | https://console.cloud.google.com/apis/credentials || `OTHER_RELEVANT_DATA_COUNTRIES` | ex `US` | a other relevant data countries (for LEGAL_TAG) | no | - |
 | `DEFAULT_DATA_PARTITION_ID_TENANT1` | ex `opendes` | HTTP Header 'Data-Partition-ID'  | no | - |
 | `SEARCH_INTEGRATION_TESTER` | `********` | Service account for API calls. Note: this user must have entitlements configured already | yes | https://console.cloud.google.com/iam-admin/serviceaccounts |
 | `SEARCH_HOST` | ex `http://localhost:8080/api/search/v2/` | Endpoint of search service | no | - |

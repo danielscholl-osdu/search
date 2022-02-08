@@ -13,6 +13,7 @@ data:
   partition_api: "http://partition/api/partition/v1/"
   policy_api: "https://policy/api/policy/v1/"
   policy_id: "search"
+  spring_profiles_active: "gcp"
 
 conf:
   configmap: "search-config"
