@@ -18,7 +18,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.opengroup.osdu</groupId>
     <artifactId>os-search</artifactId>
-    <version>0.13.0-SNAPSHOT</version>
+    <version>0.14.0-SNAPSHOT</version>
     <description>Root Search Service Project</description>
     <packaging>pom</packaging>
 
@@ -36,12 +36,13 @@
         <httpclient.version>4.5.13</httpclient.version>
         <woodstox-core.version>5.3.0</woodstox-core.version>
         <reactor-bom.version>2020.0.0</reactor-bom.version>
-        <log4j-core.version>2.17.0</log4j-core.version>
+        <log4j-core.version>2.17.1</log4j-core.version>
         <google-oauth-client.version>1.31.0</google-oauth-client.version>
         <commons-compress.version>1.20</commons-compress.version>
-        <osdu.oscorecommon.version>0.13.0-rc4</osdu.oscorecommon.version>
+        <osdu.oscorecommon.version>0.13.0</osdu.oscorecommon.version>
         <tomcat-embed-core.version>9.0.45</tomcat-embed-core.version>
         <springfox.version>3.0.0</springfox.version>
+        <json-smart.version>2.4.7</json-smart.version>
     </properties>
 
     <licenses>
@@ -184,6 +185,12 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>27.1-jre</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.minidev</groupId>
+                <artifactId>json-smart</artifactId>
+                <version>${json-smart.version}</version>
             </dependency>
 
             <!--Elasticsearch import org.elasticsearch.common.inject.Inject;-->
