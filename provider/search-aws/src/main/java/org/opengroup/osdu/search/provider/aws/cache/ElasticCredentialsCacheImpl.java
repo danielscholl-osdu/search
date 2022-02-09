@@ -15,9 +15,11 @@
 package org.opengroup.osdu.search.provider.aws.cache;
 
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticCredentialsCache;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 @Component
+@Primary
 public class ElasticCredentialsCacheImpl implements IElasticCredentialsCache {
 
     // NOTE: this class is empty because ElasticCredentials are not used with the AWS implementation.
