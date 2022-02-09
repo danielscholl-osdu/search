@@ -17,25 +17,16 @@
 
 package org.opengroup.osdu.search.provider.gcp.di;
 
-import java.util.Objects;
-import org.opengroup.osdu.core.auth.TokenProvider;
-import org.opengroup.osdu.core.common.util.IServiceAccountJwtClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
-//TODO temp fix for policy integration
-@Component
-public class GcpServiceAccountJwtClient implements IServiceAccountJwtClient {
+@Configuration
+@ConfigurationProperties
+@Getter
+@Setter
+public class ElasticSearchConfigurationProperties {
 
-  @Autowired(required = false)
-  private TokenProvider tokenProvider;
-
-  @Override
-  public String getIdToken(String serviceAccount) {
-    if (Objects.nonNull(this.tokenProvider)) {
-      return this.tokenProvider.getIdToken();
-    } else {
-      return "";
-    }
-  }
+  private String elasticsearchPropertiesPrefix = "elasticsearch";
 }
