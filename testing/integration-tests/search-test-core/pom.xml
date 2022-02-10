@@ -19,7 +19,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <cucumber.version>1.2.5</cucumber.version>
         <elasticsearch.version>7.8.1</elasticsearch.version>
-        <osdu.oscorecommon.version>0.14.0-MultiKind-01</osdu.oscorecommon.version>
+        <osdu.oscorecommon.version>0.14.0-rc2</osdu.oscorecommon.version>
     </properties>
 
     <dependencies>
