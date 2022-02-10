@@ -31,8 +31,7 @@ public class CrossTenantUtils {
     public String getIndexName(Query searchRequest) {
         StringBuilder builder = new StringBuilder();
         List<String> kinds = KindParser.parse(searchRequest.getKind());
-        for(int i = 0; i < kinds.size(); i++) {
-            String kind = kinds.get(i);
+        for(String kind : kinds) {
             String index = this.elasticIndexNameResolver.getIndexNameFromKind(kind);
             builder.append(index + ",");
         }
