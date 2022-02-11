@@ -648,7 +648,6 @@ public class QueryServiceTest {
     when(searchRequest.getKind()).thenReturn("tenant1:welldb:well:1.0.0");
     when(searchRequest.getAggregateBy()).thenReturn("namespace");
     when(crossTenantUtils.getIndexName(any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
-    doReturn(true).when(this.sut).isEnvironmentPreDemo();
 
     SearchRequest elasticRequest = this.sut.createElasticRequest(searchRequest);
     assertNotNull(elasticRequest);
