@@ -4,20 +4,16 @@
 
 data:
   log_level: "INFO"
-  environment: "dev"
-  google_cloud_project_id: ""
   redis_group_host: "redis-cache-groups"
   redis_search_host: "redis-cache-search"
   redis_search_port: "6379"
-  indexer_host: "http://indexer/api/indexer/v2"
   authorize_api: "http://entitlements/api/entitlements/v2"
   security_https_certificate_trust: "true"
   audiences: ""
   partition_api: "http://partition/api/partition/v1/"
   policy_api: "https://policy/api/policy/v1/"
   policy_id: "search"
-  key_ring: "csqp"
-  kms_key: "searchService"
+  spring_profiles_active: "gcp"
 
 conf:
   configmap: "search-config"
