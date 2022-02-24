@@ -23,7 +23,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.search.ElasticIndexNameResolver;
 
+import java.util.ArrayList;
+
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -43,5 +46,23 @@ public class CrossTenantUtilsTest {
         when(this.elasticIndexNameResolver.getIndexNameFromKind(kind)).thenReturn("*-ihs-well-1.0.0");
 
         assertEquals("*-ihs-well-1.0.0,-.*", this.sut.getIndexName(queryRequest));
+    }
+
+    @Test
+    public void should_returnMultiIndicesAsIs_when_searchedCrossKind_given_multipleAccountId() {
+        ArrayList kind = new ArrayList();
+        kind.add("opendes:welldb:wellbore2:1.0.0");
+        kind.add("opendes:osdudemo:wellbore:1.0.0");
+        kind.add("opendes:wks:polylineSet:1.0.0");
+        kind.add("slb:wks:log:1.0.5");
+        String indices = "opendes-welldb-wellbore2-1.0.0,opendes-osdudemo-wellbore-1.0.0,opendes-wks-polylineSet-1.0.0,slb-wks-log-1.0.5,-.*";
+        when(queryRequest.getKind()).thenReturn(kind);
+        when(this.elasticIndexNameResolver.getIndexNameFromKind(anyString())).thenAnswer(invocation ->
+        {
+            String kd = invocation.getArgument(0);
+            kd = kd.replace(":", "-");
+            return kd;
+        });
+        assertEquals(indices, this.sut.getIndexName(queryRequest));
     }
 }

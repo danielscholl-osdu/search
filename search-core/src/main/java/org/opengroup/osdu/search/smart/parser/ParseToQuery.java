@@ -23,6 +23,7 @@ import javax.inject.Inject;
 
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
+import org.opengroup.osdu.core.common.util.KindParser;
 import org.opengroup.osdu.search.smart.models.Filter;
 import org.opengroup.osdu.search.smart.models.FilterCollection;
 import org.opengroup.osdu.search.validation.QueryRequestConstraintValidator;
@@ -65,7 +66,8 @@ public class ParseToQuery {
 		//output.setReturnHighlightedFields(true);
 		//Commented the below line to get all the "Data" attributes for Smart Search integration with DMApp "View Data".
 		// output.getReturnedFields().addAll(returnFields);
-		output.setKind(output.getKind().replace("%s", "*").replace("%t", "*"));
+		String kind = KindParser.parse(output.getKind()).get(0);
+		output.setKind(kind.replace("%s", "*").replace("%t", "*"));
 		output.setLimit(limit);
 		
 		output.setFrom(offset);

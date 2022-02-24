@@ -16,9 +16,11 @@ package org.opengroup.osdu.search.util;
 
 import org.opengroup.osdu.core.common.search.ElasticIndexNameResolver;
 import org.opengroup.osdu.core.common.model.search.Query;
+import org.opengroup.osdu.core.common.util.KindParser;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import java.util.List;
 
 @Component
 public class CrossTenantUtils {
@@ -27,6 +29,13 @@ public class CrossTenantUtils {
     private ElasticIndexNameResolver elasticIndexNameResolver;
 
     public String getIndexName(Query searchRequest) {
-        return String.format("%s,-.*", this.elasticIndexNameResolver.getIndexNameFromKind(searchRequest.getKind()));
+        StringBuilder builder = new StringBuilder();
+        List<String> kinds = KindParser.parse(searchRequest.getKind());
+        for(String kind : kinds) {
+            String index = this.elasticIndexNameResolver.getIndexNameFromKind(kind);
+            builder.append(index + ",");
+        }
+        builder.append("-.*"); // Exclude Lucene/ElasticSearch internal indices
+        return builder.toString();
     }
 }

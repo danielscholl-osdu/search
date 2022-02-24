@@ -34,7 +34,7 @@ Feature: Search recursively on cursor with different queries
     Examples:
       | tenant    | kind                                       | query | limit | response_code | reponse_type                  | response_message                                  | errors                                    |
       | "tenant1" | "tenant1:testcursor<timestamp>:well:1.0.0" | None  | None  | 400           | "Can't find the given cursor" | "The given cursor is invalid or expired"          | ""                                        |
-      | "tenant1" | "*:*:*"                                    | None  | 0     | 400           | "Bad Request"                 | "Invalid parameters were given on search request" | "Not a valid record kind. Found: *:*:*"   |
+      | "tenant1" | "*:*:*"                                    | None  | 0     | 400           | "Bad Request"                 | "Invalid parameters were given on search request" | "Not a valid record kind format. Found: *:*:*"   |
       | "tenant1" | "tenant1:testcursor<timestamp>:well:1.0.0" | None  | -1    | 400           | "Bad Request"                 | "Invalid parameters were given on search request" | "'limit' must be equal or greater than 0" |
 
   Scenario Outline:  Search recursively page by page data across the kinds with invalid inputs and headers
