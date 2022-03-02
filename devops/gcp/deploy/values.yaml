@@ -13,4 +13,5 @@ data:
 
 conf:
   configmap: "search-config"
+  elastic_secret_name: "elastic-secret"
   app_name: "search"
