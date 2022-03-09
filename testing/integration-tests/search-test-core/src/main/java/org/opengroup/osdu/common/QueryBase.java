@@ -1,6 +1,12 @@
 package org.opengroup.osdu.common;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import com.google.gson.Gson;
+import java.util.List;
+import java.util.Map;
 import org.opengroup.osdu.request.Query;
 import org.opengroup.osdu.request.SortQuery;
 import org.opengroup.osdu.response.ErrorResponseMock;
@@ -8,13 +14,6 @@ import org.opengroup.osdu.response.ResponseMock;
 import org.opengroup.osdu.util.Config;
 import org.opengroup.osdu.util.ElasticUtils;
 import org.opengroup.osdu.util.HTTPClient;
-
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class QueryBase extends TestsBase {
 
@@ -90,7 +89,7 @@ public class QueryBase extends TestsBase {
             assertEquals(generateActualName(error, timeStamp), response.getErrors().get(0));
         }
         assertEquals(type, response.getReason());
-        assertEquals(generateActualName(msg, timeStamp), response.getMessage());
+        assertEquals(msg, response.getMessage());
         assertTrue(codes.contains(response.getResponseCode()));
     }
 
