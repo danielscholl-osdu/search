@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,7 +79,9 @@ import org.opengroup.osdu.core.common.model.search.SpatialFilter.ByGeoPolygon;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
+import org.opengroup.osdu.search.util.DetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IAggregationParserUtil;
+import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.QueryParserUtil;
@@ -96,6 +99,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PrepareForTest({SearchRequest.class, SearchHits.class, RestHighLevelClient.class})
 public class QueryServiceTest {
 
+  private final ObjectMapper objectMapper = new ObjectMapper();
   @Mock
   private SpatialFilter spatialFilter;
   @Mock
@@ -130,6 +134,8 @@ public class QueryServiceTest {
   private ISortParserUtil sortParserUtil = new SortParserUtil();
   @Spy
   private IAggregationParserUtil aggregationParserUtil = new AggregationParserUtil(properties);
+  @Spy
+  private IDetailedBadRequestMessageUtil detailedBadRequestMessageUtil = new DetailedBadRequestMessageUtil(objectMapper);
 
   private RestHighLevelClient restHighLevelClient;
 

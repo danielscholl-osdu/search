@@ -78,6 +78,7 @@ import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
+import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,6 +114,9 @@ abstract class QueryBase {
 
   @Autowired
   private ISortParserUtil sortParserUtil;
+
+  @Autowired
+  private IDetailedBadRequestMessageUtil detailedBadRequestMessageUtil;
 
   private static final String GEO_SHAPE_INDEXED_TYPE = "geo_shape";
 
@@ -394,7 +398,7 @@ abstract class QueryBase {
               "Resource you are trying to find does not exists", e);
         case BAD_REQUEST:
           throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Bad Request",
-              getDetailedBadRequestMessage(elasticSearchRequest, e), e);
+              detailedBadRequestMessageUtil.getDetailedBadRequestMessage(elasticSearchRequest, e), e);
         case SERVICE_UNAVAILABLE:
           throw new AppException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, SEARCH_ERROR_MSG,
               "Please re-try search after some time.", e);
@@ -453,36 +457,5 @@ abstract class QueryBase {
       return;
     }
     this.queryFailedAuditLogger(searchRequest);
-  }
-
-  private String getDetailedBadRequestMessage(SearchRequest searchRequest, Exception e) {
-    String defaultErrorMessage = "Invalid parameters were given on search request";
-    if (e.getCause() == null) {
-      return defaultErrorMessage;
-    }
-    String msg = getKeywordFieldErrorMessage(searchRequest, e.getCause().getMessage());
-    if (msg != null) {
-      return msg;
-    }
-    return defaultErrorMessage;
-  }
-
-  private String getKeywordFieldErrorMessage(SearchRequest searchRequest, String msg) {
-    if (msg == null) {
-      return null;
-    }
-    if (msg.contains(
-        "Text fields are not optimised for operations that require per-document field data like aggregations and sorting")
-        || msg.contains(
-        "can't sort on geo_shape field without using specific sorting feature, like geo_distance")) {
-      if (searchRequest.source().sorts() != null && !searchRequest.source().sorts().isEmpty()) {
-        return "Sort is not supported for one or more of the requested fields";
-      }
-      if (searchRequest.source().aggregations() != null
-          && searchRequest.source().aggregations().count() > 0) {
-        return "Aggregations are not supported for one or more of the specified fields";
-      }
-    }
-    return null;
   }
 }

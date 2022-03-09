@@ -4,7 +4,24 @@
 
 package org.opengroup.osdu.search.provider.ibm.provider.impl;
 
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.elasticsearch.index.query.QueryBuilders.geoBoundingBoxQuery;
+import static org.elasticsearch.index.query.QueryBuilders.geoDistanceQuery;
+import static org.elasticsearch.index.query.QueryBuilders.geoPolygonQuery;
+import static org.elasticsearch.index.query.QueryBuilders.geoWithinQuery;
+import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
+import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
+
 import com.google.common.base.Strings;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
@@ -35,24 +52,23 @@ import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.entitlements.AclRole;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.model.search.*;
+import org.opengroup.osdu.core.common.model.search.AggregationResponse;
+import org.opengroup.osdu.core.common.model.search.Point;
+import org.opengroup.osdu.core.common.model.search.Query;
+import org.opengroup.osdu.core.common.model.search.QueryUtils;
+import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
+import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
+import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
-
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.*;
-
-import static org.elasticsearch.index.query.QueryBuilders.*;
 
 abstract class QueryBase {
 
@@ -74,6 +90,8 @@ abstract class QueryBase {
     private IQueryParserUtil queryParserUtil;
     @Autowired
     private ISortParserUtil sortParserUtil;
+    @Autowired
+    private IDetailedBadRequestMessageUtil detailedBadRequestMessageUtil;
 
     private static final String GEO_SHAPE_INDEXED_TYPE = "geo_shape";
 
@@ -328,7 +346,7 @@ abstract class QueryBase {
                 case NOT_FOUND:
                     throw new AppException(HttpServletResponse.SC_NOT_FOUND, "Not Found", "Resource you are trying to find does not exists", e);
                 case BAD_REQUEST:
-                    throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Bad Request", getDetailedBadRequestMessage(elasticSearchRequest, e), e);
+                    throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Bad Request", detailedBadRequestMessageUtil.getDetailedBadRequestMessage(elasticSearchRequest, e), e);
                 case SERVICE_UNAVAILABLE:
                     throw new AppException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Search error", "Please re-try search after some time.", e);
                 default:
@@ -378,27 +396,5 @@ abstract class QueryBase {
         	throw new AccessDeniedException("query kind tenant is not that same at the data-partition-id header");
         }
         
-    }
-
-    private String getDetailedBadRequestMessage(SearchRequest searchRequest, Exception e) {
-        String defaultErrorMessage = "Invalid parameters were given on search request";
-        if (e.getCause() == null) return defaultErrorMessage;
-        String msg = getKeywordFieldErrorMessage(searchRequest, e.getCause().getMessage());
-        if (msg != null) return msg;
-        return defaultErrorMessage;
-    }
-
-    private String getKeywordFieldErrorMessage(SearchRequest searchRequest, String msg) {
-        if (msg == null) return null;
-        if (msg.contains("Text fields are not optimised for operations that require per-document field data like aggregations and sorting")
-                || msg.contains("can't sort on geo_shape field without using specific sorting feature, like geo_distance")) {
-            if (searchRequest.source().sorts() != null && !searchRequest.source().sorts().isEmpty()) {
-                return "Sort is not supported for one or more of the requested fields";
-            }
-            if (searchRequest.source().aggregations() != null && searchRequest.source().aggregations().count() > 0) {
-                return "Aggregations are not supported for one or more of the specified fields";
-            }
-        }
-        return null;
     }
 }
