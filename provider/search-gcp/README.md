@@ -11,32 +11,14 @@ Pre-requisites
 * JDK 8
 * Lombok 1.16 or later
 * Maven
- 
-### Installation
-Define the following environment variables.
 
-Must have:
+# Configuration
 
-| name | value | description | sensitive? | source |
-| ---  | ---   | ---         | ---        | ---    |
-| `SPRING_PROFILES_ACTIVE` |  `gcp` or `anthos` | Spring profile that activate default configuration for GCP environment | false | - |
-
-Defined in default application property file but possible to override:
-
-| name | value | description | sensitive? | source |
-| ---  | ---   | ---         | ---        | ---    |
-| `LOG_PREFIX` | `service` | Logging prefix | no | - |
-| `SERVER_SERVLET_CONTEXPATH` | `/api/search/v2/` | Servlet context path | no | - |
-| `AUTHORIZE_API` | ex `https://entitlements.com/entitlements/v1` | Entitlements API endpoint | no | output of infrastructure deployment |
-| `REDIS_SEARCH_HOST` | ex `records-changed` | Redis host for search | no | https://console.cloud.google.com/memorystore/redis/instances |
-| `REDIS_SEARCH_PORT` | ex `6379` | Redis host for search | no | https://console.cloud.google.com/memorystore/redis/instances |
-| `GOOGLE_AUDIENCES` | ex `*****.apps.googleusercontent.com` | Client ID for getting access to cloud resources | yes | https://console.cloud.google.com/apis/credentials |
-| `GOOGLE_APPLICATION_CREDENTIALS` | ex `/path/to/directory/service-key.json` | Service account credentials, you only need this if running locally | yes | https://console.cloud.google.com/iam-admin/serviceaccounts |
-| `SECURITY_HTTPS_CERTIFICATE_TRUST` | ex `false` | Elastic client connection uses TrustSelfSignedStrategy(), if it is 'true' | false | output of infrastructure deployment |
-| `PARTITION_API` | ex `http://localhost:8080/api/partition/v1` | Partition service endpoint | no | output of infrastructure deployment |
-| `POLICY_API` | ex `http://localhost:8080/api/policy/v1/` | Police service endpoint | no | output of infrastructure deployment |
-| `POLICY_ID` | ex `search` | policeId from ex `http://localhost:8080/api/policy/v1/policies`. Look at `POLICY_API` | no | - |
-| `INDEXER_HOST` | ex `https://os-indexer-dot-opendes.appspot.com/api/indexer/v2/` | Indexer API endpoint | no | output of infrastructure deployment |
+## Service Configuration
+### Anthos:
+[Anthos service configuration ](docs/anthos/README.md)
+### GCP:
+[Gcp service configuration ](docs/gcp/README.md)
 
 ### Run Locally
 Check that maven is installed:

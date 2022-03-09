@@ -20,16 +20,16 @@ package org.opengroup.osdu.search.provider.gcp.di;
 import org.opengroup.osdu.core.common.partition.IPartitionProvider;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
 import org.opengroup.osdu.core.destination.elastic.ElasticSearchDestinationResolver;
+import org.opengroup.osdu.core.destination.util.IPartitionPropertyResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ElasticSearchConfig {
 
-  @Bean
-  public IElasticRepository elasticRepository(ElasticSearchConfigurationProperties properties,
-      IPartitionProvider partitionProvider) {
-    return new ElasticSearchDestinationResolver(properties.getElasticsearchPropertiesPrefix(),
-        partitionProvider);
-  }
+    @Bean
+    public IElasticRepository elasticRepository(ElasticSearchConfigurationProperties properties,
+        IPartitionProvider partitionProvider, IPartitionPropertyResolver propertyResolver) {
+        return new ElasticSearchDestinationResolver(properties.getElasticsearchPropertiesPrefix(), partitionProvider, propertyResolver);
+    }
 }
