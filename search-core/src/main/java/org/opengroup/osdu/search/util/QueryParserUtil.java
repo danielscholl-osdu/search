@@ -180,8 +180,8 @@ public class QueryParserUtil implements IQueryParserUtil {
             Matcher multilevelNestedMatcher = multiLevelNestedPattern.matcher(token);
             Matcher oneLevelNestedMatcher = oneLevelNestedPattern.matcher(token);
             if(innerNodeMatcher.find()) {
-                InnerQueryNode nestedQueryNode = getInnerQueryNode(innerNodeMatcher);
-                queryNodes.add(nestedQueryNode);
+                InnerQueryNode innerQueryNode = getInnerQueryNode(innerNodeMatcher);
+                queryNodes.add(innerQueryNode);
             }
             else if (isMultilevelNested.find()) {
                 multilevelNestedMatcher.find();
