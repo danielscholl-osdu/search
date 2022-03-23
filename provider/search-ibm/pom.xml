@@ -24,8 +24,12 @@
 
 	<properties>
 		<os-core-lib-ibm.version>0.13.0</os-core-lib-ibm.version>
+		
 		<start-class>org.opengroup.osdu.search.provider.ibm.app.SearchIBMApplication</start-class>
 	</properties>
+
+   
+
 
 	<dependencies>
 
@@ -90,6 +94,10 @@
 					<groupId>io.netty</groupId>
 					<artifactId>netty-codec</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>com.ibm.cos</groupId>
+					<artifactId>ibm-cos-java-sdk</artifactId>
+				</exclusion>  
 			</exclusions>
 		</dependency>
 
