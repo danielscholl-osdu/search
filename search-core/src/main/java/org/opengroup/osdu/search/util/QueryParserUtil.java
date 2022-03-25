@@ -9,6 +9,7 @@ import org.apache.http.HttpStatus;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.search.model.InnerQueryNode;
 import org.opengroup.osdu.search.model.NestedQueryNode;
 import org.opengroup.osdu.search.model.QueryNode;
 import org.opengroup.osdu.search.model.QueryNode.Operator;
@@ -74,6 +75,21 @@ public class QueryParserUtil implements IQueryParserUtil {
      *  <query>: TEXAS
      */
     private static Pattern intermediatePattern = Pattern.compile("\\A(?<operator>AND|OR|NOT)(?<query>.+)");
+
+    /**
+     * Match example:
+     *   (TEXAS)
+     * Groups:
+     *  <operator>: null
+     *  <innernodes>: TEXAS
+     *
+     * Match example:
+     *   AND (TEXAS)
+     * Groups:
+     *  <operator>: AND
+     *  <innernodes>: TEXAS
+     */
+    private static Pattern innerNodePattern = Pattern.compile("(^\\(|^(?<operator>AND|OR|NOT)\\s*\\()(?<innernodes>.+?)\\)$");
 
     @Override
     public QueryBuilder buildQueryBuilderFromQueryString(String query) {
@@ -159,10 +175,15 @@ public class QueryParserUtil implements IQueryParserUtil {
 
         ArrayList<QueryNode> queryNodes = new ArrayList<>();
         for (String token : tokens) {
+            Matcher innerNodeMatcher = innerNodePattern.matcher(token);
             Matcher isMultilevelNested = isMultilevelNestedPattern.matcher(token);
             Matcher multilevelNestedMatcher = multiLevelNestedPattern.matcher(token);
             Matcher oneLevelNestedMatcher = oneLevelNestedPattern.matcher(token);
-            if (isMultilevelNested.find()) {
+            if(innerNodeMatcher.find()) {
+                InnerQueryNode innerQueryNode = getInnerQueryNode(innerNodeMatcher);
+                queryNodes.add(innerQueryNode);
+            }
+            else if (isMultilevelNested.find()) {
                 multilevelNestedMatcher.find();
                 NestedQueryNode nestedQueryNode = getMultilevelNestedQueryNode(multilevelNestedMatcher);
                 queryNodes.add(nestedQueryNode);
@@ -211,6 +232,12 @@ public class QueryParserUtil implements IQueryParserUtil {
         String path = multilevelNestedMatcher.group(PARENT_PATH_GROUP);
         String innerNodes = trimTrailingBrackets(multilevelNestedMatcher.group(INNER_NODES_GROUP));
         return new NestedQueryNode(null, operand, parseQueryNodesFromQueryString(innerNodes), path);
+    }
+
+    private InnerQueryNode getInnerQueryNode(Matcher innerNodeMatcher) {
+        String operand = innerNodeMatcher.group(OPERATOR_GROUP);
+        String innerNodes = innerNodeMatcher.group(INNER_NODES_GROUP);
+        return new InnerQueryNode(operand, parseQueryNodesFromQueryString(innerNodes));
     }
 
     private String defineLeadingTokenOperator(String leadingToken, String followingToken) {
