@@ -16,22 +16,6 @@
  */
 package org.opengroup.osdu.search.smart.models;
 
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsRequest;
 import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsResponse;
 import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsResponse.FieldMappingMetadata;
@@ -49,21 +33,35 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.stubbing.Answer;
+import org.opengroup.osdu.core.common.http.IUrlFetchService;
+import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.http.HttpResponse;
 import org.opengroup.osdu.core.common.provider.interfaces.IAttributesCache;
-import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
-import org.opengroup.osdu.core.common.http.IUrlFetchService;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
+import org.opengroup.osdu.search.smart.attributes.AttributeLoader;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import org.opengroup.osdu.search.smart.attributes.AttributeLoader;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ RestHighLevelClient.class, IndicesClient.class, SearchConfigurationProperties.class, AttributeLoader.class })
+
 public class AttributesTest {
 
 	@Mock
@@ -99,7 +97,8 @@ public class AttributesTest {
 		this.indicesClient = PowerMockito.mock(IndicesClient.class);
 		mockStatic(AttributeLoader.class);
 		when(searchConfigurationProperties.getDeployedServiceId()).thenReturn("search");
-		when(AttributeLoader.getAttributes()).thenReturn(new ArrayList<>());
+		when(AttributeLoader.getAttributes()).thenAnswer((Answer<List<Attribute>>) invocation -> new ArrayList<>());
+
 	}
 
 	@Test
