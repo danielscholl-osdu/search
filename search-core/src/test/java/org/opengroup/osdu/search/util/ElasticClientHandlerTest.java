@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.stubbing.Answer;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
@@ -75,7 +76,7 @@ public class ElasticClientHandlerTest {
         ClusterSettings clusterSettings = new ClusterSettings("H", 1, "U:P");
         when(searchConfigurationProperties.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.CLOUD);
         when(elasticSettingService.getElasticClusterInformation()).thenReturn(clusterSettings);
-        when(RestClient.builder(new HttpHost("H", 1, "https"))).thenReturn(builder);
+        when(RestClient.builder(new HttpHost("H", 1, "https"))).thenAnswer((Answer<RestClientBuilder>) invocation -> builder);
         when(builder.setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder.setConnectTimeout(5000).setSocketTimeout(60000))).thenReturn(builder);
         when(builder.build()).thenReturn(restClient);
 
@@ -89,7 +90,7 @@ public class ElasticClientHandlerTest {
         ClusterSettings clusterSettings = new ClusterSettings("H", 1, "U:P");
         when(searchConfigurationProperties.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.CLOUD);
         when(elasticSettingService.getElasticClusterInformation()).thenReturn(clusterSettings);
-        when(RestClient.builder(new HttpHost("H", 1, "https"))).thenReturn(builder);
+        when(RestClient.builder(new HttpHost("H", 1, "https"))).thenAnswer((Answer<RestClientBuilder>) invocation -> builder);
         when(builder.build()).thenReturn(null);
 
         this.elasticClientHandler.createRestClient();
@@ -99,7 +100,7 @@ public class ElasticClientHandlerTest {
     public void failed_createRestClientForSaaS_when_getcluster_info_throws_exception() {
         when(searchConfigurationProperties.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.CLOUD);
         when(elasticSettingService.getElasticClusterInformation()).thenThrow(new AppException(1, "", ""));
-        when(RestClient.builder(new HttpHost("H", 1, "https"))).thenReturn(builder);
+        when(RestClient.builder(new HttpHost("H", 1, "https"))).thenAnswer((Answer<RestClientBuilder>) invocation -> builder );
 
         this.elasticClientHandler.createRestClient();
     }

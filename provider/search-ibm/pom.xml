@@ -23,7 +23,7 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<os-core-lib-ibm.version>0.13.0</os-core-lib-ibm.version>
+		<os-core-lib-ibm.version>0.14.0</os-core-lib-ibm.version>
 		
 		<start-class>org.opengroup.osdu.search.provider.ibm.app.SearchIBMApplication</start-class>
 	</properties>
@@ -209,7 +209,7 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>3.0.0</version>
+			<version>3.3.3</version>
 			<scope>test</scope>
 		</dependency>
 
