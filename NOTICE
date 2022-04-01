@@ -92,6 +92,7 @@ The following software have components provided under the terms of this license:
 - OpenCensus (from https://github.com/census-instrumentation/opencensus-java)
 - PostgreSQL JDBC Driver
 - PowerMock (from http://www.powermock.org, https://repo1.maven.org/maven2/org/powermock/powermock-api-mockito)
+- Prometheus Java Simpleclient (from https://repo1.maven.org/maven2/io/prometheus/simpleclient)
 - RESTEasy Jackson 2 Provider (from https://repo1.maven.org/maven2/org/jboss/resteasy/resteasy-jackson2-provider)
 - RabbitMQ Java Client (from http://www.rabbitmq.com, https://www.rabbitmq.com)
 - RxJava (from https://github.com/ReactiveX/RxJava)
@@ -316,6 +317,7 @@ The following software have components provided under the terms of this license:
 - OSGi resource locator (from https://repo1.maven.org/maven2/org/glassfish/hk2/osgi-resource-locator)
 - Project Lombok (from http://projectlombok.org, https://projectlombok.org)
 - javax.ws.rs-api (from http://jax-rs-spec.java.net, https://github.com/eclipse-ee4j/jaxrs-api)
+- null (from https://github.com/fge/jackson-coreutils)
 
 ========================================================================
 JSON
@@ -355,6 +357,13 @@ The following software have components provided under the terms of this license:
 - JTS Topology Suite (from http://sourceforge.net/projects/jts-topo-suite)
 - RabbitMQ Java Client (from http://www.rabbitmq.com, https://www.rabbitmq.com)
 - null (from https://github.com/fge/btf, https://github.com/fge/jackson-coreutils, https://github.com/fge/msg-simple)
+
+========================================================================
+LGPL-3.0-or-later
+========================================================================
+The following software have components provided under the terms of this license:
+
+- null (from https://github.com/fge/jackson-coreutils)
 
 ========================================================================
 MIT
@@ -425,6 +434,7 @@ The following software have components provided under the terms of this license:
 - LatencyUtils (from http://latencyutils.github.io/LatencyUtils/)
 - PostgreSQL JDBC Driver
 - Project Lombok (from http://projectlombok.org, https://projectlombok.org)
+- Prometheus Java Simpleclient (from https://repo1.maven.org/maven2/io/prometheus/simpleclient)
 - RabbitMQ Java Client (from http://www.rabbitmq.com, https://www.rabbitmq.com)
 - reactive-streams (from http://www.reactive-streams.org/)
 
