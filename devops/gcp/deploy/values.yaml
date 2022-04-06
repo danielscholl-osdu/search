@@ -15,3 +15,4 @@ conf:
   configmap: "search-config"
   elastic_secret_name: "search-elastic-secret"
   app_name: "search"
+  on_prem_enabled: false
