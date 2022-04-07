@@ -4,17 +4,19 @@
 
 data:
   log_level: "INFO"
-  redis_group_host: "redis-cache-groups"
-  redis_search_host: "redis-cache-search"
+  redis_group_host: "redis-group-master"
+  redis_search_host: "redis-search-master"
   redis_search_port: "6379"
   authorize_api: "http://entitlements/api/entitlements/v2"
   security_https_certificate_trust: "true"
-  audiences: ""
   partition_api: "http://partition/api/partition/v1/"
   policy_api: "https://policy/api/policy/v1/"
   policy_id: "search"
-  spring_profiles_active: "gcp"
+  indexer_host: "http:indexer/api/indexer/v2/"
+  #gcp
+  audiences: ""
 
 conf:
   configmap: "search-config"
   app_name: "search"
+  on_prem_enabled: false
