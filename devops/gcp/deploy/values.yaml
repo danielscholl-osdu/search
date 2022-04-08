@@ -7,11 +7,12 @@ data:
   requests_memory: "448M"
   limits_cpu: "1"
   limits_memory: "1G"
-  serviceAccountName: ""
+  serviceAccountName: "search"
   imagePullPolicy: "IfNotPresent"
   image: ""
 
 conf:
   configmap: "search-config"
-  elastic_secret_name: "elastic-secret"
+  elastic_secret_name: "search-elastic-secret"
   app_name: "search"
+  on_prem_enabled: false
