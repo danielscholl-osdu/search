@@ -18,7 +18,6 @@ data:
   INDEXER_HOST: "{{ .Values.data.indexer_host }}"
   {{- if .Values.conf.on_prem_enabled }}
   SPRING_PROFILES_ACTIVE: "anthos"
-  SERVICE_TOKEN_PROVIDER: "OPENID"
   {{- else }}
   SPRING_PROFILES_ACTIVE: "gcp"
   SERVICE_TOKEN_PROVIDER: "GCP"
