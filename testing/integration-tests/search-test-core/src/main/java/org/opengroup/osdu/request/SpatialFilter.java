@@ -1,6 +1,8 @@
 package org.opengroup.osdu.request;
 
 import lombok.*;
+import org.opengroup.osdu.core.common.model.search.Point;
+import org.opengroup.osdu.core.common.model.search.Polygon;
 
 import java.util.List;
 
@@ -14,6 +16,8 @@ public class SpatialFilter {
     ByBoundingBox byBoundingBox;
     ByDistance byDistance;
     ByGeoPolygon byGeoPolygon;
+    ByIntersection byIntersection;
+    ByWithinPolygon byWithinPolygon;
 
     @Builder
     public static class ByDistance {
@@ -36,5 +40,15 @@ public class SpatialFilter {
     @Builder
     public static class ByGeoPolygon {
         List<Points> points;
+    }
+
+    @Builder
+    public static class ByIntersection {
+        private List<Polygon> polygons;
+    }
+
+    @Builder
+    public static class ByWithinPolygon {
+        private List<Point> points;
     }
 }

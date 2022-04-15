@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 
 import cucumber.api.DataTable;
 import org.opengroup.osdu.core.common.model.legal.Legal;
+import org.opengroup.osdu.core.common.model.search.Point;
+import org.opengroup.osdu.core.common.model.search.Polygon;
 import org.opengroup.osdu.models.Setup;
 import org.opengroup.osdu.models.TestIndex;
 import org.opengroup.osdu.request.SpatialFilter;
@@ -34,6 +36,8 @@ public abstract class TestsBase {
 
     protected SpatialFilter spatialFilter = new SpatialFilter();
     protected SpatialFilter.ByBoundingBox byBoundingBox;
+    protected SpatialFilter.ByIntersection byIntersection;
+    protected SpatialFilter.ByWithinPolygon byWithinPolygon;
 
     protected String timeStamp = String.valueOf(System.currentTimeMillis());
     private boolean dunit = false;
@@ -135,6 +139,28 @@ public abstract class TestsBase {
         SpatialFilter.Points topLeft = SpatialFilter.Points.builder().latitude(topLatitude).longitude(topLongitude).build();
         byBoundingBox = SpatialFilter.ByBoundingBox.builder().topLeft(topLeft).bottomRight(bottomRight).build();
         spatialFilter.setByBoundingBox(byBoundingBox);
+    }
+
+    public void define_intersection_polygon_with_points(Double latitude1, Double longitude1, Double latitude2, Double longitude2,
+                                                        Double latitude3, Double longitude3, Double latitude4, Double longitude4,
+                                                        Double latitude5, Double longitude5) {
+        Point point1 = new Point(latitude1, longitude1);
+        Point point2 = new Point(latitude2, longitude2);
+        Point point3 = new Point(latitude3, longitude3);
+        Point point4 = new Point(latitude4, longitude4);
+        Point point5 = new Point(latitude5, longitude5);
+        List<Point> points = Arrays.asList(point1, point2, point3, point4, point5);
+        Polygon polygon = new Polygon(points);
+        List<Polygon> polygons = Arrays.asList(polygon);
+        byIntersection = SpatialFilter.ByIntersection.builder().polygons(polygons).build();
+        spatialFilter.setByIntersection(byIntersection);
+    }
+
+    public void define_within_polygon_with_points(Double latitude1, Double longitude1) {
+        Point point1 = new Point(latitude1, longitude1);
+        List<Point> points = Arrays.asList(point1);
+        byWithinPolygon = SpatialFilter.ByWithinPolygon.builder().points(points).build();
+        spatialFilter.setByWithinPolygon(byWithinPolygon);
     }
 
     protected String executeQuery(String api, String payLoad, Map<String, String> headers, String token) {

@@ -136,7 +136,8 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
+            <!-- Using Mockito 2 specifically for ability to mock elasticsearch lib's "final" methods -->
+            <version>2.0.0-beta</version>
             <scope>test</scope>
         </dependency>
         <dependency>
