@@ -20,6 +20,7 @@ import java.security.NoSuchAlgorithmException;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.message.BasicHeader;
@@ -30,12 +31,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
-import lombok.extern.java.Log;
 // TODO: Elastic Client Handler should be designed to allow cloud providers to implement their own handler if not we have to inherited
 // SPI needs to be refactored
 @Primary
 @Component
-@Log
+@Slf4j
 public class ElasticClientHandlerAws extends ElasticClientHandler {
 
     private static final int REST_CLIENT_CONNECT_TIMEOUT = 60000;
@@ -67,11 +67,9 @@ public class ElasticClientHandlerAws extends ElasticClientHandler {
                 httpClientBuilder.setSSLContext(sslContext)
                                 .setSSLHostnameVerifier((s, session) -> true));
             } catch (NoSuchAlgorithmException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                log.error("No such algorithm", e);
             } catch (KeyManagementException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                log.error("Key management error", e);
             }
 
         }
