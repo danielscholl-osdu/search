@@ -225,7 +225,7 @@ definitions:
         description: The starting offset from which to return results
       kind:
         type: object
-        description: The kind of the record to query e.g. "tenant1:test:well:1.0.0" or ["tenant1:test:well:1.0.0", "tenant1:test:well:2.0.0"].
+        description: The kind of the record to query e.g. "tenant1:test:well:1.0.0" or "tenant1:test:well:1.0.0,tenant1:test:well:2.0.0" or ["tenant1:test:well:1.0.0", "tenant1:test:well:2.0.0"].
       limit:
         type: integer
         format: int32
@@ -297,7 +297,7 @@ definitions:
         description: The cursor value returned from a previous query.
       kind:
         type: object
-        description: The kind of the record to query e.g. "tenant1:test:well:1.0.0" or ["tenant1:test:well:1.0.0", "tenant1:test:well:2.0.0"].
+        description: The kind of the record to query e.g. "tenant1:test:well:1.0.0" or "tenant1:test:well:1.0.0,tenant1:test:well:2.0.0" or ["tenant1:test:well:1.0.0", "tenant1:test:well:2.0.0"].
       limit:
         type: integer
         format: int32

@@ -65,4 +65,18 @@ public class CrossTenantUtilsTest {
         });
         assertEquals(indices, this.sut.getIndexName(queryRequest));
     }
+
+    @Test
+    public void should_returnMultiIndicesAsIs_when_searchedCrossKind_separatedByComma_given_multipleAccountId() {
+        String kind = "opendes:welldb:wellbore2:1.0.0,opendes:osdudemo:wellbore:1.0.0,opendes:wks:polylineSet:1.0.0,slb:wks:log:1.0.5";
+        String indices = "opendes-welldb-wellbore2-1.0.0,opendes-osdudemo-wellbore-1.0.0,opendes-wks-polylineSet-1.0.0,slb-wks-log-1.0.5,-.*";
+        when(queryRequest.getKind()).thenReturn(kind);
+        when(this.elasticIndexNameResolver.getIndexNameFromKind(anyString())).thenAnswer(invocation ->
+        {
+            String kd = invocation.getArgument(0);
+            kd = kd.replace(":", "-");
+            return kd;
+        });
+        assertEquals(indices, this.sut.getIndexName(queryRequest));
+    }
 }

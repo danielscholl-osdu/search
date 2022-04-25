@@ -146,7 +146,7 @@ __Note:__ : It can take a delay of atleast 30 seconds once records are successfu
 
 | Parameter | Description |
 | :--- | :--- |
-| kind | The kind(s) of the record to query. It could be a string as mono-kind or string array as multi-kinds that consists of 1 or more mono-kind, e.g. "opendes:welldb:wellbore:1.0.0" or ["opendes:welldb:wellbore:1.0.0", "opendes:welldb:wellbore:2.0.0"]. kind is a __required__ field and a mono-kind can be formatted as authority/data-partition-id:data-source-id:entity-type:schema-version |
+| kind | The kind(s) of the record to query. It could be a string as mono-kind or string array as multi-kinds that consists of 1 or more mono-kind, e.g. "opendes:welldb:wellbore:1.0.0" or "opendes:welldb:wellbore:1.0.0,opendes:welldb:wellbore:2.0.0" or ["opendes:welldb:wellbore:1.0.0", "opendes:welldb:wellbore:2.0.0"]. kind is a __required__ field and a mono-kind can be formatted as authority/data-partition-id:data-source-id:entity-type:schema-version |
 | query | Query string based on Lucene query string syntax, supplemented with a specific format for describing queries to fields of object arrays indexed with the `nested` hint. |
 | offset | The starting offset from which to return results. |
 | limit | The maximum number of results to return from the given offset. If no limit is provided, then it will return __10__ items. Max number of items which can be fetched by the query is __1000__. (If you wish to fetch large set of items, please use [query_with_cursor](#query-with-cursor) API). |
