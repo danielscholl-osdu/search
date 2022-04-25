@@ -7,6 +7,7 @@ Feature: Search with different queries
       | tenant1:testquery<timestamp>:well:1.0.0       | tenant1-testquery<timestamp>-well-1.0.0       | records_1   | records_1  | data.default.viewers@tenant1 | data.default.owners@tenant1     |
       | tenant1:testquery<timestamp>:well:2.0.0       | tenant1-testquery<timestamp>-well-2.0.0       | records_2   | records_2  | data.default.viewers@tenant1 | data.default.testowners@tenant1 |
       | tenant1:testnestedquery<timestamp>:well:2.0.0 | tenant1-testnestedquery<timestamp>-well-2.0.0 | records_4   | records_4  | data.default.viewers@tenant1 | data.default.testowners@tenant1 |
+      | tenant1:testintersectingquery<timestamp>:well:2.0.0 | tenant1-testintersectingquery<timestamp>-well-2.0.0 | records_5   | records_5  | data.default.viewers@tenant1 | data.default.testowners@tenant1 |
 
   Scenario Outline: Search data in a given kind
     When I send <query> with <kind>
@@ -231,3 +232,25 @@ Feature: Search with different queries
       | "tenant1" | "tenant1:testnestedquery<timestamp>:well:2.0.0" | "nested(data.FacilityOperators, (TerminationDateTime:[2023 TO 2026] AND EffectiveDateTime:[* TO 2021])) NOT nested(data.VerticalMeasurements, (VerticalMeasurement:(>20000)))" | 1     |
       | "tenant1" | "tenant1:testnestedquery<timestamp>:well:2.0.0" | "nested(data.FacilityOperators, (TerminationDateTime:[2023 TO 2026])) OR nested(data.VerticalMeasurements, (VerticalMeasurement:(>15)))"                                       | 2     |
       | "tenant1" | "tenant1:testnestedquery<timestamp>:well:2.0.0" | "nested(data.VerticalMeasurements, (VerticalMeasurementID:"Other*" AND VerticalMeasurement:(<30)))"                                                                          | 1     |
+
+  Scenario Outline: Search data across the kinds with intersecting spatial filter inputs
+    When I send <query> with <kind>
+    And I apply geographical query on field <field>
+    And define intersection polygon with points (<latitude1>, <longitude1>) and (<latitude2>, <longitude2>) and (<latitude3>, <longitude3>) and (<latitude4>, <longitude4>) and (<latitude5>, <longitude5>)
+    Then I should get in response <count> records
+
+    Examples:
+      | kind                                                  | query | field                   | latitude1 | longitude1 | latitude2 | longitude2 | latitude3 | longitude3 | latitude4 | longitude4 | latitude5 | longitude5 | count |
+      | "tenant1:testintersectingquery<timestamp>:well:2.0.0" | None  | "data.Wgs84Coordinates" | 10.75     | -8.60      | 10.73     | -2.47      | 1.01      | -2.47      | 1.01      | -8.60      | 10.75     | -8.60      | 1     |
+      | "tenant1:testintersectingquery<timestamp>:well:2.0.0" | None  | "data.Wgs84Coordinates" | 80        | 0          | 80        | 1          | 90        | 1          | 90        | 0          | 80        | 0          | 0     |
+
+  Scenario Outline: Search data across the kinds with intersecting coordinate inputs
+    When I send <query> with <kind>
+    And I apply geographical query on field <field>
+    And define within polygon with points (<latitude1>, <longitude1>)
+    Then I should get in response <count> records
+
+    Examples:
+      | kind                                                  | query | field                   | latitude1 | longitude1 | count |
+      | "tenant1:testintersectingquery<timestamp>:well:2.0.0" | None  | "data.Wgs84Coordinates" | 10.75     | -8.60      | 1     |
+      | "tenant1:testintersectingquery<timestamp>:well:2.0.0" | None  | "data.Wgs84Coordinates" | 80        | 0          | 0     |
