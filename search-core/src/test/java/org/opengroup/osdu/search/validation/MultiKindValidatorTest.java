@@ -49,7 +49,9 @@ public class MultiKindValidatorTest {
         invalidKinds.add("a:b:c:d:321");
 
         assertTrue(validator.isValid(validKinds, null));
+        assertTrue(validator.isValid("tenant:valid:kind:1.0.0,tenant:valid:kind:2.0.0", null));
         assertFalse(validator.isValid(invalidKinds, null));
+        assertFalse(validator.isValid("tenant:valid:kind:1.0.0,,tenant:valid:kind:2.0.0", null));
     }
 
     @Test
