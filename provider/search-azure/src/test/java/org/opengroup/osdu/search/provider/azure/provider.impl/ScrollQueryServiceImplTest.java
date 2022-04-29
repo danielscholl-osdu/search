@@ -71,6 +71,9 @@ public class ScrollQueryServiceImplTest {
     private SearchHits searchHits;
 
     @Mock
+    private RestStatus searchStatus;
+
+    @Mock
     private SearchHit searchHit;
 
     @Mock
@@ -222,6 +225,7 @@ public class ScrollQueryServiceImplTest {
         long totalHitsCount = 0L;
 
         doReturn(searchHits).when(searchScrollResponse).getHits();
+        doReturn(searchStatus).when(searchScrollResponse).status();
         doReturn(hits).when(searchHits).getHits();
         doReturn(searchScrollResponse).when(client).search(any(), any(RequestOptions.class));
 

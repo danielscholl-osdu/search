@@ -24,6 +24,7 @@ import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
 
 import com.google.common.base.Strings;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -33,6 +34,7 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -58,6 +60,8 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.locationtech.jts.geom.Coordinate;
+import org.opengroup.osdu.azure.logging.CoreLoggerFactory;
+import org.opengroup.osdu.azure.logging.DependencyPayload;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.entitlements.AclRole;
 import org.opengroup.osdu.core.common.model.http.AppException;
@@ -338,6 +342,7 @@ abstract class QueryBase {
         Long startTime = 0L;
         SearchRequest elasticSearchRequest = null;
         SearchResponse searchResponse = null;
+        int statusCode = 0;
 
         try {
             String index = this.getIndex(searchRequest);
@@ -354,16 +359,21 @@ abstract class QueryBase {
 
             startTime = System.currentTimeMillis();
             searchResponse = client.search(elasticSearchRequest, RequestOptions.DEFAULT);
+            statusCode = getSearchResponseStatusCode(searchResponse);
             return searchResponse;
         } catch (ElasticsearchStatusException e) {
             switch (e.status()) {
                 case NOT_FOUND:
+                    statusCode = e.status().getStatus();
                     throw new AppException(HttpServletResponse.SC_NOT_FOUND, "Not Found", "Resource you are trying to find does not exists", e);
                 case BAD_REQUEST:
+                    statusCode = e.status().getStatus();
                     throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Bad Request", detailedBadRequestMessageUtil.getDetailedBadRequestMessage(elasticSearchRequest, e), e);
                 case SERVICE_UNAVAILABLE:
+                    statusCode = e.status().getStatus();
                     throw new AppException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Search error", "Please re-try search after some time.", e);
                 default:
+                    statusCode = HttpStatus.SC_INTERNAL_SERVER_ERROR;
                     throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
             }
         } catch (AppException e) {
@@ -379,10 +389,25 @@ abstract class QueryBase {
             Long latency = System.currentTimeMillis() - startTime;
             if (elasticLoggingConfig.getEnabled() || latency > elasticLoggingConfig.getThreshold()) {
                 String request = elasticSearchRequest != null ? elasticSearchRequest.source().toString() : searchRequest.toString();
-                this.log.info(String.format("elastic latency: %s | elastic request-payload: %s", latency, request));
+                this.log.info(String.format("Elastic request-payload: %s", request));
             }
+            logDependency("QUERY_ELASTICSEARCH", searchRequest.getQuery(), dpsHeaders.getPartitionId(), latency, statusCode, statusCode == HttpStatus.SC_OK);
             this.auditLog(searchRequest, searchResponse);
         }
+    }
+
+    private int getSearchResponseStatusCode(SearchResponse searchResponse) {
+        if(searchResponse == null || searchResponse.status() == null)
+            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Search response returned null");
+        else
+            return searchResponse.status().getStatus();
+    }
+
+    public void logDependency(final String name, final String data, final String target, final long timeTakenInMs, final int resultCode, final boolean success) {
+        DependencyPayload payload = new DependencyPayload(name, data, Duration.ofMillis(timeTakenInMs), String.valueOf(resultCode), success);
+        payload.setType("Elasticsearch");
+        payload.setTarget(target);
+        CoreLoggerFactory.getInstance().getLogger("ElasticCluster").logDependency(payload);
     }
 
     private boolean useGeoShapeQuery(RestHighLevelClient client, Query searchRequest, String index) throws IOException {
