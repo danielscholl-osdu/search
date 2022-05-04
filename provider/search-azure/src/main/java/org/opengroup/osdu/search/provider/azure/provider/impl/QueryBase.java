@@ -24,7 +24,6 @@ import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
 
 import com.google.common.base.Strings;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -60,8 +59,6 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.locationtech.jts.geom.Coordinate;
-import org.opengroup.osdu.azure.logging.CoreLoggerFactory;
-import org.opengroup.osdu.azure.logging.DependencyPayload;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.entitlements.AclRole;
 import org.opengroup.osdu.core.common.model.http.AppException;
@@ -75,6 +72,7 @@ import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
 import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
+import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
@@ -110,8 +108,12 @@ abstract class QueryBase {
     @Autowired
     private ElasticLoggingConfig elasticLoggingConfig;
 
+    @Autowired
+    private DependencyLogger dependencyLogger;
+
     static final String AGGREGATION_NAME = "agg";
     private static final String GEO_SHAPE_INDEXED_TYPE = "geo_shape";
+    private static final String DEPENDENCY_NAME = "QUERY_ELASTICSEARCH";
 
     // if returnedField contains property matching from excludes than query result will NOT include that property
     private final Set<String> excludes = new HashSet<>(Arrays.asList(RecordMetaAttribute.X_ACL.getValue()));
@@ -389,25 +391,18 @@ abstract class QueryBase {
             Long latency = System.currentTimeMillis() - startTime;
             if (elasticLoggingConfig.getEnabled() || latency > elasticLoggingConfig.getThreshold()) {
                 String request = elasticSearchRequest != null ? elasticSearchRequest.source().toString() : searchRequest.toString();
-                this.log.info(String.format("Elastic request-payload: %s", request));
+                this.log.debug(String.format("Elastic request-payload: %s", request));
             }
-            logDependency("QUERY_ELASTICSEARCH", searchRequest.getQuery(), dpsHeaders.getPartitionId(), latency, statusCode, statusCode == HttpStatus.SC_OK);
+            dependencyLogger.logDependency(DEPENDENCY_NAME, searchRequest.getQuery(), dpsHeaders.getPartitionId(), latency, statusCode, statusCode == HttpStatus.SC_OK);
             this.auditLog(searchRequest, searchResponse);
         }
     }
 
     private int getSearchResponseStatusCode(SearchResponse searchResponse) {
         if(searchResponse == null || searchResponse.status() == null)
-            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Search response returned null");
+            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Search returned null or empty response");
         else
             return searchResponse.status().getStatus();
-    }
-
-    public void logDependency(final String name, final String data, final String target, final long timeTakenInMs, final int resultCode, final boolean success) {
-        DependencyPayload payload = new DependencyPayload(name, data, Duration.ofMillis(timeTakenInMs), String.valueOf(resultCode), success);
-        payload.setType("Elasticsearch");
-        payload.setTarget(target);
-        CoreLoggerFactory.getInstance().getLogger("ElasticCluster").logDependency(payload);
     }
 
     private boolean useGeoShapeQuery(RestHighLevelClient client, Query searchRequest, String index) throws IOException {
