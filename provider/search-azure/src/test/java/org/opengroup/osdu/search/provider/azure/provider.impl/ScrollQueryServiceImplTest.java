@@ -29,6 +29,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -40,6 +41,7 @@ import org.opengroup.osdu.core.common.model.search.*;
 import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
+import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
@@ -69,6 +71,9 @@ public class ScrollQueryServiceImplTest {
 
     @Mock
     private SearchHits searchHits;
+
+    @Mock
+    private DependencyLogger dependencyLogger;
 
     @Mock
     private SearchHit searchHit;
@@ -218,10 +223,12 @@ public class ScrollQueryServiceImplTest {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
         SearchResponse searchScrollResponse = mock(SearchResponse.class);
 
+
         SearchHit[] hits = {};
         long totalHitsCount = 0L;
 
         doReturn(searchHits).when(searchScrollResponse).getHits();
+        when(searchScrollResponse.status()).thenReturn(RestStatus.OK);
         doReturn(hits).when(searchHits).getHits();
         doReturn(searchScrollResponse).when(client).search(any(), any(RequestOptions.class));
 

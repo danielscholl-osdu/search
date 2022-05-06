@@ -77,6 +77,7 @@ import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
+import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.FieldMappingTypeService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
@@ -166,6 +167,9 @@ public class QueryServiceImplTest {
 
     @Mock
     private ElasticLoggingConfig elasticLoggingConfig;
+
+    @Mock
+    private DependencyLogger dependencyLogger;
 
     @InjectMocks
     private QueryServiceImpl sut;
