@@ -33,6 +33,7 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -71,6 +72,7 @@ import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
 import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
+import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
@@ -106,8 +108,12 @@ abstract class QueryBase {
     @Autowired
     private ElasticLoggingConfig elasticLoggingConfig;
 
+    @Autowired
+    private DependencyLogger dependencyLogger;
+
     static final String AGGREGATION_NAME = "agg";
     private static final String GEO_SHAPE_INDEXED_TYPE = "geo_shape";
+    private static final String DEPENDENCY_NAME = "QUERY_ELASTICSEARCH";
 
     // if returnedField contains property matching from excludes than query result will NOT include that property
     private final Set<String> excludes = new HashSet<>(Arrays.asList(RecordMetaAttribute.X_ACL.getValue()));
@@ -338,6 +344,7 @@ abstract class QueryBase {
         Long startTime = 0L;
         SearchRequest elasticSearchRequest = null;
         SearchResponse searchResponse = null;
+        int statusCode = 0;
 
         try {
             String index = this.getIndex(searchRequest);
@@ -354,16 +361,21 @@ abstract class QueryBase {
 
             startTime = System.currentTimeMillis();
             searchResponse = client.search(elasticSearchRequest, RequestOptions.DEFAULT);
+            statusCode = getSearchResponseStatusCode(searchResponse);
             return searchResponse;
         } catch (ElasticsearchStatusException e) {
             switch (e.status()) {
                 case NOT_FOUND:
+                    statusCode = e.status().getStatus();
                     throw new AppException(HttpServletResponse.SC_NOT_FOUND, "Not Found", "Resource you are trying to find does not exists", e);
                 case BAD_REQUEST:
+                    statusCode = e.status().getStatus();
                     throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Bad Request", detailedBadRequestMessageUtil.getDetailedBadRequestMessage(elasticSearchRequest, e), e);
                 case SERVICE_UNAVAILABLE:
+                    statusCode = e.status().getStatus();
                     throw new AppException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Search error", "Please re-try search after some time.", e);
                 default:
+                    statusCode = HttpStatus.SC_INTERNAL_SERVER_ERROR;
                     throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
             }
         } catch (AppException e) {
@@ -379,10 +391,18 @@ abstract class QueryBase {
             Long latency = System.currentTimeMillis() - startTime;
             if (elasticLoggingConfig.getEnabled() || latency > elasticLoggingConfig.getThreshold()) {
                 String request = elasticSearchRequest != null ? elasticSearchRequest.source().toString() : searchRequest.toString();
-                this.log.info(String.format("elastic latency: %s | elastic request-payload: %s", latency, request));
+                this.log.debug(String.format("Elastic request-payload: %s", request));
             }
+            dependencyLogger.logDependency(DEPENDENCY_NAME, searchRequest.getQuery(), dpsHeaders.getPartitionId(), latency, statusCode, statusCode == HttpStatus.SC_OK);
             this.auditLog(searchRequest, searchResponse);
         }
+    }
+
+    private int getSearchResponseStatusCode(SearchResponse searchResponse) {
+        if(searchResponse == null || searchResponse.status() == null)
+            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Search returned null or empty response");
+        else
+            return searchResponse.status().getStatus();
     }
 
     private boolean useGeoShapeQuery(RestHighLevelClient client, Query searchRequest, String index) throws IOException {
