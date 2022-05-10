@@ -1,6 +1,6 @@
 /*
- * Copyright 2020 Google LLC
- * Copyright 2020 EPAM Systems, Inc
+ * Copyright 2020-2022 Google LLC
+ * Copyright 2020-2022 EPAM Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,22 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,6 +44,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.search.TotalHits.Relation;
@@ -66,29 +74,37 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.model.search.*;
+import org.opengroup.osdu.core.common.model.search.Point;
+import org.opengroup.osdu.core.common.model.search.Polygon;
+import org.opengroup.osdu.core.common.model.search.QueryRequest;
+import org.opengroup.osdu.core.common.model.search.QueryResponse;
+import org.opengroup.osdu.core.common.model.search.SortOrder;
+import org.opengroup.osdu.core.common.model.search.SortQuery;
+import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter.ByBoundingBox;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter.ByDistance;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter.ByGeoPolygon;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
+import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
+import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
+import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.DetailedBadRequestMessageUtil;
+import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.IAggregationParserUtil;
 import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.QueryParserUtil;
-import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
-import org.opengroup.osdu.search.service.IFieldMappingTypeService;
-import org.opengroup.osdu.search.util.CrossTenantUtils;
-import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.QueryResponseUtil;
 import org.opengroup.osdu.search.util.SortParserUtil;
 import org.powermock.api.mockito.PowerMockito;
@@ -135,12 +151,13 @@ public class QueryServiceTest {
   @Spy
   private IAggregationParserUtil aggregationParserUtil = new AggregationParserUtil(properties);
   @Spy
-  private IDetailedBadRequestMessageUtil detailedBadRequestMessageUtil = new DetailedBadRequestMessageUtil(objectMapper);
+  private IDetailedBadRequestMessageUtil detailedBadRequestMessageUtil = new DetailedBadRequestMessageUtil(
+      objectMapper);
 
+  @Mock
   private RestHighLevelClient restHighLevelClient;
 
   private SearchRequest elasticSearchRequest;
-
 
   @InjectMocks
   @Spy
@@ -161,7 +178,6 @@ public class QueryServiceTest {
 
     when(properties.getEnvironment()).thenReturn("evt");
     restHighLevelClient = PowerMockito.mock(RestHighLevelClient.class);
-    elasticClientHandler = PowerMockito.mock(ElasticClientHandler.class);
 
     Map<String, String> HEADERS = new HashMap<>();
     HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
@@ -340,9 +356,9 @@ public class QueryServiceTest {
     List<QueryBuilder> queryLevelMustClause = queryLevelBuilder.must();
     assertEquals(1, queryLevelMustClause.size());
 
-    BoolQueryBuilder boolQueryBuilder =  (BoolQueryBuilder)queryLevelMustClause.get(0);
+    BoolQueryBuilder boolQueryBuilder = (BoolQueryBuilder) queryLevelMustClause.get(0);
     List<QueryBuilder> must = boolQueryBuilder.must();
-    QueryStringQueryBuilder queryBuilder = (QueryStringQueryBuilder)must.get(0);
+    QueryStringQueryBuilder queryBuilder = (QueryStringQueryBuilder) must.get(0);
 
     assertNotNull(boolQueryBuilder);
     assertEquals(simpleQuery, queryBuilder.queryString());
@@ -375,20 +391,24 @@ public class QueryServiceTest {
   }
 
   @Test(expected = AppException.class)
-  public void testQueryBase_whenUnsupportedSortRequested_statusBadRequest_throwsException() throws IOException {
+  public void testQueryBase_whenUnsupportedSortRequested_statusBadRequest_throwsException()
+      throws IOException {
     String fieldName = "field";
     String indexName = "index";
     String dummySortError = "Text fields are not optimised for operations that require per-document field data like aggregations and sorting, so these operations are disabled by default. Please use a keyword field instead";
-    ElasticsearchStatusException exception = new ElasticsearchStatusException("blah", RestStatus.BAD_REQUEST, new ElasticsearchException(dummySortError));
+    ElasticsearchStatusException exception = new ElasticsearchStatusException("blah",
+        RestStatus.BAD_REQUEST, new ElasticsearchException(dummySortError));
 
     doThrow(exception).when(restHighLevelClient).search(any(), any(RequestOptions.class));
-    doReturn(new HashSet<>()).when(fieldMappingTypeService).getFieldTypes(eq(restHighLevelClient), eq(fieldName), eq(indexName));
+    doReturn(new HashSet<>()).when(fieldMappingTypeService)
+        .getFieldTypes(eq(restHighLevelClient), eq(fieldName), eq(indexName));
     SortQuery sortQuery = new SortQuery();
     sortQuery.setField(Collections.singletonList("name"));
     sortQuery.setOrder(Collections.singletonList(SortOrder.DESC));
     when(searchRequest.getSort()).thenReturn(sortQuery);
     when(sortParserUtil.getSortQuery(restHighLevelClient, sortQuery, indexName))
-            .thenReturn(Collections.singletonList(new FieldSortBuilder("name").order(org.elasticsearch.search.sort.SortOrder.DESC)));
+        .thenReturn(Collections.singletonList(
+            new FieldSortBuilder("name").order(org.elasticsearch.search.sort.SortOrder.DESC)));
 
     try {
       this.sut.makeSearchRequest(searchRequest, restHighLevelClient);
@@ -398,7 +418,7 @@ public class QueryServiceTest {
       assertEquals(e.getError().getCode(), errorCode);
       assertEquals(e.getError().getMessage(), errorMessage);
 
-      throw(e);
+      throw (e);
     }
   }
 
@@ -682,5 +702,175 @@ public class QueryServiceTest {
     assertEquals(2, acls.size());
     assertTrue(acls.contains(DATA_GROUP_1));
     assertTrue(acls.contains(DATA_GROUP_2));
+  }
+
+  /* arrange
+   create query request according to this example query:
+  	{
+  		"kind": "osdu:wks:reference-data--CoordinateTransformation:1.0.0",
+  			"query": "data.ID:\"EPSG::1078\"",
+  			"spatialFilter": {
+  			"field": "data.Wgs84Coordinates",
+  			"byIntersection": {
+  				"polygons": [
+  				{
+  					"points": [
+  					{
+  						"latitude": 10.75,
+  							"longitude": -8.61
+  					}
+  						]
+  				}
+  				]
+  			}
+  		}
+  	}*/
+  @Test
+  public void should_return_CorrectQueryResponseForIntersectionSpatialFilter() throws Exception {
+    QueryRequest queryRequest = new QueryRequest();
+    queryRequest.setQuery("data.ID:\"EPSG::1078\"");
+
+    SpatialFilter spatialFilter = new SpatialFilter();
+    spatialFilter.setField("data.Wgs84Coordinates");
+
+    SpatialFilter.ByIntersection byIntersection = new SpatialFilter.ByIntersection();
+    Polygon polygon = new Polygon();
+    Point point = new Point(1.02, -8.61);
+    Point point1 = new Point(1.02, -2.48);
+    Point point2 = new Point(10.74, -2.48);
+    Point point3 = new Point(10.74, -8.61);
+    Point point4 = new Point(1.02, -8.61);
+
+    List<Point> points = new ArrayList<>();
+    points.add(point);
+    points.add(point1);
+    points.add(point2);
+    points.add(point3);
+    points.add(point4);
+    polygon.setPoints(points);
+
+    List<Polygon> polygons = new ArrayList<>();
+    polygons.add(polygon);
+    byIntersection.setPolygons(polygons);
+    spatialFilter.setByIntersection(byIntersection);
+    queryRequest.setSpatialFilter(spatialFilter);
+
+    SearchResponse searchResponse = Mockito.mock(SearchResponse.class);
+
+    when(searchResponse.status()).thenReturn(RestStatus.OK);
+
+    SearchHits searchHits = mock(SearchHits.class);
+    when(searchHits.getHits()).thenReturn(new SearchHit[]{});
+    when(searchResponse.getHits()).thenReturn(searchHits);
+
+    when(restHighLevelClient.search(any(SearchRequest.class),
+        eq(RequestOptions.DEFAULT))).thenReturn(searchResponse);
+    when(elasticClientHandler.createRestClient()).thenReturn(restHighLevelClient);
+
+    String index = "some-index";
+    when(crossTenantUtils.getIndexName(any())).thenReturn(index);
+
+    Set<String> indexedTypes = new HashSet<>();
+    indexedTypes.add("geo_shape");
+    when(fieldMappingTypeService.getFieldTypes(eq(restHighLevelClient), anyString(),
+        eq(index))).thenReturn(indexedTypes);
+
+    when(providerHeaderService.getDataGroupsHeader()).thenReturn("groups");
+
+    Map<String, String> headers = new HashMap<>();
+    headers.put("groups", "[]");
+    when(dpsHeaders.getHeaders()).thenReturn(headers);
+
+    String expectedSource = toString(getContent("1.json"));
+
+    QueryResponse response = sut.queryIndex(queryRequest);
+
+    ArgumentCaptor<SearchRequest> searchRequestArg = ArgumentCaptor.forClass(SearchRequest.class);
+    verify(restHighLevelClient, times(1)).search(searchRequestArg.capture(), any());
+    SearchRequest searchRequest = searchRequestArg.getValue();
+    String actualSource = searchRequest.source().toString();
+    assertEquals(expectedSource, actualSource);
+  }
+
+  /* arrange
+     create query request according to this example query:
+        {
+            "kind": "osdu:wks:reference-data--CoordinateTransformation:1.0.1",
+            "query": "data.ID:\"EPSG::blahblah8\"",
+            "spatialFilter": {
+              "field": "data.SpatialLocation.Wgs84Coordinates",
+                  "byWithinPolygon": {
+                "points": [
+                {
+                  "latitude": 10.71,
+                    "longitude": -8.60
+                }
+                  ]
+              }
+
+            }
+        }*/
+  @Test
+  public void should_return_CorrectQueryResponseForWithinSpatialFilter() throws Exception {
+    QueryRequest queryRequest = new QueryRequest();
+    queryRequest.setQuery("data.ID:\"EPSG::1078\"");
+
+    SpatialFilter spatialFilter = new SpatialFilter();
+    spatialFilter.setField("data.Wgs84Coordinates");
+
+    SpatialFilter.ByWithinPolygon byWithinPolygon = new SpatialFilter.ByWithinPolygon();
+    Point point = new Point(1.02, -8.61);
+    List<Point> points = new ArrayList<>();
+    points.add(point);
+    byWithinPolygon.setPoints(points);
+    spatialFilter.setByWithinPolygon(byWithinPolygon);
+    queryRequest.setSpatialFilter(spatialFilter);
+
+    SearchResponse searchResponse = mock(SearchResponse.class);
+    when(searchResponse.status()).thenReturn(RestStatus.OK);
+
+    SearchHits searchHits = mock(SearchHits.class);
+    when(searchHits.getHits()).thenReturn(new SearchHit[]{});
+    when(searchResponse.getHits()).thenReturn(searchHits);
+
+    when(restHighLevelClient.search(any(SearchRequest.class),
+        eq(RequestOptions.DEFAULT))).thenReturn(searchResponse);
+    when(elasticClientHandler.createRestClient()).thenReturn(restHighLevelClient);
+    when(restHighLevelClient.search(any(SearchRequest.class),
+        eq(RequestOptions.DEFAULT))).thenReturn(searchResponse);
+    when(elasticClientHandler.createRestClient()).thenReturn(restHighLevelClient);
+
+    String index = "some-index";
+    when(crossTenantUtils.getIndexName(any())).thenReturn(index);
+
+    Set<String> indexedTypes = new HashSet<>();
+    indexedTypes.add("geo_shape");
+
+    when(fieldMappingTypeService.getFieldTypes(eq(restHighLevelClient), anyString(),
+        eq(index))).thenReturn(indexedTypes);
+    when(providerHeaderService.getDataGroupsHeader()).thenReturn("groups");
+
+    Map<String, String> headers = new HashMap<>();
+    headers.put("groups", "[]");
+    when(dpsHeaders.getHeaders()).thenReturn(headers);
+
+    String expectedSource = toString(getContent("2.json"));
+
+    QueryResponse response = sut.queryIndex(queryRequest);
+
+    ArgumentCaptor<SearchRequest> searchRequestArg = ArgumentCaptor.forClass(SearchRequest.class);
+    Mockito.verify(restHighLevelClient, times(1)).search(searchRequestArg.capture(), any());
+    SearchRequest searchRequest = searchRequestArg.getValue();
+    String actualSource = searchRequest.source().toString();
+    assertEquals(expectedSource, actualSource);
+  }
+
+  private InputStream getContent(String fileName) {
+    return this.getClass().getResourceAsStream("/elasticresponses/spatialfilters/" + fileName);
+  }
+
+  private String toString(InputStream inputStream) {
+    return new BufferedReader(new InputStreamReader(inputStream)).lines()
+        .collect(Collectors.joining("")).replace(" ", "");
   }
 }
