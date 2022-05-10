@@ -77,7 +77,11 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     List<AggregationResponse> aggregations = getAggregationFromSearchResponse(searchResponse);
 
     QueryResponse queryResponse = QueryResponse.getEmptyResponse();
-    queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
+    if (searchResponse.getHits().getTotalHits() == null) {
+      queryResponse.setTotalCount(0);
+    } else {
+      queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
+    }
     if (results != null) {
       queryResponse.setAggregations(aggregations);
       queryResponse.setResults(queryResponseUtil.getQueryResponseResults(results));
