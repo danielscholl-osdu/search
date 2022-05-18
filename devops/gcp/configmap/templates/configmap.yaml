@@ -10,16 +10,15 @@ data:
   REDIS_GROUP_HOST: "{{ .Values.data.redis_group_host }}"
   REDIS_SEARCH_HOST: "{{ .Values.data.redis_search_host }}"
   REDIS_SEARCH_PORT:  "{{ .Values.data.redis_search_port }}"
-  AUTHORIZE_API: "{{ .Values.data.authorize_api }}"
+  ENTITLEMENTS_HOST: "{{ .Values.data.entitlements_host }}"
   SECURITY_HTTPS_CERTIFICATE_TRUST: "{{ .Values.data.security_https_certificate_trust }}"
-  PARTITION_API: "{{ .Values.data.partition_api }}"
-  POLICY_API: "{{ .Values.data.policy_api }}"
+  PARTITION_HOST: "{{ .Values.data.partition_host }}"
+  POLICY_HOST: "{{ .Values.data.policy_host }}"
   POLICY_ID: "{{ .Values.data.policy_id }}"
-  INDEXER_HOST: "{{ .Values.data.indexer_host }}"
+  INDEXER_BASE_HOST: "{{ .Values.data.indexer_base_host }}"
   {{- if .Values.conf.on_prem_enabled }}
   SPRING_PROFILES_ACTIVE: "anthos"
   {{- else }}
   SPRING_PROFILES_ACTIVE: "gcp"
-  SERVICE_TOKEN_PROVIDER: "GCP"
   GOOGLE_AUDIENCES: "{{ .Values.data.audiences }}"
   {{- end }}
