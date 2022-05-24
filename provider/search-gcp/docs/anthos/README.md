@@ -100,3 +100,38 @@ curl -L -X PATCH 'http://partition.com/api/partition/v1/partitions/opendes' -H '
 }'
 
 ```
+
+### Running E2E Tests
+
+You will need to have the following environment variables defined.
+
+| name | value | description | sensitive? | source |
+| ---  | ---   | ---         | ---        | ---    |
+| `ELASTIC_PASSWORD` | `********` | Password for Elasticsearch | yes | output of infrastructure deployment |
+| `ELASTIC_USER_NAME` | `********` | User name for Elasticsearch | yes | output of infrastructure deployment |
+| `ELASTIC_HOST` | ex `elastic.domain.com` | Host Elasticsearch | yes | output of infrastructure deployment |
+| `ELASTIC_PORT` | ex `9243` | Port Elasticsearch | yes | output of infrastructure deployment |
+| `INDEXER_HOST` | ex `https://os-indexer-dot-opendes.appspot.com/api/indexer/v2/` | Indexer API endpoint | no | output of infrastructure deployment |
+| `DATA_GROUP` | `opendes` | The service account to this group and substitute | no | - |
+| `ENTITLEMENTS_DOMAIN` | ex `opendes-gcp.projects.com` | OSDU R2 to run tests under  | no | - |
+| `DEFAULT_DATA_PARTITION_ID_TENANT1` | ex `opendes` | HTTP Header 'Data-Partition-ID'  | no | - |
+| `SEARCH_HOST` | ex `http://localhost:8080/api/search/v2/` | Endpoint of search service | no | - |
+| `LEGAL_TAG` | ex `my-legal-tag` | a valid legal tag | no | - |  
+| `SECURITY_HTTPS_CERTIFICATE_TRUST` | ex `false` | Elastic client connection uses TrustSelfSignedStrategy(), if it is 'true' | false | output of infrastructure deployment |
+| `TEST_OPENID_PROVIDER_CLIENT_ID` | `********` | Client Id for `$INTEGRATION_TESTER` | yes | -- |
+| `TEST_OPENID_PROVIDER_CLIENT_SECRET` | `********` |  | Client secret for `$INTEGRATION_TESTER` | -- |
+| `TEST_OPENID_PROVIDER_URL` | `https://keycloak.com/auth/realms/osdu` | OpenID provider url | yes | -- |
+
+**Entitlements configuration for integration accounts**
+
+| INTEGRATION_TESTER | NO_DATA_ACCESS_TESTER | 
+| ---  | ---   |
+| users<br/>service.entitlements.user<br/>service.search.user<br/>data.test1<br/>data.integration.test<br/>users@{tenant1}@{domain}.com |
+
+Execute following command to build code and run all the integration tests:
+
+```bash
+# Note: this assumes that the environment variables for integration tests as outlined
+#       above are already exported in your environment.
+$ (cd testing/search-test-anthos/ && mvn clean test)
+```
