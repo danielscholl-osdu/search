@@ -7,13 +7,13 @@ data:
   redis_group_host: "redis-group-master"
   redis_search_host: "redis-search-master"
   redis_search_port: "6379"
-  authorize_api: "http://entitlements/api/entitlements/v2"
+  entitlements_host: "http://entitlements"
   security_https_certificate_trust: "true"
-  partition_api: "http://partition/api/partition/v1/"
-  policy_api: "https://policy/api/policy/v1/"
+  partition_host: "http://partition"
+  policy_host: "http://policy"
   policy_id: "search"
-  indexer_host: "http:indexer/api/indexer/v2/"
-  #gcp
+  indexer_base_host: "http://indexer"
+  # gcp
   audiences: ""
 
 conf:

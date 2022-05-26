@@ -36,7 +36,8 @@
 		<module>search-test-azure</module>
 		<module>search-test-gcp</module>
 		<module>search-test-ibm</module>
-	</modules>
+        <module>search-test-anthos</module>
+    </modules>
 
 	<repositories>
 		<repository>

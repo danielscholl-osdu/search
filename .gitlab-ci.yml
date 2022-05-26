@@ -23,12 +23,24 @@ variables:
   OSDU_GCP_BUILD_SUBDIR: provider/search-gcp
   OSDU_GCP_INT_TEST_SUBDIR: testing/integration-tests/search-test-gcp
   OSDU_GCP_TEST_SUBDIR: testing/integration-tests/$OSDU_GCP_SERVICE-test-$OSDU_GCP_VENDOR
-  OSDU_GCP_HELM_PACKAGE_CHARTS: "devops/gcp/deploy devops/gcp/configmap"
   OSDU_GCP_HELM_CONFIG_SERVICE: search-config
   OSDU_GCP_HELM_DEPLOYMENT_SERVICE: search-deploy
-  OSDU_GCP_HELM_CONFIG_SERVICE_VARS: "--set data.log_level=INFO --set data.google_cloud_project_id=$OSDU_GCP_PROJECT --set data.redis_search_host=$REDIS_SEARCH_HOST --set data.redis_group_host=$REDIS_GROUP_HOST --set data.indexer_host=$OSDU_GCP_INDEXER_API --set data.authorize_api=$OSDU_GCP_AUTHORIZE_API --set data.audiences=$GOOGLE_AUDIENCE --set data.partition_api=$OSDU_GCP_PARTITION_API --set data.policy_api=$OSDU_GCP_POLICY_API"
-  OSDU_GCP_HELM_CONFIG_SERVICE_VARS_DEV2: "--set data.log_level=INFO --set data.google_cloud_project_id=$OSDU_GCP_PROJECT --set data.redis_search_host=$REDIS_SEARCH_HOST --set data.redis_group_host=$REDIS_GROUP_HOST --set data.indexer_host=$OSDU_GCP_INDEXER_API --set data.authorize_api=$OSDU_GCP_AUTHORIZE_API --set data.audiences=$GOOGLE_AUDIENCE --set data.partition_api=$OSDU_GCP_PARTITION_API --set data.policy_api=$OSDU_GCP_POLICY_API --set data.key_ring=$OSDU_GCP_PARTITION_KEY_RING"
-  OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: "--set data.image=$CI_REGISTRY_IMAGE/osdu-gcp:$CI_COMMIT_SHORT_SHA --set data.serviceAccountName=$OSDU_GCP_SERVICE-k8s"
+  OSDU_GCP_HELM_CONFIG_SERVICE_VARS: >
+    --set data.log_level=INFO
+    --set data.google_cloud_project_id=$OSDU_GCP_PROJECT
+    --set data.redis_search_host=$REDIS_SEARCH_HOST
+    --set data.redis_group_host=$REDIS_GROUP_HOST
+    --set data.audiences=$GOOGLE_AUDIENCE
+  OSDU_GCP_HELM_CONFIG_SERVICE_VARS_DEV2: >
+    --set data.log_level=INFO
+    --set data.google_cloud_project_id=$OSDU_GCP_PROJECT
+    --set data.redis_search_host=$REDIS_SEARCH_HOST
+    --set data.redis_group_host=$REDIS_GROUP_HOST
+    --set data.audiences=$GOOGLE_AUDIENCE
+    --set data.key_ring=$OSDU_GCP_PARTITION_KEY_RING
+  OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: >
+    --set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA
+    --set data.serviceAccountName=$OSDU_GCP_SERVICE-k8s
 
   IBM_BUILD_SUBDIR: provider/search-ibm
   IBM_INT_TEST_SUBDIR: testing/integration-tests/search-test-ibm
@@ -77,5 +89,9 @@ osdu-gcp-test:
     OSDU_GCP_TESTING_DIR: "testing/integration-tests"
 
 osdu-gcp-dev2-test:
+  variables:
+    OSDU_GCP_TESTING_DIR: "testing/integration-tests"
+
+osdu-gcp-anthos-test:
   variables:
     OSDU_GCP_TESTING_DIR: "testing/integration-tests"
