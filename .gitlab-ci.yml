@@ -91,3 +91,7 @@ osdu-gcp-test:
 osdu-gcp-dev2-test:
   variables:
     OSDU_GCP_TESTING_DIR: "testing/integration-tests"
+
+osdu-gcp-anthos-test:
+  variables:
+    OSDU_GCP_TESTING_DIR: "testing/integration-tests"
