@@ -1,0 +1,186 @@
+{
+  "schemaInfo": {
+    "schemaIdentity": {
+      "authority": "tenant1",
+      "source": "well<timestamp>",
+      "entityType": "test-data3--Integration",
+      "schemaVersionMajor": "1",
+      "schemaVersionMinor": "0",
+      "schemaVersionPatch": "3"
+    },
+    "status": "DEVELOPMENT"
+  },
+  "schema": {
+    "properties": {
+      "data": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "FacilityOperators": {
+                "x-osdu-indexing": {
+                  "type": "nested"
+                },
+                "type": "array",
+                "items": {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/osdu:wks:AbstractFacilityOperator:1.0.0"
+                    }
+                  ]
+                }
+              },
+              "FacilityName": {
+                "type": "string"
+              },
+              "Source": {
+                "type": "string"
+              },
+              "VerticalMeasurements": {
+                "x-osdu-indexing": {
+                  "type": "nested"
+                },
+                "description": "List of all depths and elevations pertaining to the wellbore, like, plug back measured depth, total measured depth, KB elevation",
+                "type": "array",
+                "items": {
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "title": "Vertical Measurement ID",
+                      "properties": {
+                        "VerticalMeasurementID": {
+                          "description": "The ID for a distinct vertical measurement within the Wellbore VerticalMeasurements array so that it may be referenced by other vertical measurements if necessary.",
+                          "type": "string"
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/definitions/osdu:wks:AbstractFacilityVerticalMeasurement:1.0.0"
+                    }
+                  ]
+                }
+              },
+              "DefaultVerticalMeasurementID": {
+                "description": "The default datum reference point, or zero depth point, used to determine other points vertically in a wellbore.  References an entry in the Vertical Measurements array of this wellbore.",
+                "type": "string"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "definitions": {
+      "osdu:wks:AbstractFacilityVerticalMeasurement:1.0.0": {
+        "x-osdu-inheriting-from-kind": [],
+        "x-osdu-license": "Copyright 2021, The Open Group \\nLicensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 . Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.",
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "x-osdu-schema-source": "osdu:wks:AbstractFacilityVerticalMeasurement:1.0.0",
+        "description": "A location along a wellbore, _usually_ associated with some aspect of the drilling of the wellbore, but not with any intersecting _subsurface_ natural surfaces.",
+        "title": "AbstractFacilityVerticalMeasurement",
+        "type": "object",
+        "properties": {
+          "VerticalMeasurementSourceID": {
+            "x-osdu-relationship": [
+              {
+                "EntityType": "VerticalMeasurementSource",
+                "GroupType": "reference-data"
+              }
+            ],
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-VerticalMeasurementSource:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "description": "Specifies Driller vs Logger.",
+            "type": "string"
+          },
+          "VerticalReferenceID": {
+            "description": "The reference point from which the relative vertical measurement is made. This is only populated if the measurement has no VerticalCRSID specified. The value entered must be the VerticalMeasurementID for another vertical measurement array element in this resource or its parent facility, and as a chain of measurements, they must resolve ultimately to a Vertical CRS. It is expected that a VerticalCRSID or a VerticalReferenceID is provided in a given vertical measurement array object, but not both.",
+            "type": "string"
+          },
+          "TerminationDateTime": {
+            "format": "date-time",
+            "description": "The date and time at which a vertical measurement instance is no longer in effect.",
+            "x-osdu-frame-of-reference": "DateTime",
+            "type": "string"
+          },
+          "EffectiveDateTime": {
+            "format": "date-time",
+            "description": "The date and time at which a vertical measurement instance becomes effective.",
+            "x-osdu-frame-of-reference": "DateTime",
+            "type": "string"
+          },
+          "VerticalMeasurement": {
+            "description": "The value of the elevation or depth. Depth is positive downwards from a vertical reference or geodetic datum along a path, which can be vertical; elevation is positive upwards from a geodetic datum along a vertical path. Either can be negative.",
+            "x-osdu-frame-of-reference": "UOM_via_property:VerticalMeasurementUnitOfMeasureID",
+            "type": "number"
+          },
+          "VerticalMeasurementTypeID": {
+            "x-osdu-relationship": [
+              {
+                "EntityType": "VerticalMeasurementType",
+                "GroupType": "reference-data"
+              }
+            ],
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-VerticalMeasurementType:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "description": "Specifies the type of vertical measurement (TD, Plugback, Kickoff, Drill Floor, Rotary Table...).",
+            "type": "string"
+          },
+          "VerticalMeasurementDescription": {
+            "description": "Text which describes a vertical measurement in detail.",
+            "type": "string"
+          },
+          "VerticalMeasurementUnitOfMeasureID": {
+            "x-osdu-relationship": [
+              {
+                "EntityType": "UnitOfMeasure",
+                "GroupType": "reference-data"
+              }
+            ],
+            "pattern": "^[\\w\\-\\.]+:reference-data\\-\\-UnitOfMeasure:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "description": "The unit of measure for the vertical measurement. If a unit of measure and a vertical CRS are provided, the unit of measure provided is taken over the unit of measure from the CRS.",
+            "type": "string"
+          }
+        },
+        "$id": "https://schema.osdu.opengroup.org/json/abstract/AbstractFacilityVerticalMeasurement.1.0.0.json"
+      },
+      "osdu:wks:AbstractFacilityOperator:1.0.0": {
+        "x-osdu-inheriting-from-kind": [],
+        "x-osdu-license": "Copyright 2021, The Open Group \\nLicensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 . Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.",
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "x-osdu-schema-source": "osdu:wks:AbstractFacilityOperator:1.0.0",
+        "description": "The organisation that was responsible for a facility at some point in time.",
+        "title": "AbstractFacilityOperator",
+        "type": "object",
+        "properties": {
+          "FacilityOperatorID": {
+            "type": "string",
+            "title": "Facility Operator ID",
+            "description": "Internal, unique identifier for an item 'AbstractFacilityOperator'. This identifier is used by 'AbstractFacility.CurrentOperatorID' and 'AbstractFacility.InitialOperatorID'."
+          },
+          "EffectiveDateTime": {
+            "format": "date-time",
+            "description": "The date and time at which the facility operator becomes effective.",
+            "x-osdu-frame-of-reference": "DateTime",
+            "type": "string"
+          },
+          "FacilityOperatorOrganisationID": {
+            "pattern": "^[\\w\\-\\.]+:master-data\\-\\-Organisation:[\\w\\-\\.\\:\\%]+:[0-9]*$",
+            "description": "The company that currently operates, or previously operated the facility",
+            "x-osdu-relationship": [
+              {
+                "EntityType": "Organisation",
+                "GroupType": "master-data"
+              }
+            ],
+            "type": "string"
+          },
+          "TerminationDateTime": {
+            "format": "date-time",
+            "description": "The date and time at which the facility operator is no longer in effect. If the operator is still effective, the 'TerminationDateTime' is left absent.",
+            "x-osdu-frame-of-reference": "DateTime",
+            "type": "string"
+          }
+        },
+        "$id": "https://schema.osdu.opengroup.org/json/abstract/AbstractFacilityOperator.1.0.0.json"
+      }
+    }
+    }
+}
+

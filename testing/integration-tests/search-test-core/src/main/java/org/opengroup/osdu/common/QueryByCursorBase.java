@@ -6,11 +6,9 @@ import org.opengroup.osdu.request.SortQuery;
 import org.opengroup.osdu.response.ErrorResponseMock;
 import org.opengroup.osdu.response.ResponseMock;
 import org.opengroup.osdu.util.Config;
-import org.opengroup.osdu.util.ElasticUtils;
 import org.opengroup.osdu.util.HTTPClient;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -23,10 +21,6 @@ public class QueryByCursorBase extends TestsBase {
     public QueryByCursorBase(HTTPClient httpClient) {
         super(httpClient);
     }
-    public QueryByCursorBase(HTTPClient httpClient, ElasticUtils elasticUtils) {
-        super(httpClient, elasticUtils);
-    }
-
 
     @Override
     protected String getApi() {
@@ -98,13 +92,15 @@ public class QueryByCursorBase extends TestsBase {
     }
 
     public void i_should_get_records_in_right_order(String firstRecId, String lastRecId) {
+        String actualFirstRecordId = generateActualName(firstRecId,timeStamp);
+        String actualLastRecordId = generateActualName(lastRecId,timeStamp);
         String payload = requestQuery.toString();
         ResponseMock response = executeQuery(payload, headers, httpClient.getAccessToken(), ResponseMock.class);
         assertEquals(200, response.getResponseCode());
         assertNotNull(response.getResults());
         assertTrue(response.getResults().size() > 0);
-        assertEquals(firstRecId, response.getResults().get(0).get("id").toString());
-        assertEquals(lastRecId, response.getResults().get(response.getResults().size()-1).get("id").toString());
+        assertEquals(actualFirstRecordId, response.getResults().get(0).get("id").toString());
+        assertEquals(actualLastRecordId, response.getResults().get(response.getResults().size()-1).get("id").toString());
     }
 
     public void i_set_an_invalid_cursor() {

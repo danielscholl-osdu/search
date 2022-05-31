@@ -34,9 +34,14 @@ public class Steps extends QueryByCursorSteps {
         super(new AnthosHTTPClient());
     }
 
-    @Given("^the elastic search is initialized with the following data$")
-    public void the_elastic_search_is_initialized_with_the_following_data(DataTable dataTable) {
-        super.the_elastic_search_is_initialized_with_the_following_data(dataTable);
+    @Given("^the schema is created with the following kind$")
+    public void the_schema_is_created_with_the_following_kind(DataTable dataTable) {
+        super.the_schema_is_created_with_the_following_kind(dataTable);
+    }
+
+    @When("^I ingest records with the \"(.*?)\" with \"(.*?)\" for a given \"(.*?)\"$")
+    public void i_ingest_records_with_the_for_a_given(String record, String dataGroup, String kind) {
+        super.i_ingest_records_with_the_for_a_given(record, dataGroup, kind);
     }
 
     @Before
