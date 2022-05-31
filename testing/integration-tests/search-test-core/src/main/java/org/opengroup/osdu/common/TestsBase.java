@@ -2,24 +2,31 @@ package org.opengroup.osdu.common;
 
 import com.google.gson.Gson;
 
+import com.google.gson.reflect.TypeToken;
 import cucumber.api.DataTable;
+import org.opengroup.osdu.core.common.model.entitlements.Acl;
 import org.opengroup.osdu.core.common.model.legal.Legal;
 import org.opengroup.osdu.core.common.model.search.Point;
 import org.opengroup.osdu.core.common.model.search.Polygon;
 import org.opengroup.osdu.models.Setup;
 import org.opengroup.osdu.models.TestIndex;
+import org.opengroup.osdu.models.schema.PersistentSchemaTestIndex;
 import org.opengroup.osdu.request.SpatialFilter;
 import org.opengroup.osdu.response.ResponseBase;
-import org.opengroup.osdu.util.ElasticUtils;
+import org.opengroup.osdu.util.FileHandler;
 import org.opengroup.osdu.util.HTTPClient;
 
 import com.sun.jersey.api.client.ClientResponse;
 import cucumber.api.Scenario;
 import lombok.extern.java.Log;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -28,38 +35,30 @@ import static org.opengroup.osdu.util.Config.*;
 @Log
 public abstract class TestsBase {
     protected HTTPClient httpClient;
-    protected ElasticUtils elasticUtils;
     protected Scenario scenario;
     protected Map<String, String> tenantMap = new HashMap<>();
-    protected Map<String, TestIndex> inputRecordMap = new HashMap<>();
     protected Map<String, String> headers = new HashMap<>();
+
+    private List<String> indexes = new ArrayList<>();
+    private List<Map<String, Object>> records;
+    private Map<String, List<String>> schemaRecords = new HashMap<>();
 
     protected SpatialFilter spatialFilter = new SpatialFilter();
     protected SpatialFilter.ByBoundingBox byBoundingBox;
     protected SpatialFilter.ByIntersection byIntersection;
     protected SpatialFilter.ByWithinPolygon byWithinPolygon;
 
-    protected String timeStamp = String.valueOf(System.currentTimeMillis());
+    protected static final String timeStamp = String.valueOf(System.currentTimeMillis()) ;
     private boolean dunit = false;
 
     public TestsBase(HTTPClient httpClient) {
         this.httpClient = httpClient;
-        this.elasticUtils = new ElasticUtils();
         headers = httpClient.getCommonHeader();
         tenantMap.put("tenant1", getDataPartitionIdTenant1());
         tenantMap.put("tenant2", getDataPartitionIdTenant2());
         tenantMap.put("common", "common");
     }
 
-    public TestsBase(HTTPClient httpClient, ElasticUtils elasticUtils)  {
-        this.httpClient = httpClient;
-        this.elasticUtils = elasticUtils;
-        headers = httpClient.getCommonHeader();
-        headers.put("user", getUserEmail());
-        tenantMap.put("tenant1", getDataPartitionIdTenant1());
-        tenantMap.put("tenant2", getDataPartitionIdTenant2());
-        tenantMap.put("common", "common");
-    }
 
     public void i_send_request_to_tenant(String tenant) {
         headers = HTTPClient.overrideHeader(headers, getTenantMapping(tenant));
@@ -69,65 +68,9 @@ public abstract class TestsBase {
         headers = HTTPClient.overrideHeader(headers, getTenantMapping(tenant1), getTenantMapping(tenant2));
     }
 
-    protected void setUp(List<Setup> inputList, String timeStamp) {
-        for (Setup input : inputList) {
-            TestIndex testIndex = new TestIndex();
-            testIndex.setHttpClient(httpClient);
-            testIndex.setElasticUtils(elasticUtils);
-            testIndex.setIndex(generateActualName(input.getIndex(), timeStamp));
-            testIndex.setKind(generateActualName(input.getKind(), timeStamp));
-            testIndex.setMappingFile(input.getMappingFile());
-            testIndex.setRecordFile(input.getRecordFile());
-            List<String> dataGroup = new ArrayList<>();
-            String[] viewerGroup = input.getViewerGroup().split(",");
-            for (int i = 0; i < viewerGroup.length; i++) {
-                viewerGroup[i] = generateActualName(viewerGroup[i], timeStamp) + "." + getEntitlementsDomain();
-                dataGroup.add(viewerGroup[i]);
-            }
-            String[] ownerGroup = input.getOwnerGroup().split(",");
-            for (int i = 0; i < ownerGroup.length; i ++) {
-                ownerGroup[i] = generateActualName(ownerGroup[i], timeStamp) + "." + getEntitlementsDomain();
-                if (dataGroup.indexOf(ownerGroup[i]) > 0) {
-                    dataGroup.add(ownerGroup[i]);
-                }
-            }
-            testIndex.setViewerGroup(viewerGroup);
-            testIndex.setOwnerGroup(ownerGroup);
-            testIndex.setDataGroup(dataGroup.toArray(new String[dataGroup.size()]));
-            inputRecordMap.put(testIndex.getKind(), testIndex);
-        }
-        /******************One time setup for whole feature**************/
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                tearDown();
-            }
-        });
-        for (String kind : inputRecordMap.keySet()) {
-            TestIndex testIndex = inputRecordMap.get(kind);
-            testIndex.setupIndex();
-        }
-
-    }
-
-    /******************One time cleanup for whole feature**************/
-    public void tearDown() {
-        for (String kind : inputRecordMap.keySet()) {
-            TestIndex testIndex = inputRecordMap.get(kind);
-            testIndex.cleanupIndex();
-        }
-    }
-
     protected abstract String getApi();
 
     protected abstract String getHttpMethod();
-
-    public void the_elastic_search_is_initialized_with_the_following_data(DataTable dataTable) {
-        if (!dunit) {
-            List<Setup> inputlist = dataTable.asList(Setup.class);
-            setUp(inputlist, timeStamp);
-            dunit = true;
-        }
-    }
 
     public void offset_of_starting_point_as_None() {
         //Do nothing on None
@@ -226,11 +169,11 @@ public abstract class TestsBase {
         return null;
     }
 
-    protected String generateActualName(String rawName, String timeStamp) {
+    public String generateActualName(String rawName, String timeStamp) {
         for (String tenant : tenantMap.keySet()) {
             rawName = rawName.replaceAll(tenant, getTenantMapping(tenant));
         }
-        return rawName.replaceAll("<timestamp>", timeStamp);
+        return rawName.replaceAll("<timestamp>", this.timeStamp);
     }
 
     protected Legal generateLegalTag() {
@@ -243,4 +186,98 @@ public abstract class TestsBase {
         legal.setOtherRelevantDataCountries(otherRelevantCountries);
         return legal;
     }
+
+    public void the_schema_is_created_with_the_following_kind(DataTable dataTable) {
+        List<Setup> inputList = dataTable.asList(Setup.class);
+        inputList.forEach(this::createSchema);
+
+
+    }
+
+    protected  void tearDownSchema() throws IOException {
+        String payload="{}";
+        for(String kind : schemaRecords.keySet()){
+            List<String> recordIds = schemaRecords.get(kind);
+            for (String id : recordIds) {
+                ClientResponse clientResponse = httpClient.send(HttpMethod.DELETE, getStorageBaseURL() + "records/" +id,payload,headers, httpClient.getAccessToken());
+            }
+            ClientResponse clientResponse = httpClient.send(HttpMethod.DELETE, getIndexerBaseURL() + "index?kind=" +kind,payload,headers, httpClient.getAccessToken());
+        }
+
+    }
+
+    private void createSchema(Setup input) {
+        PersistentSchemaTestIndex testIndex = new PersistentSchemaTestIndex(httpClient, this);
+        testIndex.setSchemaFile(input.getSchemaFile());
+        testIndex.setHttpClient(httpClient);
+        testIndex.setupSchema();
+        testIndex.setKind(testIndex.getSchemaModel().getSchemaInfo().getSchemaIdentity().getId());
+    }
+
+    public String generateActualNameWithoutTs(String rawName) {
+        for (Map.Entry<String, String> tenant : tenantMap.entrySet()) {
+            rawName = rawName.replaceAll(tenant.getKey(), tenant.getValue());
+        }
+        return rawName.replaceAll("<timestamp>", "");
+    }
+
+    public void i_ingest_records_with_the_for_a_given(String record, String dataGroup, String kind) {
+
+        String actualKind = generateActualName(kind, timeStamp);
+        List<String> recordsForKind = new ArrayList<>();
+        try {
+            String fileContent = FileHandler.readFile(String.format("%s.%s", record, "json"));
+            records = new Gson().fromJson(fileContent, new TypeToken<List<Map<String, Object>>>() {}.getType());
+            String createTime = java.time.Instant.now().toString();
+
+            for (Map<String, Object> testRecord : records) {
+                testRecord.put("kind", actualKind);
+                testRecord.put("id", generateRecordId(testRecord));
+                recordsForKind.add(testRecord.get("id").toString());
+                testRecord.put("legal", generateLegalTag());
+                String[] x_acl = {generateActualName(dataGroup,timeStamp)+"."+getEntitlementsDomain()};
+                Acl acl = Acl.builder().viewers(x_acl).owners(x_acl).build();
+                testRecord.put("acl", acl);
+                String[] kindParts = kind.split(":");
+                String authority = tenantMap.get(kindParts[0]);
+                String source = kindParts[1];
+                testRecord.put("authority", authority);
+                testRecord.put("source", generateActualName(source,timeStamp));
+                testRecord.put("createUser", "TestUser");
+                testRecord.put("createTime", createTime);
+            }
+            schemaRecords.put(actualKind,recordsForKind);
+            String payLoad = new Gson().toJson(records);
+            log.log(Level.INFO, "Start ingesting records={0}", payLoad);
+            ClientResponse clientResponse = httpClient.send(HttpMethod.PUT, getStorageBaseURL() + "records", payLoad, headers, httpClient.getAccessToken());
+            assertEquals(201, clientResponse.getStatus());
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() {
+                    try {
+                        tearDownSchema();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            TimeUnit.SECONDS.sleep(40);
+        } catch (Exception ex) {
+            throw new AssertionError(ex.getMessage());
+        }
+    }
+
+    protected String generateRecordId(Map<String, Object> testRecord) {
+        return generateActualId(testRecord.get("id").toString(), timeStamp, testRecord.get("kind").toString());
+    }
+
+    protected String generateActualId(String rawName, String timeStamp, String kind) {
+
+        rawName = generateActualName(rawName, timeStamp);
+
+        String kindSubType = kind.split(":")[2];
+
+        return rawName.replaceAll("<kindSubType>", kindSubType);
+
+    }
+
 }

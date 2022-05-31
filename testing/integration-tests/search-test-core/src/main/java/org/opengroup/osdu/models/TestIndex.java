@@ -11,7 +11,6 @@ import javax.ws.rs.HttpMethod;
 
 import org.opengroup.osdu.core.common.model.entitlements.Acl;
 import org.opengroup.osdu.core.common.model.legal.Legal;
-import org.opengroup.osdu.util.ElasticUtils;
 import org.opengroup.osdu.util.FileHandler;
 import org.opengroup.osdu.util.HTTPClient;
 
@@ -39,7 +38,6 @@ public class TestIndex {
     private String[] ownerGroup;
     private HTTPClient httpClient;
     private Map<String, String> headers;
-    private ElasticUtils elasticUtils = new ElasticUtils();
     private Gson gson = new Gson();
 
     public void setHttpClient(HTTPClient httpClient) {
@@ -47,15 +45,6 @@ public class TestIndex {
         headers = httpClient.getCommonHeader();
     }
 
-    public void setElasticUtils(ElasticUtils elasticUtils){
-        this.elasticUtils = elasticUtils;
-    }
-
-    public void setupIndex() {
-        this.addIndex();
-        List<Map<String, Object>> records = getRecordsFromTestFile();
-        this.recordCount = this.elasticUtils.indexRecords(this.index, this.kind, records);
-    }
 
     public void setupSchema() {
         ClientResponse clientResponse = this.httpClient.send(HttpMethod.POST, getStorageBaseURL() + "schemas", this.getStorageSchemaFromJson(), headers, httpClient.getAccessToken());
@@ -70,13 +59,6 @@ public class TestIndex {
             LOGGER.info(String.format("Response status: %s, type: %s", clientResponse.getStatus(), clientResponse.getType().toString()));
     }
 
-    public void addIndex() {
-        this.elasticUtils.createIndex(this.index, this.getIndexMappingFromJson());
-    }
-
-    public void cleanupIndex() {
-        this.elasticUtils.deleteIndex(index);
-    }
 
     private String getRecordFile() {
         return String.format("%s.json", this.recordFile);
@@ -86,7 +68,7 @@ public class TestIndex {
         return String.format("%s.mapping", this.mappingFile);
     }
 
-    private String getSchemaFile() {
+    protected String getSchemaFile() {
         return String.format("%s.schema", this.schemaFile);
     }
 
