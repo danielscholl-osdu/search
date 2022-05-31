@@ -7,10 +7,11 @@ public class Config {
     private static final String DEFAULT_ELASTIC_PASSWORD = "";
     private static final String DEFAULT_ELASTIC_PORT = "9243";
     private static final String DEFAULT_ELASTIC_SSL_ENABLED = "true";
-
+    private static final String SCHEMA_PATH = "/api/schema-service/v1";
     private static final String DEFAULT_INDEXER_HOST = "";
     private static final String DEFAULT_SEARCH_HOST = "";
     private static final String DEFAULT_STORAGE_HOST = "";
+    private static final String DEFAULT_HOST = "";
     private static final String DEFAULT_DATA_PARTITION_ID_TENANT1 = "opendes";
     private static final String DEFAULT_DATA_PARTITION_ID_TENANT2 = "";
     private static final String DEFAULT_SEARCH_INTEGRATION_TESTER = "";
@@ -106,5 +107,8 @@ public class Config {
 
     private static String getEnvironmentVariable(String propertyKey) {
         return System.getProperty(propertyKey, System.getenv(propertyKey));
+    }
+    public static String getSchemaBaseURL() {
+        return getEnvironmentVariableOrDefaultValue("HOST", DEFAULT_HOST) + SCHEMA_PATH;
     }
 }

@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import joptsimple.internal.Strings;
 import org.opengroup.osdu.response.InfoResponseMock;
 import org.opengroup.osdu.util.Config;
-import org.opengroup.osdu.util.ElasticUtils;
 import org.opengroup.osdu.util.HTTPClient;
 
 public class InfoBase extends TestsBase {
@@ -16,10 +15,6 @@ public class InfoBase extends TestsBase {
 
   public InfoBase(HTTPClient httpClient) {
     super(httpClient);
-  }
-
-  public InfoBase(HTTPClient httpClient, ElasticUtils elasticUtils) {
-    super(httpClient, elasticUtils);
   }
 
   @Override

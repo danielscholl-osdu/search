@@ -2,12 +2,10 @@ package org.opengroup.osdu.common.query.singlecluster;
 
 import org.opengroup.osdu.common.QueryBase;
 import org.opengroup.osdu.request.SpatialFilter;
-import org.opengroup.osdu.util.ElasticUtils;
 import org.opengroup.osdu.util.HTTPClient;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,9 +14,6 @@ public class QuerySteps extends QueryBase {
 
     public QuerySteps(HTTPClient httpClient) {
         super(httpClient);
-    }
-    public QuerySteps(HTTPClient httpClient, ElasticUtils elasticUtils) {
-        super(httpClient, elasticUtils);
     }
 
     public void define_bounding_box_with_points_None_None_and(Double bottomLatitude, Double bottomLongitude) {
