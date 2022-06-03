@@ -455,6 +455,25 @@ public class QueryServiceImplTest {
             throw(e);
         }
     }
+    @Test(expected = AppException.class)
+    public void testQueryBase_whenClientSearchResultsInElasticsearchStatusException_statusTooManyRequests_throwsException() throws IOException {
+        ElasticsearchStatusException exception = mock(ElasticsearchStatusException.class);
+
+        Set<String> indexedTypes = new HashSet<>();
+
+        doThrow(exception).when(client).search(any(), any(RequestOptions.class));
+        doReturn(RestStatus.TOO_MANY_REQUESTS).when(exception).status();
+        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
+
+        try {
+            sut.queryIndex(searchRequest);
+        } catch (AppException e) {
+            int errorCode = 429;
+            String errorMessage = "Too many requests, please re-try after some time";
+            validateAppException(e, errorCode, errorMessage);
+            throw(e);
+        }
+    }
 
     @Test(expected = AppException.class)
     public void testQueryBase_IOException_ListenerTimeout_throwsException() throws IOException {

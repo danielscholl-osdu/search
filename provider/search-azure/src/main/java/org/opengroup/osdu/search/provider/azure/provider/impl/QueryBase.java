@@ -374,6 +374,9 @@ abstract class QueryBase {
                 case SERVICE_UNAVAILABLE:
                     statusCode = e.status().getStatus();
                     throw new AppException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Search error", "Please re-try search after some time.", e);
+                case TOO_MANY_REQUESTS:
+                    statusCode = e.status().getStatus();
+                    throw new AppException(429, "Too many requests", "Too many requests, please re-try after some time", e);
                 default:
                     statusCode = HttpStatus.SC_INTERNAL_SERVER_ERROR;
                     throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
