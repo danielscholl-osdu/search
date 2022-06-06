@@ -16,32 +16,6 @@ variables:
   GCP_DOMAIN: cloud.slb-ds.com
   GCP_STORAGE_URL: https://osdu-search-dot-opendes.appspot.com/api/storage/v2/
 
-  # --- osdu gcp specific variables for cloudrun ---
-  OSDU_GCP_SERVICE: search
-  OSDU_GCP_VENDOR: gcp
-  # Variables should be partially removed after migration on cloudrun gcp
-  OSDU_GCP_BUILD_SUBDIR: provider/search-gcp
-  OSDU_GCP_INT_TEST_SUBDIR: testing/integration-tests/search-test-gcp
-  OSDU_GCP_TEST_SUBDIR: testing/integration-tests/$OSDU_GCP_SERVICE-test-$OSDU_GCP_VENDOR
-  OSDU_GCP_HELM_CONFIG_SERVICE: search-config
-  OSDU_GCP_HELM_DEPLOYMENT_SERVICE: search-deploy
-  OSDU_GCP_HELM_CONFIG_SERVICE_VARS: >
-    --set data.log_level=INFO
-    --set data.google_cloud_project_id=$OSDU_GCP_PROJECT
-    --set data.redis_search_host=$REDIS_SEARCH_HOST
-    --set data.redis_group_host=$REDIS_GROUP_HOST
-    --set data.audiences=$GOOGLE_AUDIENCE
-  OSDU_GCP_HELM_CONFIG_SERVICE_VARS_DEV2: >
-    --set data.log_level=INFO
-    --set data.google_cloud_project_id=$OSDU_GCP_PROJECT
-    --set data.redis_search_host=$REDIS_SEARCH_HOST
-    --set data.redis_group_host=$REDIS_GROUP_HOST
-    --set data.audiences=$GOOGLE_AUDIENCE
-    --set data.key_ring=$OSDU_GCP_PARTITION_KEY_RING
-  OSDU_GCP_HELM_DEPLOYMENT_SERVICE_VARS: >
-    --set data.image=$CI_REGISTRY_IMAGE/osdu-gcp-$OSDU_GCP_SERVICE:$CI_COMMIT_SHORT_SHA
-    --set data.serviceAccountName=$OSDU_GCP_SERVICE-k8s
-
   IBM_BUILD_SUBDIR: provider/search-ibm
   IBM_INT_TEST_SUBDIR: testing/integration-tests/search-test-ibm
   DEFAULT_DATA_PARTITION_ID_TENANT1_IBM: tenant1
@@ -81,17 +55,7 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "publishing/pages.yml"
 
+  - local: "devops/gcp/pipeline/override-stages.yml"
+
 aws-test-java:
   tags: ["aws-internal-test"]
-
-osdu-gcp-test:
-  variables:
-    OSDU_GCP_TESTING_DIR: "testing/integration-tests"
-
-osdu-gcp-dev2-test:
-  variables:
-    OSDU_GCP_TESTING_DIR: "testing/integration-tests"
-
-osdu-gcp-anthos-test:
-  variables:
-    OSDU_GCP_TESTING_DIR: "testing/integration-tests"
