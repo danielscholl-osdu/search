@@ -40,6 +40,8 @@
         <deployment.environment>dev</deployment.environment>
         <version.number>0.0.4-SNAPSHOT</version.number>
         <nimbus-jose-jwt.version>9.18</nimbus-jose-jwt.version>
+        <jackson-databind.version>2.13.2.2</jackson-databind.version>
+        <jackson.version>2.13.2</jackson.version>
     </properties>
 
     <dependencies>
@@ -114,6 +116,21 @@
             <groupId>org.locationtech.jts.io</groupId>
             <artifactId>jts-io-common</artifactId>
             <version>1.15.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson-databind.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
 
         <!-- Testing packages -->
