@@ -20,5 +20,5 @@ data:
   SPRING_PROFILES_ACTIVE: "anthos"
   {{- else }}
   SPRING_PROFILES_ACTIVE: "gcp"
-  GOOGLE_AUDIENCES: "{{ .Values.data.audiences }}"
+  GOOGLE_AUDIENCES: "{{ .Values.data.googleAudiences }}"
   {{- end }}
