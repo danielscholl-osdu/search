@@ -19,7 +19,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <cucumber.version>1.2.5</cucumber.version>
         <elasticsearch.version>7.8.1</elasticsearch.version>
-        <osdu.oscorecommon.version>0.15.0-rc3</osdu.oscorecommon.version>
+        <osdu.oscorecommon.version>0.15.0</osdu.oscorecommon.version>
         <jackson-databind.version>2.13.2.2</jackson-databind.version>
         <jackson.version>2.13.2</jackson.version>
     </properties>
