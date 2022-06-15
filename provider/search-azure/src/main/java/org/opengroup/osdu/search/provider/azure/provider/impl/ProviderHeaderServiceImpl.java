@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 public class ProviderHeaderServiceImpl implements IProviderHeaderService {
     private static final String DATA_GROUPS = "X-Data-Groups";
     private static final String CRON_SERVICE = "X-AppEngine-Cron";
+    private static final String DATA_ROOT_USER = "X-Data-Root-User";
 
     @Override
     public String getCronServiceHeader() {
@@ -29,7 +30,8 @@ public class ProviderHeaderServiceImpl implements IProviderHeaderService {
     }
 
     @Override
-    public String getDataGroupsHeader() {
-        return DATA_GROUPS;
-    }
+    public String getDataGroupsHeader() { return DATA_GROUPS; }
+
+    @Override
+    public String getDataRootUserHeader() { return DATA_ROOT_USER; }
 }

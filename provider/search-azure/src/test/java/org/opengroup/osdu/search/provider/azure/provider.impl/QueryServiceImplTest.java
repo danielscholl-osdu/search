@@ -14,8 +14,7 @@
 
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -43,12 +42,7 @@ import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.builders.EnvelopeBuilder;
 import org.elasticsearch.common.geo.builders.PolygonBuilder;
 import org.elasticsearch.common.text.Text;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.GeoBoundingBoxQueryBuilder;
-import org.elasticsearch.index.query.GeoDistanceQueryBuilder;
-import org.elasticsearch.index.query.GeoPolygonQueryBuilder;
-import org.elasticsearch.index.query.GeoShapeQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -93,6 +87,9 @@ import org.opengroup.osdu.search.util.SortParserUtil;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryServiceImplTest {
+    private final String DATA_GROUPS = "X-Data-Groups";
+    private final String DATA_GROUP_1 = "data.welldb.viewers@common.evd.cloud.slb-ds.com";
+    private final String DATA_GROUP_2 = "data.npd.viewers@common.evd.cloud.slb-ds.com";
 
     private static final String dataPartitionId = "data-partition-id";
     private static final String fieldName = "field";
@@ -187,6 +184,14 @@ public class QueryServiceImplTest {
 //        doReturn(searchResponse).when(client).search(any(), any(RequestOptions.class));
 //        doReturn(searchHits).when(searchResponse).getHits();
 //        doReturn(hitFields).when(searchHit).getSourceAsMap();
+
+        Map<String, String> HEADERS = new HashMap<>();
+        HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
+        HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
+        HEADERS.put(DATA_GROUPS, String.format("%s,%s", DATA_GROUP_1, DATA_GROUP_2));
+
+        when(providerHeaderService.getDataGroupsHeader()).thenReturn(DATA_GROUPS);
+        when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
     }
 
     @Test
@@ -518,6 +523,43 @@ public class QueryServiceImplTest {
         }
     }
 
+    @Test
+    public void should_searchAll_when_requestHas_noQueryString() throws IOException {
+
+        BoolQueryBuilder builder = (BoolQueryBuilder) this.sut.buildQuery(null, null, true);
+        assertNotNull(builder);
+
+        List<QueryBuilder> topLevelMustClause = builder.must();
+        assertEquals(1, topLevelMustClause.size());
+
+        verifyAcls(topLevelMustClause.get(0), true);
+    }
+
+    @Test
+    public void should_return_ownerOnlyMustClause_when_searchAsOwners() throws IOException {
+
+        BoolQueryBuilder builder = (BoolQueryBuilder) this.sut.buildQuery(null, null, false);
+        assertNotNull(builder);
+
+        List<QueryBuilder> topLevelMustClause = builder.must();
+        assertEquals(1, topLevelMustClause.size());
+
+        verifyAcls(topLevelMustClause.get(0), false);
+    }
+
+    @Test
+    public void should_return_nullQuery_when_searchAsDataRootUser() throws IOException {
+        Map<String, String> HEADERS = new HashMap<>();
+        HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
+        HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
+        HEADERS.put(DATA_GROUPS, String.format("%s,%s", DATA_GROUP_1, DATA_GROUP_2));
+        HEADERS.put(providerHeaderService.getDataRootUserHeader(), "true");
+        when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
+
+        QueryBuilder builder = this.sut.buildQuery(null, null, false);
+        assertNull(builder);
+    }
+
     private Map<String, HighlightField> getHighlightFields() {
         Text[] fragments = {new Text(text)};
         HighlightField highlightField = new HighlightField(name, fragments);
@@ -589,5 +631,28 @@ public class QueryServiceImplTest {
             assertTrue(checkPointAndGeoPointCorrespondence(polygon.get(i), points.get(i)));
         }
         assertEquals(points.get(0), points.get(length));
+    }
+
+    private void verifyAcls(QueryBuilder aclMustClause, boolean asOwner) {
+        BoolQueryBuilder aclLevelBuilder = (BoolQueryBuilder) aclMustClause;
+        assertNotNull(aclLevelBuilder);
+        assertEquals("1", aclLevelBuilder.minimumShouldMatch());
+
+        List<QueryBuilder> aclShouldClause = aclLevelBuilder.should();
+        assertEquals(1, aclShouldClause.size());
+
+        TermsQueryBuilder aclQuery = (TermsQueryBuilder) aclShouldClause.get(0);
+        assertNotNull(aclQuery);
+        if (asOwner) {
+            assertEquals("acl.owners", aclQuery.fieldName());
+        } else {
+            assertEquals("x-acl", aclQuery.fieldName());
+        }
+        assertEquals(2, aclQuery.values().size());
+
+        List<Object> acls = aclQuery.values();
+        assertEquals(2, acls.size());
+        assertTrue(acls.contains(DATA_GROUP_1));
+        assertTrue(acls.contains(DATA_GROUP_2));
     }
 }

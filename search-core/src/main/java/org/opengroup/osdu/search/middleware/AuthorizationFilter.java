@@ -30,6 +30,7 @@ import com.google.common.base.Strings;
 public class AuthorizationFilter {
 	
     private static final String DATA_GROUP_PREFIX = "data.";
+    private static final String DATA_ROOT_GROUP = "users.data.root";
 
     private static final String PATH_SWAGGER = "/swagger.json";
     private static final String PATH_INDEX_API = "/index";
@@ -79,6 +80,7 @@ public class AuthorizationFilter {
     private void checkApiAccess(String[] requiredRoles, String path, DpsHeaders requestHeaders) {
         List<String> accountIds = validateAccountId(requestHeaders, path);
         List<String> dataGroups = new ArrayList<>();
+        boolean dataRootUser = false;
         if (path.contains(PATH_CCS)) {
             requestHeaders.put(DpsHeaders.PRIMARY_PARTITION_ID, getPrimaryAccountId(accountIds));
             AuthorizationResponse authorizationResponse = authorizationService.authorizeAny(requestHeaders, requiredRoles);
@@ -94,8 +96,15 @@ public class AuthorizationFilter {
                 AuthorizationResponse authorizationResponse = authorizationService.authorizeAny(requestHeaders, requiredRoles);
                 requestHeaders.put(DpsHeaders.USER_EMAIL, authorizationResponse.getUser());
 
-                dataGroups.addAll(authorizationResponse.getGroups().getGroups()
-                        .stream().filter(gInfo -> gInfo.getName().startsWith(DATA_GROUP_PREFIX)).map(GroupInfo::getEmail).distinct().collect(Collectors.toList()));
+                for (GroupInfo gInfo : authorizationResponse.getGroups().getGroups()) {
+                    if (gInfo.getName().startsWith(DATA_GROUP_PREFIX)) {
+                        dataGroups.add(gInfo.getEmail());
+                    }
+
+                    if (gInfo.getName().equals(DATA_ROOT_GROUP)) {
+                        dataRootUser = true;
+                    }
+                }
             }
             requestHeaders.put(DpsHeaders.ACCOUNT_ID, StringUtils.join(accountIds, ","));
             requestHeaders.put(DpsHeaders.DATA_PARTITION_ID, StringUtils.join(accountIds, ","));
@@ -103,7 +112,7 @@ public class AuthorizationFilter {
         // don't proceed if data groups are empty
         if (dataGroups.isEmpty()) throw AppException.createForbidden("no data group found for user");
         requestHeaders.put(providerHeaderService.getDataGroupsHeader(), StringUtils.join(dataGroups, ','));
-
+        requestHeaders.put(providerHeaderService.getDataRootUserHeader(), Boolean.toString(dataRootUser));
     }
 
     private List<String> validateAccountId(DpsHeaders requestHeaders, String path) {

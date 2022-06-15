@@ -172,15 +172,17 @@ abstract class QueryBase {
     }
 
     private QueryBuilder getQueryBuilderWithAuthorization(QueryBuilder queryBuilder, boolean asOwner) {
+        String dataRootUser = dpsHeaders.getHeaders().getOrDefault(providerHeaderService.getDataRootUserHeader(), "false");
+        if (Boolean.parseBoolean(dataRootUser)) {
+            return queryBuilder;
+        }
+
         QueryBuilder authorizationQueryBuilder = null;
-        // apply authorization filters
-        //bypass for BYOC implementation only.
         String groups = dpsHeaders.getHeaders().get(providerHeaderService.getDataGroupsHeader());
         if (groups != null) {
             String[] groupArray = groups.trim().split("\\s*,\\s*");
             if (asOwner) {
-                authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(
-                        AclRole.OWNERS.getPath(), groupArray));
+                authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(AclRole.OWNERS.getPath(), groupArray));
             } else {
                 authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(RecordMetaAttribute.X_ACL.getValue(), groupArray));
             }
