@@ -2,13 +2,6 @@ variables:
   OSDU_GCP_SERVICE: search
   OSDU_GCP_VENDOR: gcp
   OSDU_GCP_TESTING_DIR: "testing/integration-tests"
-  OSDU_GCP_HELM_CONFIG_SERVICE_VARS_DEV2: >
-    --set data.log_level=INFO
-    --set data.google_cloud_project_id=$OSDU_GCP_PROJECT
-    --set data.redis_search_host=$REDIS_SEARCH_HOST
-    --set data.redis_group_host=$REDIS_GROUP_HOST
-    --set data.googleAudiences=$GOOGLE_AUDIENCE
-    --set data.key_ring=$OSDU_GCP_PARTITION_KEY_RING
 
 osdu-gcp-anthos-test:
   variables:
