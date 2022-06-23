@@ -36,4 +36,9 @@ public class AWSHTTPClient extends HTTPClient {
         }
         return token;
     }
+
+    @Override
+    public String getDefaultAccessToken() {
+        return getAccessToken();
+    }
 }
