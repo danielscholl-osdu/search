@@ -122,8 +122,7 @@ abstract class QueryBase {
     }
 
     private QueryBuilder getQueryBuilderWithAuthorization(QueryBuilder queryBuilder, boolean asOwner) {
-        String dataRootUser = dpsHeaders.getHeaders().getOrDefault(providerHeaderService.getDataRootUserHeader(), "false");
-        if (Boolean.parseBoolean(dataRootUser)) {
+        if (userHasFullDataAccess()) {
             return queryBuilder;
         }
 
@@ -328,5 +327,10 @@ abstract class QueryBase {
             return;
         }
         this.queryFailedAuditLogger(searchRequest);
+    }
+
+    private boolean userHasFullDataAccess() {
+        String dataRootUser = dpsHeaders.getHeaders().getOrDefault(providerHeaderService.getDataRootUserHeader(), "false");
+        return Boolean.parseBoolean(dataRootUser);
     }
 }

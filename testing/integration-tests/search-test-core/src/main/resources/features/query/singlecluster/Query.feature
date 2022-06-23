@@ -196,7 +196,7 @@ Feature: Search with different queries
   Scenario Outline: Search data in a given kind with different searchAs modes
     When I send <query> with <kind>
     And I want to search as owner <is_owner>
-    Then I should get in response <count> records
+    Then I should get in response <count> records when searchAs owner is <is_owner>
 
     Examples:
       | kind                                      | query     | is_owner | count |
