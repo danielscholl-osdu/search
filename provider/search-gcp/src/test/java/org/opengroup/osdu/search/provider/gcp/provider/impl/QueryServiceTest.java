@@ -16,10 +16,7 @@
  */
 package org.opengroup.osdu.search.provider.gcp.provider.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.any;
@@ -388,6 +385,19 @@ public class QueryServiceTest {
     assertEquals(1, topLevelMustClause.size());
 
     verifyAcls(topLevelMustClause.get(0), false);
+  }
+
+  @Test
+  public void should_return_nullQuery_when_searchAsDataRootUser() throws IOException {
+    Map<String, String> HEADERS = new HashMap<>();
+    HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
+    HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
+    HEADERS.put(DATA_GROUPS, String.format("%s,%s", DATA_GROUP_1, DATA_GROUP_2));
+    HEADERS.put(providerHeaderService.getDataRootUserHeader(), "true");
+    when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
+
+    QueryBuilder builder = this.sut.buildQuery(null, null, false);
+    assertNull(builder);
   }
 
   @Test(expected = AppException.class)

@@ -179,26 +179,23 @@ abstract class QueryBase {
     }
   }
 
-  private QueryBuilder getQueryBuilderWithAuthorization(QueryBuilder queryBuilder,
-      boolean asOwner) {
+  private QueryBuilder getQueryBuilderWithAuthorization(QueryBuilder queryBuilder, boolean asOwner) {
+    if (userHasFullDataAccess()) {
+      return queryBuilder;
+    }
+
     QueryBuilder authorizationQueryBuilder = null;
-    // apply authorization filters
-    //bypass for BYOC implementation only.
     String groups = dpsHeaders.getHeaders().get(providerHeaderService.getDataGroupsHeader());
     if (groups != null) {
       String[] groupArray = groups.trim().split("\\s*,\\s*");
       if (asOwner) {
-        authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(
-            AclRole.OWNERS.getPath(), groupArray));
+        authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(AclRole.OWNERS.getPath(), groupArray));
       } else {
-        authorizationQueryBuilder = boolQuery().minimumShouldMatch("1")
-            .should(termsQuery(RecordMetaAttribute.X_ACL.getValue(), groupArray));
+        authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(RecordMetaAttribute.X_ACL.getValue(), groupArray));
       }
     }
     if (authorizationQueryBuilder != null) {
-      queryBuilder =
-          queryBuilder != null ? boolQuery().must(queryBuilder).must(authorizationQueryBuilder)
-              : boolQuery().must(authorizationQueryBuilder);
+      queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(authorizationQueryBuilder) : boolQuery().must(authorizationQueryBuilder);
     }
     return queryBuilder;
   }
@@ -457,5 +454,10 @@ abstract class QueryBase {
       return;
     }
     this.queryFailedAuditLogger(searchRequest);
+  }
+
+  private boolean userHasFullDataAccess() {
+    String dataRootUser = dpsHeaders.getHeaders().getOrDefault(providerHeaderService.getDataRootUserHeader(), "false");
+    return Boolean.parseBoolean(dataRootUser);
   }
 }
