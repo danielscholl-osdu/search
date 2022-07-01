@@ -28,8 +28,6 @@ public abstract class HTTPClient {
     
     public abstract String getAccessToken();
 
-    public abstract String getDefaultAccessToken();
-
     private static Client getClient() {
         TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
             @Override

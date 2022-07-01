@@ -66,7 +66,7 @@ public class QueryBase extends TestsBase {
 
     public void i_should_get_in_response_records_using_search_as_mode(int resultCount) {
         String payload = requestQuery.toString();
-        ResponseMock response = executeQuery(payload, headers, httpClient.getDefaultAccessToken(), ResponseMock.class);
+        ResponseMock response = executeQuery(payload, headers, httpClient.getAccessToken(), ResponseMock.class);
         assertEquals(200, response.getResponseCode());
         assertEquals(resultCount, response.getResults().size());
     }

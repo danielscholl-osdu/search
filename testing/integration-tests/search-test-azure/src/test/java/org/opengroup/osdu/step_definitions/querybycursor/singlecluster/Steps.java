@@ -119,11 +119,6 @@ public class Steps extends QueryByCursorSteps {
         super.i_should_get_in_response_records(resultCount);
     }
 
-    @Then("^I should get in response (\\d+) records when searchAs owner is (.*?)$")
-    public void i_should_get_in_response_records_using_search_as_mode(int resultCount, String isOwner) {
-        super.i_should_get_in_response_records_using_search_as_mode(resultCount);
-    }
-
     @Then("^I should get records in right order first record id: \"(.*?)\", last record id: \"(.*?)\"$")
     public void i_should_get_records_in_right_order(String firstRecId, String lastRecId) {
         super.i_should_get_records_in_right_order(firstRecId, lastRecId);

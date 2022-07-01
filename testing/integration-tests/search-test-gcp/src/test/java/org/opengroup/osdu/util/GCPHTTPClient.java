@@ -22,9 +22,4 @@ public class GCPHTTPClient extends HTTPClient {
         }
         return token;
     }
-
-    @Override
-    public String getDefaultAccessToken() {
-        return getAccessToken();
-    }
 }

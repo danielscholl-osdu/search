@@ -106,11 +106,4 @@ public class QueryByCursorBase extends TestsBase {
     public void i_set_an_invalid_cursor() {
         requestQuery.setCursor("invalid cursor");
     }
-
-    public void i_should_get_in_response_records_using_search_as_mode(int resultCount) {
-        String payload = requestQuery.toString();
-        ResponseMock response = executeQuery(payload, headers, httpClient.getDefaultAccessToken(), ResponseMock.class);
-        assertEquals(200, response.getResponseCode());
-        assertEquals(resultCount, response.getResults().size());
-    }
 }

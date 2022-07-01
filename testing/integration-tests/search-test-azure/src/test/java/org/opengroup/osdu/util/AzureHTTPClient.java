@@ -22,7 +22,6 @@ import lombok.extern.java.Log;
 public class AzureHTTPClient extends HTTPClient {
 
     private static String token = null;
-    private static String defaultAccessToken = null;
 
     @Override
     public synchronized String getAccessToken() {
@@ -34,17 +33,5 @@ public class AzureHTTPClient extends HTTPClient {
             }
         }
         return token;
-    }
-
-    @Override
-    public String getDefaultAccessToken() {
-        if(defaultAccessToken == null) {
-            try {
-                defaultAccessToken = "Bearer " + JwtTokenUtil.getDefaultAccessToken();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return defaultAccessToken;
     }
 }

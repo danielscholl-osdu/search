@@ -26,12 +26,4 @@ class JwtTokenUtil {
         String app_resource_id = System.getProperty("AZURE_AD_APP_RESOURCE_ID", System.getenv("AZURE_AD_APP_RESOURCE_ID"));
         return new AzureServicePrincipal().getIdToken(sp_id, sp_secret, tenant_id, app_resource_id);
     }
-
-    static public String getDefaultAccessToken() throws Exception {
-        String sp_id = System.getProperty("NO_DATA_ACCESS_TESTER", System.getenv("NO_DATA_ACCESS_TESTER"));
-        String sp_secret = System.getProperty("NO_DATA_ACCESS_TESTER_SERVICEPRINCIPAL_SECRET", System.getenv("NO_DATA_ACCESS_TESTER_SERVICEPRINCIPAL_SECRET"));
-        String tenant_id = System.getProperty("AZURE_AD_TENANT_ID", System.getenv("AZURE_AD_TENANT_ID"));
-        String app_resource_id = System.getProperty("AZURE_AD_APP_RESOURCE_ID", System.getenv("AZURE_AD_APP_RESOURCE_ID"));
-        return new AzureServicePrincipal().getIdToken(sp_id, sp_secret, tenant_id, app_resource_id);
-    }
 }
