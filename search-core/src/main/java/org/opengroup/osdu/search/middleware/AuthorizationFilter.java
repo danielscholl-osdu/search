@@ -1,41 +1,36 @@
 package org.opengroup.osdu.search.middleware;
 
 
+import com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
+import org.opengroup.osdu.core.common.model.entitlements.AuthorizationResponse;
+import org.opengroup.osdu.core.common.model.entitlements.GroupInfo;
+import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.core.common.model.http.DpsHeaders;
+import org.opengroup.osdu.core.common.model.search.SearchServiceRole;
+import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
+import org.opengroup.osdu.core.common.provider.interfaces.IAuthorizationService;
+import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
+
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-
-import org.opengroup.osdu.core.common.model.entitlements.AuthorizationResponse;
-import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.model.entitlements.GroupInfo;
-import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
-import org.opengroup.osdu.core.common.model.search.SearchServiceRole;
-import org.opengroup.osdu.core.common.model.http.AppException;
-import org.opengroup.osdu.core.common.provider.interfaces.IAuthorizationService;
-import org.springframework.stereotype.Component;
-import org.springframework.web.context.annotation.RequestScope;
-import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
-
-import com.google.common.base.Strings;
-
 @Component("authorizationFilter")
 @RequestScope
 public class AuthorizationFilter {
-	
+
     private static final String DATA_GROUP_PREFIX = "data.";
 
     private static final String PATH_SWAGGER = "/swagger.json";
     private static final String PATH_INDEX_API = "/index";
     private static final String PATH_CRON_HANDLERS = "cron-handlers";
-    private static final String PATH_CCS = "/ccs/query";
-
 
     @Inject
     private IAuthorizationService authorizationService;
@@ -45,12 +40,12 @@ public class AuthorizationFilter {
 
     @Inject
     private IProviderHeaderService providerHeaderService;
-    
+
     @Inject
     private HttpServletRequest request;
-        
-    public boolean hasPermission(String... requiredRoles) {    
-        
+
+    public boolean hasPermission(String... requiredRoles) {
+
         String path = request.getServletPath();
 
         if ("GET".equals(request.getMethod())) {
@@ -58,7 +53,7 @@ public class AuthorizationFilter {
                 return true;
             }
         }
-    	
+
 
         try {
             checkApiAccess(requiredRoles, path, requestHeaders);
@@ -74,32 +69,24 @@ public class AuthorizationFilter {
         }
         return true;
     }
-    
+
 
     private void checkApiAccess(String[] requiredRoles, String path, DpsHeaders requestHeaders) {
         List<String> accountIds = validateAccountId(requestHeaders, path);
         List<String> dataGroups = new ArrayList<>();
-        if (path.contains(PATH_CCS)) {
-            requestHeaders.put(DpsHeaders.PRIMARY_PARTITION_ID, getPrimaryAccountId(accountIds));
+        requestHeaders.put(DpsHeaders.PRIMARY_PARTITION_ID, getPrimaryAccountId(accountIds));
+        // TODO: change this once client lib is updated with required method
+        for (String accountId : accountIds) {
+            requestHeaders.put(DpsHeaders.ACCOUNT_ID, accountId);
+            requestHeaders.put(DpsHeaders.DATA_PARTITION_ID, accountId);
             AuthorizationResponse authorizationResponse = authorizationService.authorizeAny(requestHeaders, requiredRoles);
             requestHeaders.put(DpsHeaders.USER_EMAIL, authorizationResponse.getUser());
+
             dataGroups.addAll(authorizationResponse.getGroups().getGroups()
                     .stream().filter(gInfo -> gInfo.getName().startsWith(DATA_GROUP_PREFIX)).map(GroupInfo::getEmail).distinct().collect(Collectors.toList()));
-        } else {
-            requestHeaders.put(DpsHeaders.PRIMARY_PARTITION_ID, getPrimaryAccountId(accountIds));
-            // TODO: change this once client lib is updated with required method
-            for (String accountId : accountIds) {
-                requestHeaders.put(DpsHeaders.ACCOUNT_ID, accountId);
-                requestHeaders.put(DpsHeaders.DATA_PARTITION_ID, accountId);
-                AuthorizationResponse authorizationResponse = authorizationService.authorizeAny(requestHeaders, requiredRoles);
-                requestHeaders.put(DpsHeaders.USER_EMAIL, authorizationResponse.getUser());
-
-                dataGroups.addAll(authorizationResponse.getGroups().getGroups()
-                        .stream().filter(gInfo -> gInfo.getName().startsWith(DATA_GROUP_PREFIX)).map(GroupInfo::getEmail).distinct().collect(Collectors.toList()));
-            }
-            requestHeaders.put(DpsHeaders.ACCOUNT_ID, StringUtils.join(accountIds, ","));
-            requestHeaders.put(DpsHeaders.DATA_PARTITION_ID, StringUtils.join(accountIds, ","));
         }
+        requestHeaders.put(DpsHeaders.ACCOUNT_ID, StringUtils.join(accountIds, ","));
+        requestHeaders.put(DpsHeaders.DATA_PARTITION_ID, StringUtils.join(accountIds, ","));
         // don't proceed if data groups are empty
         if (dataGroups.isEmpty()) throw AppException.createForbidden("no data group found for user");
         requestHeaders.put(providerHeaderService.getDataGroupsHeader(), StringUtils.join(dataGroups, ','));
@@ -151,5 +138,5 @@ public class AuthorizationFilter {
 
         return primaryAccountId;
     }
-    
+
 }

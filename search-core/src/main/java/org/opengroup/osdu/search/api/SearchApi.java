@@ -21,8 +21,6 @@ import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.*;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
-import org.opengroup.osdu.search.config.CcsQueryConfig;
-import org.opengroup.osdu.search.provider.interfaces.ICcsQueryService;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
 import org.springframework.http.HttpStatus;
@@ -57,10 +55,6 @@ public class SearchApi {
     private IQueryService queryService;
     @Inject
     private IScrollQueryService scrollQueryService;
-    @Inject
-    private ICcsQueryService ccsQueryService;
-    @Inject
-    private CcsQueryConfig ccsQueryConfig;
 
     @PostMapping("/query")
     @PreAuthorize("@authorizationFilter.hasPermission('" + SearchServiceRole.ADMIN + "', '" + SearchServiceRole.USER + "')")
@@ -125,46 +119,6 @@ public class SearchApi {
             return new ResponseEntity<CursorQueryResponse>(searchResponse, HttpStatus.OK);
         } catch (AppException e) {
             return handleIndexNotFoundException(e, CursorQueryResponse.getEmptyResponse());
-        }
-    }
-
-    // This endpoint is deprecated as of M10. In M11 this endpoint will be deleted
-    @PostMapping("/ccs/query")
-    @PreAuthorize("@authorizationFilter.hasPermission('" + SearchServiceRole.ADMIN + "', '" + SearchServiceRole.USER + "')")
-    @ApiOperation(
-            value = SwaggerDoc.QUERY_POST_TITLE,
-            nickname = SwaggerDoc.CCS_QUERY_OPERATION_ID,
-            code = HttpServletResponse.SC_ACCEPTED,
-            notes = SwaggerDoc.CCS_QUERY_NOTES)
-    @ApiResponses({
-            @ApiResponse(
-                    code = HttpServletResponse.SC_OK,
-                    message = SwaggerDoc.QUERY_POST_RESPONSE_OK,
-                    response = CcsQueryResponse.class),
-            @ApiResponse(
-                    code = HttpServletResponse.SC_BAD_REQUEST,
-                    message = SwaggerDoc.QUERY_POST_RESPONSE_BAD_REQUEST,
-                    response = AppError.class),
-            @ApiResponse(
-                    code = HttpServletResponse.SC_FORBIDDEN,
-                    message = SwaggerDoc.QUERY_POST_RESPONSE_NOT_AUTHORIZED,
-                    response = AppError.class),
-            @ApiResponse(
-                    code = HttpServletResponse.SC_BAD_GATEWAY,
-                    message = SwaggerDoc.RESPONSE_BAD_GATEWAY,
-                    response = String.class)})
-    @Deprecated
-    public ResponseEntity<CcsQueryResponse> ccsQuery(@NotNull(message = SwaggerDoc.REQUEST_VALIDATION_NOT_NULL_BODY) @RequestBody @Valid CcsQueryRequest queryRequest) throws Exception {
-
-        if (ccsQueryConfig.isDisabled()) {
-            throw new AppException(HttpStatus.NOT_FOUND.value(), "This API has been deprecated", "Unable to perform action");
-        }
-
-        try{
-            CcsQueryResponse searchResponse = ccsQueryService.makeRequest(queryRequest);
-            return new ResponseEntity<CcsQueryResponse>(searchResponse, HttpStatus.OK);
-        } catch (AppException e) {
-            return handleIndexNotFoundException(e, new CcsQueryResponse());
         }
     }
 
