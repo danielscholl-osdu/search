@@ -122,6 +122,13 @@ public class Steps extends QuerySteps {
         super.define_focus_coordinates_as_and_search_in_a_radius(latitude, longitude, distance);
     }
 
+    @When("^define intersection polygon with points \\((-?\\d+), (-?\\d+)\\) and \\((-?\\d+), (-?\\d+)\\) and \\((-?\\d+), (-?\\d+)\\) and \\((-?\\d+), (-?\\d+)\\) and \\((-?\\d+), (-?\\d+)\\)")
+    public void define_intersection_polygon_with_points(Double latitude1, Double longitude1, Double latitude2, Double longitude2,
+                                                        Double latitude3, Double longitude3, Double latitude4, Double longitude4,
+                                                        Double latitude5, Double longitude5) {
+        super.define_intersection_polygon_with_points(latitude1, longitude1, latitude2, longitude2, latitude3, longitude3, latitude4, longitude4, latitude5, longitude5);
+    }
+
     /******************Assert final response**************/
 
     @Then("^I should get in response (\\d+) records$")
