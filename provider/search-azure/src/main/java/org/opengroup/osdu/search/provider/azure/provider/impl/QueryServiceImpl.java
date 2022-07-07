@@ -19,7 +19,6 @@ import com.google.common.collect.Lists;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.search.*;
@@ -64,7 +63,11 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         List<AggregationResponse> aggregations = getAggregationFromSearchResponse(searchResponse);
 
         QueryResponse queryResponse = QueryResponse.getEmptyResponse();
-        queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
+        if (searchResponse.getHits().getTotalHits() == null) {
+            queryResponse.setTotalCount(0);
+        } else {
+            queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
+        }
         if (results != null) {
             queryResponse.setAggregations(aggregations);
             queryResponse.setResults(queryResponseUtil.getQueryResponseResults(results));

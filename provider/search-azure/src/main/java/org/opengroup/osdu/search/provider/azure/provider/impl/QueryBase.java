@@ -14,24 +14,7 @@
 
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-import static org.elasticsearch.index.query.QueryBuilders.geoBoundingBoxQuery;
-import static org.elasticsearch.index.query.QueryBuilders.geoDistanceQuery;
-import static org.elasticsearch.index.query.QueryBuilders.geoPolygonQuery;
-import static org.elasticsearch.index.query.QueryBuilders.geoWithinQuery;
-import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
-import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
-
 import com.google.common.base.Strings;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.ElasticsearchStatusException;
@@ -43,6 +26,8 @@ import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.builders.CircleBuilder;
 import org.elasticsearch.common.geo.builders.CoordinatesBuilder;
 import org.elasticsearch.common.geo.builders.EnvelopeBuilder;
+import org.elasticsearch.common.geo.builders.GeometryCollectionBuilder;
+import org.elasticsearch.common.geo.builders.MultiPolygonBuilder;
 import org.elasticsearch.common.geo.builders.PolygonBuilder;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.DistanceUnit;
@@ -65,6 +50,7 @@ import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.AggregationResponse;
 import org.opengroup.osdu.core.common.model.search.Point;
+import org.opengroup.osdu.core.common.model.search.Polygon;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.core.common.model.search.QueryUtils;
 import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
@@ -81,6 +67,20 @@ import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.*;
+
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.elasticsearch.index.query.QueryBuilders.geoBoundingBoxQuery;
+import static org.elasticsearch.index.query.QueryBuilders.geoDistanceQuery;
+import static org.elasticsearch.index.query.QueryBuilders.geoIntersectionQuery;
+import static org.elasticsearch.index.query.QueryBuilders.geoPolygonQuery;
+import static org.elasticsearch.index.query.QueryBuilders.geoWithinQuery;
+import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
+import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
 
 abstract class QueryBase {
 
@@ -113,6 +113,7 @@ abstract class QueryBase {
 
     static final String AGGREGATION_NAME = "agg";
     private static final String GEO_SHAPE_INDEXED_TYPE = "geo_shape";
+    private static final int MINIMUM_POLYGON_POINTS_SIZE = 4;
     private static final String DEPENDENCY_NAME = "QUERY_ELASTICSEARCH";
 
     // if returnedField contains property matching from excludes than query result will NOT include that property
@@ -144,6 +145,8 @@ abstract class QueryBase {
                     spatialQueryBuilder = getGeoShapeDistanceQuery(spatialFilter);
                 } else if (spatialFilter.getByGeoPolygon() != null) {
                     spatialQueryBuilder = getGeoShapePolygonQuery(spatialFilter);
+                } else if (spatialFilter.getByIntersection() != null) {
+                    spatialQueryBuilder = getGeoShapeIntersectionQuery(spatialFilter);
                 }
             } else {
                 if (spatialFilter.getByBoundingBox() != null) {
@@ -244,6 +247,39 @@ abstract class QueryBase {
         return geoWithinQuery(spatialFilter.getField(), circleBuilder);
     }
 
+    private QueryBuilder getGeoShapeIntersectionQuery(SpatialFilter spatialFilter) throws IOException {
+        MultiPolygonBuilder multiPolygonBuilder = new MultiPolygonBuilder();
+        for (Polygon polygon : spatialFilter.getByIntersection().getPolygons()) {
+            List<Coordinate> coordinates = new ArrayList<>();
+            for (Point point : polygon.getPoints()) {
+                coordinates.add(new Coordinate(point.getLongitude(), point.getLatitude()));
+            }
+
+            checkPolygon(coordinates);
+
+            CoordinatesBuilder cb = new CoordinatesBuilder().coordinates(coordinates);
+            multiPolygonBuilder.polygon(new PolygonBuilder(cb));
+        }
+
+        GeometryCollectionBuilder geometryCollection = new GeometryCollectionBuilder();
+        geometryCollection.shape(multiPolygonBuilder);
+        return geoIntersectionQuery(spatialFilter.getField(), geometryCollection.buildGeometry());
+    }
+
+    private void checkPolygon(List<Coordinate> coordinates) {
+        if (coordinates.size() < MINIMUM_POLYGON_POINTS_SIZE ||
+                (
+                        coordinates.get(0).x != coordinates.get(coordinates.size() - 1).x
+                                || coordinates.get(0).y != coordinates.get(coordinates.size() - 1).y
+                )
+        ) {
+            throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Bad Request",
+                    String.format(
+                            "Polygons must have at least %s points and the first point must match the last point",
+                            MINIMUM_POLYGON_POINTS_SIZE));
+        }
+    }
+
     String getIndex(Query request) {
         return this.crossTenantUtils.getIndexName(request);
     }
@@ -278,9 +314,9 @@ abstract class QueryBase {
         if (searchResponse.getAggregations() != null) {
             Terms kindAgg = null;
             ParsedNested nested = searchResponse.getAggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
-            if(nested != null){
+            if (nested != null) {
                 kindAgg = (Terms) getTermsAggregationFromNested(nested);
-            }else {
+            } else {
                 kindAgg = searchResponse.getAggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME);
             }
             if (kindAgg.getBuckets() != null) {
@@ -294,11 +330,11 @@ abstract class QueryBase {
         return results;
     }
 
-    private Aggregation getTermsAggregationFromNested(ParsedNested parsedNested){
+    private Aggregation getTermsAggregationFromNested(ParsedNested parsedNested) {
         ParsedNested nested = parsedNested.getAggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
-        if(nested != null){
+        if (nested != null) {
             return getTermsAggregationFromNested(nested);
-        }else {
+        } else {
             return parsedNested.getAggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME);
         }
     }
@@ -402,7 +438,7 @@ abstract class QueryBase {
     }
 
     private int getSearchResponseStatusCode(SearchResponse searchResponse) {
-        if(searchResponse == null || searchResponse.status() == null)
+        if (searchResponse == null || searchResponse.status() == null)
             throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Search returned null or empty response");
         else
             return searchResponse.status().getStatus();
