@@ -14,25 +14,8 @@
 
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
@@ -54,6 +37,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -62,6 +46,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
@@ -69,6 +55,7 @@ import org.opengroup.osdu.core.common.model.http.AppError;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.Point;
+import org.opengroup.osdu.core.common.model.search.Polygon;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryResponse;
 import org.opengroup.osdu.core.common.model.search.SortOrder;
@@ -91,6 +78,25 @@ import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.QueryParserUtil;
 import org.opengroup.osdu.search.util.SortParserUtil;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 @RunWith(MockitoJUnitRunner.class)
 public class QueryServiceImplTest {
 
@@ -110,6 +116,8 @@ public class QueryServiceImplTest {
     private final List<Point> closedPolygonPoints = getPolygonPoints(getPoint(0.0, 0.0), getPoint(0.0, 1.0), getPoint(1.0, 1.0), getPoint(1.0, 0.0), getPoint(0.0, 0.0));
     private final Point topLeft = getPoint(3.0, 4.0);
     private final Point bottomRight = getPoint(2.0, 1.0);
+
+    private ObjectMapper mapper = new ObjectMapper();
 
     @Mock
     private QueryRequest searchRequest;
@@ -176,6 +184,7 @@ public class QueryServiceImplTest {
 
     @Before
     public void init() throws IOException {
+        MockitoAnnotations.openMocks(this);
         Map<String, Object> hitFields = new HashMap<>();
 
         doReturn(indexName).when(crossTenantUtils).getIndexName(any());
@@ -388,7 +397,7 @@ public class QueryServiceImplTest {
             int errorCode = 404;
             String errorMessage = "Resource you are trying to find does not exists";
             validateAppException(e, errorCode, errorMessage);
-            throw(e);
+            throw (e);
         }
     }
 
@@ -408,7 +417,7 @@ public class QueryServiceImplTest {
             int errorCode = 400;
             String errorMessage = "Invalid parameters were given on search request";
             validateAppException(e, errorCode, errorMessage);
-            throw(e);
+            throw (e);
         }
     }
 
@@ -432,7 +441,7 @@ public class QueryServiceImplTest {
             int errorCode = 400;
             String errorMessage = "Sort is not supported for one or more of the requested fields";
             validateAppException(e, errorCode, errorMessage);
-            throw(e);
+            throw (e);
         }
     }
 
@@ -452,9 +461,10 @@ public class QueryServiceImplTest {
             int errorCode = 503;
             String errorMessage = "Please re-try search after some time.";
             validateAppException(e, errorCode, errorMessage);
-            throw(e);
+            throw (e);
         }
     }
+
     @Test(expected = AppException.class)
     public void testQueryBase_whenClientSearchResultsInElasticsearchStatusException_statusTooManyRequests_throwsException() throws IOException {
         ElasticsearchStatusException exception = mock(ElasticsearchStatusException.class);
@@ -471,7 +481,7 @@ public class QueryServiceImplTest {
             int errorCode = 429;
             String errorMessage = "Too many requests, please re-try after some time";
             validateAppException(e, errorCode, errorMessage);
-            throw(e);
+            throw (e);
         }
     }
 
@@ -492,7 +502,7 @@ public class QueryServiceImplTest {
             int errorCode = 504;
             String errorMessage = "Request timed out after waiting for 1m";
             validateAppException(e, errorCode, errorMessage);
-            throw(e);
+            throw (e);
         }
     }
 
@@ -514,8 +524,106 @@ public class QueryServiceImplTest {
             String errorMessage = "Error processing search request";
 
             validateAppException(e, errorCode, errorMessage);
-            throw(e);
+            throw (e);
         }
+    }
+
+    @Test
+    public void should_return_CorrectQueryResponseforIntersectionSpatialFilter() throws Exception {
+        // arrange
+        // create query request according to this example query:
+        //	{
+        //		"kind": "osdu:wks:reference-data--CoordinateTransformation:1.0.0",
+        //			"query": "data.ID:\"EPSG::1078\"",
+        //			"spatialFilter": {
+        //			"field": "data.Wgs84Coordinates",
+        //			"byIntersection": {
+        //				"polygons": [
+        //				{
+        //					"points": [
+        //					{
+        //						"latitude": 10.75,
+        //							"longitude": -8.61
+        //					}
+        //						]
+        //				}
+        //				]
+        //			}
+        //		}
+        //	}
+        QueryRequest queryRequest = new QueryRequest();
+        queryRequest.setQuery("data.ID:\"EPSG::1078\"");
+        SpatialFilter spatialFilter = new SpatialFilter();
+        spatialFilter.setField("data.Wgs84Coordinates");
+        SpatialFilter.ByIntersection byIntersection = new SpatialFilter.ByIntersection();
+        Polygon polygon = new Polygon();
+        Point point = new Point(1.02, -8.61);
+        Point point1 = new Point(1.02, -2.48);
+        Point point2 = new Point(10.74, -2.48);
+        Point point3 = new Point(10.74, -8.61);
+        Point point4 = new Point(1.02, -8.61);
+        List<Point> points = new ArrayList<>();
+        points.add(point);
+        points.add(point1);
+        points.add(point2);
+        points.add(point3);
+        points.add(point4);
+        polygon.setPoints(points);
+        List<Polygon> polygons = new ArrayList<>();
+        polygons.add(polygon);
+        byIntersection.setPolygons(polygons);
+        spatialFilter.setByIntersection(byIntersection);
+        queryRequest.setSpatialFilter(spatialFilter);
+
+        // mock out elastic client handler
+        RestHighLevelClient client = Mockito.mock(RestHighLevelClient.class, Mockito.RETURNS_DEEP_STUBS);
+        SearchResponse searchResponse = Mockito.mock(SearchResponse.class);
+        Mockito.when(searchResponse.status())
+                .thenReturn(RestStatus.OK);
+
+        SearchHits searchHits = Mockito.mock(SearchHits.class);
+        Mockito.when(searchHits.getHits())
+                .thenReturn(new SearchHit[]{});
+        Mockito.when(searchResponse.getHits())
+                .thenReturn(searchHits);
+
+        Mockito.when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
+                .thenReturn(searchResponse);
+
+
+        Mockito.when(elasticClientHandler.createRestClient())
+                .thenReturn(client);
+
+        String index = "some-index";
+        Mockito.when(crossTenantUtils.getIndexName(Mockito.any()))
+                .thenReturn(index);
+
+        Set<String> indexedTypes = new HashSet<>();
+        indexedTypes.add("geo_shape");
+        Mockito.when(fieldMappingTypeService.getFieldTypes(Mockito.eq(client), Mockito.anyString(), Mockito.eq(index)))
+                .thenReturn(indexedTypes);
+
+        Mockito.when(providerHeaderService.getDataGroupsHeader())
+                .thenReturn("groups");
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("groups", "[]");
+        Mockito.when(dpsHeaders.getHeaders())
+                .thenReturn(headers);
+
+        String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"query_string\":{\"query\":\"data.ID:\\\"EPSG::1078\\\"\",\"fields\":[],\"type\":\"best_fields\",\"default_operator\":\"or\",\"max_determinized_states\":10000,\"allow_leading_wildcard\":false,\"enable_position_increments\":true,\"fuzziness\":\"AUTO\",\"fuzzy_prefix_length\":0,\"fuzzy_max_expansions\":50,\"phrase_slop\":0,\"escape\":false,\"auto_generate_synonyms_phrase_query\":true,\"fuzzy_transpositions\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPolygon\",\"coordinates\":[[[[-8.61,1.02],[-2.48,1.02],[-2.48,10.74],[-8.61,10.74],[-8.61,1.02]]]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":false,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]}}";
+
+        // act
+        QueryResponse response = this.sut.queryIndex(queryRequest);
+
+        // assert
+        ArgumentCaptor<SearchRequest> searchRequestArg = ArgumentCaptor.forClass(SearchRequest.class);
+        Mockito.verify(client, Mockito.times(1)).search(searchRequestArg.capture(), Mockito.any());
+        SearchRequest searchRequest = searchRequestArg.getValue();
+        String actualSource = searchRequest.source().toString();
+        JsonNode expectedJson = mapper.readTree(expectedSource);
+        JsonNode actualJson = mapper.readTree(actualSource);
+        Assert.assertTrue(expectedJson.equals(actualJson));
     }
 
     private Map<String, HighlightField> getHighlightFields() {
@@ -530,9 +638,9 @@ public class QueryServiceImplTest {
         return new Point(latitude, longitude);
     }
 
-    private List<Point> getPolygonPoints(Point ...points) {
+    private List<Point> getPolygonPoints(Point... points) {
         List<Point> polygon = new ArrayList<>();
-        for (Point point: points) {
+        for (Point point : points) {
             polygon.add(point);
         }
         return polygon;

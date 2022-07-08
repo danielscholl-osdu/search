@@ -18,7 +18,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.opengroup.osdu</groupId>
     <artifactId>os-search</artifactId>
-    <version>0.15.0-SNAPSHOT</version>
+    <version>0.16.0-SNAPSHOT</version>
     <description>Root Search Service Project</description>
     <packaging>pom</packaging>
 
@@ -40,7 +40,7 @@
         <log4j-core.version>2.17.1</log4j-core.version>
         <google-oauth-client.version>1.31.0</google-oauth-client.version>
         <commons-compress.version>1.20</commons-compress.version>
-        <osdu.oscorecommon.version>0.15.0-rc3</osdu.oscorecommon.version>
+        <osdu.oscorecommon.version>0.15.0</osdu.oscorecommon.version>
         <tomcat-embed-core.version>9.0.45</tomcat-embed-core.version>
         <springfox.version>3.0.0</springfox.version>
         <json-smart.version>2.4.7</json-smart.version>

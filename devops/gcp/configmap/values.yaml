@@ -14,7 +14,7 @@ data:
   policy_id: "search"
   indexer_base_host: "http://indexer"
   # gcp
-  audiences: ""
+  googleAudiences: ""
 
 conf:
   configmap: "search-config"
