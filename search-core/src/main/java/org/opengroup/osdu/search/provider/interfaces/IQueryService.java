@@ -21,6 +21,4 @@ import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 public interface IQueryService {
 
     QueryResponse queryIndex(QueryRequest searchRequest) throws Exception;
-
-    QueryResponse queryIndex(QueryRequest searchRequest, ClusterSettings clusterSettings) throws Exception;
 }
