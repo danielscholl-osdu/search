@@ -63,17 +63,6 @@ public class QueryServiceAwsImpl extends QueryBase implements IQueryService {
         }
     }
 
-    // TODO: Remove this temporary implementation when ECE CCS is utilized
-    @Override
-    public QueryResponse queryIndex(QueryRequest searchRequest, ClusterSettings clusterSettings) throws Exception {
-        try (RestHighLevelClient client = elasticClientHandler.createRestClient(clusterSettings)) {
-            QueryResponse queryResponse = executeQuery(searchRequest, client);
-            List<String> resources = new ArrayList<>();
-            resources.add(searchRequest.toString());
-            return queryResponse;
-        }
-    }
-
     private QueryResponse executeQuery(QueryRequest searchRequest, RestHighLevelClient client) throws AppException {
         SearchResponse searchResponse = this.makeSearchRequest(searchRequest, client);
         List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
