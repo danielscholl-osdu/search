@@ -5,4 +5,6 @@ public interface IProviderHeaderService {
     String getCronServiceHeader();
 
     String getDataGroupsHeader();
+
+    String getDataRootUserHeader();
 }

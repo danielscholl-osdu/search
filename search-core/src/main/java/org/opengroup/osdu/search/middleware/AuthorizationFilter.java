@@ -20,13 +20,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component("authorizationFilter")
 @RequestScope
 public class AuthorizationFilter {
 
     private static final String DATA_GROUP_PREFIX = "data.";
+    private static final String DATA_ROOT_GROUP = "users.data.root";
 
     private static final String PATH_SWAGGER = "/swagger.json";
     private static final String PATH_INDEX_API = "/index";
@@ -74,6 +74,7 @@ public class AuthorizationFilter {
     private void checkApiAccess(String[] requiredRoles, String path, DpsHeaders requestHeaders) {
         List<String> accountIds = validateAccountId(requestHeaders, path);
         List<String> dataGroups = new ArrayList<>();
+        boolean dataRootUser = false;
         requestHeaders.put(DpsHeaders.PRIMARY_PARTITION_ID, getPrimaryAccountId(accountIds));
         // TODO: change this once client lib is updated with required method
         for (String accountId : accountIds) {
@@ -82,15 +83,23 @@ public class AuthorizationFilter {
             AuthorizationResponse authorizationResponse = authorizationService.authorizeAny(requestHeaders, requiredRoles);
             requestHeaders.put(DpsHeaders.USER_EMAIL, authorizationResponse.getUser());
 
-            dataGroups.addAll(authorizationResponse.getGroups().getGroups()
-                    .stream().filter(gInfo -> gInfo.getName().startsWith(DATA_GROUP_PREFIX)).map(GroupInfo::getEmail).distinct().collect(Collectors.toList()));
+            for (GroupInfo gInfo : authorizationResponse.getGroups().getGroups()) {
+                if (gInfo.getName().startsWith(DATA_GROUP_PREFIX)) {
+                    dataGroups.add(gInfo.getEmail());
+                }
+
+                if (gInfo.getName().equals(DATA_ROOT_GROUP)) {
+                    dataRootUser = true;
+                }
+            }
         }
         requestHeaders.put(DpsHeaders.ACCOUNT_ID, StringUtils.join(accountIds, ","));
         requestHeaders.put(DpsHeaders.DATA_PARTITION_ID, StringUtils.join(accountIds, ","));
+
         // don't proceed if data groups are empty
         if (dataGroups.isEmpty()) throw AppException.createForbidden("no data group found for user");
         requestHeaders.put(providerHeaderService.getDataGroupsHeader(), StringUtils.join(dataGroups, ','));
-
+        requestHeaders.put(providerHeaderService.getDataRootUserHeader(), Boolean.toString(dataRootUser));
     }
 
     private List<String> validateAccountId(DpsHeaders requestHeaders, String path) {
@@ -119,7 +128,7 @@ public class AuthorizationFilter {
     private void checkCronApiAccess(DpsHeaders headersInfo) {
         String expectedCronHeaderValue = "true";
         String cronHeader = headersInfo.getHeaders().getOrDefault(providerHeaderService.getCronServiceHeader(), null);
-        if(expectedCronHeaderValue.equalsIgnoreCase(cronHeader))return;
+        if (expectedCronHeaderValue.equalsIgnoreCase(cronHeader)) return;
         throw AppException.createForbidden("invalid user agent, Engine Cron only");
     }
 
@@ -138,5 +147,4 @@ public class AuthorizationFilter {
 
         return primaryAccountId;
     }
-
 }

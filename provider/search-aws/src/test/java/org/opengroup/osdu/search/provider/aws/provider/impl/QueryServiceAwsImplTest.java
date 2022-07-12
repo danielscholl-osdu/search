@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package provider.impl;
+package org.opengroup.osdu.search.provider.aws.provider.impl;
 
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -37,10 +40,18 @@ import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.*;
 
+import java.io.IOException;
 import java.util.*;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryServiceAwsImplTest {
+
+	private final String DATA_GROUPS = "X-Data-Groups";
+	private final String DATA_GROUP_1 = "data.welldb.viewers@common.evd.cloud.slb-ds.com";
+	private final String DATA_GROUP_2 = "data.npd.viewers@common.evd.cloud.slb-ds.com";
 
 	@InjectMocks
 	QueryServiceAwsImpl queryServiceAws;
@@ -83,6 +94,14 @@ public class QueryServiceAwsImplTest {
 	@Before
 	public void setup() {
 		MockitoAnnotations.openMocks(this);
+
+		Map<String, String> HEADERS = new HashMap<>();
+		HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
+		HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
+		HEADERS.put(DATA_GROUPS, String.format("%s,%s", DATA_GROUP_1, DATA_GROUP_2));
+
+		when(providerHeaderService.getDataGroupsHeader()).thenReturn(DATA_GROUPS);
+		when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
 	}
 
 	@Test
@@ -135,37 +154,37 @@ public class QueryServiceAwsImplTest {
 		// mock out elastic client handler
 		RestHighLevelClient client = Mockito.mock(RestHighLevelClient.class, Mockito.RETURNS_DEEP_STUBS);
 		SearchResponse searchResponse = Mockito.mock(SearchResponse.class);
-		Mockito.when(searchResponse.status())
+		when(searchResponse.status())
 				.thenReturn(RestStatus.OK);
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
-		Mockito.when(searchHits.getHits())
+		when(searchHits.getHits())
 				.thenReturn(new SearchHit[]{});
-		Mockito.when(searchResponse.getHits())
+		when(searchResponse.getHits())
 				.thenReturn(searchHits);
 
-		Mockito.when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
+		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
 				.thenReturn(searchResponse);
 
 
-		Mockito.when(elasticClientHandler.createRestClient())
+		when(elasticClientHandler.createRestClient())
 				.thenReturn(client);
 
 		String index = "some-index";
-		Mockito.when(crossTenantUtils.getIndexName(Mockito.any()))
+		when(crossTenantUtils.getIndexName(Mockito.any()))
 				.thenReturn(index);
 
 		Set<String> indexedTypes = new HashSet<>();
 		indexedTypes.add("geo_shape");
-		Mockito.when(fieldMappingTypeService.getFieldTypes(Mockito.eq(client), Mockito.anyString(), Mockito.eq(index)))
+		when(fieldMappingTypeService.getFieldTypes(Mockito.eq(client), Mockito.anyString(), Mockito.eq(index)))
 				.thenReturn(indexedTypes);
 
-		Mockito.when(providerHeaderService.getDataGroupsHeader())
+		when(providerHeaderService.getDataGroupsHeader())
 				.thenReturn("groups");
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("groups", "[]");
-		Mockito.when(dpsHeaders.getHeaders())
+		when(dpsHeaders.getHeaders())
 				.thenReturn(headers);
 
 		String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPolygon\",\"coordinates\":[[[[-8.61,1.02],[-2.48,1.02],[-2.48,10.74],[-8.61,10.74],[-8.61,1.02]]]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":false,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]}}";
@@ -178,7 +197,7 @@ public class QueryServiceAwsImplTest {
 		Mockito.verify(client, Mockito.times(1)).search(searchRequestArg.capture(), Mockito.any());
 		SearchRequest searchRequest = searchRequestArg.getValue();
 		String actualSource = searchRequest.source().toString();
-		Assert.assertEquals(expectedSource, actualSource);
+		assertEquals(expectedSource, actualSource);
 	}
 
 	@Test
@@ -216,37 +235,37 @@ public class QueryServiceAwsImplTest {
 		// mock out elastic client handler
 		RestHighLevelClient client = Mockito.mock(RestHighLevelClient.class, Mockito.RETURNS_DEEP_STUBS);
 		SearchResponse searchResponse = Mockito.mock(SearchResponse.class);
-		Mockito.when(searchResponse.status())
+		when(searchResponse.status())
 				.thenReturn(RestStatus.OK);
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
-		Mockito.when(searchHits.getHits())
+		when(searchHits.getHits())
 				.thenReturn(new SearchHit[]{});
-		Mockito.when(searchResponse.getHits())
+		when(searchResponse.getHits())
 				.thenReturn(searchHits);
 
-		Mockito.when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
+		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
 				.thenReturn(searchResponse);
 
 
-		Mockito.when(elasticClientHandler.createRestClient())
+		when(elasticClientHandler.createRestClient())
 				.thenReturn(client);
 
 		String index = "some-index";
-		Mockito.when(crossTenantUtils.getIndexName(Mockito.any()))
+		when(crossTenantUtils.getIndexName(Mockito.any()))
 				.thenReturn(index);
 
 		Set<String> indexedTypes = new HashSet<>();
 		indexedTypes.add("geo_shape");
-		Mockito.when(fieldMappingTypeService.getFieldTypes(Mockito.eq(client), Mockito.anyString(), Mockito.eq(index)))
+		when(fieldMappingTypeService.getFieldTypes(Mockito.eq(client), Mockito.anyString(), Mockito.eq(index)))
 				.thenReturn(indexedTypes);
 
-		Mockito.when(providerHeaderService.getDataGroupsHeader())
+		when(providerHeaderService.getDataGroupsHeader())
 				.thenReturn("groups");
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("groups", "[]");
-		Mockito.when(dpsHeaders.getHeaders())
+		when(dpsHeaders.getHeaders())
 				.thenReturn(headers);
 
 		String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPoint\",\"coordinates\":[[-8.61,1.02]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":false,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]}}";
@@ -259,7 +278,66 @@ public class QueryServiceAwsImplTest {
 		Mockito.verify(client, Mockito.times(1)).search(searchRequestArg.capture(), Mockito.any());
 		SearchRequest searchRequest = searchRequestArg.getValue();
 		String actualSource = searchRequest.source().toString();
-		Assert.assertEquals(expectedSource, actualSource);
+		assertEquals(expectedSource, actualSource);
 	}
 
+	@Test
+	public void should_searchAll_when_requestHas_noQueryString() throws IOException {
+
+		BoolQueryBuilder builder = (BoolQueryBuilder) this.queryServiceAws.buildQuery(null, null, true);
+		assertNotNull(builder);
+
+		List<QueryBuilder> topLevelMustClause = builder.must();
+		assertEquals(1, topLevelMustClause.size());
+
+		verifyAcls(topLevelMustClause.get(0), true);
+	}
+
+	@Test
+	public void should_return_ownerOnlyMustClause_when_searchAsOwners() throws IOException {
+
+		BoolQueryBuilder builder = (BoolQueryBuilder) this.queryServiceAws.buildQuery(null, null, false);
+		assertNotNull(builder);
+
+		List<QueryBuilder> topLevelMustClause = builder.must();
+		assertEquals(1, topLevelMustClause.size());
+
+		verifyAcls(topLevelMustClause.get(0), false);
+	}
+
+	@Test
+	public void should_return_nullQuery_when_searchAsDataRootUser() throws IOException {
+		Map<String, String> HEADERS = new HashMap<>();
+		HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
+		HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
+		HEADERS.put(DATA_GROUPS, String.format("%s,%s", DATA_GROUP_1, DATA_GROUP_2));
+		HEADERS.put(providerHeaderService.getDataRootUserHeader(), "true");
+		when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
+
+		QueryBuilder builder = this.queryServiceAws.buildQuery(null, null, false);
+		assertNull(builder);
+	}
+
+	private void verifyAcls(QueryBuilder aclMustClause, boolean asOwner) {
+		BoolQueryBuilder aclLevelBuilder = (BoolQueryBuilder) aclMustClause;
+		assertNotNull(aclLevelBuilder);
+		assertEquals("1", aclLevelBuilder.minimumShouldMatch());
+
+		List<QueryBuilder> aclShouldClause = aclLevelBuilder.should();
+		assertEquals(1, aclShouldClause.size());
+
+		TermsQueryBuilder aclQuery = (TermsQueryBuilder) aclShouldClause.get(0);
+		assertNotNull(aclQuery);
+		if (asOwner) {
+			assertEquals("acl.owners", aclQuery.fieldName());
+		} else {
+			assertEquals("x-acl", aclQuery.fieldName());
+		}
+		assertEquals(2, aclQuery.values().size());
+
+		List<Object> acls = aclQuery.values();
+		assertEquals(2, acls.size());
+		assertTrue(acls.contains(DATA_GROUP_1));
+		assertTrue(acls.contains(DATA_GROUP_2));
+	}
 }

@@ -34,7 +34,7 @@ import org.opengroup.osdu.core.common.model.search.DeploymentEnvironment;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.middleware.RedirectHttpRequestsHandler;
-import org.opengroup.osdu.search.provider.gcp.provider.impl.ProviderHeaderServiceImpl;
+import org.opengroup.osdu.search.service.ProviderHeaderServiceImpl;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
