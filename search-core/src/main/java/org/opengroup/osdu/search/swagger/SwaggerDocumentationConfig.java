@@ -63,6 +63,6 @@ public class SwaggerDocumentationConfig {
         AuthorizationScope[] authorizationScopes =
                 new AuthorizationScope[]{authorizationScope};
         return Collections.singletonList(
-                new SecurityReference("JWT", authorizationScopes));
+                new SecurityReference("Authorization", authorizationScopes));
     }
 }
