@@ -136,6 +136,11 @@ public class Steps extends QuerySteps {
         super.i_should_get_in_response_records(resultCount);
     }
 
+    @Then("^I should get in response (\\d+) records when searchAs owner is (.*?)$")
+    public void i_should_get_in_response_records_using_search_as_mode(int resultCount, String isOwner) {
+        super.i_should_get_in_response_records_using_search_as_mode(resultCount);
+    }
+
     @Then("^I should get in response (\\d+) records with ([\"(a-zA-Z0-9)\",?]*)$")
     public void i_should_get_in_response_records_with_fields(int resultCount, List<String> returnedFields) {
         super.i_should_get_in_response_records(resultCount, returnedFields);

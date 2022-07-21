@@ -115,6 +115,7 @@ You will need to have the following environment variables defined.
 | `DATA_GROUP` | `opendes` | The service account to this group and substitute | no | - |
 | `ENTITLEMENTS_DOMAIN` | ex `opendes-gcp.projects.com` | OSDU R2 to run tests under  | no | - |
 | `DEFAULT_DATA_PARTITION_ID_TENANT1` | ex `opendes` | HTTP Header 'Data-Partition-ID'  | no | - |
+| `DEFAULT_DATA_PARTITION_ID_TENANT2` | ex `not-exist` | HTTP Header 'Data-Partition-ID' with not existing tenant  | no | - |
 | `SEARCH_HOST` | ex `http://localhost:8080/api/search/v2/` | Endpoint of search service | no | - |
 | `LEGAL_TAG` | ex `my-legal-tag` | a valid legal tag | no | - |  
 | `SECURITY_HTTPS_CERTIFICATE_TRUST` | ex `false` | Elastic client connection uses TrustSelfSignedStrategy(), if it is 'true' | false | output of infrastructure deployment |
