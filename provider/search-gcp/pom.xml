@@ -37,6 +37,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
+        <spring-webmvc.version>5.3.22</spring-webmvc.version>
     </properties>
 
     <dependencies>
@@ -128,6 +129,11 @@
             <groupId>ch.qos.logback.contrib</groupId>
             <artifactId>logback-jackson</artifactId>
             <version>0.1.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring-webmvc.version}</version>
         </dependency>
     </dependencies>
 
