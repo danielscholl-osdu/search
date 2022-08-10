@@ -54,7 +54,7 @@ import java.util.List;
 public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
 
     @Autowired
-    private JaxRsDpsLog logger;
+    private JaxRsDpsLog jaxRsDpsLogger;
 
     @ExceptionHandler(AppException.class)
     protected ResponseEntity<Object> handleAppException(AppException e) {
@@ -74,7 +74,7 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
         for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
             errors.add(fieldError.getDefaultMessage());
         }
-        this.logger.warning("Invalid parameters were given on search request", e);
+        this.jaxRsDpsLogger.warning("Invalid parameters were given on search request", e);
         HttpStatus httpStatus = HttpStatus.resolve(org.apache.http.HttpStatus.SC_BAD_REQUEST);
         return new ResponseEntity<>(this.getValidationResponse(errors), httpStatus);
     }
@@ -84,7 +84,7 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException e, HttpHeaders headers, HttpStatus status, WebRequest request) {
         AppException appException = new AppException(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Invalid parameters were given on search request", e);
-        this.logger.warning(appException.getError().getMessage(), appException);
+        this.jaxRsDpsLogger.warning(appException.getError().getMessage(), appException);
         HttpStatus httpStatus = HttpStatus.resolve(appException.getError().getCode());
         return new ResponseEntity<>(appException.getError(), httpStatus);
     }
@@ -116,7 +116,7 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
     @ExceptionHandler(IOException.class)
     public ResponseEntity<Object> handleIOException(IOException e) {
         if (StringUtils.containsIgnoreCase(ExceptionUtils.getRootCauseMessage(e), "Broken pipe")) {
-            this.logger.warning("Client closed the connection while request still being processed");
+            this.jaxRsDpsLogger.warning("Client closed the connection while request still being processed");
             return null;
         } else {
             return this.getErrorResponse(
@@ -136,9 +136,9 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
         String exceptionMsg = e.getError().getMessage();
 
         if (e.getError().getCode() > 499) {
-            this.logger.error(exceptionMsg, e);
+            this.jaxRsDpsLogger.error(exceptionMsg, e);
         } else {
-            this.logger.warning(exceptionMsg, e);
+            this.jaxRsDpsLogger.warning(exceptionMsg, e);
         }
 
         // log suppressed exception from Elastic's ResponseException if any
@@ -173,7 +173,7 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
         Exception cause = e.getOriginalException();
         if (cause != null && cause.getSuppressed() != null) {
             for (Throwable t : cause.getSuppressed()) {
-                if (t instanceof ResponseException) this.logger.error(t.getMessage(), (ResponseException) t);
+                if (t instanceof ResponseException) this.jaxRsDpsLogger.error(t.getMessage(), (ResponseException) t);
             }
         }
     }

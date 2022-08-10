@@ -37,7 +37,7 @@ public class AttributeMappingReaderTest {
     private AttributeMappingReader sut;
 
 
-    @Test
+    @Test(expected = Test.None.class)
     public void should_return_correct_Attributes_when_valid_file() throws Exception {
         sut = PowerMockito.spy(new AttributeMappingReader());
         doReturn("[{}]").when(sut, "getFile", anyObject());

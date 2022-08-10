@@ -54,7 +54,7 @@ public class MultiKindValidatorTest {
         assertFalse(validator.isValid("tenant:valid:kind:1.0.0,,tenant:valid:kind:2.0.0", null));
     }
 
-    @Test
+    @Test(expected = Test.None.class)
     public void test_initialize_validator() {
         // for coverage purposes. Do nothing method!
         MultiKindValidator validator = new MultiKindValidator();

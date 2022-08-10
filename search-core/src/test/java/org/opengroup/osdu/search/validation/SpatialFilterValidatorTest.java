@@ -133,7 +133,7 @@ public class SpatialFilterValidatorTest {
         assertFalse(this.sut.isValid(this.spatialFilter, this.constraintValidatorContext));
     }
 
-    @Test
+    @Test(expected = Test.None.class)
     public void test_constructor() {
         // for coverage purposes. Do nothing method!
         this.sut.initialize(null);

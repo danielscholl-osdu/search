@@ -23,7 +23,7 @@ public class SourceParserLink extends ParserLinkBase {
 
     @Override
     protected String getFilter() {
-        return SourceFilter.Name;
+        return SourceFilter.filterName;
     }
 
     @Override
