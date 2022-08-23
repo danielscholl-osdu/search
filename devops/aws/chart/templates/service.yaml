@@ -1,0 +1,4 @@
+{{- template "common.service" (list . "os-search.service") -}}
+{{- define "os-search.service" -}}
+## Define overrides for the service resource here
+{{- end -}}
