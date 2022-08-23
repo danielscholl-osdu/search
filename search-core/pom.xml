@@ -38,7 +38,7 @@
         <project.main.basedir>${project.basedir}</project.main.basedir>
         <nimbus-jose-jwt.version>9.1.2</nimbus-jose-jwt.version>
         <elasticsearch.version>7.8.1</elasticsearch.version>
-        <osdu.oscorecommon.version>0.15.0</osdu.oscorecommon.version>
+        <osdu.oscorecommon.version>0.15.2-SNAPSHOT</osdu.oscorecommon.version>
         <netty.version>4.1.70.Final</netty.version>
         <spring-security-web.version>5.4.9</spring-security-web.version>
         <spring-webmvc.version>5.3.22</spring-webmvc.version>
