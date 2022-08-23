@@ -77,7 +77,7 @@ public class OffsetValidatorTest {
         assertFalse(sut.isValid(queryRequest, constraintValidatorContext));
     }
 
-    @Test
+    @Test(expected = Test.None.class)
     public void test_constructor() {
         // for coverage purposes. Do nothing method!
         OffsetValidator offsetValidator = new OffsetValidator();

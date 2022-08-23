@@ -38,11 +38,11 @@ public class TypeFilter implements IFilter {
 
     final private Kinds kinds;
     final private Provider<ICrossTenantInfoService> tenantInfoServiceProvider;
-    public static final String Name = "type";
+    public static final String filterName = "type";
 
     @Override
     public String name(){
-        return Name;
+        return filterName;
     }
     @Override
     public String description(){
@@ -63,7 +63,7 @@ public class TypeFilter implements IFilter {
                         .filter(x -> x.startsWith(query.toLowerCase()))
                         .distinct()
                         .limit(limit)
-                        .collect(Collectors.toMap(e -> e, e -> Name)));
+                        .collect(Collectors.toMap(e -> e, e -> filterName)));
             }
         }
         return values;
