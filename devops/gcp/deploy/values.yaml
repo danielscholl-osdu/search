@@ -3,17 +3,17 @@
 # Declare variables to be passed into your templates.
 
 data:
-  requests_cpu: "0.1"
-  requests_memory: "448M"
-  limits_cpu: "1"
-  limits_memory: "1G"
+  requestsCpu: "0.1"
+  requestsMemory: "448M"
+  limitsCpu: "1"
+  limitsMemory: "1G"
   serviceAccountName: "search"
   imagePullPolicy: "IfNotPresent"
   image: ""
 
 conf:
   configmap: "search-config"
-  elastic_secret_name: "search-elastic-secret"
-  app_name: "search"
-  on_prem_enabled: false
+  elasticSecretName: "search-elastic-secret"
+  appName: "search"
+  onPremEnabled: false
   domain: ""
