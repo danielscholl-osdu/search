@@ -1,6 +1,6 @@
 apiVersion: v2
 name: "os-search"
-version: 0.1.0
+version:
 kubeVersion: "v1.21.x-x-x"
 description: Search Helm Chart for Kubernetes
 type: application
