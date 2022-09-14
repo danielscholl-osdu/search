@@ -382,6 +382,7 @@ The following software have components provided under the terms of this license:
 - resilience4j (from https://github.com/resilience4j/resilience4j, https://resilience4j.readme.io, ttps://resilience4j.readme.io)
 - rest (from https://github.com/elastic/elasticsearch)
 - rest-high-level (from https://github.com/elastic/elasticsearch)
+- spring-security-crypto (from http://spring.io/spring-security, https://spring.io/projects/spring-security, https://spring.io/spring-security)
 - spring-security-oauth2-client (from http://spring.io/spring-security, https://spring.io/projects/spring-security, https://spring.io/spring-security)
 - spring-security-oauth2-core (from http://spring.io/spring-security, https://spring.io/projects/spring-security, https://spring.io/spring-security)
 - spring-security-oauth2-jose (from http://spring.io/spring-security, https://spring.io/projects/spring-security, https://spring.io/spring-security)
@@ -805,6 +806,13 @@ The following software have components provided under the terms of this license:
 - null (from https://github.com/fge/jackson-coreutils)
 
 ========================================================================
+GPL-3.0-or-later
+========================================================================
+The following software have components provided under the terms of this license:
+
+- aopalliance-repackaged (from https://repo1.maven.org/maven2/org/glassfish/hk2/external/aopalliance-repackaged)
+
+========================================================================
 IPA
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -818,6 +826,7 @@ The following software have components provided under the terms of this license:
 
 - Java Native Access Platform (from https://github.com/java-native-access/jna)
 - Spring Security - Core (from http://spring.io/spring-security, https://repo1.maven.org/maven2/org/springframework/security/spring-security-core, https://spring.io/projects/spring-security, https://spring.io/spring-security)
+- spring-security-crypto (from http://spring.io/spring-security, https://spring.io/projects/spring-security, https://spring.io/spring-security)
 
 ========================================================================
 ImageMagick

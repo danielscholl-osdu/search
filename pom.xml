@@ -352,6 +352,22 @@
                 <artifactId>log4j-api</artifactId>
                 <version>${log4j-core.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-web</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-tomcat</artifactId>
+                    </exclusion>
+                </exclusions>
+                <version>2.6.6</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-core</artifactId>
+                <version>5.6.4</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
