@@ -2,23 +2,20 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    app: "{{ .Values.conf.app_name }}"
+    app: "{{ .Values.conf.appName }}"
   name: "{{ .Values.conf.configmap }}"
   namespace: "{{ .Release.Namespace }}"
 data:
-  LOG_LEVEL: "{{ .Values.data.log_level }}"
-  REDIS_GROUP_HOST: "{{ .Values.data.redis_group_host }}"
-  REDIS_SEARCH_HOST: "{{ .Values.data.redis_search_host }}"
-  REDIS_SEARCH_PORT:  "{{ .Values.data.redis_search_port }}"
-  ENTITLEMENTS_HOST: "{{ .Values.data.entitlements_host }}"
-  SECURITY_HTTPS_CERTIFICATE_TRUST: "{{ .Values.data.security_https_certificate_trust }}"
-  PARTITION_HOST: "{{ .Values.data.partition_host }}"
-  POLICY_HOST: "{{ .Values.data.policy_host }}"
-  POLICY_ID: "{{ .Values.data.policy_id }}"
-  INDEXER_BASE_HOST: "{{ .Values.data.indexer_base_host }}"
-  {{- if .Values.conf.on_prem_enabled }}
-  SPRING_PROFILES_ACTIVE: "anthos"
-  {{- else }}
-  SPRING_PROFILES_ACTIVE: "gcp"
+  SPRING_PROFILES_ACTIVE: "{{ .Values.data.springProfilesActive }}"
+  LOG_LEVEL: "{{ .Values.data.logLevel }}"
+  REDIS_GROUP_HOST: "{{ .Values.data.redisGroupHost }}"
+  REDIS_SEARCH_HOST: "{{ .Values.data.redisSearchHost }}"
+  ENTITLEMENTS_HOST: "{{ .Values.data.entitlementsHost }}"
+  SECURITY_HTTPS_CERTIFICATE_TRUST: "{{ .Values.data.securityHttpsCertificateTrust }}"
+  PARTITION_HOST: "{{ .Values.data.partitionHost }}"
+  POLICY_HOST: "{{ .Values.data.policyHost }}"
+  POLICY_ID: "{{ .Values.data.policyId }}"
+  INDEXER_BASE_HOST: "{{ .Values.data.indexerHost }}"
+  {{- if not .Values.conf.onPremEnabled }}
   GOOGLE_AUDIENCES: "{{ .Values.data.googleAudiences }}"
   {{- end }}

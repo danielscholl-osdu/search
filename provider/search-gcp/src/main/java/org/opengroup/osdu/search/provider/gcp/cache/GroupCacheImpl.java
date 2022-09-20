@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 public class GroupCacheImpl extends RedisCache<String, Groups> {
 
   public GroupCacheImpl(SearchConfigurationProperties properties) {
-    super(properties.getRedisGroupHost(), properties.getRedisGroupPort(), 30, String.class,
+    super(properties.getRedisGroupHost(), properties.getRedisGroupPort(), 60, String.class,
         Groups.class);
   }
 }
