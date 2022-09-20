@@ -50,9 +50,11 @@ environmentVariables:
   - name: PARTITION_BASE_URL
     value: "http://os-partition:8080"                    
   - name: POLICY_BASE_URL
-    value: "http://os-policy:8080"
+    value: "http://os-policy:80"
   - name: POLICY_SERVICE_ENABLED
     value: "true"
+  - name: POLICY_ID
+    value: "osdu.instance.search"
   - name: ELASTIC_DISABLE_CERTIFICATE_TRUST
     value: "true"
   - name: PARAMETER_MOUNT_PATH
@@ -77,7 +79,7 @@ autoscaling:
   ServiceRequestDurationAverage: 500
 
 # Security Config
-serviceAccountRole: arn:aws:iam::{{ .Values.global.accountID }}:role/{{ .Values.global.resourcePrefix }}-{{ include "common.name" . }}
+serviceAccountRole: arn:aws:iam::{{ .Values.global.accountID }}:role/osdu-{{ .Values.global.resourcePrefix }}-{{ .Values.global.region }}-{{ include "common.name" . }}
 cors:
   maxAge: "60m"
   allowCredentials: true
