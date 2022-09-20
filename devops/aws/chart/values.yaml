@@ -50,7 +50,7 @@ environmentVariables:
   - name: PARTITION_BASE_URL
     value: "http://os-partition:8080"                    
   - name: POLICY_BASE_URL
-    value: "http://os-policy:80"
+    value: "http://os-policy:8080"
   - name: POLICY_SERVICE_ENABLED
     value: "true"
   - name: POLICY_ID
