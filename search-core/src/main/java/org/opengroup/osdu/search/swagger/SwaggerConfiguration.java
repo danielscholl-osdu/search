@@ -24,9 +24,9 @@ public class SwaggerConfiguration {
         return new OpenAPI()
                 .servers(Collections.singletonList(server))
                 .info(new Info()
-                        .description("Indexer service that provides a set of APIs " +
-                                "to index storage records against Elasticsearch")
-                        .title("Indexer Service")
+                        .description("Search service that provides a set of APIs " +
+                                "to search records against Elasticsearch")
+                        .title("Search Service")
                         .version("1.0"))
                 .components(new Components()
                         .addSecuritySchemes("Authorization",
