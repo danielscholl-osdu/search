@@ -5,7 +5,7 @@
 data:
   # common
   springProfilesActive: "gcp"
-  logLevel: "INFO"
+  logLevel: "ERROR"
   redisGroupHost: "redis-group-master"
   redisSearchHost: "redis-search-master"
   entitlementsHost: "http://entitlements"
