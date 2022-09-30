@@ -53,6 +53,9 @@
         <azure.appservice.subscription />
         <spring-webmvc.version>5.3.22</spring-webmvc.version>
         <jackson.version>2.13.2</jackson.version>
+        <azure-core.version>1.31.0</azure-core.version>
+        <azure-security-keyvault-keys.version>4.4.6</azure-security-keyvault-keys.version>
+        <azure-security-keyvault-secrets.version>4.4.6</azure-security-keyvault-secrets.version>
     </properties>
 
     <dependencyManagement>
@@ -129,6 +132,20 @@
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>core-lib-azure</artifactId>
             <version>${osdu.corelibazure.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>azure-security-keyvault-keys</artifactId>
+                    <groupId>com.azure</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>azure-security-keyvault-secrets</artifactId>
+                    <groupId>com.azure</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>azure-core</artifactId>
+                    <groupId>com.azure</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.projectreactor.netty</groupId>
@@ -250,6 +267,21 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-core</artifactId>
+            <version>${azure-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-security-keyvault-keys</artifactId>
+            <version>${azure-security-keyvault-keys.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-security-keyvault-secrets</artifactId>
+            <version>${azure-security-keyvault-secrets.version}</version>
         </dependency>
     </dependencies>
 
