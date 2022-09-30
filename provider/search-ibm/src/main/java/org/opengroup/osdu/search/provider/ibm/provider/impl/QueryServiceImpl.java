@@ -26,7 +26,6 @@ import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.IAggregationParserUtil;
-import org.opengroup.osdu.search.util.QueryResponseUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.AccessDeniedException;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
@@ -45,8 +44,6 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     @Inject
     private SearchConfigurationProperties configurationProperties;
     @Inject
-    private QueryResponseUtil queryResponseUtil;
-    @Inject
 	private TenantInfo tenant;
     @Inject
     private IAggregationParserUtil aggregationParserUtil;
@@ -59,7 +56,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
 		} catch (Exception e) {
 			throw new AccessDeniedException("Unauthorized");
 		}
-        
+
         try (RestHighLevelClient client = this.elasticClientHandler.createRestClient()) {
             QueryResponse queryResponse = this.executeQuery(searchRequest, client);
             return queryResponse;
@@ -75,7 +72,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
         if (results != null) {
             queryResponse.setAggregations(aggregations);
-            queryResponse.setResults(queryResponseUtil.getQueryResponseResults(results));
+            queryResponse.setResults(results);
         }
         return queryResponse;
     }

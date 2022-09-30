@@ -33,6 +33,7 @@ import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.WrapperQueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -56,7 +57,6 @@ import org.opengroup.osdu.core.common.model.search.QueryUtils;
 import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
-import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
 import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
@@ -96,8 +96,6 @@ abstract class QueryBase {
     private IFieldMappingTypeService fieldMappingTypeService;
     @Autowired(required = false)
     private IPolicyService iPolicyService;
-    @Inject
-    private PartitionPolicyStatusService statusService;
     @Autowired
     private IQueryParserUtil queryParserUtil;
     @Autowired
@@ -167,8 +165,10 @@ abstract class QueryBase {
             queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(spatialQueryBuilder) : boolQuery().must(spatialQueryBuilder);
         }
 
-        if (this.iPolicyService != null && this.statusService.policyEnabled(this.dpsHeaders.getPartitionId())) {
-            return queryBuilder;
+        if (this.iPolicyService != null) {
+            String compiledESPolicy = this.iPolicyService.getCompiledPolicy(providerHeaderService);
+            WrapperQueryBuilder wrapperQueryBuilder = new WrapperQueryBuilder(compiledESPolicy);
+            return queryBuilder != null ? boolQuery().must(queryBuilder).must(wrapperQueryBuilder) : boolQuery().must(wrapperQueryBuilder);
         } else {
             return getQueryBuilderWithAuthorization(queryBuilder, asOwner);
         }
