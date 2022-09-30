@@ -1,8 +1,5 @@
 package org.opengroup.osdu.search.service.policy.service;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,24 +8,20 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.opengroup.osdu.core.common.model.entitlements.Groups;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.model.indexer.OperationType;
-import org.opengroup.osdu.core.common.model.policy.BatchPolicyResponse;
-import org.opengroup.osdu.core.common.model.policy.BatchResult;
-import org.opengroup.osdu.core.common.model.policy.PolicyRequest;
-import org.opengroup.osdu.core.common.model.storage.Record;
-import org.opengroup.osdu.core.common.model.storage.RecordMetadata;
 import org.opengroup.osdu.core.common.policy.IPolicyFactory;
 import org.opengroup.osdu.core.common.policy.IPolicyProvider;
 import org.opengroup.osdu.core.common.policy.PolicyException;
 import org.opengroup.osdu.search.policy.di.PolicyServiceConfiguration;
-import org.opengroup.osdu.search.policy.model.SearchPolicy;
 import org.opengroup.osdu.search.policy.service.PolicyServiceImpl;
+import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IEntitlementsExtensionService;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 
@@ -39,10 +32,10 @@ public class PolicyServiceImplTest {
     private DpsHeaders headers;
 
     @Mock
-    private IPolicyFactory policyFactory;
+    private IProviderHeaderService providerHeaderService;
 
     @Mock
-    private IEntitlementsExtensionService entitlementsService;
+    private IPolicyFactory policyFactory;
 
     @Mock
     private PolicyServiceConfiguration policyServiceConfiguration;
@@ -54,52 +47,41 @@ public class PolicyServiceImplTest {
     private PolicyServiceImpl sut;
 
     @Test
-    public void evaluateBatchPolicyTest() throws PolicyException {
-        PolicyRequest policyRequest = new PolicyRequest();
-        BatchPolicyResponse batchPolicyResponse = new BatchPolicyResponse();
-        policyRequest.setPolicyId("search");
-        policyRequest.setInput(setPolicyInput());
+    public void getCompiledPolicyTest() throws PolicyException {
+        List<String> groups = new ArrayList<>(Arrays.asList("AAA", "BBB"));
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("groups", groups);
+        Map<String, Object> input = new HashMap<>();
+        input.put("groups", groups);
+        input.put("operation", "view");
+        ArrayList<String> unknownsList = new ArrayList<>();
+        unknownsList.add("input.record");
+        String PolicyServiceResponse = "{\n" +
+                "        \"query\": {\n" +
+                "            \"bool\": {\n" +
+                "                \"should\": [\n" +
+                "                    {\"bool\": {\"filter\": [{\"terms\": {\"acl.owners\": [\"AAA\", \"BBB\"]}}]}},\n" +
+                "                    {\"bool\": {\"filter\": [{\"terms\": {\"acl.viewers\": [\"AAA\", \"BBB\"]}}]}}\n" +
+                "                ]\n" +
+                "            }\n" +
+                "        }\n" +
+                "    }";
+        Map<String, String> dpsHeaders = new HashMap<>();
+        dpsHeaders.put("groups", "AAA,BBB");
+        Mockito.when(headers.getHeaders()).thenReturn(dpsHeaders);
+        Mockito.when(headers.getPartitionId()).thenReturn("dpi");
+        Mockito.when(providerHeaderService.getDataGroupsHeader())
+                .thenReturn("groups");
         Mockito.when(policyFactory.create(any())).thenReturn(serviceClient);
-        Mockito.when(serviceClient.evaluateBatchPolicy(policyRequest)).thenReturn(batchPolicyResponse);
-        Assert.assertNotNull(sut.evaluateBatchPolicy(policyRequest));
-    }
 
-    @Test
-    public void evaluateSearchDataAuthorizationPolicyTest() throws PolicyException{
-        List<RecordMetadata> recordMetadataList = new ArrayList<>();
-        RecordMetadata recordMetadata = new RecordMetadata();
-        recordMetadata.setId("id:123");
-        recordMetadata.setKind("kind:123");
-        recordMetadata.setModifyUser("user123");
-        recordMetadataList.add(recordMetadata);
-        Mockito.when(policyFactory.create(any())).thenReturn(serviceClient);
-        BatchPolicyResponse batchPolicyResponse = new BatchPolicyResponse();
-        BatchResult batchResult = new BatchResult();
-        List<String> allowedRecords = new ArrayList<>();
-        allowedRecords.add("id:123");
-        batchResult.setAllowed_records(allowedRecords);
-        batchPolicyResponse.setResult(batchResult);
-        Mockito.when(serviceClient.evaluateBatchPolicy(any())).thenReturn(batchPolicyResponse);
-        Groups groups = new Groups();
-        Mockito.when(entitlementsService.getGroups(any())).thenReturn(groups);
-        Mockito.when(policyServiceConfiguration.getId()).thenReturn("search");
-        List<String> result = sut.evaluateSearchDataAuthorizationPolicy(recordMetadataList, OperationType.view);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals("id:123", result.get(0));
-    }
+        String searchPolicyId = "osdu.instance.search";
+        Mockito.when(policyServiceConfiguration.getId()).thenReturn(searchPolicyId);
+        Mockito.when(serviceClient.getCompiledPolicy("data.osdu.instance.search.allow == true", unknownsList, input)).thenReturn(PolicyServiceResponse);
+        Assert.assertNotNull(sut.getCompiledPolicy(providerHeaderService));
 
-    private JsonObject setPolicyInput() {
-        SearchPolicy searchPolicy = new SearchPolicy();
-        List<String> groups = new ArrayList<>();
-        groups.add("group1@abc");
-        searchPolicy.setGroups(groups);
-        searchPolicy.setOperation(OperationType.view);
-        List<Record> records = new ArrayList<>();
-        Record record = new Record();
-        record.setId("id:123");
-        record.setKind("kind:123");
-        records.add(record);
-        searchPolicy.setRecords(records);
-        return new JsonParser().parse(new Gson().toJson(searchPolicy)).getAsJsonObject();
+        searchPolicyId = "osdu.partition[\"%s\"].search";
+        Mockito.when(policyServiceConfiguration.getId()).thenReturn(searchPolicyId);
+        Mockito.when(serviceClient.getCompiledPolicy("data.osdu.partition[\"dpi\"].search.allow == true", unknownsList, input)).thenReturn(PolicyServiceResponse);
+        Assert.assertNotNull(sut.getCompiledPolicy(providerHeaderService));
     }
 }

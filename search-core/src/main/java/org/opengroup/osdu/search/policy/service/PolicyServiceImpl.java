@@ -15,33 +15,27 @@
 
 package org.opengroup.osdu.search.policy.service;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonParser;
 import org.apache.http.HttpStatus;
-import org.opengroup.osdu.core.common.model.entitlements.GroupInfo;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.model.indexer.OperationType;
-import org.opengroup.osdu.core.common.model.policy.BatchPolicyResponse;
-import org.opengroup.osdu.core.common.model.policy.PolicyRequest;
-import org.opengroup.osdu.core.common.model.storage.Record;
-import org.opengroup.osdu.core.common.model.storage.RecordMetadata;
 import org.opengroup.osdu.core.common.policy.IPolicyFactory;
 import org.opengroup.osdu.core.common.policy.IPolicyProvider;
 import org.opengroup.osdu.search.policy.di.PolicyServiceConfiguration;
-import org.opengroup.osdu.search.policy.model.SearchPolicy;
-import org.opengroup.osdu.search.service.IEntitlementsExtensionService;
+import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @Service
 @ConditionalOnProperty(value = "service.policy.enabled", havingValue = "true", matchIfMissing = false)
-public class PolicyServiceImpl implements IPolicyService{
+public class PolicyServiceImpl implements IPolicyService {
 
     @Autowired
     private PolicyServiceConfiguration policyServiceConfiguration;
@@ -52,50 +46,25 @@ public class PolicyServiceImpl implements IPolicyService{
     @Autowired
     private DpsHeaders headers;
 
-    @Autowired
-    private IEntitlementsExtensionService entitlementsService;
-
     @Override
-    public BatchPolicyResponse evaluateBatchPolicy(PolicyRequest policy) {
-
+    public String getCompiledPolicy(IProviderHeaderService providerHeaderService) {
         try {
+            String groups = this.headers.getHeaders().get(providerHeaderService.getDataGroupsHeader());
+            List<String> groupsList = groups != null ? new ArrayList<>(Arrays.asList(groups.trim().split("\\s*,\\s*"))) : new ArrayList<>();
+            Map<String, Object> input = new HashMap<>();
+            input.put("groups", groupsList);
+            input.put("operation", "view");
+            ArrayList<String> unknownsList = new ArrayList<>(Collections.singletonList("input.record"));
+
+            // Handle instance/partition policy
+            String searchPolicyId = String.format(this.policyServiceConfiguration.getId(), this.headers.getPartitionId());
+            String searchPolicyRule = "data." + searchPolicyId + ".allow == true";
+
             IPolicyProvider serviceClient = this.policyFactory.create(this.headers);
-            return serviceClient.evaluateBatchPolicy(policy);
+            String esQuery = serviceClient.getCompiledPolicy(searchPolicyRule, unknownsList, input);
+            return esQuery.substring(9, esQuery.length() - 1);
         } catch (Exception e) {
-            throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Policy service unavailable", "Error making request to Policy service", e);
+            throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Policy service unavailable", "Error making request to Policy service", "Error calling translate endpoint", e);
         }
-    }
-
-    public List<String> evaluateSearchDataAuthorizationPolicy(List<RecordMetadata> recordMetadataList, OperationType operationType) {
-        BatchPolicyResponse batchPolicyResponse = this.evaluateBatchPolicy(this.getSearchPolicy(recordMetadataList, operationType));
-        return batchPolicyResponse.getResult().getAllowed_records();
-    }
-
-    private PolicyRequest getSearchPolicy(List<RecordMetadata> recordMetadataList, OperationType operation) {
-        List<Record> records = new ArrayList<>();
-        for(RecordMetadata recordMetadata : recordMetadataList) {
-            Record record = new Record();
-            record.setId(recordMetadata.getId());
-            record.setKind(recordMetadata.getKind());
-            record.setAcl(recordMetadata.getAcl());
-            record.setLegal(recordMetadata.getLegal());
-            record.setTags(recordMetadata.getTags());
-            records.add(record);
-        }
-
-        SearchPolicy searchPolicy = new SearchPolicy();
-        searchPolicy.setGroups(this.getGroups());
-        searchPolicy.setOperation(operation);
-        searchPolicy.setRecords(records);
-
-        PolicyRequest policy = new PolicyRequest();
-        policy.setPolicyId(this.policyServiceConfiguration.getId());
-        policy.setInput(new JsonParser().parse(new Gson().toJson(searchPolicy)).getAsJsonObject());
-        return policy;
-    }
-
-    private List<String> getGroups() {
-        return this.entitlementsService.getGroups(this.headers)
-                .getGroups().stream().map(GroupInfo::getEmail).distinct().collect(Collectors.toList());
     }
 }

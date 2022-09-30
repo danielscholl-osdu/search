@@ -14,16 +14,9 @@
 
 package org.opengroup.osdu.search.policy.service;
 
-import org.opengroup.osdu.core.common.model.indexer.OperationType;
-import org.opengroup.osdu.core.common.model.policy.BatchPolicyResponse;
-import org.opengroup.osdu.core.common.model.policy.PolicyRequest;
-import org.opengroup.osdu.core.common.model.storage.RecordMetadata;
-
-import java.util.List;
+import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 
 public interface IPolicyService {
 
-    BatchPolicyResponse evaluateBatchPolicy(PolicyRequest policy);
-
-    List<String> evaluateSearchDataAuthorizationPolicy(List<RecordMetadata> recordMetadata, OperationType operationType);
+    String getCompiledPolicy(IProviderHeaderService providerHeaderService);
 }

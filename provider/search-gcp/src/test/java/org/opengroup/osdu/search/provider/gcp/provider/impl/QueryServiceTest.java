@@ -102,7 +102,6 @@ import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.QueryParserUtil;
-import org.opengroup.osdu.search.util.QueryResponseUtil;
 import org.opengroup.osdu.search.util.SortParserUtil;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -137,8 +136,6 @@ public class QueryServiceTest {
   private JaxRsDpsLog log;
   @Mock
   private IProviderHeaderService providerHeaderService;
-  @Mock
-  private QueryResponseUtil queryResponseUtil;
   @Spy
   private SearchConfigurationProperties properties = new SearchConfigurationProperties();
   @Spy
@@ -206,7 +203,6 @@ public class QueryServiceTest {
         SearchResponse.Clusters.EMPTY);
 
     doReturn(mockSearchResponse).when(this.sut).makeSearchRequest(any(), any());
-    when(queryResponseUtil.getQueryResponseResults(any())).thenReturn(results);
     doReturn(results).when(this.sut).getHitsFromSearchResponse(any());
 
     QueryResponse queryResponse = this.sut.queryIndex(searchRequest);

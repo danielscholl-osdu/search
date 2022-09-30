@@ -1,35 +1,17 @@
-Search service now supports data authorization checks via Policy service. Policy service allows dynamic policy evaluation on user requests and can
-be configured per partition. 
+Search service now supports data authorization checks via Policy service. Policy service allows dynamic policy evaluation on user requests and can be configured per partition.
 
-By default, Search service utilizes Elastic's authorization query filter for data authorization checks. CSP must opt-in to delegate data access to Policy Service.      
+Search service combines the user query with the Elasticsearch Query DSL translated from the evaluation policy in Policy service to do search in one operation against Elasticsearch index. CSP must opt-in to delegate data access to Policy Service.      
 
 Here are steps to enable Policy service for a provider:
 
-- Enable policy configuration for desired partition:
-  ```
-  PATCH /api/partition/v1/partitions/{partitionId}
-  {
-    "properties": {
-        "policy-service-enabled": {
-            "sensitive": false,
-            "value": "true"
-        }
-    }
-  }
-  ```
-
-- Register policy for Search service, please look at policy service [documentation](https://community.opengroup.org/osdu/platform/security-and-compliance/policy#add-policy) for more details.  
+- Register policy for Search service, please look at policy service [documentation](https://community.opengroup.org/osdu/platform/security-and-compliance/policy#add-policy) for more details. The default evaluation policy("osdu.instance.search") in Policy service is based on the current data ACLs and the user groups.
 
 - Add and provide values for following runtime configuration in `application.properties`
   ```
   service.policy.enabled=true
-  service.policy.id=search //policy_id from ${policy_service_endpoint}/api/policy/v1/policies.
+  service.policy.id=${policy_id}
   service.policy.endpoint=${policy_service_endpoint}
   policy.cache.timeout=<timeout_in_minutes>
   PARTITION_API=${partition_service_endpoint}
   ```
-  
-- This is an experimental feature and at this moment has following limitations
-    1. If the query has `returnedFields` set, it must contain all `acl, kind, legal` and `id`
-    2. In the current implementation, totalCount represents the number of records matching user query before the search policy is applied
-    3. Because the policy auth filter is applied outside of query handles, cursor may not point to the accurate data entry when using `query_with_cursor`
+The policy id can be an instance based id (ie, osdu.instance.search) or partition based id (ie, osdu.partiton["%s"].search).
