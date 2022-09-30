@@ -71,7 +71,6 @@ import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.opengroup.osdu.search.util.QueryResponseUtil;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -100,8 +99,6 @@ public class ScrollQueryServiceTest {
   private IProviderHeaderService providerHeaderService;
   @Mock
   private SearchConfigurationProperties searchConfig;
-  @Mock
-  private QueryResponseUtil queryResponseUtil;
 
   private RestHighLevelClient restHighLevelClient;
 
@@ -154,7 +151,6 @@ public class ScrollQueryServiceTest {
     elasticSearchResponse = createSearchResponse(1, null);
     doReturn(elasticSearchResponse).when(this.sut).makeSearchRequest(any(), any());
     doReturn(hits).when(this.sut).getHitsFromSearchResponse(any());
-    doReturn(hits).when(queryResponseUtil).getQueryResponseResults(any());
     doReturn(null).when(this.sut).refreshCursorCache(any(), any());
 
     CursorQueryResponse queryResponse = this.sut.queryIndex(cursorQueryRequest);

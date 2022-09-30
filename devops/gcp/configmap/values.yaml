@@ -12,7 +12,7 @@ data:
   partitionHost: "http://partition"
   policyHost: "http://policy"
   indexerHost: "http://indexer"
-  policyId: "search"
+  policyId: "osdu.instance.search"
   securityHttpsCertificateTrust: "true"
   # gcp
   googleAudiences: ""
