@@ -27,7 +27,6 @@ Defined in default application property file but possible to override:
 | `PARTITION_API` | ex `http://localhost:8080/api/partition/v1` | Partition service endpoint | no | output of infrastructure deployment |
 | `POLICY_API` | ex `http://localhost:8080/api/policy/v1/` | Police service endpoint | no | output of infrastructure deployment |
 | `POLICY_ID` | ex `search` | policeId from ex `http://localhost:8080/api/policy/v1/policies`. Look at `POLICY_API` | no | - |
-| `SERVICE_POLICY_ENABLED` | ex `false` | Enable or Disable an integration with Police Service | no | output of infrastructure deployment |
 | `INDEXER_HOST` | ex `https://os-indexer-dot-opendes.appspot.com/api/indexer/v2/` | Indexer API endpoint | no | output of infrastructure deployment |
 
 These variables define service behavior, and are used to switch between `anthos` or `gcp` environments, their overriding and usage in mixed mode was not tested.
