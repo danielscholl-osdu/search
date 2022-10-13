@@ -53,8 +53,8 @@ environmentVariables:
     value: "http://os-policy:8080"
   - name: POLICY_SERVICE_ENABLED
     value: "true"
-  - name: POLICY_ID
-    value: "osdu.instance.search"
+  - name: POLICY_CACHE_TIMEOUT
+    value: "2"
   - name: ELASTIC_DISABLE_CERTIFICATE_TRUST
     value: "true"
   - name: PARAMETER_MOUNT_PATH
