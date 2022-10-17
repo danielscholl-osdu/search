@@ -45,6 +45,7 @@ First you need to set variables in **values.yaml** file using any code editor. S
 **redisSearchHost** | redis search host address | string | `redis-search-master` | yes
 **policyId** | policeId from ex `${POLICY_HOST}/api/policy/v1/policies` | string | `search` | yes
 **securityHttpsCertificateTrust** | Elastic client connection uses TrustSelfSignedStrategy(), if it is `true` | bool | `true` | yes
+**servicePolicyEnabled** | Enables search service integration with policy service | bool | `false` | yes
 **googleAudiences** | your GCP client ID | string | - | yes
 
 > googleAudiences: If you are connected to GCP console with `gcloud auth application-default login --no-browser` from your terminal, you can get your client_id using the command:
