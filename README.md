@@ -17,9 +17,9 @@ limitations under the License.
 
 All documentation for the Azure implementation of `os-search` lives [here](./provider/search-azure/README.md)
 
-## GCP Implementation
+## Google Cloud Implementation
 
-All documentation for the GCP implementation of `os-search` lives [here](./provider/search-gcp/README.md)
+All documentation for the GC implementation of `os-search` lives [here](./provider/search-gcp/README.md)
 
 ## AWS Implementation
 
