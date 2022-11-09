@@ -41,7 +41,7 @@
         <spatial4j.version>0.7</spatial4j.version>
         <jts-io-common.version>1.15.0</jts-io-common.version>
         <reactor-netty.version>1.0.7</reactor-netty.version>
-        <reactor-core.version>3.4.6</reactor-core.version>
+        <reactor-core.version>3.4.21</reactor-core.version>
         <jackson-dataformat-xml.version>2.11.4</jackson-dataformat-xml.version>
         <jackson-databind.version>2.13.2.2</jackson-databind.version>
         <jackson.version>2.13.2</jackson.version>

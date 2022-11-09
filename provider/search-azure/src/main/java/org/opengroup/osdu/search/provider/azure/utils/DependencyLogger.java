@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
-@Component
+@Component("azureUtilsDependencyLogger")
 public class DependencyLogger {
 
     private static final String ECK_DEPENDENCY_TYPE = "Elasticsearch";

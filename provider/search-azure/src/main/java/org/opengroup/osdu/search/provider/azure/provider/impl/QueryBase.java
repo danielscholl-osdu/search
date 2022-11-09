@@ -67,6 +67,7 @@ import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
@@ -107,6 +108,7 @@ abstract class QueryBase {
     private ElasticLoggingConfig elasticLoggingConfig;
 
     @Autowired
+    @Qualifier("azureUtilsDependencyLogger")
     private DependencyLogger dependencyLogger;
 
     static final String AGGREGATION_NAME = "agg";

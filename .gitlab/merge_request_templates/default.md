@@ -10,7 +10,7 @@
 ## Does this introduce a change in the cloud provider implementation, if so which cloud?
 - [ ] AWS 
 - [ ] Azure
-- [ ] GCP
+- [ ] Google Cloud
 - [ ] IBM
 
 ## Does this introduce a breaking change?
