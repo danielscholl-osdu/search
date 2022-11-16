@@ -28,7 +28,7 @@
                                             }
                                         },
                                         "path": "data.ParentNested.FirstInnerNested",
-                                        "ignore_unmapped": false,
+                                        "ignore_unmapped": true,
                                         "score_mode": "avg",
                                         "boost": 1.0
                                     }
@@ -55,7 +55,7 @@
                                             }
                                         },
                                         "path": "data.ParentNested.SecondInnerNested",
-                                        "ignore_unmapped": false,
+                                        "ignore_unmapped": true,
                                         "score_mode": "avg",
                                         "boost": 1.0
                                     }
@@ -66,7 +66,7 @@
                         }
                     },
                     "path": "data.ParentNested",
-                    "ignore_unmapped": false,
+                    "ignore_unmapped": true,
                     "score_mode": "avg",
                     "boost": 1.0
                 }

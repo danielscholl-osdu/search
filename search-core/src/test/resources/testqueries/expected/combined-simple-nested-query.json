@@ -63,7 +63,7 @@
                         }
                     },
                     "path": "data.NestedTest",
-                    "ignore_unmapped": false,
+                    "ignore_unmapped": true,
                     "score_mode": "avg",
                     "boost": 1.0
                 }

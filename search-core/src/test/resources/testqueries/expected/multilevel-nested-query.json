@@ -33,7 +33,7 @@
                                                                 }
                                                             },
                                                             "path": "data.FirstLevel.SecondLevel.ThirdLevel",
-                                                            "ignore_unmapped": false,
+                                                            "ignore_unmapped": true,
                                                             "score_mode": "avg",
                                                             "boost": 1.0
                                                         }
@@ -44,7 +44,7 @@
                                             }
                                         },
                                         "path": "data.FirstLevel.SecondLevel",
-                                        "ignore_unmapped": false,
+                                        "ignore_unmapped": true,
                                         "score_mode": "avg",
                                         "boost": 1.0
                                     }
@@ -55,7 +55,7 @@
                         }
                     },
                     "path": "data.FirstLevel",
-                    "ignore_unmapped": false,
+                    "ignore_unmapped": true,
                     "score_mode": "avg",
                     "boost": 1.0
                 }
