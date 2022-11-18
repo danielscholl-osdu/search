@@ -148,7 +148,7 @@ public class QueryParserUtil implements IQueryParserUtil {
                 if (height < 0) {
                     throw new AppException(HttpStatus.SC_BAD_REQUEST, "Malformed query",
                         String.format("Malformed closing parentheses in query part: \"%s\", at position: %d", queryString, position));
-                }                                            //data.Code.keyword:\"GOR\" OR (nested(data.NameAlias, (AliasName.keyword:(\"FOO\"))))
+                }
             } else if (height == 0 && token.length() > 0 && (andPositions.contains(position + 1) || orPositions.contains(position + 1))) {
                 tokens.add(token.toString());
                 token = new StringBuilder();
