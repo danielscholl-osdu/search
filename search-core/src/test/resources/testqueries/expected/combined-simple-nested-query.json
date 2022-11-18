@@ -24,7 +24,7 @@
         "should": [
             {
                 "query_string": {
-                    "query": "data.First:\"Example*\"",
+                    "query": "data.First:\"Example*\" ",
                     "fields": [],
                     "type": "best_fields",
                     "default_operator": "or",
