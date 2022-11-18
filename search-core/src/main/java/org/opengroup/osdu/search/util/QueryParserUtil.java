@@ -123,13 +123,13 @@ public class QueryParserUtil implements IQueryParserUtil {
         Pattern p = Pattern.compile("[\\s)]AND[\\s(]");
         Matcher m = p.matcher(queryString);
         while (m.find()) {
-            andPositions.add(m.start());
+            andPositions.add(m.start()+1);
         }
         List<Integer> orPositions = new ArrayList();
         p = Pattern.compile("[\\s)]OR[\\s(]");
         m = p.matcher(queryString);
         while (m.find()) {
-            orPositions.add(m.start());
+            orPositions.add(m.start()+1);
         }
         StringBuilder token = new StringBuilder();
         List<String> tokens = new ArrayList<>();
@@ -148,7 +148,7 @@ public class QueryParserUtil implements IQueryParserUtil {
                 if (height < 0) {
                     throw new AppException(HttpStatus.SC_BAD_REQUEST, "Malformed query",
                         String.format("Malformed closing parentheses in query part: \"%s\", at position: %d", queryString, position));
-                }
+                }                                            //data.Code.keyword:\"GOR\" OR (nested(data.NameAlias, (AliasName.keyword:(\"FOO\"))))
             } else if (height == 0 && token.length() > 0 && (andPositions.contains(position + 1) || orPositions.contains(position + 1))) {
                 tokens.add(token.toString());
                 token = new StringBuilder();
