@@ -660,6 +660,13 @@ The following software have components provided under the terms of this license:
 - System Rules (from http://stefanbirkner.github.com/system-rules/, http://stefanbirkner.github.io/system-rules/)
 
 ========================================================================
+EDL-1.0
+========================================================================
+The following software have components provided under the terms of this license:
+
+- jts-core (from https://repo1.maven.org/maven2/org/locationtech/jts/jts-core)
+
+========================================================================
 EPL-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
