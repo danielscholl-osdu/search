@@ -57,7 +57,6 @@ Feature: Search with different queries
       | "tenant1" | []                                              | None                                                              | 1     | None   | 400           | "Bad Request"   | "Invalid parameters were given on search request"                                                | "Record kind can't be null or empty. Found: []"  |
       | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None  | 1     | -1     | 400           | "Bad Request"   | "Invalid parameters were given on search request"   | "'offset' must be equal or greater than 0" |
       | "tenant2" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None  | None  | None   | 401           | "Access denied" | "The user is not authorized to perform this action" | ""                                         |
-      | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | "nested(data.FacilityEvents, (EffectiveDateTime:[2019 TO 2026]))" | None  | None   | 400           | "Bad Request"   | "failed to create query: [nested] failed to find nested object under path [data.FacilityEvents]" | ""                                               |
 
   Scenario Outline: Search data across the kinds with bounding box inputs
     When I send <query> with <kind>
