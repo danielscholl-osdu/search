@@ -1,8 +1,18 @@
-# Default values for search-deploy.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
 data:
+  # Configmaps
+  springProfilesActive: "gcp"
+  logLevel: "ERROR"
+  redisGroupHost: "redis-group-master"
+  redisSearchHost: "redis-search-master"
+  entitlementsHost: "http://entitlements"
+  partitionHost: "http://partition"
+  policyHost: "http://policy"
+  indexerHost: "http://indexer"
+  policyId: "osdu.instance.search"
+  securityHttpsCertificateTrust: "true"
+  servicePolicyEnabled: false
+  googleAudiences: ""
+  # Deployments
   requestsCpu: "0.1"
   requestsMemory: "448M"
   limitsCpu: "1"
@@ -10,10 +20,9 @@ data:
   serviceAccountName: "search"
   imagePullPolicy: "IfNotPresent"
   image: ""
-
 conf:
+  appName: "search"
   configmap: "search-config"
   elasticSecretName: "search-elastic-secret"
-  appName: "search"
   onPremEnabled: false
   domain: ""

@@ -56,10 +56,10 @@ include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/osdu-gcp-global.yml"
 
+  - local: "devops/gcp/pipeline/override-stages.yml"
+
   - project: "osdu/platform/ci-cd-pipelines"
     file: "publishing/pages.yml"
-
-  - local: "devops/gcp/pipeline/override-stages.yml"
 
 aws-test-java:
   tags: ["aws-internal-test"]
