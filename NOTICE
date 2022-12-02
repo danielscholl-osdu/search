@@ -99,6 +99,7 @@ The following software have components provided under the terms of this license:
 - Cloud Key Management Service (KMS) API v1-rev20220407-1.32.1 (from https://repo1.maven.org/maven2/com/google/apis/google-api-services-cloudkms)
 - Cloud Key Management Service (KMS) API v1-rev20220617-1.32.1 (from https://repo1.maven.org/maven2/com/google/apis/google-api-services-cloudkms)
 - Cloud Key Management Service (KMS) API v1-rev20220701-1.32.1 (from https://repo1.maven.org/maven2/com/google/apis/google-api-services-cloudkms)
+- Cloud Key Management Service (KMS) API v1-rev20221107-2.0.0 (from https://repo1.maven.org/maven2/com/google/apis/google-api-services-cloudkms)
 - Cloud Storage JSON API v1-rev20220604-1.32.1 (from https://repo1.maven.org/maven2/com/google/apis/google-api-services-storage)
 - Cloud Storage JSON API v1-rev20220608-1.32.1 (from https://repo1.maven.org/maven2/com/google/apis/google-api-services-storage)
 - Cloud Storage JSON API v1-rev20220705-2.0.0 (from https://repo1.maven.org/maven2/com/google/apis/google-api-services-storage)
@@ -258,7 +259,9 @@ The following software have components provided under the terms of this license:
 - Protocol Buffer extensions to the Google HTTP Client Library for Java. (from https://repo1.maven.org/maven2/com/google/http-client/google-http-client-protobuf)
 - Proton-J (from https://repo1.maven.org/maven2/org/apache/qpid/proton-j)
 - QpidJMS Client (from https://repo1.maven.org/maven2/org/apache/qpid/qpid-jms-client)
+- RESTEasy JAX-RS Implementation (from https://repo1.maven.org/maven2/org/jboss/resteasy/resteasy-jaxrs)
 - RESTEasy Jackson 2 Provider (from https://repo1.maven.org/maven2/org/jboss/resteasy/resteasy-jackson2-provider)
+- RESTEasy Validator Provider BV 1.1 (from http://maven.apache.org)
 - RabbitMQ Java Client (from http://www.rabbitmq.com, https://www.rabbitmq.com)
 - Reactive Streams Netty driver (from https://github.com/reactor/reactor-netty)
 - Redisson (from http://redisson.org)
@@ -439,6 +442,9 @@ The following software have components provided under the terms of this license:
 - Apache Lucene (module: spatial-extras) (from https://lucene.apache.org/)
 - Apache Lucene (module: suggest) (from https://lucene.apache.org/)
 - GAX (Google Api eXtensions) (from https://github.com/googleapis, https://github.com/googleapis/gax-java)
+- GAX (Google Api eXtensions) for Java (Core) (from https://repo1.maven.org/maven2/com/google/api/gax)
+- GAX (Google Api eXtensions) for Java (HTTP JSON) (from https://repo1.maven.org/maven2/com/google/api/gax-httpjson)
+- GAX (Google Api eXtensions) for Java (gRPC) (from https://repo1.maven.org/maven2/com/google/api/gax-grpc)
 - Hamcrest (from http://hamcrest.org/JavaHamcrest/)
 - Hamcrest Core (from http://hamcrest.org/, http://hamcrest.org/JavaHamcrest/, https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core)
 - Hamcrest library (from https://repo1.maven.org/maven2/org/hamcrest/hamcrest-library)
@@ -481,9 +487,13 @@ The following software have components provided under the terms of this license:
 - Class Model for Hk2 (from https://repo1.maven.org/maven2/org/glassfish/hk2/class-model)
 - Expression Language 3.0 (from http://el-spec.java.net, http://uel.java.net, https://projects.eclipse.org/projects/ee4j.el)
 - GAX (Google Api eXtensions) (from https://github.com/googleapis, https://github.com/googleapis/gax-java)
+- GAX (Google Api eXtensions) for Java (Core) (from https://repo1.maven.org/maven2/com/google/api/gax)
+- GAX (Google Api eXtensions) for Java (HTTP JSON) (from https://repo1.maven.org/maven2/com/google/api/gax-httpjson)
+- GAX (Google Api eXtensions) for Java (gRPC) (from https://repo1.maven.org/maven2/com/google/api/gax-grpc)
 - Google APIs Client Library for Java (from https://repo1.maven.org/maven2/com/google/api-client/google-api-client)
 - Google Auth Library for Java - Credentials (from https://repo1.maven.org/maven2/com/google/auth/google-auth-library-credentials)
 - Google Auth Library for Java - OAuth2 HTTP (from https://repo1.maven.org/maven2/com/google/auth/google-auth-library-oauth2-http)
+- Google OAuth Client Library for Java (from https://repo1.maven.org/maven2/com/google/oauth-client/google-oauth-client)
 - HK2 Implementation Utilities (from https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-utils)
 - HK2 core module (from https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-core)
 - Hamcrest (from http://hamcrest.org/JavaHamcrest/)
@@ -840,6 +850,7 @@ GPL-3.0-or-later
 The following software have components provided under the terms of this license:
 
 - aopalliance-repackaged (from https://repo1.maven.org/maven2/org/glassfish/hk2/external/aopalliance-repackaged)
+- javax.ws.rs-api (from http://jax-rs-spec.java.net, https://github.com/eclipse-ee4j/jaxrs-api)
 
 ========================================================================
 IPA
@@ -1124,6 +1135,8 @@ The following software have components provided under the terms of this license:
 - PostgreSQL JDBC Driver
 - Project Lombok (from http://projectlombok.org, https://projectlombok.org)
 - Prometheus Java Simpleclient (from https://repo1.maven.org/maven2/io/prometheus/simpleclient)
+- RESTEasy JAX-RS Implementation (from https://repo1.maven.org/maven2/org/jboss/resteasy/resteasy-jaxrs)
+- RESTEasy Validator Provider BV 1.1 (from http://maven.apache.org)
 - RabbitMQ Java Client (from http://www.rabbitmq.com, https://www.rabbitmq.com)
 - jersey-core-common (from https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-common)
 - reactive-streams (from http://www.reactive-streams.org/)
