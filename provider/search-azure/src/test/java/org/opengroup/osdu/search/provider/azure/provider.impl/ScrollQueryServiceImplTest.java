@@ -16,6 +16,7 @@ package org.opengroup.osdu.search.provider.azure.provider.impl;
 
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchResponseSections;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -27,12 +28,14 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppError;
 import org.opengroup.osdu.core.common.model.http.AppException;
@@ -49,8 +52,7 @@ import org.opengroup.osdu.search.util.ResponseExceptionParser;
 
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.when;
 
@@ -58,10 +60,13 @@ import static org.mockito.Mockito.when;
 public class ScrollQueryServiceImplTest {
 
     private static final String dataPartitionId = "data-partition-id";
+    private static final String reason = "Internal Server";
+    private static final String message = "Search not completed";
     private static final String indexName = "index";
     private static final String userId = "userId";
     private static final String name = "name";
     private static final String text = "text";
+    private static final String rawCursor = "rawCursor";
 
     @Mock
     private CursorSettings cursorSettings;
@@ -257,9 +262,10 @@ public class ScrollQueryServiceImplTest {
             assertEquals(error.getCode(), errorCode);
             assertEquals(error.getReason(), "cursor issuer doesn't match the cursor consumer");
             assertEquals(error.getMessage(), "cursor sharing is forbidden");
-            throw(e);
+            throw (e);
         }
     }
+
 
     @Test(expected = AppException.class)
     public void testQueryIndex_whenCursorSettingsNotFoundInCursorCache_thenThrowException() throws Exception {
@@ -278,7 +284,7 @@ public class ScrollQueryServiceImplTest {
             assertEquals(error.getReason(), "Can't find the given cursor");
             assertEquals(error.getMessage(), "The given cursor is invalid or expired");
             assertEquals(error.getCode(), errorCode);
-            throw(e);
+            throw (e);
         }
     }
 
@@ -310,5 +316,36 @@ public class ScrollQueryServiceImplTest {
         Map<String, HighlightField> highlightFields = new HashMap<>();
         highlightFields.put("highlightField", highlightField);
         return highlightFields;
+    }
+
+    @Test
+    public void refreshCursorCache() {
+        String cursor = sut.refreshCursorCache(rawCursor, userId);
+        assertNotNull(cursor);
+    }
+
+    @Test
+    public void refreshCursorCache_rawCursorNull() {
+        String cursor = sut.refreshCursorCache(null, userId);
+        assertNull(cursor);
+    }
+
+    @Test(expected = AppException.class)
+    public void testQueryIndex_whenSearchGives500_thenThrowException() throws Exception {
+        CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
+        doReturn(null).when(searchRequest).getCursor();
+        AppException ex = new AppException(500, reason, message);
+        doReturn(client).when(elasticClientHandler).createRestClient();
+        doThrow(ex).when(client).search(any(), any(RequestOptions.class));
+        try {
+            sut.queryIndex(searchRequest);
+        } catch (AppException e) {
+            int errorCode = 500;
+            AppError error = e.getError();
+            assertEquals(error.getCode(), errorCode);
+            assertEquals(error.getReason(), reason);
+            assertEquals(error.getMessage(), message);
+            throw (e);
+        }
     }
 }
