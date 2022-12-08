@@ -27,5 +27,4 @@ public class ConfigModule {
     ResteasyHttpHeaders resteasyHttpHeaders() {
         return new ResteasyHttpHeaders(new MultivaluedHashMap<>());
     }
-
 }
