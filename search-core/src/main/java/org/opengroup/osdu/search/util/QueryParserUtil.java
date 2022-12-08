@@ -120,13 +120,13 @@ public class QueryParserUtil implements IQueryParserUtil {
         int height = 0;
         int position = 0;
         List<Integer> andPositions = new ArrayList();
-        Pattern p = Pattern.compile("AND");
+        Pattern p = Pattern.compile("[\\s)]AND[\\s(]");
         Matcher m = p.matcher(queryString);
         while (m.find()) {
             andPositions.add(m.start());
         }
         List<Integer> orPositions = new ArrayList();
-        p = Pattern.compile("OR");
+        p = Pattern.compile("[\\s)]OR[\\s(]");
         m = p.matcher(queryString);
         while (m.find()) {
             orPositions.add(m.start());
