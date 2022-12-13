@@ -7,6 +7,7 @@
     "range-nested-query": "nested(data.NestedTest, (MarkerMeasuredDepth:(>0)))",
     "combined-range-nested-query": "nested(data.NestedTest, (NumberTest:(>12345.0) AND SecondNumber:[0 TO 100]))",
     "combined-simple-nested-query": "data.First:\"Example*\" OR nested(data.NestedTest, (StringTest:\"Example*\")) AND data.Second:\"test string\"",
+    "combined-simple-or-nested-query": "data.Code.keyword:\"GOR\" OR nested(data.NameAlias, (AliasName.keyword:(\"FOO\")))",
     "multilevel-nested-query": "nested(data.FirstLevel, nested(data.FirstLevel.SecondLevel, nested(data.FirstLevel.SecondLevel.ThirdLevel, (ThirdLevelNumberTest:\"12345.0\"))))",
     "combined-multilevel-nested-query": "nested(data.ParentNested, nested(data.ParentNested.FirstInnerNested, (NumberTest:(12345.0 OR 0) AND StringTest:\"test string\")) OR nested(data.ParentNested.SecondInnerNested, (NumberTest:\"12345.0\" AND StringTest:\"test string\")))",
     "combined-nested-query-with-not": "nested(data.ParentNested, nested(data.ParentNested.FirstInnerNested, (NumberTest:(12345.0 OR 0) AND StringTest:\"test string\")) NOT nested(data.ParentNested.SecondInnerNested, (NumberTest:\"12345.0\" AND StringTest:\"test string\")))",
