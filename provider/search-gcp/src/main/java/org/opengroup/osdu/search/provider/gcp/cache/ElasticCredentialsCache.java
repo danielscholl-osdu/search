@@ -17,55 +17,48 @@
 
 package org.opengroup.osdu.search.provider.gcp.cache;
 
-import com.google.gson.Gson;
-import java.util.Objects;
+import com.lambdaworks.redis.RedisException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.opengroup.osdu.core.common.cache.RedisCache;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticCredentialsCache;
-import org.opengroup.osdu.search.config.SearchConfigurationProperties;
-import org.springframework.stereotype.Component;
 
-@Component
-public class ElasticCredentialsCache implements IElasticCredentialsCache<String, ClusterSettings>,
-    AutoCloseable {
+@Slf4j
+@RequiredArgsConstructor
+public class ElasticCredentialsCache implements IElasticCredentialsCache<String, ClusterSettings>, AutoCloseable {
 
-  private RedisCache<String, String> cache;
+    private final RedisCache<String, ClusterSettings> cache;
 
-  public ElasticCredentialsCache(final SearchConfigurationProperties configurationProperties) {
-    this.cache = new RedisCache<>(configurationProperties.getRedisSearchHost(),
-        Integer.parseInt(configurationProperties.getRedisSearchPort()),
-        configurationProperties.getElasticCacheExpiration() * 60,
-        String.class,
-        String.class);
-  }
-
-  @Override
-  public void put(String key, ClusterSettings value) {
-    String jsonSettings = new Gson().toJson(value);
-    this.cache.put(key, jsonSettings);
-  }
-
-  @Override
-  public ClusterSettings get(String key) {
-    String jsonSettings = this.cache.get(key);
-    if (Objects.isNull(jsonSettings) || jsonSettings.isEmpty()) {
-      return null;
+    @Override
+    public void put(String key, ClusterSettings value) {
+        this.cache.put(key, value);
     }
-    return new Gson().fromJson(jsonSettings, ClusterSettings.class);
-  }
 
-  @Override
-  public void delete(String s) {
-    this.cache.delete(s);
-  }
+    @Override
+    public ClusterSettings get(String key) {
+        try {
+            return this.cache.get(key);
+        } catch (RedisException ex) {
+            //In case the format of cache changes then clean the cache
+            log.error("Unable to get value from Redis, trying to clean up by key.", ex);
+            this.cache.delete(key);
+            return null;
+        }
+    }
 
-  @Override
-  public void clearAll() {
-    this.cache.clearAll();
-  }
+    @Override
+    public void delete(String s) {
+        this.cache.delete(s);
+    }
 
-  @Override
-  public void close() {
-    this.cache.close();
-  }
+    @Override
+    public void clearAll() {
+        this.cache.clearAll();
+    }
+
+    @Override
+    public void close() {
+        this.cache.close();
+    }
 }

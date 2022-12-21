@@ -18,19 +18,32 @@
 package org.opengroup.osdu.search.provider.gcp.cache;
 
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import org.opengroup.osdu.core.common.cache.RedisCache;
 import org.opengroup.osdu.search.cache.IFieldTypeMappingCache;
-import org.opengroup.osdu.search.config.SearchConfigurationProperties;
-import org.springframework.stereotype.Component;
 
-@Component
-public class FieldTypeMappingCache extends RedisCache<String, Map> implements
-    IFieldTypeMappingCache {
+@RequiredArgsConstructor
+public class FieldTypeMappingCache implements IFieldTypeMappingCache {
 
-  public FieldTypeMappingCache(final SearchConfigurationProperties configurationProperties) {
-    super(configurationProperties.getRedisSearchHost(),
-        Integer.parseInt(configurationProperties.getRedisSearchPort()),
-        1440 * 60,
-        String.class, Map.class);
-  }
+    private final RedisCache<String, Map> cache;
+
+    @Override
+    public void put(String key, Map value) {
+        this.cache.put(key, value);
+    }
+
+    @Override
+    public Map get(String key) {
+        return this.cache.get(key);
+    }
+
+    @Override
+    public void delete(String s) {
+        this.cache.delete(s);
+    }
+
+    @Override
+    public void clearAll() {
+        this.cache.clearAll();
+    }
 }

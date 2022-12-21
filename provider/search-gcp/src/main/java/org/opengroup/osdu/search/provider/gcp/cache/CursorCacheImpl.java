@@ -17,20 +17,34 @@
 
 package org.opengroup.osdu.search.provider.gcp.cache;
 
+import lombok.RequiredArgsConstructor;
 import org.opengroup.osdu.core.common.cache.RedisCache;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.search.cache.CursorCache;
-import org.opengroup.osdu.search.config.SearchConfigurationProperties;
-import org.springframework.stereotype.Component;
 
-@Component
-public class CursorCacheImpl extends RedisCache<String, CursorSettings> implements CursorCache {
+@RequiredArgsConstructor
+public class CursorCacheImpl implements CursorCache {
 
-  public CursorCacheImpl(final SearchConfigurationProperties configurationProperties) {
-    super(configurationProperties.getRedisSearchHost(),
-        Integer.parseInt(configurationProperties.getRedisSearchPort()),
-        configurationProperties.getCursorCacheExpiration(),
-        String.class,
-        CursorSettings.class);
-  }
+    private final RedisCache<String, CursorSettings> cache;
+
+    @Override
+    public void put(String key, CursorSettings value) {
+        this.cache.put(key, value);
+    }
+
+    @Override
+    public CursorSettings get(String key) {
+        return this.cache.get(key);
+    }
+
+    @Override
+    public void delete(String s) {
+        this.cache.delete(s);
+    }
+
+    @Override
+    public void clearAll() {
+        this.cache.clearAll();
+    }
+
 }

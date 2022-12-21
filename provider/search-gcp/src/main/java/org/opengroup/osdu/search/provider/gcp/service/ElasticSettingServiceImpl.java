@@ -28,9 +28,9 @@ import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.core.common.multitenancy.ITenantInfoService;
+import org.opengroup.osdu.core.common.provider.interfaces.IElasticCredentialsCache;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
-import org.opengroup.osdu.search.provider.gcp.cache.ElasticCredentialsCache;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,7 +40,7 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
   private final SearchConfigurationProperties searchConfigurationProperties;
   private final javax.inject.Provider<ITenantInfoService> tenantInfoServiceProvider;
   private final IElasticRepository elasticRepository;
-  private final ElasticCredentialsCache elasticCredentialCache;
+  private final IElasticCredentialsCache<String, ClusterSettings> elasticCredentialCache;
   private final JaxRsDpsLog log;
 
   @Override
