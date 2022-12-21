@@ -22,7 +22,7 @@ import org.opengroup.osdu.core.common.entitlements.EntitlementsAPIConfig;
 import org.opengroup.osdu.core.common.entitlements.EntitlementsFactory;
 import org.opengroup.osdu.core.common.entitlements.IEntitlementsFactory;
 import org.opengroup.osdu.core.common.http.json.HttpResponseBodyMapper;
-import org.opengroup.osdu.search.provider.gcp.config.AppProperties;
+import org.opengroup.osdu.search.provider.gcp.config.GcpSearchConfigurationProperties;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
@@ -33,15 +33,15 @@ import org.springframework.web.context.annotation.RequestScope;
 public class EntitlementsClientFactory extends AbstractFactoryBean<IEntitlementsFactory> {
 
   private final HttpResponseBodyMapper httpResponseBodyMapper;
-  private final AppProperties appProperties;
+  private final GcpSearchConfigurationProperties configurationProperties;
 
   @Override
   protected IEntitlementsFactory createInstance() {
 
     return new EntitlementsFactory(EntitlementsAPIConfig
         .builder()
-        .rootUrl(this.appProperties.getAuthorizeApi())
-        .apiKey(this.appProperties.getAuthorizeApiKey())
+        .rootUrl(this.configurationProperties.getAuthorizeApi())
+        .apiKey(this.configurationProperties.getAuthorizeApiKey())
         .build(), this.httpResponseBodyMapper);
   }
 

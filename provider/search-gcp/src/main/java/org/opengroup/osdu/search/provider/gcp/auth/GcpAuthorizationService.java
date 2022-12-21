@@ -20,7 +20,7 @@ package org.opengroup.osdu.search.provider.gcp.auth;
 import com.lambdaworks.redis.RedisException;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
-import org.opengroup.osdu.core.common.cache.RedisCache;
+import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.entitlements.AuthorizationServiceImpl;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.entitlements.AuthorizationResponse;
@@ -37,7 +37,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class GcpAuthorizationService extends AuthorizationServiceImpl {
 
-    private final RedisCache<String, Groups> cache;
+    private final ICache<String, Groups> cache;
     private final JaxRsDpsLog jaxRsDpsLog;
 
     @Override
