@@ -46,6 +46,6 @@ public class NestedQueryNode extends QueryNode {
             String query = StringUtils.isNotBlank(queryString) ? queryString : "*";
             queryBuilder = queryStringQuery(query).allowLeadingWildcard(false);
         }
-        return nestedQuery(path, queryBuilder, ScoreMode.Avg);
+        return nestedQuery(path, queryBuilder, ScoreMode.Avg).ignoreUnmapped(true);
     }
 }
