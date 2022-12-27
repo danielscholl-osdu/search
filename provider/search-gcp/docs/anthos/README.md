@@ -6,37 +6,44 @@ Define the following environment variables.
 
 Must have:
 
-| name | value | description | sensitive? | source |
-| ---  | ---   | ---         | ---        | ---    |
-| `SPRING_PROFILES_ACTIVE` | ex `anthos` | Spring profile that activate default configuration for Google Cloud environment | false | - |
-| `<ELASTICSEARCH_USER_ENV_VARIABLE_NAME>` | ex `user` | Elasticsearch user, name of that variable not defined at the service level, the name will be received through partition service. Each tenant can have it's own ENV name value, and it must be present in ENV of Indexer service, see [Partition properties set](#Properties-set-in-Partition-service)  | yes | - |
-| `<ELASTICSEARCH_PASSWORD_ENV_VARIABLE_NAME>` | ex `password` | Elasticsearch password, name of that variable not defined at the service level, the name will be received through partition service. Each tenant can have it's own ENV name value, and it must be present in ENV of Indexer service, see [Partition properties set](#Properties-set-in-Partition-service) | false | - |
+| name                                         | value         | description                                                                                                                                                                                                                                                                                               | sensitive? | source |
+|----------------------------------------------|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|--------|
+| `SPRING_PROFILES_ACTIVE`                     | ex `anthos`   | Spring profile that activate default configuration for Google Cloud environment                                                                                                                                                                                                                           | false      | -      |
+| `<ELASTICSEARCH_USER_ENV_VARIABLE_NAME>`     | ex `user`     | Elasticsearch user, name of that variable not defined at the service level, the name will be received through partition service. Each tenant can have it's own ENV name value, and it must be present in ENV of Indexer service, see [Partition properties set](#Properties-set-in-Partition-service)     | yes        | -      |
+| `<ELASTICSEARCH_PASSWORD_ENV_VARIABLE_NAME>` | ex `password` | Elasticsearch password, name of that variable not defined at the service level, the name will be received through partition service. Each tenant can have it's own ENV name value, and it must be present in ENV of Indexer service, see [Partition properties set](#Properties-set-in-Partition-service) | false      | -      |
 
 Defined in default application property file but possible to override:
 
-| name | value | description | sensitive? | source |
-| ---  | ---   | ---         | ---        | ---    |
-| `LOG_PREFIX` | `service` | Logging prefix | no | - |
-| `SERVER_SERVLET_CONTEXPATH` | `/api/search/v2/` | Servlet context path | no | - |
-| `AUTHORIZE_API` | ex `https://entitlements.com/entitlements/v1` | Entitlements API endpoint | no | output of infrastructure deployment |
-| `REDIS_SEARCH_HOST` | ex `records-changed` | Redis host for search | no | https://console.cloud.google.com/memorystore/redis/instances |
-| `REDIS_SEARCH_PORT` | ex `6379` | Redis host for search | no | https://console.cloud.google.com/memorystore/redis/instances |
-| `GOOGLE_AUDIENCES` | ex `*****.apps.googleusercontent.com` | Client ID for getting access to cloud resources | yes | https://console.cloud.google.com/apis/credentials |
-| `GOOGLE_APPLICATION_CREDENTIALS` | ex `/path/to/directory/service-key.json` | Service account credentials, you only need this if running locally | yes | https://console.cloud.google.com/iam-admin/serviceaccounts |
-| `SECURITY_HTTPS_CERTIFICATE_TRUST` | ex `false` | Elastic client connection uses TrustSelfSignedStrategy(), if it is 'true' | false | output of infrastructure deployment |
-| `PARTITION_API` | ex `http://localhost:8080/api/partition/v1` | Partition service endpoint | no | output of infrastructure deployment |
-| `POLICY_API` | ex `http://localhost:8080/api/policy/v1/` | Policy service endpoint | no | output of infrastructure deployment |
-| `POLICY_ID` | ex `search` | policyId from ex `http://localhost:8080/api/policy/v1/policies`. Look at `POLICY_API` | no | - |
-| `SERVICE_POLICY_ENABLED` | ex `false` | Enable or Disable an integration with Policy Service | no | output of infrastructure deployment |
-| `INDEXER_HOST` | ex `https://os-indexer-dot-opendes.appspot.com/api/indexer/v2/` | Indexer API endpoint | no | output of infrastructure deployment |
+| name                               | value                                                           | description                                                                           | sensitive? | source                                                     |
+|------------------------------------|-----------------------------------------------------------------|---------------------------------------------------------------------------------------|------------|------------------------------------------------------------|
+| `LOG_PREFIX`                       | `service`                                                       | Logging prefix                                                                        | no         | -                                                          |
+| `SERVER_SERVLET_CONTEXPATH`        | `/api/search/v2/`                                               | Servlet context path                                                                  | no         | -                                                          |
+| `AUTHORIZE_API`                    | ex `https://entitlements.com/entitlements/v1`                   | Entitlements API endpoint                                                             | no         | output of infrastructure deployment                        |
+| `REDIS_GROUP_HOST`                 | ex `127.0.0.1`                                                  | Redis host for groups                                                                 | no         |                                                            |
+| `REDIS_GROUP_PASSWORD`             | ex `*****`                                                      | Redis groups host password                                                            | yes        |                                                            |
+| `REDIS_GROUP_WITH_SSL`             | ex `true` or `false`                                            | Redis groups host ssl config                                                          | no         |                                                            |
+| `REDIS_GROUP_EXPIRATION`           | ex `30`                                                         | Redis group cache expiration in seconds                                               | no         |                                                            |
+| `REDIS_SEARCH_HOST`                | ex `records-changed`                                            | Redis host for search                                                                 | no         |                                                            |
+| `REDIS_SEARCH_PORT`                | ex `6379`                                                       | Redis port for search                                                                 | no         |                                                            |
+| `REDIS_SEARCH_PASSWORD`            | ex `127.0.0.1`                                                  | Redis search host password                                                            | yes        |                                                            |
+| `REDIS_SEARCH_WITH_SSL`            | ex `true` or `false`                                            | Redis search host ssl config                                                          | no         |                                                            |
+| `REDIS_SEARCH_EXPIRATION`          | ex `30`                                                         | Redis search cache expiration in seconds                                              | no         |                                                            |
+| `GOOGLE_AUDIENCES`                 | ex `*****.apps.googleusercontent.com`                           | Client ID for getting access to cloud resources                                       | yes        | https://console.cloud.google.com/apis/credentials          |
+| `GOOGLE_APPLICATION_CREDENTIALS`   | ex `/path/to/directory/service-key.json`                        | Service account credentials, you only need this if running locally                    | yes        | https://console.cloud.google.com/iam-admin/serviceaccounts |
+| `SECURITY_HTTPS_CERTIFICATE_TRUST` | ex `false`                                                      | Elastic client connection uses TrustSelfSignedStrategy(), if it is 'true'             | false      | output of infrastructure deployment                        |
+| `PARTITION_API`                    | ex `http://localhost:8080/api/partition/v1`                     | Partition service endpoint                                                            | no         | output of infrastructure deployment                        |
+| `POLICY_API`                       | ex `http://localhost:8080/api/policy/v1/`                       | Policy service endpoint                                                               | no         | output of infrastructure deployment                        |
+| `POLICY_ID`                        | ex `search`                                                     | policyId from ex `http://localhost:8080/api/policy/v1/policies`. Look at `POLICY_API` | no         | -                                                          |
+| `SERVICE_POLICY_ENABLED`           | ex `false`                                                      | Enable or Disable an integration with Policy Service                                  | no         | output of infrastructure deployment                        |
+| `INDEXER_HOST`                     | ex `https://os-indexer-dot-opendes.appspot.com/api/indexer/v2/` | Indexer API endpoint                                                                  | no         | output of infrastructure deployment                        |
 
 These variables define service behavior, and are used to switch between `anthos` or `gcp` environments, their overriding and usage in mixed mode was not tested.
 Usage of spring profiles is preferred.
 
-| name | value | description | sensitive? | source |
-| ---  | ---   | ---         | ---        | ---    |
-| `PARTITION_AUTH_ENABLED` | ex `true` or `false` | Disable or enable auth token provisioning for requests to Partition service | no | - |
-| `SERVICE_TOKEN_PROVIDER` | `GCP` or `OPENID` |Service account token provider, `GCP` means use Google service account `OPEIND` means use OpenId provider like `Keycloak` | no | - |
+| name                     | value                | description                                                                                                               | sensitive? | source |
+|--------------------------|----------------------|---------------------------------------------------------------------------------------------------------------------------|------------|--------|
+| `PARTITION_AUTH_ENABLED` | ex `true` or `false` | Disable or enable auth token provisioning for requests to Partition service                                               | no         | -      |
+| `SERVICE_TOKEN_PROVIDER` | `GCP` or `OPENID`    | Service account token provider, `GCP` means use Google service account `OPEIND` means use OpenId provider like `Keycloak` | no         | -      |
 
 ### Properties set in Partition service:
 

@@ -19,15 +19,26 @@ package org.opengroup.osdu.search.provider.gcp.config;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
+@Primary
 @Configuration
 @ConfigurationProperties
 @Getter
 @Setter
-public class AppProperties {
+public class GcpSearchConfigurationProperties extends SearchConfigurationProperties {
 
-  private String authorizeApi;
-  private String authorizeApiKey;
+    private String authorizeApi;
+    private String authorizeApiKey;
+
+    private String redisGroupPassword;
+    private Integer redisGroupExpiration = 30;
+    private Boolean redisGroupWithSsl = false;
+
+    private String redisSearchPassword;
+    private Integer redisSearchExpiration = 60 * 60;
+    private Boolean redisSearchWithSsl = false;
 }
