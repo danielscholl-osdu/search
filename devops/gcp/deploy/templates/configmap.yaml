@@ -16,7 +16,6 @@ data:
   POLICY_HOST: {{ .Values.data.policyHost | quote }}
   POLICY_ID: {{ .Values.data.policyId | quote }}
   INDEXER_BASE_HOST: {{ .Values.data.indexerHost | quote }}
-  SERVICE_POLICY_ENABLED: {{ .Values.data.servicePolicyEnabled | quote }}
   {{- if not .Values.conf.onPremEnabled }}
   GOOGLE_AUDIENCES: {{ .Values.data.googleAudiences | quote }}
   {{- end }}
