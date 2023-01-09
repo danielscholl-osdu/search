@@ -10,7 +10,6 @@ data:
   indexerHost: "http://indexer"
   policyId: "osdu.instance.search"
   securityHttpsCertificateTrust: "true"
-  servicePolicyEnabled: false
   googleAudiences: ""
   # Deployments
   requestsCpu: "0.1"
