@@ -381,7 +381,6 @@ securityDefinitions:
     type: "oauth2"
     x-google-issuer: "https://accounts.google.com"
     x-google-jwks_uri: "https://www.googleapis.com/oauth2/v3/certs"
-    x-google-audiences: "245464679631-ktfdfpl147m1mjpbutl00b3cmffissgq.apps.googleusercontent.com,245464679631-u44eh98vq4t2ajc2quc8b0kgojsmd3gp.apps.googleusercontent.com"
     scopes: {}
   #Security configuration or the portal
   Bearer:
