@@ -48,7 +48,6 @@ public class SearchConfigurationProperties {
 	private String storageRecordsBatchSize;
 	private String storageSchemaHost;
 	private String entitlementsHost;
-	private String entitlementTargetAudience;
 	private String indexerQueueHost;
 	private String redisSearchHost;
 	private String redisSearchPort = "6379";
@@ -69,7 +68,6 @@ public class SearchConfigurationProperties {
 	private String gaeVersion;
 	private String googleCloudProject;
 	private String googleCloudProjectRegion;
-	private String googleAudiences;
 
 	public DeploymentEnvironment getDeploymentEnvironment(){
 		return DeploymentEnvironment.valueOf(deploymentEnvironment);
