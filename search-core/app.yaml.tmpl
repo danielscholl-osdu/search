@@ -2,7 +2,6 @@
 {{$gcloudProject := getenv "GCLOUD_PROJECT" -}}
 {{$gcloudRedisHost := getenv "REDIS_SEARCH_HOST" -}}
 {{$environment := getenv "ENVIRONMENT" -}}
-{{$googleAudiences := getenv "GOOGLE_AUDIENCES" -}}
 {{$ccsDisabled := getenv "SMART_SEARCH_CCS_DISABLED" -}}
 service: search
 
@@ -55,6 +54,5 @@ env_variables:
   ELASTIC_DATASTORE_ID: "search-service"
   REDIS_SEARCH_HOST: "{{$gcloudRedisHost}}"
   ENVIRONMENT: {{$environment}}
-  GOOGLE_AUDIENCES: {{$googleAudiences}}
   INDEXER_HOST: "https://indexer-dot-{{$gcloudProject}}.appspot.com/api/indexer/v2/"
   SMART_SEARCH_CCS_DISABLED: {{$ccsDisabled}}

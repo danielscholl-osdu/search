@@ -40,8 +40,6 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 **redisSearchHost** | Redis search host | string | `redis-search-master` | yes
 **policyId** | policy id from ex `${POLICY_HOST}/api/policy/v1/policies` | string | `search` | yes
 **securityHttpsCertificateTrust** | Elastic client connection uses TrustSelfSignedStrategy(), if it is `true` | bool | `true` | yes
-**servicePolicyEnabled** | Enables Search service integration with Policy service | bool | `false` | yes
-**googleAudiences** | Client ID of Google Cloud Credentials, ex `123-abc123.apps.googleusercontent.com` | string | - | yes
 
 ### Deployment variables
 
