@@ -62,6 +62,7 @@ import org.opengroup.osdu.core.common.model.search.QueryUtils;
 import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
+import org.opengroup.osdu.search.provider.aws.util.AwsCrossTenantUtils;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
@@ -84,7 +85,7 @@ abstract class QueryBase {
     @Inject
     private IProviderHeaderService providerHeaderService;
     @Inject
-    private CrossTenantUtils crossTenantUtils;
+    private AwsCrossTenantUtils crossTenantUtils;
     @Inject
     private IFieldMappingTypeService fieldMappingTypeService;
     @Autowired(required = false)
