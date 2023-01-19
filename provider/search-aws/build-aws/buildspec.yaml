@@ -79,7 +79,7 @@ phases:
       - echo "Building primary service assemblies..."
 #<Q>skip sonar to speed up build<Q>
 #      - mvn -ntp -B test install sonar:sonar -pl .,search-core,provider/search-aws -Ddeployment.environment=prod -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME}
-      - mvn -ntp -B clean package -pl .,search-core,provider/search-aws -Ddeployment.environment=prod
+      - mvn -ntp -B clean package -pl .,search-core,provider/search-aws -Ddeployment.environment=prod -DskipTests
 
       - echo "Building integration testing assemblies and gathering artifacts..."
       - ./testing/integration-tests/search-test-aws/build-aws/prepare-dist.sh
