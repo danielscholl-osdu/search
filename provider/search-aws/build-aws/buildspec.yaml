@@ -77,7 +77,9 @@ phases:
       - if [ "$GIT_SECRETS_SCAN_RESULT" = "FAILED" ]; then echo "Secrets detected!" && exit 1; fi
 
       - echo "Building primary service assemblies..."
-      - mvn -ntp -B test install sonar:sonar -pl .,search-core,provider/search-aws -Ddeployment.environment=prod -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME} 
+#<Q>skip sonar to speed up build<Q>
+#      - mvn -ntp -B test install sonar:sonar -pl .,search-core,provider/search-aws -Ddeployment.environment=prod -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME}
+      - mvn -ntp -B clean package -pl .,search-core,provider/search-aws -Ddeployment.environment=prod
 
       - echo "Building integration testing assemblies and gathering artifacts..."
       - ./testing/integration-tests/search-test-aws/build-aws/prepare-dist.sh
