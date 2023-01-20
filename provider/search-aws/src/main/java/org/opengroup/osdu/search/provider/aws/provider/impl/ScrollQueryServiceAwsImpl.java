@@ -27,6 +27,7 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
 import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;
@@ -62,6 +63,8 @@ public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQuery
     private CursorCache cursorCache;
     @Inject
     private AuditLogger auditLogger;
+    @Inject
+    DpsHeaders dpsHeaders;
     @Autowired
     private ResponseExceptionParser exceptionParser;
 
