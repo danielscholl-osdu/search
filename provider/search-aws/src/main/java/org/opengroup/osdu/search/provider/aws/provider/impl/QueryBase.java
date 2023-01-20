@@ -442,13 +442,8 @@ abstract class QueryBase {
         this.queryFailedAuditLogger(searchRequest);
     }
 
-    //<Q>replaced for testing...<Q>
-//    private boolean userHasFullDataAccess() {
-//        String dataRootUser = dpsHeaders.getHeaders().getOrDefault(providerHeaderService.getDataRootUserHeader(), "false");
-//        return Boolean.parseBoolean(dataRootUser);
-//    }
     private boolean userHasFullDataAccess() {
-        return false;
+        String dataRootUser = dpsHeaders.getHeaders().getOrDefault(providerHeaderService.getDataRootUserHeader(), "false");
+        return Boolean.parseBoolean(dataRootUser);
     }
-
 }

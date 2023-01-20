@@ -305,19 +305,18 @@ public class QueryServiceAwsImplTest {
 		verifyAcls(topLevelMustClause.get(0), false);
 	}
 
-	//<Q>disabling this test for testing purposes.<Q>
-//	@Test
-//	public void should_return_nullQuery_when_searchAsDataRootUser() throws IOException {
-//		Map<String, String> HEADERS = new HashMap<>();
-//		HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
-//		HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
-//		HEADERS.put(DATA_GROUPS, String.format("%s,%s", DATA_GROUP_1, DATA_GROUP_2));
-//		HEADERS.put(providerHeaderService.getDataRootUserHeader(), "true");
-//		when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
-//
-//		QueryBuilder builder = this.queryServiceAws.buildQuery(null, null, false);
-//		assertNull(builder);
-//	}
+	@Test
+	public void should_return_nullQuery_when_searchAsDataRootUser() throws IOException {
+		Map<String, String> HEADERS = new HashMap<>();
+		HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
+		HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
+		HEADERS.put(DATA_GROUPS, String.format("%s,%s", DATA_GROUP_1, DATA_GROUP_2));
+		HEADERS.put(providerHeaderService.getDataRootUserHeader(), "true");
+		when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
+
+		QueryBuilder builder = this.queryServiceAws.buildQuery(null, null, false);
+		assertNull(builder);
+	}
 
 	private void verifyAcls(QueryBuilder aclMustClause, boolean asOwner) {
 		BoolQueryBuilder aclLevelBuilder = (BoolQueryBuilder) aclMustClause;
