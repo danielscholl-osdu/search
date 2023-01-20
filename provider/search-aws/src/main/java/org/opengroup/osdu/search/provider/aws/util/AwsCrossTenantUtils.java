@@ -29,7 +29,7 @@ public class AwsCrossTenantUtils extends CrossTenantUtils {
         for(String kind : kinds) {
             String index = this.elasticIndexNameResolver.getIndexNameFromKind(kind);
             String[] indexArr = index.split("-");
-            if (indexArr[0] == "*") {
+            if (indexArr[0].equalsIgnoreCase("*")) {
                 indexArr[0] = dpsHeaders.getPartitionId();
             }
             else if (indexArr[0].equalsIgnoreCase(dpsHeaders.getPartitionId()) == false) {
