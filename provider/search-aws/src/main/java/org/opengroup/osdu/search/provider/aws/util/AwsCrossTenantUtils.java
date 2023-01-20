@@ -15,7 +15,7 @@ import java.util.List;
 public class AwsCrossTenantUtils extends CrossTenantUtils {
 
     @Inject
-    DpsHeaders dpsHeaders;
+    private DpsHeaders dpsHeaders;
     @Inject
     private ElasticIndexNameResolver elasticIndexNameResolver;
 

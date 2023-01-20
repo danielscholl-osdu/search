@@ -36,6 +36,7 @@ import org.opengroup.osdu.core.common.model.search.*;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
 import org.opengroup.osdu.search.provider.aws.provider.impl.QueryServiceAwsImpl;
+import org.opengroup.osdu.search.provider.aws.util.AwsCrossTenantUtils;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.*;
@@ -68,7 +69,7 @@ public class QueryServiceAwsImplTest {
 	private IProviderHeaderService providerHeaderService;
 
 	@Mock
-	private CrossTenantUtils crossTenantUtils;
+	private AwsCrossTenantUtils crossTenantUtils;
 
 	@Mock
 	private IFieldMappingTypeService fieldMappingTypeService;
