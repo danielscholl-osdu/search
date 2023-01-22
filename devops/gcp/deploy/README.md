@@ -30,38 +30,48 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
-**logLevel** | logging level | string | `ERROR` | yes
-**springProfilesActive** | active spring profile | string | `gcp` | yes
-**entitlementsHost** | Entitlements service host | string | `http://entitlements` | yes
-**indexerHost** | Indexer service host | string | `http://indexer` | yes
-**policyHost** | Policy service host | string | `http://policy` | yes
-**partitionHost** | Partition service host | string | `http://partition` | yes
-**redisGroupHost** | Redis group host | string | `redis-group-master` | yes
-**redisSearchHost** | Redis search host | string | `redis-search-master` | yes
-**policyId** | policy id from ex `${POLICY_HOST}/api/policy/v1/policies` | string | `search` | yes
-**securityHttpsCertificateTrust** | Elastic client connection uses TrustSelfSignedStrategy(), if it is `true` | bool | `true` | yes
+**data.logLevel** | logging level | string | `ERROR` | yes
+**data.springProfilesActive** | active spring profile | string | `gcp` | yes
+**data.entitlementsHost** | Entitlements service host | string | `http://entitlements` | yes
+**data.indexerHost** | Indexer service host | string | `http://indexer` | yes
+**data.policyHost** | Policy service host | string | `http://policy` | yes
+**data.partitionHost** | Partition service host | string | `http://partition` | yes
+**data.policyId** | policy id from ex `${POLICY_HOST}/api/policy/v1/policies` | string | `search` | yes
+**data.securityHttpsCertificateTrust** | Elastic client connection uses TrustSelfSignedStrategy(), if it is `true` | bool | `true` | yes
+**data.redisSearchHost** | The host for redis instance. If empty (by default), helm installs an internal redis instance | string | - | yes
+**data.redisSearchPort** | The port for redis instance | digit | 6379 | yes
 
 ### Deployment variables
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
-**requestsCpu** | amount of requested CPU | string | `0.1` | yes
-**requestsMemory** | amount of requested memory| string | `448M` | yes
-**limitsCpu** | CPU limit | string | `1` | yes
-**limitsMemory** | memory limit | string | `1G` | yes
-**serviceAccountName** | name of your service account | string | `search` | yes
-**imagePullPolicy** | when to pull image | string | `IfNotPresent` | yes
-**image** | service image | string | - | yes
+**data.requestsCpu** | amount of requested CPU | string | `75m` | yes
+**data.requestsMemory** | amount of requested memory| string | `448M` | yes
+**data.limitsCpu** | CPU limit | string | `1` | yes
+**data.limitsMemory** | memory limit | string | `1G` | yes
+**data.serviceAccountName** | name of your service account | string | `search` | yes
+**data.imagePullPolicy** | when to pull image | string | `IfNotPresent` | yes
+**data.image** | service image | string | - | yes
+**data.redisImage** | service image | string | `redis:7` | yes
 
 ### Configuration variables
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
-**appName** | Service name | string | `search` | yes
-**configmap** | configmap to be used | string | `search-config` | yes
-**elasticSecretName** | secret for elasticsearch | string | `search-elastic-secret` | yes
-**onPremEnabled** | whether on-prem is enabled | boolean | false | yes
-**domain** | your domain, ex `example.com` | string | - | yes
+**conf.appName** | Service name | string | `search` | yes
+**conf.elasticSecretName** | secret for elasticsearch | string | `search-elastic-secret` | yes
+**conf.onPremEnabled** | whether on-prem is enabled | boolean | false | yes
+**conf.domain** | your domain, ex `example.com` | string | - | yes
+**conf.searchRedisSecretName** | search Redis secret that contains redis password with REDIS_PASSWORD key | string | `search-redis-secret` | yes
+
+### Istio variables
+
+| Name | Description | Type | Default |Required |
+|------|-------------|------|---------|---------|
+**istio.proxyCPU** | CPU request for Envoy sidecars | string | 25m | yes
+**istio.proxyCPULimit** | CPU limit for Envoy sidecars | string | 200m | yes
+**istio.proxyMemory** | memory request for Envoy sidecars | string | 64Mi | yes
+**istio.proxyMemoryLimit** | memory limit for Envoy sidecars | string | 256Mi | yes
 
 ## Install the Helm chart
 

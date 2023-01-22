@@ -2,8 +2,6 @@ data:
   # Configmaps
   springProfilesActive: "gcp"
   logLevel: "ERROR"
-  redisGroupHost: "redis-group-master"
-  redisSearchHost: "redis-search-master"
   entitlementsHost: "http://entitlements"
   partitionHost: "http://partition"
   policyHost: "http://policy"
@@ -11,21 +9,25 @@ data:
   policyId: "osdu.instance.search"
   securityHttpsCertificateTrust: "true"
   # Deployments
-  requestsCpu: "0.1"
+  requestsCpu: "75m"
   requestsMemory: "448M"
   limitsCpu: "1"
   limitsMemory: "1G"
   serviceAccountName: "search"
   imagePullPolicy: "IfNotPresent"
   image: ""
+  # redis connection. Change it if you want to use external redis
+  redisSearchHost: ""
+  redisSearchPort: 6379
+  redisImage: "redis:7"
 conf:
   appName: "search"
-  configmap: "search-config"
   elasticSecretName: "search-elastic-secret"
   onPremEnabled: false
   domain: ""
+  searchRedisSecretName: "search-redis-secret"
 istio:
-  proxyCPU: "50m"
-  proxyCPULimit: "500m"
+  proxyCPU: "25m"
+  proxyCPULimit: "200m"
   proxyMemory: "64Mi"
-  proxyMemoryLimit: "512Mi"
+  proxyMemoryLimit: "256Mi"
