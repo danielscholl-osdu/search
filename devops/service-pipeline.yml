@@ -17,7 +17,7 @@ pr:
   autoCancel: false
   branches:
     include:
-      - '*'
+      - "*"
     exclude:
       - master
   paths:
@@ -33,17 +33,17 @@ resources:
       name: open-data-ecosystem/infrastructure-templates
 
 variables:
-  - group: 'Azure Common Secrets'
-  - group: 'Azure - Common'
+  - group: "Azure Common Secrets"
+  - group: "Azure - Common"
 
   - name: serviceName
-    value: 'search'
+    value: "search"
 
 stages:
   - template: devops/service-pipelines/build-stage.yml@infrastructure-templates
     parameters:
       mavenPublishJUnitResults: true
-      mavenOptions: '--settings ./search-core/maven/settings.xml -DVSTS_FEED_TOKEN=$(VSTS_FEED_TOKEN) -U'
+      mavenOptions: "--settings ./search-core/maven/settings.xml -DVSTS_FEED_TOKEN=$(VSTS_FEED_TOKEN) -U"
       copyFileContents: |
         pom.xml
         provider/search-azure/maven/settings.xml
@@ -51,23 +51,23 @@ stages:
         provider/search-azure/target/*-spring-boot.jar
       copyFileContentsToFlatten: |
         provider/search-byoc/target/*-spring-boot.jar
-        provider/search-gcp/target/*-spring-boot.jar
-        provider/search-gcp/src/main/appengine/app.yaml
-        provider/search-gcp/src/main/resources/application.properties
-        provider/search-gcp/scripts/deploy.sh
+        provider/search-gc/target/*-spring-boot.jar
+        provider/search-gc/src/main/appengine/app.yaml
+        provider/search-gc/src/main/resources/application.properties
+        provider/search-gc/scripts/deploy.sh
         provider/search-integration-tests.zip
       serviceBase: ${{ variables.serviceName }}
-      testingRootFolder: 'testing/integration-tests'
+      testingRootFolder: "testing/integration-tests"
   - template: devops/service-pipelines/deploy-stages.yml@infrastructure-templates
     parameters:
       serviceName: ${{ variables.serviceName }}
-      testCoreMavenPomFile: 'integration-tests/search-test-core/pom.xml'
-      testCoreMavenOptions: '--settings $(System.DefaultWorkingDirectory)/drop/deploy/integration-tests/maven/settings.xml -DVSTS_FEED_TOKEN=$(VSTS_FEED_TOKEN)'
+      testCoreMavenPomFile: "integration-tests/search-test-core/pom.xml"
+      testCoreMavenOptions: "--settings $(System.DefaultWorkingDirectory)/drop/deploy/integration-tests/maven/settings.xml -DVSTS_FEED_TOKEN=$(VSTS_FEED_TOKEN)"
       providers:
-        -  name: Azure
+        - name: Azure
           # Merges into Master
-           ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-             environments: ['devint', 'qa', 'prod']
+          ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+            environments: ["devint", "qa", "prod"]
           # PR updates / creations
-           ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
-             environments: ['devint']
+          ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
+            environments: ["devint"]
