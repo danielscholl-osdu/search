@@ -19,7 +19,7 @@ All documentation for the Azure implementation of `os-search` lives [here](./pro
 
 ## Google Cloud Implementation
 
-All documentation for the GC implementation of `os-search` lives [here](./provider/search-gcp/README.md)
+All documentation for the GC implementation of `os-search` lives [here](./provider/search-gc/README.md)
 
 ## AWS Implementation
 
