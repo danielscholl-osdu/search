@@ -8,31 +8,31 @@ cli:
   project: Search
 analyze:
   modules:
-  - name: os-search
-    type: mvn
-    target: pom.xml
-    path: .
-  - name: search-core
-    type: mvn
-    target: search-core/pom.xml
-    path: .
-  - name: search-byoc
-    type: mvn
-    target: provider/search-byoc/pom.xml
-    path: .
-  - name: search-gcp
-    type: mvn
-    target: provider/search-gcp/pom.xml
-    path: .
-  - name: search-aws
-    type: mvn
-    target: provider/search-aws/pom.xml
-    path: .
-  - name: search-azure
-    type: mvn
-    target: provider/search-azure/pom.xml
-    path: .
-  - name: search-ibm
-    type: mvn
-    target: provider/search-ibm/pom.xml
-    path: .
+    - name: os-search
+      type: mvn
+      target: pom.xml
+      path: .
+    - name: search-core
+      type: mvn
+      target: search-core/pom.xml
+      path: .
+    - name: search-byoc
+      type: mvn
+      target: provider/search-byoc/pom.xml
+      path: .
+    - name: search-gc
+      type: mvn
+      target: provider/search-gc/pom.xml
+      path: .
+    - name: search-aws
+      type: mvn
+      target: provider/search-aws/pom.xml
+      path: .
+    - name: search-azure
+      type: mvn
+      target: provider/search-azure/pom.xml
+      path: .
+    - name: search-ibm
+      type: mvn
+      target: provider/search-ibm/pom.xml
+      path: .

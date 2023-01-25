@@ -24,21 +24,21 @@ trigger:
       - /docs
       - /indexer/search-aws
       - /indexer/search-byoc
-      - /indexer/search-gcp
+      - /indexer/search-gc
       - /indexer/search-ibm
 
 resources:
   repositories:
-  - repository: FluxRepo
-    type: git
-    name: k8-gitops-manifests
-  - repository: TemplateRepo
-    type: git
-    name: infra-azure-provisioning
+    - repository: FluxRepo
+      type: git
+      name: k8-gitops-manifests
+    - repository: TemplateRepo
+      type: git
+      name: infra-azure-provisioning
 
 variables:
-  - group: 'Azure - OSDU'
-  - group: 'Azure - OSDU Secrets'
+  - group: "Azure - OSDU"
+  - group: "Azure - OSDU Secrets"
 
   - name: serviceName
     value: "search-service"
@@ -46,39 +46,39 @@ variables:
     value: "devops/azure/chart"
   - name: valuesFile
     value: "devops/azure/chart/helm-config.yaml"
-  - name: 'MANIFEST_REPO'
+  - name: "MANIFEST_REPO"
     value: $[ resources.repositories['FluxRepo'].name ]
-  - name: 'MAVEN_CACHE_FOLDER'
+  - name: "MAVEN_CACHE_FOLDER"
     value: $(Pipeline.Workspace)/.m2/repository
   - name: SKIP_TESTS
-    value: 'false'
+    value: "false"
 
 stages:
   - template: /devops/build-stage.yml@TemplateRepo
     parameters:
-      mavenGoal: 'package'
+      mavenGoal: "package"
       mavenPublishJUnitResults: true
-      serviceCoreMavenOptions: '-P search-core -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
-      mavenOptions: '-P search-azure -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+      serviceCoreMavenOptions: "-P search-core -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)"
+      mavenOptions: "-P search-azure -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)"
       copyFileContents: |
         pom.xml
         provider/search-azure/maven/settings.xml
         provider/search-azure/pom.xml
         provider/search-azure/target/*-spring-boot.jar
-      copyFileContentsToFlatten: ''
-      mavenSettingsFile: './maven/settings.xml'
+      copyFileContentsToFlatten: ""
+      mavenSettingsFile: "./maven/settings.xml"
       serviceBase: ${{ variables.serviceName }}
-      testingRootFolder: 'testing'
+      testingRootFolder: "testing"
       chartPath: ${{ variables.chartPath }}
   - template: /devops/deploy-stages.yml@TemplateRepo
     parameters:
       serviceName: ${{ variables.serviceName }}
       chartPath: ${{ variables.chartPath }}
       valuesFile: ${{ variables.valuesFile }}
-      testCoreMavenPomFile: 'testing/integration-tests/search-test-core/pom.xml'
-      testCoreMavenOptions: ''
+      testCoreMavenPomFile: "testing/integration-tests/search-test-core/pom.xml"
+      testCoreMavenOptions: ""
       skipDeploy: ${{ variables.SKIP_DEPLOY }}
       skipTest: ${{ variables.SKIP_TESTS }}
       providers:
-        -  name: Azure
-           environments: ['dev']
+        - name: Azure
+          environments: ["dev"]
