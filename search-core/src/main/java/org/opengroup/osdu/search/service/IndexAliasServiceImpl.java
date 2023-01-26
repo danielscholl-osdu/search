@@ -25,13 +25,13 @@ import org.elasticsearch.cluster.metadata.AliasMetadata;
 import org.elasticsearch.rest.RestStatus;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.search.ElasticIndexNameResolver;
-import org.opengroup.osdu.search.cache.IndexAliasCache;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Component
@@ -41,9 +41,10 @@ public class IndexAliasServiceImpl implements IndexAliasService {
     @Inject
     private ElasticIndexNameResolver elasticIndexNameResolver;
     @Inject
-    private IndexAliasCache indexAliasCache;
-    @Inject
     private JaxRsDpsLog log;
+
+    private final Map<String, String> KIND_ALIAS_MAP = new ConcurrentHashMap();
+
 
     @Override
     public Map<String, String> getIndicesAliases(List<String> kinds) {
@@ -52,7 +53,7 @@ public class IndexAliasServiceImpl implements IndexAliasService {
 
         List<String> validKinds = kinds.stream().filter(k -> elasticIndexNameResolver.isIndexAliasSupported(k)).collect(Collectors.toList());
         for(String kind: validKinds) {
-            String alias = indexAliasCache.get(kind);
+            String alias = KIND_ALIAS_MAP.get(kind);
             if(!Strings.isNullOrEmpty(alias)) {
                 aliases.put(kind, alias);
             }
@@ -67,15 +68,20 @@ public class IndexAliasServiceImpl implements IndexAliasService {
                 for(String kind: unresolvedKinds) {
                     String alias = elasticIndexNameResolver.getIndexAliasFromKind(kind);
                     if(!allExistingAliases.contains(alias)) {
-                        alias = createIndexAlias(restClient, kind);
+                        try {
+                            alias = createIndexAlias(restClient, kind);
+                        }
+                        catch(Exception e) {
+                            log.error(String.format("Fail to create index alias for kind '%s'", kind), e);
+                        }
                     }
                     if(!Strings.isNullOrEmpty(alias)) {
                         aliases.put(kind, alias);
-                        indexAliasCache.put(kind, alias);
+                        KIND_ALIAS_MAP.put(kind, alias);
                     }
                 }
             } catch (Exception e) {
-                log.error(String.format("Fail to get or create index aliases for kinds"), e);
+                log.error(String.format("Fail to get index aliases for kinds"), e);
             }
         }
 
@@ -86,7 +92,7 @@ public class IndexAliasServiceImpl implements IndexAliasService {
         if(!elasticIndexNameResolver.isIndexAliasSupported(kind))
             return null;
 
-        String alias = indexAliasCache.get(kind);
+        String alias = KIND_ALIAS_MAP.get(kind);
         if(Strings.isNullOrEmpty(alias)) {
             try (RestHighLevelClient restClient = this.elasticClientHandler.createRestClient()) {
                 if(isIndexAliasExistForKind(restClient, kind)) {
@@ -97,7 +103,7 @@ public class IndexAliasServiceImpl implements IndexAliasService {
                 }
 
                 if(!Strings.isNullOrEmpty(alias)) {
-                    indexAliasCache.put(kind, alias);
+                    KIND_ALIAS_MAP.put(kind, alias);
                 }
             }
             catch (Exception e) {
