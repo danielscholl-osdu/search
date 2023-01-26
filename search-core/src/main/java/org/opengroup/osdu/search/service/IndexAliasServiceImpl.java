@@ -60,22 +60,23 @@ public class IndexAliasServiceImpl implements IndexAliasService {
                 unresolvedKinds.add(kind);
             }
         }
-
-        try (RestHighLevelClient restClient = this.elasticClientHandler.createRestClient()) {
-            // It is much faster to get all the aliases and verify it locally than to verify it remotely.
-            Set<String> allExistingAliases = getAllExistingAliases(restClient);
-            for(String kind: unresolvedKinds) {
-                String alias = elasticIndexNameResolver.getIndexAliasFromKind(kind);
-                if(!allExistingAliases.contains(alias)) {
-                    alias = createIndexAlias(restClient, kind);
+        if(!unresolvedKinds.isEmpty()) {
+            try (RestHighLevelClient restClient = this.elasticClientHandler.createRestClient()) {
+                // It is much faster to get all the aliases and verify it locally than to verify it remotely.
+                Set<String> allExistingAliases = getAllExistingAliases(restClient);
+                for(String kind: unresolvedKinds) {
+                    String alias = elasticIndexNameResolver.getIndexAliasFromKind(kind);
+                    if(!allExistingAliases.contains(alias)) {
+                        alias = createIndexAlias(restClient, kind);
+                    }
+                    if(!Strings.isNullOrEmpty(alias)) {
+                        aliases.put(kind, alias);
+                        indexAliasCache.put(kind, alias);
+                    }
                 }
-                if(!Strings.isNullOrEmpty(alias)) {
-                    aliases.put(kind, alias);
-                    indexAliasCache.put(kind, alias);
-                }
+            } catch (Exception e) {
+                log.error(String.format("Fail to get or create index aliases for kinds"), e);
             }
-        } catch (Exception e) {
-            log.error(String.format("Fail to get or create index aliases for kinds"), e);
         }
 
         return aliases;
