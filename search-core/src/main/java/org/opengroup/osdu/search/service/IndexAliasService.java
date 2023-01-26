@@ -14,7 +14,10 @@
 
 package org.opengroup.osdu.search.service;
 
+import java.util.List;
+import java.util.Map;
+
 public interface IndexAliasService {
-    boolean hasIndexAlias(String kind);
+    Map<String, String> getIndicesAliases(List<String> kinds);
     String getIndexAlias(String kind);
 }

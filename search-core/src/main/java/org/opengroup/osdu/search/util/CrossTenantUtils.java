@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class CrossTenantUtils {
@@ -37,25 +38,33 @@ public class CrossTenantUtils {
 
     public String getIndexName(Query searchRequest) {
         List<String> kinds = KindParser.parse(searchRequest.getKind());
-        String indexNames = buildIndexNames(kinds, false);
-        if(indexNames.length() > MAX_INDEX_NAME_LENGTH) {
-            indexNames = buildIndexNames(kinds, true);
-        }
-
-        return indexNames;
-    }
-
-    private String buildIndexNames(List<String> kinds, boolean useAlias) {
         StringBuilder builder = new StringBuilder();
         for(String kind : kinds) {
-            String index = null;
-            if(useAlias) {
-                index = this.indexAliasService.getIndexAlias(kind);
-            }
-            if(Strings.isNullOrEmpty(index)) {
-                index = this.elasticIndexNameResolver.getIndexNameFromKind(kind);
-            }
+            String index = this.elasticIndexNameResolver.getIndexNameFromKind(kind);
             builder.append(index);
+            builder.append(",");
+        }
+        builder.append("-.*"); // Exclude Lucene/ElasticSearch internal indices
+        String index = builder.toString();
+        if(index.length() <= MAX_INDEX_NAME_LENGTH) {
+            return index;
+        }
+
+        return getIndexNamesWithAliases(kinds);
+    }
+
+    private String getIndexNamesWithAliases(List<String> kinds) {
+        StringBuilder builder = new StringBuilder();
+        Map<String, String> aliases = this.indexAliasService.getIndicesAliases(kinds);
+        for(String kind : kinds) {
+            if(aliases.containsKey(kind) && !Strings.isNullOrEmpty(aliases.get(kind))) {
+                String alias = aliases.get(kind);
+                builder.append(alias);
+            }
+            else {
+                String index = this.elasticIndexNameResolver.getIndexNameFromKind(kind);
+                builder.append(index);
+            }
             builder.append(",");
         }
         builder.append("-.*"); // Exclude Lucene/ElasticSearch internal indices

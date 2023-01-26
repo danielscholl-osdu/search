@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,53 +49,73 @@ public class IndexAliasServiceImpl implements IndexAliasService {
     private JaxRsDpsLog log;
 
     @Override
-    public boolean hasIndexAlias(String kind) {
+    public Map<String, String> getIndicesAliases(List<String> kinds) {
+        Map<String, String> aliases = new HashMap<>();
+
+        try (RestHighLevelClient restClient = this.elasticClientHandler.createRestClient()) {
+            for(String kind: kinds) {
+                String alias = null;
+                if(elasticIndexNameResolver.isIndexAliasSupported(kind)) {
+                    alias = indexAliasCache.get(kind);
+                    if(Strings.isNullOrEmpty(alias)) {
+                        try {
+                            alias = getOrCreateIndexAliases(restClient, kind);
+                            if(!Strings.isNullOrEmpty(alias)) {
+                                indexAliasCache.put(kind, alias);
+                            }
+                        } catch (Exception e) {
+                            log.error(String.format("Fail to get or create index alias for kind '%s'", kind), e);
+                        }
+                    }
+                }
+                aliases.put(kind, alias);
+            }
+        } catch (Exception e) {
+            log.error(String.format("Fail to get or create index aliases for kinds"), e);
+        }
+
+        return aliases;
+    }
+
+    public String getIndexAlias(String kind) {
         if(!elasticIndexNameResolver.isIndexAliasSupported(kind))
-            return false;
+            return null;
 
         String alias = indexAliasCache.get(kind);
         if(Strings.isNullOrEmpty(alias)) {
-            try {
-                alias = getOrCreateIndexAliases(kind);
+            try (RestHighLevelClient restClient = this.elasticClientHandler.createRestClient()) {
+                alias = getOrCreateIndexAliases(restClient, kind);
                 if(!Strings.isNullOrEmpty(alias)) {
                     indexAliasCache.put(kind, alias);
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 log.error(String.format("Fail to get or create index alias for kind '%s'", kind), e);
             }
         }
 
-        return (!Strings.isNullOrEmpty(alias));
+        return alias;
     }
 
-    public String getIndexAlias(String kind) {
-        if(hasIndexAlias(kind)) {
-            return indexAliasCache.get(kind);
-        }
-        return null;
-    }
-
-    private String getOrCreateIndexAliases(String kind) throws IOException {
+    private String getOrCreateIndexAliases(RestHighLevelClient restClient, String kind) throws IOException {
         String alias = elasticIndexNameResolver.getIndexAliasFromKind(kind);
-        try (RestHighLevelClient restClient = this.elasticClientHandler.createRestClient()) {
-            GetAliasesRequest request = new GetAliasesRequest(alias);
-            if(restClient.indices().existsAlias(request, RequestOptions.DEFAULT)) {
-                return alias;
-            }
+        GetAliasesRequest request = new GetAliasesRequest(alias);
+        if(restClient.indices().existsAlias(request, RequestOptions.DEFAULT)) {
+            return alias;
+        }
 
-            String index = elasticIndexNameResolver.getIndexNameFromKind(kind);
-            // To create an alias for an index, the index name must the concrete index name, not alias
-            index = resolveConcreteIndexName(restClient, index);
-            if(!Strings.isNullOrEmpty(index)) {
-                IndicesAliasesRequest addRequest = new IndicesAliasesRequest();
-                IndicesAliasesRequest.AliasActions aliasActions = new IndicesAliasesRequest.AliasActions(IndicesAliasesRequest.AliasActions.Type.ADD)
-                        .index(index)
-                        .alias(alias);
-                addRequest.addAliasAction(aliasActions);
-                AcknowledgedResponse response = restClient.indices().updateAliases(addRequest, RequestOptions.DEFAULT);
-                if(response.isAcknowledged()) {
-                    return alias;
-                }
+        String index = elasticIndexNameResolver.getIndexNameFromKind(kind);
+        // To create an alias for an index, the index name must the concrete index name, not alias
+        index = resolveConcreteIndexName(restClient, index);
+        if(!Strings.isNullOrEmpty(index)) {
+            IndicesAliasesRequest addRequest = new IndicesAliasesRequest();
+            IndicesAliasesRequest.AliasActions aliasActions = new IndicesAliasesRequest.AliasActions(IndicesAliasesRequest.AliasActions.Type.ADD)
+                    .index(index)
+                    .alias(alias);
+            addRequest.addAliasAction(aliasActions);
+            AcknowledgedResponse response = restClient.indices().updateAliases(addRequest, RequestOptions.DEFAULT);
+            if(response.isAcknowledged()) {
+                return alias;
             }
         }
 
