@@ -31,10 +31,7 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -51,24 +48,31 @@ public class IndexAliasServiceImpl implements IndexAliasService {
     @Override
     public Map<String, String> getIndicesAliases(List<String> kinds) {
         Map<String, String> aliases = new HashMap<>();
+        List<String> unresolvedKinds = new ArrayList<>();
+
+        List<String> validKinds = kinds.stream().filter(k -> elasticIndexNameResolver.isIndexAliasSupported(k)).collect(Collectors.toList());
+        for(String kind: validKinds) {
+            String alias = indexAliasCache.get(kind);
+            if(!Strings.isNullOrEmpty(alias)) {
+                aliases.put(kind, alias);
+            }
+            else {
+                unresolvedKinds.add(kind);
+            }
+        }
 
         try (RestHighLevelClient restClient = this.elasticClientHandler.createRestClient()) {
-            for(String kind: kinds) {
-                String alias = null;
-                if(elasticIndexNameResolver.isIndexAliasSupported(kind)) {
-                    alias = indexAliasCache.get(kind);
-                    if(Strings.isNullOrEmpty(alias)) {
-                        try {
-                            alias = getOrCreateIndexAliases(restClient, kind);
-                            if(!Strings.isNullOrEmpty(alias)) {
-                                indexAliasCache.put(kind, alias);
-                            }
-                        } catch (Exception e) {
-                            log.error(String.format("Fail to get or create index alias for kind '%s'", kind), e);
-                        }
-                    }
+            // It is much faster to get all the aliases and verify it locally than to verify it remotely.
+            Set<String> allExistingAliases = getAllExistingAliases(restClient);
+            for(String kind: unresolvedKinds) {
+                String alias = elasticIndexNameResolver.getIndexAliasFromKind(kind);
+                if(!allExistingAliases.contains(alias)) {
+                    alias = createIndexAlias(restClient, kind);
                 }
-                aliases.put(kind, alias);
+                if(!Strings.isNullOrEmpty(alias)) {
+                    aliases.put(kind, alias);
+                    indexAliasCache.put(kind, alias);
+                }
             }
         } catch (Exception e) {
             log.error(String.format("Fail to get or create index aliases for kinds"), e);
@@ -84,7 +88,13 @@ public class IndexAliasServiceImpl implements IndexAliasService {
         String alias = indexAliasCache.get(kind);
         if(Strings.isNullOrEmpty(alias)) {
             try (RestHighLevelClient restClient = this.elasticClientHandler.createRestClient()) {
-                alias = getOrCreateIndexAliases(restClient, kind);
+                if(isIndexAliasExistForKind(restClient, kind)) {
+                    alias = elasticIndexNameResolver.getIndexAliasFromKind(kind);
+                }
+                else {
+                    alias = createIndexAlias(restClient, kind);
+                }
+
                 if(!Strings.isNullOrEmpty(alias)) {
                     indexAliasCache.put(kind, alias);
                 }
@@ -97,14 +107,29 @@ public class IndexAliasServiceImpl implements IndexAliasService {
         return alias;
     }
 
-    private String getOrCreateIndexAliases(RestHighLevelClient restClient, String kind) throws IOException {
+    private Set<String> getAllExistingAliases(RestHighLevelClient restClient) throws IOException {
+        GetAliasesRequest request = new GetAliasesRequest();
+        GetAliasesResponse response = restClient.indices().getAlias(request, RequestOptions.DEFAULT);
+        if(response.status() != RestStatus.OK)
+            return new HashSet<>();
+
+        Set<String> allAliases = new HashSet<>();
+        for (Set<AliasMetadata> aliasSet: response.getAliases().values()) {
+            List<String> aliases = aliasSet.stream().map(a -> a.getAlias()).collect(Collectors.toList());
+            allAliases.addAll(aliases);
+        }
+        return allAliases;
+    }
+
+    private boolean isIndexAliasExistForKind(RestHighLevelClient restClient, String kind) throws IOException {
         String alias = elasticIndexNameResolver.getIndexAliasFromKind(kind);
         GetAliasesRequest request = new GetAliasesRequest(alias);
-        if(restClient.indices().existsAlias(request, RequestOptions.DEFAULT)) {
-            return alias;
-        }
+        return (restClient.indices().existsAlias(request, RequestOptions.DEFAULT));
+    }
 
+    private String createIndexAlias(RestHighLevelClient restClient, String kind) throws IOException {
         String index = elasticIndexNameResolver.getIndexNameFromKind(kind);
+        String alias = elasticIndexNameResolver.getIndexAliasFromKind(kind);
         // To create an alias for an index, the index name must the concrete index name, not alias
         index = resolveConcreteIndexName(restClient, index);
         if(!Strings.isNullOrEmpty(index)) {
@@ -121,6 +146,7 @@ public class IndexAliasServiceImpl implements IndexAliasService {
 
         return null;
     }
+
 
     private String resolveConcreteIndexName(RestHighLevelClient restClient, String index) throws IOException {
         GetAliasesRequest request = new GetAliasesRequest(index);
