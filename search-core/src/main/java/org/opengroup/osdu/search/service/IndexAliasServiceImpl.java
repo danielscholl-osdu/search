@@ -53,8 +53,8 @@ public class IndexAliasServiceImpl implements IndexAliasService {
 
         List<String> validKinds = kinds.stream().filter(k -> elasticIndexNameResolver.isIndexAliasSupported(k)).collect(Collectors.toList());
         for(String kind: validKinds) {
-            String alias = KIND_ALIAS_MAP.get(kind);
-            if(!Strings.isNullOrEmpty(alias)) {
+            if(KIND_ALIAS_MAP.containsKey(kind)) {
+                String alias = KIND_ALIAS_MAP.get(kind);
                 aliases.put(kind, alias);
             }
             else {
@@ -92,8 +92,11 @@ public class IndexAliasServiceImpl implements IndexAliasService {
         if(!elasticIndexNameResolver.isIndexAliasSupported(kind))
             return null;
 
-        String alias = KIND_ALIAS_MAP.get(kind);
-        if(Strings.isNullOrEmpty(alias)) {
+        String alias = null;
+        if(KIND_ALIAS_MAP.containsKey(kind)) {
+            alias = KIND_ALIAS_MAP.get(kind);
+        }
+        else {
             try (RestHighLevelClient restClient = this.elasticClientHandler.createRestClient()) {
                 if(isIndexAliasExistForKind(restClient, kind)) {
                     alias = elasticIndexNameResolver.getIndexAliasFromKind(kind);
