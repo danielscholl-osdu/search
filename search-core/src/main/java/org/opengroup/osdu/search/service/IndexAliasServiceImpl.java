@@ -88,35 +88,6 @@ public class IndexAliasServiceImpl implements IndexAliasService {
         return aliases;
     }
 
-    public String getIndexAlias(String kind) {
-        if(!elasticIndexNameResolver.isIndexAliasSupported(kind))
-            return null;
-
-        String alias = null;
-        if(KIND_ALIAS_MAP.containsKey(kind)) {
-            alias = KIND_ALIAS_MAP.get(kind);
-        }
-        else {
-            try (RestHighLevelClient restClient = this.elasticClientHandler.createRestClient()) {
-                if(isIndexAliasExistForKind(restClient, kind)) {
-                    alias = elasticIndexNameResolver.getIndexAliasFromKind(kind);
-                }
-                else {
-                    alias = createIndexAlias(restClient, kind);
-                }
-
-                if(!Strings.isNullOrEmpty(alias)) {
-                    KIND_ALIAS_MAP.put(kind, alias);
-                }
-            }
-            catch (Exception e) {
-                log.error(String.format("Fail to get or create index alias for kind '%s'", kind), e);
-            }
-        }
-
-        return alias;
-    }
-
     private Set<String> getAllExistingAliases(RestHighLevelClient restClient) throws IOException {
         GetAliasesRequest request = new GetAliasesRequest();
         GetAliasesResponse response = restClient.indices().getAlias(request, RequestOptions.DEFAULT);
@@ -129,12 +100,6 @@ public class IndexAliasServiceImpl implements IndexAliasService {
             allAliases.addAll(aliases);
         }
         return allAliases;
-    }
-
-    private boolean isIndexAliasExistForKind(RestHighLevelClient restClient, String kind) throws IOException {
-        String alias = elasticIndexNameResolver.getIndexAliasFromKind(kind);
-        GetAliasesRequest request = new GetAliasesRequest(alias);
-        return (restClient.indices().existsAlias(request, RequestOptions.DEFAULT));
     }
 
     private String createIndexAlias(RestHighLevelClient restClient, String kind) throws IOException {
@@ -156,7 +121,6 @@ public class IndexAliasServiceImpl implements IndexAliasService {
 
         return null;
     }
-
 
     private String resolveConcreteIndexName(RestHighLevelClient restClient, String index) throws IOException {
         GetAliasesRequest request = new GetAliasesRequest(index);

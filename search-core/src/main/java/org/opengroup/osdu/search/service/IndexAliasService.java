@@ -19,5 +19,4 @@ import java.util.Map;
 
 public interface IndexAliasService {
     Map<String, String> getIndicesAliases(List<String> kinds);
-    String getIndexAlias(String kind);
 }

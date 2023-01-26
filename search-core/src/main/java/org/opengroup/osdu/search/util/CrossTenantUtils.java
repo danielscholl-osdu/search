@@ -22,6 +22,7 @@ import org.opengroup.osdu.search.service.IndexAliasService;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,24 +39,18 @@ public class CrossTenantUtils {
 
     public String getIndexName(Query searchRequest) {
         List<String> kinds = KindParser.parse(searchRequest.getKind());
-        StringBuilder builder = new StringBuilder();
-        for(String kind : kinds) {
-            String index = this.elasticIndexNameResolver.getIndexNameFromKind(kind);
-            builder.append(index);
-            builder.append(",");
-        }
-        builder.append("-.*"); // Exclude Lucene/ElasticSearch internal indices
-        String index = builder.toString();
+        String index = getIndexName(kinds, new HashMap<>());
         if(index.length() <= MAX_INDEX_NAME_LENGTH) {
             return index;
         }
-
-        return getIndexNamesWithAliases(kinds);
+        else {
+            Map<String, String> aliases = this.indexAliasService.getIndicesAliases(kinds);
+            return getIndexName(kinds, aliases);
+        }
     }
 
-    private String getIndexNamesWithAliases(List<String> kinds) {
+    private String getIndexName(List<String> kinds, Map<String, String> aliases) {
         StringBuilder builder = new StringBuilder();
-        Map<String, String> aliases = this.indexAliasService.getIndicesAliases(kinds);
         for(String kind : kinds) {
             if(aliases.containsKey(kind) && !Strings.isNullOrEmpty(aliases.get(kind))) {
                 String alias = aliases.get(kind);
