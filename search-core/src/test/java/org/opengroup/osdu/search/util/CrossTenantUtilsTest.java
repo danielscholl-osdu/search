@@ -65,12 +65,7 @@ public class CrossTenantUtilsTest {
         kind.add("slb:wks:log:1.0.5");
         String indices = "opendes-welldb-wellbore2-1.0.0,opendes-osdudemo-wellbore-1.0.0,opendes-wks-polylineSet-1.0.0,slb-wks-log-1.0.5,-.*";
         when(queryRequest.getKind()).thenReturn(kind);
-        when(this.elasticIndexNameResolver.getIndexNameFromKind(anyString())).thenAnswer(invocation ->
-        {
-            String kd = invocation.getArgument(0);
-            kd = kd.replace(":", "-");
-            return kd;
-        });
+        mock_getIndexNameFromKind();
         assertEquals(indices, this.sut.getIndexName(queryRequest));
     }
 
@@ -79,12 +74,7 @@ public class CrossTenantUtilsTest {
         String kind = "opendes:welldb:wellbore2:1.0.0,opendes:osdudemo:wellbore:1.0.0,opendes:wks:polylineSet:1.0.0,slb:wks:log:1.0.5";
         String indices = "opendes-welldb-wellbore2-1.0.0,opendes-osdudemo-wellbore-1.0.0,opendes-wks-polylineSet-1.0.0,slb-wks-log-1.0.5,-.*";
         when(queryRequest.getKind()).thenReturn(kind);
-        when(this.elasticIndexNameResolver.getIndexNameFromKind(anyString())).thenAnswer(invocation ->
-        {
-            String kd = invocation.getArgument(0);
-            kd = kd.replace(":", "-");
-            return kd;
-        });
+        mock_getIndexNameFromKind();
         assertEquals(indices, this.sut.getIndexName(queryRequest));
     }
 
@@ -92,12 +82,7 @@ public class CrossTenantUtilsTest {
     public void should_returnMultiIndicesAsIs_when_total_length_is_not_longer_than_max_length() {
         List<String> kinds = getKindsNotLongerThan(MAX_INDEX_NAME_LENGTH);
         when(queryRequest.getKind()).thenReturn(kinds);
-        when(this.elasticIndexNameResolver.getIndexNameFromKind(anyString())).thenAnswer(invocation ->
-        {
-            String kd = invocation.getArgument(0);
-            kd = kd.replace(":", "-");
-            return kd;
-        });
+        mock_getIndexNameFromKind();
         assertEquals(getIndexName(kinds), this.sut.getIndexName(queryRequest));
     }
 
@@ -110,12 +95,7 @@ public class CrossTenantUtilsTest {
 
         when(indexAliasService.getIndicesAliases(any())).thenReturn(kindAliasMap);
         when(queryRequest.getKind()).thenReturn(kinds);
-        when(this.elasticIndexNameResolver.getIndexNameFromKind(anyString())).thenAnswer(invocation ->
-        {
-            String kd = invocation.getArgument(0);
-            kd = kd.replace(":", "-");
-            return kd;
-        });
+        mock_getIndexNameFromKind();
         assertEquals(getIndexName(kinds.size(), alias), this.sut.getIndexName(queryRequest));
     }
 
@@ -126,13 +106,17 @@ public class CrossTenantUtilsTest {
 
         when(indexAliasService.getIndicesAliases(any())).thenReturn(kindAliasMap);
         when(queryRequest.getKind()).thenReturn(kinds);
+        mock_getIndexNameFromKind();
+        assertEquals(getIndexName(kinds), this.sut.getIndexName(queryRequest));
+    }
+
+    private void mock_getIndexNameFromKind() {
         when(this.elasticIndexNameResolver.getIndexNameFromKind(anyString())).thenAnswer(invocation ->
         {
             String kd = invocation.getArgument(0);
             kd = kd.replace(":", "-");
             return kd;
         });
-        assertEquals(getIndexName(kinds), this.sut.getIndexName(queryRequest));
     }
 
     private List<String> getKindsNotLongerThan(int length) {
