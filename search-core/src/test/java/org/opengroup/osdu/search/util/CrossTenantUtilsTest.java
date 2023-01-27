@@ -22,20 +22,28 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.search.ElasticIndexNameResolver;
+import org.opengroup.osdu.search.service.IndexAliasService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CrossTenantUtilsTest {
+    private static final int MAX_INDEX_NAME_LENGTH = 3840;
 
     @Mock
     private QueryRequest queryRequest;
     @Mock
     private ElasticIndexNameResolver elasticIndexNameResolver;
+    @Mock
+    private IndexAliasService indexAliasService;
     @InjectMocks
     private CrossTenantUtils sut;
 
@@ -78,5 +86,88 @@ public class CrossTenantUtilsTest {
             return kd;
         });
         assertEquals(indices, this.sut.getIndexName(queryRequest));
+    }
+
+    @Test
+    public void should_returnMultiIndicesAsIs_when_total_length_is_not_longer_than_max_length() {
+        List<String> kinds = getKindsNotLongerThan(MAX_INDEX_NAME_LENGTH);
+        when(queryRequest.getKind()).thenReturn(kinds);
+        when(this.elasticIndexNameResolver.getIndexNameFromKind(anyString())).thenAnswer(invocation ->
+        {
+            String kd = invocation.getArgument(0);
+            kd = kd.replace(":", "-");
+            return kd;
+        });
+        assertEquals(getIndexName(kinds), this.sut.getIndexName(queryRequest));
+    }
+
+    @Test
+    public void should_returnMultiIndices_aliases_when_total_length_is_longer_than_max_length() {
+        List<String> kinds = getKindsNotLongerThan(MAX_INDEX_NAME_LENGTH * 2);
+        String alias = "a1234567890";
+        Map<String, String> kindAliasMap = new HashMap<>();
+        kindAliasMap.put(kinds.get(0), alias);
+
+        when(indexAliasService.getIndicesAliases(any())).thenReturn(kindAliasMap);
+        when(queryRequest.getKind()).thenReturn(kinds);
+        when(this.elasticIndexNameResolver.getIndexNameFromKind(anyString())).thenAnswer(invocation ->
+        {
+            String kd = invocation.getArgument(0);
+            kd = kd.replace(":", "-");
+            return kd;
+        });
+        assertEquals(getIndexName(kinds.size(), alias), this.sut.getIndexName(queryRequest));
+    }
+
+    @Test
+    public void should_returnMultiIndicesAsIs_when_total_length_is_longer_than_max_length_but_alias_exist() {
+        List<String> kinds = getKindsNotLongerThan(MAX_INDEX_NAME_LENGTH * 2);
+        Map<String, String> kindAliasMap = new HashMap<>();
+
+        when(indexAliasService.getIndicesAliases(any())).thenReturn(kindAliasMap);
+        when(queryRequest.getKind()).thenReturn(kinds);
+        when(this.elasticIndexNameResolver.getIndexNameFromKind(anyString())).thenAnswer(invocation ->
+        {
+            String kd = invocation.getArgument(0);
+            kd = kd.replace(":", "-");
+            return kd;
+        });
+        assertEquals(getIndexName(kinds), this.sut.getIndexName(queryRequest));
+    }
+
+    private List<String> getKindsNotLongerThan(int length) {
+        String kind = "osdu:wks:master-data-wellbore:1.0.0";
+        ArrayList kinds = new ArrayList();
+        int lengthPerKind = kind.length() + 1; // 1 is comma
+        int totalLength = "-.*".length();
+        int n = 0;
+        while (totalLength + lengthPerKind<= length) {
+            kinds.add(kind);
+            totalLength += lengthPerKind;
+        }
+        return kinds;
+    }
+
+    private String getIndexName(int numberOfAlias, String alias) {
+        StringBuilder builder = new StringBuilder();
+        int n = 0;
+        while(n < numberOfAlias) {
+            builder.append(alias);
+            builder.append(",");
+            n++;
+        }
+        builder.append("-.*");
+        return builder.toString();
+    }
+
+    private String getIndexName(List<String> kinds) {
+        StringBuilder builder = new StringBuilder();
+        for(String kind : kinds) {
+            String index = kind.replace(":", "-");
+            builder.append(index);
+            builder.append(",");
+        }
+        builder.append("-.*");
+        return builder.toString();
     }
 }
