@@ -47,6 +47,19 @@ public class QueryBase extends TestsBase {
         requestQuery.setKind(generateActualName(kind, timeStamp));
     }
 
+    public void i_send_with_multi_kinds(String query, int number, String kind) {
+        requestQuery.setQuery(query);
+        String actualKind = generateActualName(kind, timeStamp);
+        StringBuilder builder = new StringBuilder();
+        for(int i = 0; i < number; i++) {
+            if(builder.length() > 0) {
+                builder.append(",");
+            }
+            builder.append(actualKind);
+        }
+        requestQuery.setKind(builder.toString());
+    }
+
     public void i_set_the_fields_I_want_in_response_as(List<String> returnedFileds) {
         if(returnedFileds.contains("NULL")) requestQuery.setReturnedFields(null);
         else if (!returnedFileds.contains("All")) requestQuery.setReturnedFields(returnedFileds);
