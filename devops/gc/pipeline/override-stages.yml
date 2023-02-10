@@ -2,8 +2,6 @@ variables:
   GC_SERVICE: search
   GC_VENDOR: gc
   GC_TESTING_DIR: "testing/integration-tests"
-  # FIXME remove when all services are migrated to a single helm
-  GC_ENABLE_HELM_CONFIG: "false"
 
 gc-anthos-test:
   variables:

@@ -14,26 +14,53 @@
 
 package org.opengroup.osdu.search.util;
 
+import com.google.api.client.util.Strings;
 import org.opengroup.osdu.core.common.search.ElasticIndexNameResolver;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.core.common.util.KindParser;
+import org.opengroup.osdu.search.service.IndexAliasService;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class CrossTenantUtils {
+    // For details, please refer to implementation of class
+    // org.opengroup.osdu.core.common.model.search.validation.MultiKindValidator
+    private static final int MAX_INDEX_NAME_LENGTH = 3840;
 
     @Inject
     private ElasticIndexNameResolver elasticIndexNameResolver;
+    @Inject
+    private IndexAliasService indexAliasService;
 
     public String getIndexName(Query searchRequest) {
-        StringBuilder builder = new StringBuilder();
         List<String> kinds = KindParser.parse(searchRequest.getKind());
+        String index = getIndexName(kinds, new HashMap<>());
+        if(index.length() <= MAX_INDEX_NAME_LENGTH) {
+            return index;
+        }
+        else {
+            Map<String, String> aliases = this.indexAliasService.getIndicesAliases(kinds);
+            return getIndexName(kinds, aliases);
+        }
+    }
+
+    private String getIndexName(List<String> kinds, Map<String, String> aliases) {
+        StringBuilder builder = new StringBuilder();
         for(String kind : kinds) {
-            String index = this.elasticIndexNameResolver.getIndexNameFromKind(kind);
-            builder.append(index + ",");
+            if(aliases.containsKey(kind) && !Strings.isNullOrEmpty(aliases.get(kind))) {
+                String alias = aliases.get(kind);
+                builder.append(alias);
+            }
+            else {
+                String index = this.elasticIndexNameResolver.getIndexNameFromKind(kind);
+                builder.append(index);
+            }
+            builder.append(",");
         }
         builder.append("-.*"); // Exclude Lucene/ElasticSearch internal indices
         return builder.toString();

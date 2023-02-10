@@ -41,6 +41,21 @@ Feature: Search with different queries
       | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | ""OFFICE2" \| OFFICE3"               | None  | None   | All             | 1     |
       | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | "data.Well\*:(Data Lake Cloud)"      | None  | None   | All             | 3     |
 
+  Scenario Outline: Search data in a given kind with hundreds of copies
+    When I send <query> with <number> copies of <kind>
+    And I limit the count of returned results to <limit>
+    And I set the offset of starting point as <offset>
+    And I set the fields I want in response as <returned_fields>
+    And I send request to tenant <tenant>
+    Then I should get in response <count> records with <returned_fields>
+
+    Examples:
+      | tenant    | kind                                                      | number  | query                                | limit | offset | returned_fields | count |
+      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | 300     | "data.OriginalOperator:OFFICE4"      | None  | None   | All             | 1     |
+      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | 300     | None                                 | 0     | None   | NULL            | 3     |
+      | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | 300     | None                                 | 0     | None   | NULL            | 3     |
+
+
   Scenario Outline: Search data in a given a kind with invalid inputs
     When I send <query> with <kind>
     And I limit the count of returned results to <limit>
