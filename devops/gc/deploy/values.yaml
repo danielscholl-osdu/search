@@ -9,8 +9,8 @@ data:
   policyId: "osdu.instance.search"
   securityHttpsCertificateTrust: "true"
   # Deployments
-  requestsCpu: "75m"
-  requestsMemory: "448M"
+  requestsCpu: "20m"
+  requestsMemory: "550Mi"
   limitsCpu: "1"
   limitsMemory: "1G"
   serviceAccountName: "search"
@@ -27,7 +27,7 @@ conf:
   domain: ""
   searchRedisSecretName: "search-redis-secret"
 istio:
-  proxyCPU: "25m"
+  proxyCPU: "10m"
   proxyCPULimit: "200m"
-  proxyMemory: "64Mi"
+  proxyMemory: "100Mi"
   proxyMemoryLimit: "256Mi"
