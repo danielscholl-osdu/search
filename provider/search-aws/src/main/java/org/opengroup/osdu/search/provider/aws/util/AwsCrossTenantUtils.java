@@ -52,19 +52,21 @@ public class AwsCrossTenantUtils extends CrossTenantUtils {
                 builder.append(alias);
             }
             else {
-                String index = this.elasticIndexNameResolver.getIndexNameFromKind(kind);
-                String[] indexArr = index.split("-");
-                if (indexArr[0].equalsIgnoreCase("*")) {
-                    indexArr[0] = dpsHeaders.getPartitionId();
+                String[] kindArr = kind.split(":");
+                if (kindArr[0].equalsIgnoreCase("*")) {
+                    kindArr[0] = dpsHeaders.getPartitionId();
                 }
-                else if (indexArr[0].equalsIgnoreCase(dpsHeaders.getPartitionId()) == false) {
+                else if (kindArr[0].equalsIgnoreCase(dpsHeaders.getPartitionId()) == false) {
                     throw new BadRequestException("Invalid kind in search request.");
                 }
-                builder.append(String.join("-", indexArr));
+                String newKind = String.join(":", kindArr);
+                String index = this.elasticIndexNameResolver.getIndexNameFromKind(newKind);
+                builder.append(index);
             }
             builder.append(",");
         }
         builder.append("-.*"); // Exclude Lucene/ElasticSearch internal indices
         return builder.toString();
     }
+
 }
