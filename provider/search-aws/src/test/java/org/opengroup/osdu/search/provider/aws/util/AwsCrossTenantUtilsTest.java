@@ -49,6 +49,19 @@ public class AwsCrossTenantUtilsTest {
     }
 
     @Test
+    public void should_return_IndexNameWithHyphen_when_partitionIdAndKindMatches() {
+        String DATA_PARTITION_ID = "tenant-1";
+        String KIND = "tenant-1:*:*:*";
+        String INDEX = KIND.replace(":", "-");
+        String INDEX_NAME = String.format("%s,%s", INDEX, "-.*");
+        when(dpsHeaders.getPartitionId()).thenReturn(DATA_PARTITION_ID);
+        when(searchRequest.getKind()).thenReturn(KIND);
+        when(elasticIndexNameResolver.getIndexNameFromKind(KIND)).thenReturn(INDEX);
+
+        assertEquals(INDEX_NAME, awsCrossTenantUtils.getIndexName(searchRequest));
+    }
+
+    @Test
     public void should_return_alias_when_searchingHundredSameKindsAndKindMatches() {
         Integer KIND_COUNT = 300;
         String DATA_PARTITION_ID = "tenant1";
@@ -88,7 +101,7 @@ public class AwsCrossTenantUtilsTest {
         String DATA_PARTITION_ID = "tenant1";
         String KIND = "*:*:*:*";
         String TENANT_KIND = "tenant1:*:*:*";
-        String INDEX = KIND.replace(":", "-");
+        String INDEX = TENANT_KIND.replace(":", "-");
         List<String> KINDS = Collections.nCopies(KIND_COUNT, KIND);
         String ALIAS = String.format("a%d", TENANT_KIND.hashCode());
         Map<String, String> ALIAS_MAP = new HashMap<>();
@@ -111,7 +124,7 @@ public class AwsCrossTenantUtilsTest {
 
         when(dpsHeaders.getPartitionId()).thenReturn(DATA_PARTITION_ID);
         when(searchRequest.getKind()).thenReturn(HUNDREDS_KINDS);
-        when(elasticIndexNameResolver.getIndexNameFromKind(KIND)).thenReturn(INDEX);
+        when(elasticIndexNameResolver.getIndexNameFromKind(TENANT_KIND)).thenReturn(INDEX);
         when(indexAliasService.getIndicesAliases(KINDS)).thenReturn(ALIAS_MAP);
 
         assertEquals(INDEX_NAME, awsCrossTenantUtils.getIndexName(searchRequest));
@@ -121,11 +134,12 @@ public class AwsCrossTenantUtilsTest {
     public void should_return_PartitionIdIndexName_when_searchingAllKinds() {
         String DATA_PARTITION_ID = "tenant1";
         String KIND = "*:*:*:*";
-        String INDEX = KIND.replace(":", "-");
+        String TENANT_KIND = "tenant1:*:*:*";
+        String INDEX = TENANT_KIND.replace(":", "-");
         String INDEX_NAME = String.format("%s%s,%s", DATA_PARTITION_ID, "-*-*-*", "-.*");
         when(dpsHeaders.getPartitionId()).thenReturn(DATA_PARTITION_ID);
         when(searchRequest.getKind()).thenReturn(KIND);
-        when(elasticIndexNameResolver.getIndexNameFromKind(KIND)).thenReturn(INDEX);
+        when(elasticIndexNameResolver.getIndexNameFromKind(TENANT_KIND)).thenReturn(INDEX);
 
         assertEquals(INDEX_NAME, awsCrossTenantUtils.getIndexName(searchRequest));
     }
@@ -138,7 +152,6 @@ public class AwsCrossTenantUtilsTest {
         String INDEX_NAME = String.format("%s,%s", INDEX, "-.*");
         when(dpsHeaders.getPartitionId()).thenReturn(DATA_PARTITION_ID);
         when(searchRequest.getKind()).thenReturn(KIND);
-        when(elasticIndexNameResolver.getIndexNameFromKind(KIND)).thenReturn(INDEX);
 
         awsCrossTenantUtils.getIndexName(searchRequest); // Should throw an exception.
     }
