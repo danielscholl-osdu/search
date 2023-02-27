@@ -15,6 +15,7 @@ Feature: Search with different queries
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "records_1" |  "data.default.viewers@tenant1"|
       | "tenant1:search<timestamp>:test-data2--Integration:1.0.2"  | "records_2" | "data.default.viewers@tenant1"|
       | "tenant1:well<timestamp>:test-data3--Integration:1.0.3"   | "records_4" | "data.default.viewers@tenant1"  |
+
   Scenario Outline: Search data in a given kind
     When I send <query> with <kind>
     And I limit the count of returned results to <limit>
