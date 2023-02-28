@@ -10,11 +10,13 @@ import org.elasticsearch.rest.RestStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.search.ElasticIndexNameResolver;
+import org.opengroup.osdu.search.cache.IndexAliasCache;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.powermock.api.mockito.PowerMockito;
 import org.springframework.context.annotation.Lazy;
@@ -34,6 +36,8 @@ public class IndexAliasServiceImplTest {
     private ElasticClientHandler elasticClientHandler;
     @Mock
     private ElasticIndexNameResolver elasticIndexNameResolver;
+    @Mock
+    private IndexAliasCache indexAliasCache;
     @Mock
     @Lazy
     private JaxRsDpsLog log;
@@ -80,6 +84,19 @@ public class IndexAliasServiceImplTest {
         setup_when_alias_exist();
 
         List<String> kinds = Arrays.asList(kind);
+        ArgumentCaptor<String> kindCapture = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> aliasCapture = ArgumentCaptor.forClass(String.class);
+        doNothing().when(indexAliasCache).put(kindCapture.capture(), aliasCapture.capture());
+        when(indexAliasCache.get(anyString())).thenAnswer(invocation -> {
+            if(kindCapture.getAllValues().size() == 0)
+                return null;
+
+            String k = invocation.getArgument(0);
+            if(k.equals(kindCapture.getValue()))
+                return aliasCapture.getValue();
+            else
+                return null;
+        });
         Map<String, String> kindAliasMap = sut.getIndicesAliases(kinds);
         verify(this.indicesClient, times(1)).getAlias(any(), any());
         assertTrue(kindAliasMap.containsKey(kind));

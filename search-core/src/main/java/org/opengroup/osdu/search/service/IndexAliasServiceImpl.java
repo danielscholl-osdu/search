@@ -25,13 +25,13 @@ import org.elasticsearch.cluster.metadata.AliasMetadata;
 import org.elasticsearch.rest.RestStatus;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.search.ElasticIndexNameResolver;
+import org.opengroup.osdu.search.cache.IndexAliasCache;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Component
@@ -42,9 +42,8 @@ public class IndexAliasServiceImpl implements IndexAliasService {
     private ElasticIndexNameResolver elasticIndexNameResolver;
     @Inject
     private JaxRsDpsLog log;
-
-    private final Map<String, String> KIND_ALIAS_MAP = new ConcurrentHashMap();
-
+    @Inject
+    private IndexAliasCache indexAliasCache;
 
     @Override
     public Map<String, String> getIndicesAliases(List<String> kinds) {
@@ -53,8 +52,8 @@ public class IndexAliasServiceImpl implements IndexAliasService {
 
         List<String> validKinds = kinds.stream().filter(k -> elasticIndexNameResolver.isIndexAliasSupported(k)).collect(Collectors.toList());
         for(String kind: validKinds) {
-            if(KIND_ALIAS_MAP.containsKey(kind)) {
-                String alias = KIND_ALIAS_MAP.get(kind);
+            if(indexAliasCache.get(kind) != null) {
+                String alias = indexAliasCache.get(kind);
                 aliases.put(kind, alias);
             }
             else {
@@ -77,7 +76,12 @@ public class IndexAliasServiceImpl implements IndexAliasService {
                     }
                     if(!Strings.isNullOrEmpty(alias)) {
                         aliases.put(kind, alias);
-                        KIND_ALIAS_MAP.put(kind, alias);
+                        indexAliasCache.put(kind, alias);
+                    }
+                    else {
+                        // In case alias creation failed, we should just use index name in subsequent calls
+                        // to prevent performance hit.
+                        indexAliasCache.put(kind, elasticIndexNameResolver.getIndexNameFromKind(kind));
                     }
                 }
             } catch (Exception e) {
