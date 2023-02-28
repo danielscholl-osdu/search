@@ -78,11 +78,6 @@ public class IndexAliasServiceImpl implements IndexAliasService {
                         aliases.put(kind, alias);
                         indexAliasCache.put(kind, alias);
                     }
-                    else {
-                        // In case alias creation failed, we should just use index name in subsequent calls
-                        // to prevent performance hit.
-                        indexAliasCache.put(kind, elasticIndexNameResolver.getIndexNameFromKind(kind));
-                    }
                 }
             } catch (Exception e) {
                 log.error(String.format("Fail to get index aliases for kinds"), e);
