@@ -169,9 +169,6 @@ public class QueryServiceImplTest {
     @Mock
     private DependencyLogger dependencyLogger;
 
-    @Mock
-    private ISearchRequestUtil searchRequestUtil;
-
     @InjectMocks
     private QueryServiceImpl sut;
 

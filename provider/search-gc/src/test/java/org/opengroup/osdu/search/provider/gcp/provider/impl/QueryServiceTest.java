@@ -127,8 +127,6 @@ public class QueryServiceTest {
   private JaxRsDpsLog log;
   @Mock
   private IProviderHeaderService providerHeaderService;
-  @Mock
-  private ISearchRequestUtil searchRequestUtil;
   @Spy
   private SearchConfigurationProperties properties = new SearchConfigurationProperties();
   @Spy

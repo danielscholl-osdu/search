@@ -22,19 +22,24 @@ import org.junit.runner.RunWith;
 
 @RunWith(Theories.class)
 public class SearchRequestUtilTest {
-    private SearchRequestUtil searchRequestUtil = new SearchRequestUtil();
 
     @Test
     public void setIgnoreUnavailable_to_true() {
         SearchRequest searchRequest = new SearchRequest("index1");
-        searchRequestUtil.setIgnoreUnavailable(searchRequest, true);
+        SearchRequestUtil.setIgnoreUnavailable(searchRequest, true);
         Assert.assertTrue(searchRequest.indicesOptions().ignoreUnavailable());
     }
 
     @Test
     public void setIgnoreUnavailable_to_false() {
         SearchRequest searchRequest = new SearchRequest("index1");
-        searchRequestUtil.setIgnoreUnavailable(searchRequest, false);
+        SearchRequestUtil.setIgnoreUnavailable(searchRequest, false);
         Assert.assertFalse(searchRequest.indicesOptions().ignoreUnavailable());
+    }
+
+    @Test
+    public void createSearchRequest_with_ignoreUnavailable_set_to_true() {
+        SearchRequest searchRequest = SearchRequestUtil.createSearchRequest("index1");
+        Assert.assertTrue(searchRequest.indicesOptions().ignoreUnavailable());
     }
 }

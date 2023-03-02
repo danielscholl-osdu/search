@@ -16,7 +16,6 @@ package org.opengroup.osdu.search.provider.azure.provider.impl;
 
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchResponseSections;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -28,14 +27,11 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppError;
 import org.opengroup.osdu.core.common.model.http.AppException;
@@ -48,7 +44,6 @@ import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.opengroup.osdu.search.util.ISearchRequestUtil;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 
 import java.util.*;
@@ -108,8 +103,6 @@ public class ScrollQueryServiceImplTest {
     private ElasticLoggingConfig elasticLoggingConfig;
     @Mock
     private ResponseExceptionParser exceptionParser;
-    @Mock
-    private ISearchRequestUtil searchRequestUtil;
     @InjectMocks
     private ScrollQueryServiceImpl sut;
 

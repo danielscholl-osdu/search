@@ -71,7 +71,6 @@ import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.opengroup.osdu.search.util.ISearchRequestUtil;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -100,8 +99,6 @@ public class ScrollQueryServiceTest {
   private IProviderHeaderService providerHeaderService;
   @Mock
   private SearchConfigurationProperties searchConfig;
-  @Mock
-  private ISearchRequestUtil searchRequestUtil;
 
   private RestHighLevelClient restHighLevelClient;
 

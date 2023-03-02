@@ -23,7 +23,7 @@ import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.IAggregationParserUtil;
-import org.opengroup.osdu.search.util.ISearchRequestUtil;
+import org.opengroup.osdu.search.util.SearchRequestUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.AccessDeniedException;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
@@ -45,8 +45,6 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
 	private TenantInfo tenant;
     @Inject
     private IAggregationParserUtil aggregationParserUtil;
-    @Inject
-    private ISearchRequestUtil searchRequestUtil;
 
     @Override
     public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
@@ -82,8 +80,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         QueryRequest searchRequest = (QueryRequest) request;
 
         // set the indexes to search against
-        SearchRequest elasticSearchRequest = new SearchRequest(this.getIndex(request));
-        searchRequestUtil.setIgnoreUnavailable(elasticSearchRequest, true);
+        SearchRequest elasticSearchRequest = SearchRequestUtil.createSearchRequest(this.getIndex(request));
 
         // build query
         SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);
