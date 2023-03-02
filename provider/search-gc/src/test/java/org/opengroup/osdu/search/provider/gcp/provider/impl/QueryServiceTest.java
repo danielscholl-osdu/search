@@ -146,7 +146,7 @@ public class QueryServiceTest {
   private IAggregationParserUtil aggregationParserUtil = new AggregationParserUtil(properties);
   @Spy
   private IDetailedBadRequestMessageUtil detailedBadRequestMessageUtil = new DetailedBadRequestMessageUtil(
-          objectMapper);
+      objectMapper);
 
   @Mock
   private RestHighLevelClient restHighLevelClient;
@@ -197,10 +197,10 @@ public class QueryServiceTest {
     TotalHits totalHits = new TotalHits(1, Relation.EQUAL_TO);
     SearchHits searchHits = new SearchHits(new SearchHit[0], totalHits, 2);
     SearchResponse mockSearchResponse = new SearchResponse(
-            new SearchResponseSections(searchHits, null,
-                    null, false, false, null, 1), "2",
-            5, 5, 0, 100, ShardSearchFailure.EMPTY_ARRAY,
-            SearchResponse.Clusters.EMPTY);
+        new SearchResponseSections(searchHits, null,
+            null, false, false, null, 1), "2",
+        5, 5, 0, 100, ShardSearchFailure.EMPTY_ARRAY,
+        SearchResponse.Clusters.EMPTY);
 
     doReturn(mockSearchResponse).when(this.sut).makeSearchRequest(any(), any());
     doReturn(results).when(this.sut).getHitsFromSearchResponse(any());
@@ -218,10 +218,10 @@ public class QueryServiceTest {
     TotalHits totalHits = new TotalHits(1, Relation.EQUAL_TO);
     SearchHits searchHits = new SearchHits(new SearchHit[0], totalHits, 2);
     SearchResponse mockSearchResponse = new SearchResponse(
-            new SearchResponseSections(searchHits, null,
-                    null, false, false, null, 1), "2",
-            5, 5, 0, 100, ShardSearchFailure.EMPTY_ARRAY,
-            SearchResponse.Clusters.EMPTY);
+        new SearchResponseSections(searchHits, null,
+            null, false, false, null, 1), "2",
+        5, 5, 0, 100, ShardSearchFailure.EMPTY_ARRAY,
+        SearchResponse.Clusters.EMPTY);
 
     doReturn(mockSearchResponse).when(this.sut).makeSearchRequest(any(), any());
     doReturn(results).when(this.sut).getHitsFromSearchResponse(any());
@@ -235,11 +235,11 @@ public class QueryServiceTest {
   public void should_throwElasticException_when_indexNotFound() throws Exception {
 
     ElasticsearchStatusException notFound = new ElasticsearchStatusException("blah",
-            RestStatus.NOT_FOUND);
+        RestStatus.NOT_FOUND);
 
     doReturn(elasticSearchRequest).when(this.sut).createElasticRequest(any());
     PowerMockito.when(restHighLevelClient.search(any(), any(RequestOptions.class)))
-            .thenThrow(notFound);
+        .thenThrow(notFound);
 
     try {
       this.sut.makeSearchRequest(searchRequest, restHighLevelClient);
@@ -253,7 +253,7 @@ public class QueryServiceTest {
   public void should_throwElasticException_given_badRequest() throws Exception {
 
     ElasticsearchStatusException badRequest = new ElasticsearchStatusException("blah",
-            RestStatus.BAD_REQUEST);
+        RestStatus.BAD_REQUEST);
 
     doReturn(elasticSearchRequest).when(this.sut).createElasticRequest(any());
     when(restHighLevelClient.search(any(), any(RequestOptions.class))).thenThrow(badRequest);
@@ -270,7 +270,7 @@ public class QueryServiceTest {
   public void should_throwElasticException_given_searchError() throws Exception {
 
     ElasticsearchStatusException generic = new ElasticsearchStatusException("blah",
-            RestStatus.BAD_GATEWAY);
+        RestStatus.BAD_GATEWAY);
 
     doReturn(elasticSearchRequest).when(this.sut).createElasticRequest(any());
     when(restHighLevelClient.search(any(), any(RequestOptions.class))).thenThrow(generic);
@@ -398,23 +398,23 @@ public class QueryServiceTest {
 
   @Test(expected = AppException.class)
   public void testQueryBase_whenUnsupportedSortRequested_statusBadRequest_throwsException()
-          throws IOException {
+      throws IOException {
     String fieldName = "field";
     String indexName = "index";
     String dummySortError = "Text fields are not optimised for operations that require per-document field data like aggregations and sorting, so these operations are disabled by default. Please use a keyword field instead";
     ElasticsearchStatusException exception = new ElasticsearchStatusException("blah",
-            RestStatus.BAD_REQUEST, new ElasticsearchException(dummySortError));
+        RestStatus.BAD_REQUEST, new ElasticsearchException(dummySortError));
 
     doThrow(exception).when(restHighLevelClient).search(any(), any(RequestOptions.class));
     doReturn(new HashSet<>()).when(fieldMappingTypeService)
-            .getFieldTypes(eq(restHighLevelClient), eq(fieldName), eq(indexName));
+        .getFieldTypes(eq(restHighLevelClient), eq(fieldName), eq(indexName));
     SortQuery sortQuery = new SortQuery();
     sortQuery.setField(Collections.singletonList("name"));
     sortQuery.setOrder(Collections.singletonList(SortOrder.DESC));
     when(searchRequest.getSort()).thenReturn(sortQuery);
     when(sortParserUtil.getSortQuery(restHighLevelClient, sortQuery, indexName))
-            .thenReturn(Collections.singletonList(
-                    new FieldSortBuilder("name").order(org.elasticsearch.search.sort.SortOrder.DESC)));
+        .thenReturn(Collections.singletonList(
+            new FieldSortBuilder("name").order(org.elasticsearch.search.sort.SortOrder.DESC)));
 
     try {
       this.sut.makeSearchRequest(searchRequest, restHighLevelClient);
@@ -443,15 +443,15 @@ public class QueryServiceTest {
     when(this.spatialFilter.getByBoundingBox()).thenReturn(byBoundingBox);
     when(this.spatialFilter.getByBoundingBox().getBottomRight()).thenReturn(mock(Point.class));
     when(this.spatialFilter.getByBoundingBox().getBottomRight().getLongitude())
-            .thenReturn(bottomRightLon);
+        .thenReturn(bottomRightLon);
     when(this.spatialFilter.getByBoundingBox().getBottomRight().getLatitude())
-            .thenReturn(bottomRightLat);
+        .thenReturn(bottomRightLat);
     when(this.spatialFilter.getByBoundingBox().getTopLeft()).thenReturn(mock(Point.class));
     when(this.spatialFilter.getByBoundingBox().getTopLeft().getLongitude()).thenReturn(37.450727);
     when(this.spatialFilter.getByBoundingBox().getTopLeft().getLatitude()).thenReturn(70.174762);
 
     BoolQueryBuilder builder = (BoolQueryBuilder) this.sut
-            .buildQuery(simpleQuery, this.spatialFilter, true);
+        .buildQuery(simpleQuery, this.spatialFilter, true);
     assertNotNull(builder);
 
     List<QueryBuilder> topLevelMustClause = builder.must();
@@ -467,7 +467,7 @@ public class QueryServiceTest {
     assertNotNull(queryStringBoolQueryBuilder);
 
     GeoBoundingBoxQueryBuilder geoBoundingBoxQueryBuilder = (GeoBoundingBoxQueryBuilder) queryLevelMustClause
-            .get(1);
+        .get(1);
     assertNotNull(geoBoundingBoxQueryBuilder);
     assertEquals(field, geoBoundingBoxQueryBuilder.fieldName());
     assertEquals(topLeftLon, geoBoundingBoxQueryBuilder.topLeft().getLon(), .001);
@@ -496,7 +496,7 @@ public class QueryServiceTest {
     when(this.spatialFilter.getByDistance().getDistance()).thenReturn(distance);
 
     BoolQueryBuilder builder = (BoolQueryBuilder) this.sut
-            .buildQuery(simpleQuery, this.spatialFilter, true);
+        .buildQuery(simpleQuery, this.spatialFilter, true);
     assertNotNull(builder);
 
     List<QueryBuilder> topLevelMustClause = builder.must();
@@ -512,7 +512,7 @@ public class QueryServiceTest {
     assertNotNull(queryStringBoolQueryBuilder);
 
     GeoDistanceQueryBuilder geoDistanceQueryBuilder = (GeoDistanceQueryBuilder) queryLevelMustClause
-            .get(1);
+        .get(1);
     assertNotNull(geoDistanceQueryBuilder);
     assertEquals(field, geoDistanceQueryBuilder.fieldName());
     assertEquals(distance, geoDistanceQueryBuilder.distance(), .001);
@@ -539,7 +539,7 @@ public class QueryServiceTest {
     when(this.spatialFilter.getByGeoPolygon().getPoints()).thenReturn(points);
 
     BoolQueryBuilder builder = (BoolQueryBuilder) this.sut
-            .buildQuery(simpleQuery, this.spatialFilter, true);
+        .buildQuery(simpleQuery, this.spatialFilter, true);
     assertNotNull(builder);
 
     List<QueryBuilder> topLevelMustClause = builder.must();
@@ -555,7 +555,7 @@ public class QueryServiceTest {
     assertNotNull(queryStringBoolQueryBuilder);
 
     GeoPolygonQueryBuilder geoPolygonQueryBuilder = (GeoPolygonQueryBuilder) queryLevelMustClause
-            .get(1);
+        .get(1);
     assertNotNull(geoPolygonQueryBuilder);
     assertEquals(field, geoPolygonQueryBuilder.fieldName());
     assertEquals(points.size(), geoPolygonQueryBuilder.points().size());
@@ -616,7 +616,7 @@ public class QueryServiceTest {
 
   @Test
   public void should_return_correctElasticRequest_given_returnedFieldContainsQueryableExcludes()
-          throws IOException {
+      throws IOException {
 
     List<String> returnedFields = new ArrayList<>(Arrays.asList("id", "index"));
     when(searchRequest.getKind()).thenReturn("tenant1:welldb:well:1.0.0");
@@ -770,7 +770,7 @@ public class QueryServiceTest {
     when(searchResponse.getHits()).thenReturn(searchHits);
 
     when(restHighLevelClient.search(any(SearchRequest.class),
-            eq(RequestOptions.DEFAULT))).thenReturn(searchResponse);
+        eq(RequestOptions.DEFAULT))).thenReturn(searchResponse);
     when(elasticClientHandler.createRestClient()).thenReturn(restHighLevelClient);
 
     String index = "some-index";
@@ -779,7 +779,7 @@ public class QueryServiceTest {
     Set<String> indexedTypes = new HashSet<>();
     indexedTypes.add("geo_shape");
     when(fieldMappingTypeService.getFieldTypes(eq(restHighLevelClient), anyString(),
-            eq(index))).thenReturn(indexedTypes);
+        eq(index))).thenReturn(indexedTypes);
 
     when(providerHeaderService.getDataGroupsHeader()).thenReturn("groups");
 
@@ -840,10 +840,10 @@ public class QueryServiceTest {
     when(searchResponse.getHits()).thenReturn(searchHits);
 
     when(restHighLevelClient.search(any(SearchRequest.class),
-            eq(RequestOptions.DEFAULT))).thenReturn(searchResponse);
+        eq(RequestOptions.DEFAULT))).thenReturn(searchResponse);
     when(elasticClientHandler.createRestClient()).thenReturn(restHighLevelClient);
     when(restHighLevelClient.search(any(SearchRequest.class),
-            eq(RequestOptions.DEFAULT))).thenReturn(searchResponse);
+        eq(RequestOptions.DEFAULT))).thenReturn(searchResponse);
     when(elasticClientHandler.createRestClient()).thenReturn(restHighLevelClient);
 
     String index = "some-index";
@@ -853,7 +853,7 @@ public class QueryServiceTest {
     indexedTypes.add("geo_shape");
 
     when(fieldMappingTypeService.getFieldTypes(eq(restHighLevelClient), anyString(),
-            eq(index))).thenReturn(indexedTypes);
+        eq(index))).thenReturn(indexedTypes);
     when(providerHeaderService.getDataGroupsHeader()).thenReturn("groups");
 
     Map<String, String> headers = new HashMap<>();
@@ -877,6 +877,6 @@ public class QueryServiceTest {
 
   private String toString(InputStream inputStream) {
     return new BufferedReader(new InputStreamReader(inputStream)).lines()
-            .collect(Collectors.joining("")).replace(" ", "");
+        .collect(Collectors.joining("")).replace(" ", "");
   }
 }
