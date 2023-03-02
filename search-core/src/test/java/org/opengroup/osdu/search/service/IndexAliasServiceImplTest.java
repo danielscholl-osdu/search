@@ -1,10 +1,27 @@
+// Copyright © Schlumberger
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package org.opengroup.osdu.search.service;
 
 
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.client.*;
+import org.elasticsearch.client.GetAliasesResponse;
+import org.elasticsearch.client.IndicesClient;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.cluster.metadata.AliasMetadata;
 import org.elasticsearch.rest.RestStatus;
 import org.junit.Before;
@@ -16,18 +33,27 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.search.ElasticIndexNameResolver;
-import org.opengroup.osdu.search.cache.IndexAliasCache;
+import org.opengroup.osdu.search.cache.MultiPartitionIndexAliasCache;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.powermock.api.mockito.PowerMockito;
 import org.springframework.context.annotation.Lazy;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -37,7 +63,7 @@ public class IndexAliasServiceImplTest {
     @Mock
     private ElasticIndexNameResolver elasticIndexNameResolver;
     @Mock
-    private IndexAliasCache indexAliasCache;
+    private MultiPartitionIndexAliasCache indexAliasCache;
     @Mock
     @Lazy
     private JaxRsDpsLog log;
@@ -88,11 +114,11 @@ public class IndexAliasServiceImplTest {
         ArgumentCaptor<String> aliasCapture = ArgumentCaptor.forClass(String.class);
         doNothing().when(indexAliasCache).put(kindCapture.capture(), aliasCapture.capture());
         when(indexAliasCache.get(anyString())).thenAnswer(invocation -> {
-            if(kindCapture.getAllValues().size() == 0)
+            if (kindCapture.getAllValues().size() == 0)
                 return null;
 
             String k = invocation.getArgument(0);
-            if(k.equals(kindCapture.getValue()))
+            if (k.equals(kindCapture.getValue()))
                 return aliasCapture.getValue();
             else
                 return null;
@@ -157,7 +183,7 @@ public class IndexAliasServiceImplTest {
                 .thenAnswer(invocation ->
                 {
                     GetAliasesRequest request = invocation.getArgument(0);
-                    if(request.aliases().length == 0)
+                    if (request.aliases().length == 0)
                         return getAliasesResponse;
                     else
                         return getAliasesResponseWithAliasConstraint;

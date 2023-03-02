@@ -73,11 +73,11 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     }
 
     @Override
-    SearchRequest createElasticRequest(Query request) throws AppException, IOException {
+    SearchRequest createElasticRequest(Query request, String index) throws AppException, IOException {
         QueryRequest searchRequest = (QueryRequest) request;
 
         // set the indexes to org.opengroup.osdu.search.search against
-        SearchRequest elasticSearchRequest = new SearchRequest(this.getIndex(request));
+        SearchRequest elasticSearchRequest = new SearchRequest(index);
 
         // build query
         SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);
