@@ -213,12 +213,57 @@ public class AwsCrossTenantUtilsTest {
     }
 
     @Test
-    public void should_return_PartitionIdIndexName_when_searchingAllKinds() {
+    public void should_return_PartitionIdIndexName_when_searchingAllKinds_01() {
         String DATA_PARTITION_ID = "tenant1";
         String KIND = "*:*:*:*";
         String TENANT_KIND = "tenant1:*:*:*";
         String INDEX = TENANT_KIND.replace(":", "-");
         String INDEX_NAME = String.format("%s%s,%s", DATA_PARTITION_ID, "-*-*-*", "-.*");
+
+        when(dpsHeaders.getPartitionId()).thenReturn(DATA_PARTITION_ID);
+        when(searchRequest.getKind()).thenReturn(KIND);
+        when(elasticIndexNameResolver.getIndexNameFromKind(TENANT_KIND)).thenReturn(INDEX);
+
+        assertEquals(INDEX_NAME, awsCrossTenantUtils.getIndexName(searchRequest));
+    }
+
+    @Test
+    public void should_return_PartitionIdIndexName_when_searchingAllKinds_02() {
+        String DATA_PARTITION_ID = "tenant1";
+        String KIND = "*:wks:*:*";
+        String TENANT_KIND = "tenant1:wks:*:*";
+        String INDEX = TENANT_KIND.replace(":", "-");
+        String INDEX_NAME = String.format("%s%s,%s", DATA_PARTITION_ID, "-wks-*-*", "-.*");
+
+        when(dpsHeaders.getPartitionId()).thenReturn(DATA_PARTITION_ID);
+        when(searchRequest.getKind()).thenReturn(KIND);
+        when(elasticIndexNameResolver.getIndexNameFromKind(TENANT_KIND)).thenReturn(INDEX);
+
+        assertEquals(INDEX_NAME, awsCrossTenantUtils.getIndexName(searchRequest));
+    }
+
+    @Test
+    public void should_return_PartitionIdIndexName_when_searchingAllKinds_03() {
+        String DATA_PARTITION_ID = "tenant1";
+        String KIND = "*:*:dataset--File.Generic:*";
+        String TENANT_KIND = "tenant1:*:dataset--File.Generic:*";
+        String INDEX = TENANT_KIND.replace(":", "-");
+        String INDEX_NAME = String.format("%s%s,%s", DATA_PARTITION_ID, "-*-dataset--File.Generic-*", "-.*");
+
+        when(dpsHeaders.getPartitionId()).thenReturn(DATA_PARTITION_ID);
+        when(searchRequest.getKind()).thenReturn(KIND);
+        when(elasticIndexNameResolver.getIndexNameFromKind(TENANT_KIND)).thenReturn(INDEX);
+
+        assertEquals(INDEX_NAME, awsCrossTenantUtils.getIndexName(searchRequest));
+    }
+
+    @Test
+    public void should_return_PartitionIdIndexName_when_searchingAllKinds_04() {
+        String DATA_PARTITION_ID = "tenant1";
+        String KIND = "*:*:*:1.0.0";
+        String TENANT_KIND = "tenant1:*:*:1.0.0";
+        String INDEX = TENANT_KIND.replace(":", "-");
+        String INDEX_NAME = String.format("%s%s,%s", DATA_PARTITION_ID, "-*-*-1.0.0", "-.*");
 
         when(dpsHeaders.getPartitionId()).thenReturn(DATA_PARTITION_ID);
         when(searchRequest.getKind()).thenReturn(KIND);
