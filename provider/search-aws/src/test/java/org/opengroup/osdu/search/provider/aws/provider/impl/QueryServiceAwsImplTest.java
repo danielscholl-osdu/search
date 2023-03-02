@@ -91,7 +91,7 @@ public class QueryServiceAwsImplTest {
 
 	@Mock
 	private AuditLogger auditLogger;
-	
+
 	@Before
 	public void setup() {
 		MockitoAnnotations.openMocks(this);
