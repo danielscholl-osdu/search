@@ -28,7 +28,6 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.opengroup.osdu.core.common.model.search.AggregationResponse;
-import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryResponse;
@@ -37,6 +36,7 @@ import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.IAggregationParserUtil;
+import org.opengroup.osdu.search.util.ISearchRequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +51,8 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
   private AuditLogger auditLogger;
   @Autowired
   private IAggregationParserUtil aggregationParserUtil;
+  @Inject
+  private ISearchRequestUtil searchRequestUtil;
 
   @Override
   public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
@@ -83,6 +85,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
 
     // set the indexes to search against
     SearchRequest elasticSearchRequest = new SearchRequest(this.getIndex(request));
+    searchRequestUtil.setIgnoreUnavailable(elasticSearchRequest, true);
 
     // build query
     SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);

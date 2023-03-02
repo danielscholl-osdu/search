@@ -19,11 +19,8 @@ import com.google.common.collect.Lists;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
-import org.elasticsearch.search.aggregations.support.ValueType;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
-import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
@@ -35,6 +32,7 @@ import org.opengroup.osdu.core.common.model.search.QueryResponse;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.IAggregationParserUtil;
+import org.opengroup.osdu.search.util.ISearchRequestUtil;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -56,6 +54,8 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     private SearchConfigurationProperties configurationProperties;
     @Inject
     private IAggregationParserUtil aggregationParserUtil;
+    @Inject
+    private ISearchRequestUtil searchRequestUtil;
 
     @Override
     public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
@@ -86,6 +86,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
         // set the indexes to org.opengroup.osdu.search.search against
         String index = this.crossTenantUtils.getIndexName(request);
         SearchRequest elasticSearchRequest = new SearchRequest(index);
+        searchRequestUtil.setIgnoreUnavailable(elasticSearchRequest, true);
 
 
         // build query

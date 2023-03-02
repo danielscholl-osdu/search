@@ -38,6 +38,7 @@ import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
+import org.opengroup.osdu.search.util.ISearchRequestUtil;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -68,6 +69,9 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
 
     @Inject
     private AuditLogger auditLogger;
+
+    @Inject
+    private ISearchRequestUtil searchRequestUtil;
 
     @Autowired
     private ResponseExceptionParser exceptionParser;
@@ -157,6 +161,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
         // set the indexes to org.opengroup.osdu.search.search against
         String index = this.crossTenantUtils.getIndexName(request);
         SearchRequest elasticSearchRequest = new SearchRequest(index);
+        searchRequestUtil.setIgnoreUnavailable(elasticSearchRequest, true);
 
         // build query
         SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);
