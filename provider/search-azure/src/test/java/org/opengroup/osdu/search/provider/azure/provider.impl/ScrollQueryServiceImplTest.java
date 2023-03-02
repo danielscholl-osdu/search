@@ -48,6 +48,7 @@ import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
+import org.opengroup.osdu.search.util.ISearchRequestUtil;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 
 import java.util.*;
@@ -107,6 +108,8 @@ public class ScrollQueryServiceImplTest {
     private ElasticLoggingConfig elasticLoggingConfig;
     @Mock
     private ResponseExceptionParser exceptionParser;
+    @Mock
+    private ISearchRequestUtil searchRequestUtil;
     @InjectMocks
     private ScrollQueryServiceImpl sut;
 

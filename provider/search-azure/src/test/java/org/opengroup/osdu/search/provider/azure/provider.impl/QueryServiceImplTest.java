@@ -69,17 +69,9 @@ import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.FieldMappingTypeService;
-import org.opengroup.osdu.search.util.AggregationParserUtil;
-import org.opengroup.osdu.search.util.CrossTenantUtils;
-import org.opengroup.osdu.search.util.DetailedBadRequestMessageUtil;
-import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.opengroup.osdu.search.util.IAggregationParserUtil;
-import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
-import org.opengroup.osdu.search.util.IQueryParserUtil;
-import org.opengroup.osdu.search.util.ISortParserUtil;
-import org.opengroup.osdu.search.util.QueryParserUtil;
-import org.opengroup.osdu.search.util.SortParserUtil;
+import org.opengroup.osdu.search.util.*;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -176,6 +168,9 @@ public class QueryServiceImplTest {
 
     @Mock
     private DependencyLogger dependencyLogger;
+
+    @Mock
+    private ISearchRequestUtil searchRequestUtil;
 
     @InjectMocks
     private QueryServiceImpl sut;

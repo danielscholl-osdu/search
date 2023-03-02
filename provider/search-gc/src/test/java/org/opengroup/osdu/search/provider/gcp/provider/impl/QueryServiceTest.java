@@ -93,16 +93,7 @@ import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
-import org.opengroup.osdu.search.util.AggregationParserUtil;
-import org.opengroup.osdu.search.util.CrossTenantUtils;
-import org.opengroup.osdu.search.util.DetailedBadRequestMessageUtil;
-import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.opengroup.osdu.search.util.IAggregationParserUtil;
-import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
-import org.opengroup.osdu.search.util.IQueryParserUtil;
-import org.opengroup.osdu.search.util.ISortParserUtil;
-import org.opengroup.osdu.search.util.QueryParserUtil;
-import org.opengroup.osdu.search.util.SortParserUtil;
+import org.opengroup.osdu.search.util.*;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -136,6 +127,8 @@ public class QueryServiceTest {
   private JaxRsDpsLog log;
   @Mock
   private IProviderHeaderService providerHeaderService;
+  @Mock
+  private ISearchRequestUtil searchRequestUtil;
   @Spy
   private SearchConfigurationProperties properties = new SearchConfigurationProperties();
   @Spy

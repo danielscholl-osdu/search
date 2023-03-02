@@ -92,6 +92,9 @@ public class QueryServiceAwsImplTest {
 	@Mock
 	private AuditLogger auditLogger;
 
+	@Mock
+	private ISearchRequestUtil searchRequestUtil;
+
 	@Before
 	public void setup() {
 		MockitoAnnotations.openMocks(this);
