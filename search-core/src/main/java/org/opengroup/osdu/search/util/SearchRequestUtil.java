@@ -19,18 +19,13 @@ import org.elasticsearch.action.support.IndicesOptions;
 
 public class SearchRequestUtil {
 
-    public static SearchRequest setIgnoreUnavailable(SearchRequest searchRequest, boolean ignoreUnavailable) {
-        IndicesOptions option = searchRequest.indicesOptions();
-        option = IndicesOptions.fromOptions(ignoreUnavailable, option.allowNoIndices(), option.expandWildcardsOpen(), option.expandWildcardsClosed(), option);
-        searchRequest.indicesOptions(option);
-        return searchRequest;
-    }
-
     public static SearchRequest createSearchRequest(String... indices) {
         // IndicesOptions ignoreUnavailable is false by default.
         // It is possible that the indices of some kinds in the kind list may not exist in ElasticSearch
         // Setting indicesOption ignore_unavailable to true let ElasticSearch ignore the unavailable indices in the SearchRequest
         SearchRequest searchRequest = new SearchRequest(indices);
-        return setIgnoreUnavailable(searchRequest, true);
+        IndicesOptions option = searchRequest.indicesOptions();
+        option = IndicesOptions.fromOptions(true, option.allowNoIndices(), option.expandWildcardsOpen(), option.expandWildcardsClosed(), option);
+        return searchRequest.indicesOptions(option);
     }
 }
