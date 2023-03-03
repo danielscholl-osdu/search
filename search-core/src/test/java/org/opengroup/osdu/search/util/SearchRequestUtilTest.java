@@ -17,12 +17,9 @@ package org.opengroup.osdu.search.util;
 import org.elasticsearch.action.search.SearchRequest;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.theories.Theories;
-import org.junit.runner.RunWith;
 
-@RunWith(Theories.class)
 public class SearchRequestUtilTest {
-    
+
     @Test
     public void createSearchRequest_with_ignoreUnavailable_set_to_true() {
         SearchRequest searchRequest = SearchRequestUtil.createSearchRequest("index1");
