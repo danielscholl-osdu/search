@@ -14,9 +14,9 @@
 
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
+import com.google.common.collect.Lists;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchResponseSections;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -28,19 +28,18 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppError;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.model.search.*;
+import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
+import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
+import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
@@ -50,11 +49,23 @@ import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.CURSOR_QUERY_DEPENDENCY_NAME;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScrollQueryServiceImplTest {
@@ -161,6 +172,9 @@ public class ScrollQueryServiceImplTest {
         assertEquals(obtainedQueryResponse.getTotalCount(), totalHitsCount);
         assertEquals(scrollRequest.scrollId(), scrollId);
         assertEquals(searchRequestCursor, cursor);
+
+        verify(this.auditLogger, times(1)).queryIndexWithCursorSuccess(Lists.newArrayList(searchRequest.toString()));
+        verify(this.dependencyLogger, times(1)).logDependency(CURSOR_QUERY_DEPENDENCY_NAME, String.format("cursor:%s", searchRequest.getCursor()), String.valueOf(searchRequest.getKind()), 0, 200, true);
     }
 
     @Test

@@ -23,6 +23,9 @@ import java.time.Duration;
 @Component("azureUtilsDependencyLogger")
 public class DependencyLogger {
 
+    public static final String QUERY_DEPENDENCY_NAME = "QUERY_ELASTICSEARCH";
+    public static final String CURSOR_QUERY_DEPENDENCY_NAME = "CURSOR_QUERY_ELASTICSEARCH";
+
     private static final String ECK_DEPENDENCY_TYPE = "Elasticsearch";
     private static final String ECK_LOGGER = "ElasticCluster";
 
