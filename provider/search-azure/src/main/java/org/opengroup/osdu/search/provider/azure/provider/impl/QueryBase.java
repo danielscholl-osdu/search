@@ -53,6 +53,7 @@ import org.opengroup.osdu.core.common.model.search.AggregationResponse;
 import org.opengroup.osdu.core.common.model.search.Point;
 import org.opengroup.osdu.core.common.model.search.Polygon;
 import org.opengroup.osdu.core.common.model.search.Query;
+import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryUtils;
 import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
@@ -72,7 +73,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.geoBoundingBoxQuery;
@@ -82,6 +88,8 @@ import static org.elasticsearch.index.query.QueryBuilders.geoPolygonQuery;
 import static org.elasticsearch.index.query.QueryBuilders.geoWithinQuery;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
+import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.CURSOR_QUERY_DEPENDENCY_NAME;
+import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.QUERY_DEPENDENCY_NAME;
 
 abstract class QueryBase {
 
@@ -111,10 +119,8 @@ abstract class QueryBase {
     @Qualifier("azureUtilsDependencyLogger")
     private DependencyLogger dependencyLogger;
 
-    static final String AGGREGATION_NAME = "agg";
     private static final String GEO_SHAPE_INDEXED_TYPE = "geo_shape";
     private static final int MINIMUM_POLYGON_POINTS_SIZE = 4;
-    private static final String DEPENDENCY_NAME = "QUERY_ELASTICSEARCH";
 
     // if returnedField contains property matching from excludes than query result will NOT include that property
     private final Set<String> excludes = new HashSet<>(Arrays.asList(RecordMetaAttribute.X_ACL.getValue()));
@@ -435,7 +441,8 @@ abstract class QueryBase {
                 String request = elasticSearchRequest != null ? elasticSearchRequest.source().toString() : searchRequest.toString();
                 this.log.debug(String.format("Elastic request-payload: %s", request));
             }
-            dependencyLogger.logDependency(DEPENDENCY_NAME, searchRequest.getQuery(), dpsHeaders.getPartitionId(), latency, statusCode, statusCode == HttpStatus.SC_OK);
+            String dependencyName = searchRequest instanceof QueryRequest ? QUERY_DEPENDENCY_NAME : CURSOR_QUERY_DEPENDENCY_NAME;
+            dependencyLogger.logDependency(dependencyName, searchRequest.getQuery(), String.valueOf(searchRequest.getKind()), latency, statusCode, statusCode == HttpStatus.SC_OK);
             this.auditLog(searchRequest, searchResponse);
         }
     }
