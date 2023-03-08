@@ -19,8 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
-import org.elasticsearch.search.aggregations.support.ValueType;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.search.*;
@@ -29,6 +27,7 @@ import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.IAggregationParserUtil;
+import org.opengroup.osdu.search.util.SearchRequestUtil;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -83,7 +82,7 @@ public class QueryServiceAwsImpl extends QueryBase implements IQueryService {
         QueryRequest searchRequest = (QueryRequest) request;
 
         // set the indexes to search against
-        SearchRequest elasticSearchRequest = new SearchRequest(this.getIndex(request));
+        SearchRequest elasticSearchRequest = SearchRequestUtil.createSearchRequest(this.getIndex(request));
 
         // build query
         SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);

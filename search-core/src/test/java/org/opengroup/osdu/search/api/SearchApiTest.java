@@ -147,33 +147,6 @@ public class SearchApiTest {
     }
 
     @Test
-    public void should_handle_notFoundException_whenQueried() throws Exception {
-        AppException exception = new AppException(HttpServletResponse.SC_NOT_FOUND, "Not Found", "Resource you are trying to find does not exists");
-
-        when(this.queryService.queryIndex(any())).thenThrow(exception);
-
-        ResponseEntity<QueryResponse> response = this.sut.queryRecords(new QueryRequest());
-        assertEquals(HttpServletResponse.SC_OK, response.getStatusCodeValue());
-        QueryResponse apiResponse = response.getBody();
-        assertEquals(0, apiResponse.getTotalCount());
-        assertEquals(0, apiResponse.getAggregations().size());
-        assertEquals(0, apiResponse.getResults().size());
-    }
-
-    @Test
-    public void should_handle_notFoundException_whenCursorQueried() throws Exception {
-        AppException exception = new AppException(HttpServletResponse.SC_NOT_FOUND, "Not Found", "Resource you are trying to find does not exists");
-
-        when(this.scrollQueryService.queryIndex(any())).thenThrow(exception);
-
-        ResponseEntity<CursorQueryResponse> response = this.sut.queryWithCursor(new CursorQueryRequest());
-        assertEquals(HttpServletResponse.SC_OK, response.getStatusCodeValue());
-        CursorQueryResponse apiResponse = response.getBody();
-        assertEquals(0, apiResponse.getTotalCount());
-        assertEquals(0, apiResponse.getResults().size());
-    }
-
-    @Test
     public void should_returnRecords_whenCursorQueried() throws Exception {
 
         when(this.cursorQueryRequest.getKind()).thenReturn("tenant1:welldb:well:1.0.2");

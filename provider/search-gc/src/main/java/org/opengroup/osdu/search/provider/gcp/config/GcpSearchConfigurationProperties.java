@@ -1,6 +1,6 @@
 /*
- *  Copyright 2020-2022 Google LLC
- *  Copyright 2020-2022 EPAM Systems, Inc
+ *  Copyright 2020-2023 Google LLC
+ *  Copyright 2020-2023 EPAM Systems, Inc
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -33,10 +33,6 @@ public class GcpSearchConfigurationProperties extends SearchConfigurationPropert
 
     private String authorizeApi;
     private String authorizeApiKey;
-
-    private String redisGroupPassword;
-    private Integer redisGroupExpiration = 30;
-    private Boolean redisGroupWithSsl = false;
 
     private String redisSearchPassword;
     private Integer redisSearchExpiration = 60 * 60;

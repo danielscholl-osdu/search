@@ -1,5 +1,14 @@
 ## Service Configuration for Anthos
 
+## Table of Contents <a name="TOC"></a>
+
+* [Environment variables](#Environment-variables)
+    * [Properties set in Partition service](#properties-set-in-partition-service)
+* [Elasticsearch configuration](#Elasticsearch configuration)
+* [Keycloak configuration](#keycloak-configuration)
+* [Running E2E Tests](#running-e2e-tests)
+* [License](#license)
+
 ## Environment variables
 
 Define the following environment variables.
@@ -19,10 +28,6 @@ Defined in default application property file but possible to override:
 | `LOG_PREFIX`                       | `service`                                                       | Logging prefix                                                                        | no         | -                                                          |
 | `SERVER_SERVLET_CONTEXPATH`        | `/api/search/v2/`                                               | Servlet context path                                                                  | no         | -                                                          |
 | `AUTHORIZE_API`                    | ex `https://entitlements.com/entitlements/v1`                   | Entitlements API endpoint                                                             | no         | output of infrastructure deployment                        |
-| `REDIS_GROUP_HOST`                 | ex `127.0.0.1`                                                  | Redis host for groups                                                                 | no         |                                                            |
-| `REDIS_GROUP_PASSWORD`             | ex `*****`                                                      | Redis groups host password                                                            | yes        |                                                            |
-| `REDIS_GROUP_WITH_SSL`             | ex `true` or `false`                                            | Redis groups host ssl config                                                          | no         |                                                            |
-| `REDIS_GROUP_EXPIRATION`           | ex `30`                                                         | Redis group cache expiration in seconds                                               | no         |                                                            |
 | `REDIS_SEARCH_HOST`                | ex `records-changed`                                            | Redis host for search                                                                 | no         |                                                            |
 | `REDIS_SEARCH_PORT`                | ex `6379`                                                       | Redis port for search                                                                 | no         |                                                            |
 | `REDIS_SEARCH_PASSWORD`            | ex `127.0.0.1`                                                  | Redis search host password                                                            | yes        |                                                            |
@@ -107,7 +112,24 @@ curl -L -X PATCH 'http://partition.com/api/partition/v1/partitions/opendes' -H '
 
 ```
 
-### Running E2E Tests
+## Keycloak configuration
+
+[Keycloak service accounts setup](https://www.keycloak.org/docs/latest/server_admin/#_service_accounts)
+
+Configure Clients. One Client per OSDU service. Set them “confidential”.
+
+![Screenshot](./pics/client.png)
+
+Each Client has embedded Service Account (SA) option. Enable SAs for Clients, make “Authorization enabled”:
+
+![Screenshot](./pics/sa.png)
+
+Add `partition-and-entitlements` scope to `Default Client Scopes` and generate Keys.
+
+Give `client-id` and `client-secret` to services, which should be authorized within the platform.
+
+
+## Running E2E Tests
 
 You will need to have the following environment variables defined.
 
@@ -142,3 +164,20 @@ Execute following command to build code and run all the integration tests:
 #       above are already exported in your environment.
 $ (cd testing/search-test-anthos/ && mvn clean test)
 ```
+
+## License
+
+Copyright © Google LLC
+Copyright © EPAM Systems
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

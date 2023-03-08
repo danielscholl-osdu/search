@@ -1,6 +1,6 @@
 /*
- *  Copyright 2020-2022 Google LLC
- *  Copyright 2020-2022 EPAM Systems, Inc
+ *  Copyright 2020-2023 Google LLC
+ *  Copyright 2020-2023EPAM Systems, Inc
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 package org.opengroup.osdu.search.provider.gcp.cache;
 
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.cache.RedisCache;
@@ -32,22 +31,15 @@ import org.opengroup.osdu.search.provider.gcp.config.GcpSearchConfigurationPrope
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Map;
+
 @Configuration
 @RequiredArgsConstructor
 public class CacheConfig {
 
     @Bean
     public ICache<String, Groups> groupCache(GcpSearchConfigurationProperties appProperties) {
-        RedisCacheBuilder<String, Groups> cacheBuilder = new RedisCacheBuilder<>();
-        return cacheBuilder.buildRedisCache(
-            appProperties.getRedisGroupHost(),
-            appProperties.getRedisGroupPort(),
-            appProperties.getRedisGroupPassword(),
-            appProperties.getRedisGroupExpiration(),
-            appProperties.getRedisGroupWithSsl(),
-            String.class,
-            Groups.class
-        );
+        return new GcGroupCache();
     }
 
     @Bean
