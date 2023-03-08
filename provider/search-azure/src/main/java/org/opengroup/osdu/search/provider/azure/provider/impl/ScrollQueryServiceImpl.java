@@ -38,6 +38,7 @@ import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
+import org.opengroup.osdu.search.util.SearchRequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -160,7 +161,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
     SearchRequest createElasticRequest(Query request) throws AppException, IOException {
 
         // set the indexes to search against
-        SearchRequest elasticSearchRequest = new SearchRequest(this.getIndex(request));
+        SearchRequest elasticSearchRequest = SearchRequestUtil.createSearchRequest(this.getIndex(request));
 
         // build query
         SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);
