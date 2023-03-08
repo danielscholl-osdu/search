@@ -51,11 +51,11 @@ public class Steps extends QuerySteps {
     public void i_send_with(String query, String kind) {
         super.i_send_with(query, kind);
     }
-
-    @When("^I send \"(.*?)\" with (\\d+) copies of \"(.*?)\"$")
-    public void i_send_with_multi_kinds(String query, int number, String kind) {
-        super.i_send_with_multi_kinds(query, number, kind);
-    }
+//    TODO https://jiraeu.epam.com/browse/GONRG-6712
+//    @When("^I send \"(.*?)\" with (\\d+) copies of \"(.*?)\"$")
+//    public void i_send_with_multi_kinds(String query, int number, String kind) {
+//        super.i_send_with_multi_kinds(query, number, kind);
+//    }
 
     @When("^I want the results sorted by (.*?)$")
     public void i_sort_with(String sortJson) {
