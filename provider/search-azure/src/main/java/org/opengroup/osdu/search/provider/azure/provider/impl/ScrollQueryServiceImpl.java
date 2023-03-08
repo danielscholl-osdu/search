@@ -34,11 +34,13 @@ import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.search.logging.AuditLogger;
+import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 import org.opengroup.osdu.search.util.SearchRequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -51,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.elasticsearch.rest.RestStatus.NOT_FOUND;
+import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.CURSOR_QUERY_DEPENDENCY_NAME;
 
 @Service
 public class ScrollQueryServiceImpl extends QueryBase implements IScrollQueryService {
@@ -65,6 +68,9 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
     private AuditLogger auditLogger;
     @Autowired
     private ResponseExceptionParser exceptionParser;
+    @Autowired
+    @Qualifier("azureUtilsDependencyLogger")
+    private DependencyLogger dependencyLogger;
 
     private final MessageDigest digest;
 
@@ -91,23 +97,11 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                 try {
                     CursorSettings cursorSettings = this.cursorCache.get(searchRequest.getCursor());
                     if (cursorSettings != null) {
-
                         if (!this.dpsHeaders.getUserEmail().equals(cursorSettings.getUserId())) {
                             throw new AppException(HttpServletResponse.SC_FORBIDDEN, "cursor issuer doesn't match the cursor consumer", "cursor sharing is forbidden");
                         }
 
-                        SearchScrollRequest scrollRequest = new SearchScrollRequest(cursorSettings.getCursor());
-                        scrollRequest.scroll(SEARCH_SCROLL_TIMEOUT);
-                        SearchResponse searchScrollResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
-
-                        List<Map<String, Object>> results = getHitsFromSearchResponse(searchScrollResponse);
-                        queryResponse.setTotalCount(searchScrollResponse.getHits().getTotalHits().value);
-                        if (results != null) {
-                            queryResponse.setResults(results);
-                            queryResponse.setCursor(this.refreshCursorCache(searchScrollResponse.getScrollId(), dpsHeaders.getUserEmail()));
-
-                            this.querySuccessAuditLogger(searchRequest);
-                        }
+                        executeCursorPaginationQuery(searchRequest, queryResponse, client, cursorSettings);
                     } else {
                         throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired");
                     }
@@ -127,9 +121,26 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
         }
     }
 
+    private void executeCursorPaginationQuery(CursorQueryRequest searchRequest, CursorQueryResponse queryResponse, RestHighLevelClient client, CursorSettings cursorSettings) throws IOException {
+        SearchScrollRequest scrollRequest = new SearchScrollRequest(cursorSettings.getCursor());
+        scrollRequest.scroll(SEARCH_SCROLL_TIMEOUT);
+        Long startTime = 0L;
+        SearchResponse searchResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
+        Long latency = System.currentTimeMillis() - startTime;
+
+        List<Map<String, Object>> results = getHitsFromSearchResponse(searchResponse);
+        queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
+        if (results != null) {
+            queryResponse.setResults(results);
+            queryResponse.setCursor(this.refreshCursorCache(searchResponse.getScrollId(), dpsHeaders.getUserEmail()));
+            this.querySuccessAuditLogger(searchRequest);
+        }
+        int statusCode = searchResponse.status().getStatus();
+        dependencyLogger.logDependency(CURSOR_QUERY_DEPENDENCY_NAME, String.format("cursor:%s", searchRequest.getCursor()), String.valueOf(searchRequest.getKind()), latency, statusCode, statusCode == HttpStatus.SC_OK);
+    }
+
     private CursorQueryResponse initCursorQuery(CursorQueryRequest searchRequest, RestHighLevelClient client) {
-        CursorQueryResponse queryResponse = this.executeCursorQuery(searchRequest, client);
-        return queryResponse;
+        return this.executeCursorQuery(searchRequest, client);
     }
 
     private CursorQueryResponse executeCursorQuery(CursorQueryRequest searchRequest, RestHighLevelClient client) throws AppException {
