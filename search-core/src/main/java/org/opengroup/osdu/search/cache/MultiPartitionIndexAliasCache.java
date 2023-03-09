@@ -12,39 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 package org.opengroup.osdu.search.cache;
 
-import org.opengroup.osdu.core.common.cache.VmCache;
+import org.opengroup.osdu.core.common.model.http.DpsHeaders;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
 
 @Component
-public class IndexAliasCacheVmImpl implements IIndexAliasCache {
-    private VmCache<String, String> cache;
-    // The index alias won't be changed once it is created
-    private final int ALIAS_CACHE_EXPIRATION = 86400;
-    private final int MAX_CACHE_SIZE = 2000;
+@RequestScope
+public class MultiPartitionIndexAliasCache {
 
-    public IndexAliasCacheVmImpl() {
-        cache = new VmCache<>(ALIAS_CACHE_EXPIRATION, MAX_CACHE_SIZE);
-    }
+    @Autowired
+    private IIndexAliasCache cache;
+    @Autowired
+    private DpsHeaders requestHeaders;
 
-    @Override
     public void put(String s, String o) {
-        this.cache.put(s, o);
+        this.cache.put(getKey(s), o);
     }
 
-    @Override
     public String get(String s) {
-        return this.cache.get(s);
+        return this.cache.get(getKey(s));
     }
 
-    @Override
     public void delete(String s) {
-        this.cache.delete(s);
+        this.cache.delete(getKey(s));
     }
 
-    @Override
     public void clearAll() {
         this.cache.clearAll();
+    }
+
+    private String getKey(String kind) {
+        return this.requestHeaders.getPartitionId() + "-" + kind;
     }
 }

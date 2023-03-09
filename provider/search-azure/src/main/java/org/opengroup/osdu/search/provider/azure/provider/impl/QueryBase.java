@@ -396,7 +396,7 @@ abstract class QueryBase {
             if (searchRequest.getSpatialFilter() != null) {
                 useGeoShapeQuery = this.useGeoShapeQuery(client, searchRequest, index);
             }
-            elasticSearchRequest = createElasticRequest(searchRequest);
+            elasticSearchRequest = createElasticRequest(searchRequest, index);
             if (searchRequest.getSort() != null) {
                 List<FieldSortBuilder> sortBuilders = this.sortParserUtil.getSortQuery(client, searchRequest.getSort(), index);
                 for (FieldSortBuilder fieldSortBuilder : sortBuilders) {
@@ -461,7 +461,7 @@ abstract class QueryBase {
         return indexedTypes.contains(GEO_SHAPE_INDEXED_TYPE);
     }
 
-    abstract SearchRequest createElasticRequest(Query request) throws AppException, IOException;
+    abstract SearchRequest createElasticRequest(Query request, String index) throws AppException, IOException;
 
     abstract void querySuccessAuditLogger(Query request);
 

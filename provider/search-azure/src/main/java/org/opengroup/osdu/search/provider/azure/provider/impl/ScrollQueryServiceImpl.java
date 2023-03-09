@@ -158,10 +158,10 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
     }
 
     @Override
-    SearchRequest createElasticRequest(Query request) throws AppException, IOException {
+    SearchRequest createElasticRequest(Query request, String index) throws AppException, IOException {
 
         // set the indexes to search against
-        SearchRequest elasticSearchRequest = SearchRequestUtil.createSearchRequest(this.getIndex(request));
+        SearchRequest elasticSearchRequest = SearchRequestUtil.createSearchRequest(index);
 
         // build query
         SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);
