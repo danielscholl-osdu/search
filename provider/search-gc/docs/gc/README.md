@@ -1,5 +1,14 @@
 ## Service Configuration for Google Cloud
 
+## Table of Contents <a name="TOC"></a>
+
+* [Environment variables](#Environment-variables)
+    * [Properties set in Partition service](#properties-set-in-partition-service)
+* [Elasticsearch configuration](#Elasticsearch configuration)
+* [Google cloud service account configuration](#Google-cloud-service-account-configuration)
+* [Running E2E Tests](#running-e2e-tests)
+* [License](#license)
+
 ## Environment variables
 
 Define the following environment variables.
@@ -18,12 +27,7 @@ Defined in default application property file but possible to override:
 |------------------------------------|-----------------------------------------------------------------|---------------------------------------------------------------------------------------|------------|------------------------------------------------------------|
 | `LOG_PREFIX`                       | `service`                                                       | Logging prefix                                                                        | no         | -                                                          |
 | `SERVER_SERVLET_CONTEXPATH`        | `/api/search/v2/`                                               | Servlet context path                                                                  | no         | -                                                          |
-| `AUTHORIZE_API`                    | ex `https://entitlements.com/entitlements/v1`                   | Entitlements API endpoint                                                             | no         | output of infrastructure deployment                        |
-| `REDIS_GROUP_HOST`                 | ex `127.0.0.1`                                                  | Redis host for groups                                                                 | no         |                                                            |
-| `REDIS_GROUP_PASSWORD`             | ex `*****`                                                      | Redis groups host password                                                            | yes        |                                                            |
-| `REDIS_GROUP_WITH_SSL`             | ex `true` or `false`                                            | Redis groups host ssl config                                                          | no         |                                                            |
-| `REDIS_GROUP_EXPIRATION`           | ex `30`                                                         | Redis group cache expiration in seconds                                               | no         |                                                            |
-| `REDIS_SEARCH_HOST`                | ex `records-changed`                                            | Redis host for search                                                                 | no         |                                                            |
+| `AUTHORIZE_API`                    | ex `https://entitlements.com/entitlements/v1`                   | Entitlements API endpoint                                                             | no         | output of infrastructure deployment                        || `REDIS_SEARCH_HOST`                | ex `records-changed`                                            | Redis host for search                                                                 | no         |                                                            |
 | `REDIS_SEARCH_PORT`                | ex `6379`                                                       | Redis port for search                                                                 | no         |                                                            |
 | `REDIS_SEARCH_PASSWORD`            | ex `*****`                                                      | Redis search host password                                                            | yes        |                                                            |
 | `REDIS_SEARCH_WITH_SSL`            | ex `true` or `false`                                            | Redis search host ssl config                                                          | no         |                                                            |
@@ -44,7 +48,7 @@ Usage of spring profiles is preferred.
 | `PARTITION_AUTH_ENABLED` | ex `true` or `false` | Disable or enable auth token provisioning for requests to Partition service                                               | no         | -      |
 | `SERVICE_TOKEN_PROVIDER` | `GCP` or `OPENID`    | Service account token provider, `GCP` means use Google service account `OPEIND` means use OpenId provider like `Keycloak` | no         | -      |
 
-### Properties set in Partition service
+## Properties set in Partition service
 
 Note that properties can be set in Partition as `sensitive` in that case in property `value` should be present not value itself, but ENV variable name.
 This variable should be present in environment of service that need that variable.
@@ -107,6 +111,14 @@ curl -L -X PATCH 'http://partition.com/api/partition/v1/partitions/opendes' -H '
 
 ```
 
+## Google cloud service account configuration
+
+TBD
+
+| Required roles |
+| ---    |
+| - |
+
 ### Running E2E Tests
 
 You will need to have the following environment variables defined.
@@ -142,3 +154,20 @@ Execute following command to build code and run all the integration tests:
 #       above are already exported in your environment.
 $ (cd testing/integration-tests/search-test-gc/ && mvn clean test)
 ```
+
+## License
+
+Copyright © Google LLC
+Copyright © EPAM Systems
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

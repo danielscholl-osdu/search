@@ -16,6 +16,7 @@ package org.opengroup.osdu.search.provider.azure.provider.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
@@ -55,7 +56,6 @@ import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppError;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.model.search.*;
 import org.opengroup.osdu.core.common.model.search.Point;
 import org.opengroup.osdu.core.common.model.search.Polygon;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
@@ -89,8 +89,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.QUERY_DEPENDENCY_NAME;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryServiceImplTest {
@@ -237,6 +248,9 @@ public class QueryServiceImplTest {
         assertEquals(queryResponse.getResults().size(), 1);
         assertTrue(queryResponse.getResults().get(0).keySet().contains(name));
         assertEquals(queryResponse.getResults().get(0).get(name), text);
+
+        verify(this.auditLogger, times(1)).queryIndexSuccess(Lists.newArrayList(searchRequest.toString()));
+        verify(this.dependencyLogger, times(1)).logDependency(QUERY_DEPENDENCY_NAME, searchRequest.getQuery(), String.valueOf(searchRequest.getKind()), 0, 200, true);
     }
 
     @Test
