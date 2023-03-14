@@ -82,7 +82,7 @@
                     },
                     "relation": "intersects"
                   },
-                  "ignore_unmapped": false,
+                  "ignore_unmapped": true,
                   "boost": 1.0
                 }
               }
