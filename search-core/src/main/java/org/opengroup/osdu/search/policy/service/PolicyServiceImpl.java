@@ -15,6 +15,7 @@
 
 package org.opengroup.osdu.search.policy.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
@@ -64,7 +65,8 @@ public class PolicyServiceImpl implements IPolicyService {
             String esQuery = serviceClient.getCompiledPolicy(searchPolicyRule, unknownsList, input);
             return esQuery.substring(9, esQuery.length() - 1);
         } catch (Exception e) {
-            throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Policy service unavailable", "Error making request to Policy service", "Error calling translate endpoint", e);
+            String errorMessage = StringUtils.isBlank(e.getMessage()) ? "Error making request to Policy service" : e.getMessage();
+            throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Policy service unavailable", errorMessage, "Error calling translate endpoint", e);
         }
     }
 }
