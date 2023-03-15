@@ -25,13 +25,18 @@ import org.elasticsearch.cluster.metadata.AliasMetadata;
 import org.elasticsearch.rest.RestStatus;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.search.ElasticIndexNameResolver;
+import org.opengroup.osdu.search.cache.MultiPartitionIndexAliasCache;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -42,9 +47,8 @@ public class IndexAliasServiceImpl implements IndexAliasService {
     private ElasticIndexNameResolver elasticIndexNameResolver;
     @Inject
     private JaxRsDpsLog log;
-
-    private final Map<String, String> KIND_ALIAS_MAP = new ConcurrentHashMap();
-
+    @Inject
+    private MultiPartitionIndexAliasCache indexAliasCache;
 
     @Override
     public Map<String, String> getIndicesAliases(List<String> kinds) {
@@ -52,32 +56,30 @@ public class IndexAliasServiceImpl implements IndexAliasService {
         List<String> unresolvedKinds = new ArrayList<>();
 
         List<String> validKinds = kinds.stream().filter(k -> elasticIndexNameResolver.isIndexAliasSupported(k)).collect(Collectors.toList());
-        for(String kind: validKinds) {
-            if(KIND_ALIAS_MAP.containsKey(kind)) {
-                String alias = KIND_ALIAS_MAP.get(kind);
+        for (String kind : validKinds) {
+            if (indexAliasCache.get(kind) != null) {
+                String alias = indexAliasCache.get(kind);
                 aliases.put(kind, alias);
-            }
-            else {
+            } else {
                 unresolvedKinds.add(kind);
             }
         }
-        if(!unresolvedKinds.isEmpty()) {
+        if (!unresolvedKinds.isEmpty()) {
             try (RestHighLevelClient restClient = this.elasticClientHandler.createRestClient()) {
                 // It is much faster to get all the aliases and verify it locally than to verify it remotely.
                 Set<String> allExistingAliases = getAllExistingAliases(restClient);
-                for(String kind: unresolvedKinds) {
+                for (String kind : unresolvedKinds) {
                     String alias = elasticIndexNameResolver.getIndexAliasFromKind(kind);
-                    if(!allExistingAliases.contains(alias)) {
+                    if (!allExistingAliases.contains(alias)) {
                         try {
                             alias = createIndexAlias(restClient, kind);
-                        }
-                        catch(Exception e) {
+                        } catch (Exception e) {
                             log.error(String.format("Fail to create index alias for kind '%s'", kind), e);
                         }
                     }
-                    if(!Strings.isNullOrEmpty(alias)) {
+                    if (!Strings.isNullOrEmpty(alias)) {
                         aliases.put(kind, alias);
-                        KIND_ALIAS_MAP.put(kind, alias);
+                        indexAliasCache.put(kind, alias);
                     }
                 }
             } catch (Exception e) {
@@ -91,11 +93,11 @@ public class IndexAliasServiceImpl implements IndexAliasService {
     private Set<String> getAllExistingAliases(RestHighLevelClient restClient) throws IOException {
         GetAliasesRequest request = new GetAliasesRequest();
         GetAliasesResponse response = restClient.indices().getAlias(request, RequestOptions.DEFAULT);
-        if(response.status() != RestStatus.OK)
+        if (response.status() != RestStatus.OK)
             return new HashSet<>();
 
         Set<String> allAliases = new HashSet<>();
-        for (Set<AliasMetadata> aliasSet: response.getAliases().values()) {
+        for (Set<AliasMetadata> aliasSet : response.getAliases().values()) {
             List<String> aliases = aliasSet.stream().map(a -> a.getAlias()).collect(Collectors.toList());
             allAliases.addAll(aliases);
         }
@@ -107,14 +109,14 @@ public class IndexAliasServiceImpl implements IndexAliasService {
         String alias = elasticIndexNameResolver.getIndexAliasFromKind(kind);
         // To create an alias for an index, the index name must the concrete index name, not alias
         index = resolveConcreteIndexName(restClient, index);
-        if(!Strings.isNullOrEmpty(index)) {
+        if (!Strings.isNullOrEmpty(index)) {
             IndicesAliasesRequest addRequest = new IndicesAliasesRequest();
             IndicesAliasesRequest.AliasActions aliasActions = new IndicesAliasesRequest.AliasActions(IndicesAliasesRequest.AliasActions.Type.ADD)
                     .index(index)
                     .alias(alias);
             addRequest.addAliasAction(aliasActions);
             AcknowledgedResponse response = restClient.indices().updateAliases(addRequest, RequestOptions.DEFAULT);
-            if(response.isAcknowledged()) {
+            if (response.isAcknowledged()) {
                 return alias;
             }
         }
@@ -125,7 +127,7 @@ public class IndexAliasServiceImpl implements IndexAliasService {
     private String resolveConcreteIndexName(RestHighLevelClient restClient, String index) throws IOException {
         GetAliasesRequest request = new GetAliasesRequest(index);
         GetAliasesResponse response = restClient.indices().getAlias(request, RequestOptions.DEFAULT);
-        if(response.status() == RestStatus.NOT_FOUND) {
+        if (response.status() == RestStatus.NOT_FOUND) {
             /* index resolved from kind is actual concrete index
              * Example:
              * {
@@ -136,7 +138,7 @@ public class IndexAliasServiceImpl implements IndexAliasService {
              */
             return index;
         }
-        if(response.status() == RestStatus.OK) {
+        if (response.status() == RestStatus.OK) {
             /* index resolved from kind is NOT actual create index. It is just an alias
              * The concrete index name in this example is "opendes-osdudemo-wellbore-1.0.0_1649167113090"
              * Example:
@@ -149,10 +151,10 @@ public class IndexAliasServiceImpl implements IndexAliasService {
              * }
              */
             Map<String, Set<AliasMetadata>> aliases = response.getAliases();
-            for (Map.Entry<String, Set<AliasMetadata>> entry: aliases.entrySet()) {
+            for (Map.Entry<String, Set<AliasMetadata>> entry : aliases.entrySet()) {
                 String actualIndex = entry.getKey();
                 List<String> aliaseNames = entry.getValue().stream().map(a -> a.getAlias()).collect(Collectors.toList());
-                if(aliaseNames.contains(index))
+                if (aliaseNames.contains(index))
                     return actualIndex;
             }
         }
