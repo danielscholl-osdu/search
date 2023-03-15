@@ -20,37 +20,46 @@ import org.opengroup.osdu.core.common.model.entitlements.Groups;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 
 @Configuration
+@ConditionalOnProperty(value = "cache.provider", havingValue = "redis")
 public class RedisConfig {
-  @Value("${redis.port}")
-  private int port;
+    @Value("${redis.port}")
+    private int port;
 
-  @Value("${redis.expiration}")
-  private int expiration;
+    @Value("${redis.expiration}")
+    private int expiration;
 
-  @Value("${redis.database}")
-  private int database;
+    @Value("${redis.database}")
+    private int database;
 
-  @Value("${redis.connection.timeout:15}")
-  private int timeout;
+    @Value("${redis.connection.timeout:15}")
+    private int timeout;
 
-  @Bean
-  public RedisAzureCache<String, Groups> groupCache() {
-    return new RedisAzureCache<>(String.class, Groups.class, new RedisAzureConfiguration(database, expiration, port, timeout));
-  }
+    @Value("${redis.index.alias.expiration:86400}")
+    private int aliasCacheExpiration;
 
-  @Bean
-  public RedisAzureCache<String, CursorSettings> cursorCache() {
-    return new RedisAzureCache<>(String.class, CursorSettings.class, new RedisAzureConfiguration(database, expiration, port, timeout));
-  }
+    @Bean
+    public RedisAzureCache<String, Groups> groupCache() {
+        return new RedisAzureCache<>(String.class, Groups.class, new RedisAzureConfiguration(database, expiration, port, timeout));
+    }
 
-  @Bean
-  public RedisAzureCache<String, ClusterSettings> clusterCache() {
-    return new RedisAzureCache<>(String.class, ClusterSettings.class, new RedisAzureConfiguration(database, expiration, port, timeout));
-  }
+    @Bean
+    public RedisAzureCache<String, CursorSettings> cursorCache() {
+        return new RedisAzureCache<>(String.class, CursorSettings.class, new RedisAzureConfiguration(database, expiration, port, timeout));
+    }
+
+    @Bean
+    public RedisAzureCache<String, ClusterSettings> clusterCache() {
+        return new RedisAzureCache<>(String.class, ClusterSettings.class, new RedisAzureConfiguration(database, expiration, port, timeout));
+    }
+
+    @Bean
+    public RedisAzureCache<String, String> aliasCache() {
+        return new RedisAzureCache<>(String.class, String.class, new RedisAzureConfiguration(database, aliasCacheExpiration, port, timeout));
+    }
 }
