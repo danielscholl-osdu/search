@@ -153,14 +153,14 @@ abstract class QueryBase {
 
         GeoPoint topLeft = new GeoPoint(spatialFilter.getByBoundingBox().getTopLeft().getLatitude(), spatialFilter.getByBoundingBox().getTopLeft().getLongitude());
         GeoPoint bottomRight = new GeoPoint(spatialFilter.getByBoundingBox().getBottomRight().getLatitude(), spatialFilter.getByBoundingBox().getBottomRight().getLongitude());
-        return geoBoundingBoxQuery(spatialFilter.getField()).setCorners(topLeft, bottomRight);
+        return geoBoundingBoxQuery(spatialFilter.getField()).setCorners(topLeft, bottomRight).ignoreUnmapped(true);
     }
 
     private QueryBuilder getDistanceQuery(SpatialFilter spatialFilter) throws AppException {
 
         return geoDistanceQuery(spatialFilter.getField())
                 .point(spatialFilter.getByDistance().getPoint().getLatitude(), spatialFilter.getByDistance().getPoint().getLongitude())
-                .distance(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS);
+                .distance(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS).ignoreUnmapped(true);
     }
 
     private QueryBuilder getGeoPolygonQuery(SpatialFilter spatialFilter) throws AppException {
@@ -169,7 +169,7 @@ abstract class QueryBase {
         for (Point point : spatialFilter.getByGeoPolygon().getPoints()) {
             points.add(new GeoPoint(point.getLatitude(), point.getLongitude()));
         }
-        return geoPolygonQuery(spatialFilter.getField(), points);
+        return geoPolygonQuery(spatialFilter.getField(), points).ignoreUnmapped(true);
     }
 
     List<Map<String, Object>> getHitsFromSearchResponse(SearchResponse searchResponse) {

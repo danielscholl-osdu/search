@@ -81,12 +81,8 @@ public class SearchApi {
                     message = SwaggerDoc.RESPONSE_BAD_GATEWAY,
                     response = String.class)})
     public ResponseEntity<QueryResponse> queryRecords(@NotNull(message = SwaggerDoc.REQUEST_VALIDATION_NOT_NULL_BODY) @RequestBody @Valid QueryRequest queryRequest) throws Exception {
-            try{
-                QueryResponse searchResponse = queryService.queryIndex(queryRequest);
-                return new ResponseEntity<QueryResponse>(searchResponse, HttpStatus.OK);
-            } catch (AppException e) {
-                return handleIndexNotFoundException(e, QueryResponse.getEmptyResponse());
-            }
+        QueryResponse searchResponse = queryService.queryIndex(queryRequest);
+        return new ResponseEntity<QueryResponse>(searchResponse, HttpStatus.OK);
     }
 
     @PostMapping("/query_with_cursor")
@@ -114,18 +110,7 @@ public class SearchApi {
                     message = SwaggerDoc.RESPONSE_BAD_GATEWAY,
                     response = String.class)})
     public ResponseEntity<CursorQueryResponse> queryWithCursor(@NotNull(message = SwaggerDoc.REQUEST_VALIDATION_NOT_NULL_BODY) @RequestBody @Valid CursorQueryRequest queryRequest) throws Exception {
-        try{
-            CursorQueryResponse searchResponse = scrollQueryService.queryIndex(queryRequest);
-            return new ResponseEntity<CursorQueryResponse>(searchResponse, HttpStatus.OK);
-        } catch (AppException e) {
-            return handleIndexNotFoundException(e, CursorQueryResponse.getEmptyResponse());
-        }
-    }
-
-    private <T> ResponseEntity<T>  handleIndexNotFoundException(AppException e, T response) {
-        if (e.getError().getCode() == HttpStatus.NOT_FOUND.value()
-                && e.getError().getMessage().equals("Resource you are trying to find does not exists"))
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        throw e;
+        CursorQueryResponse searchResponse = scrollQueryService.queryIndex(queryRequest);
+        return new ResponseEntity<CursorQueryResponse>(searchResponse, HttpStatus.OK);
     }
 }

@@ -28,7 +28,6 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.opengroup.osdu.core.common.model.search.AggregationResponse;
-import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryResponse;
@@ -37,6 +36,7 @@ import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.IAggregationParserUtil;
+import org.opengroup.osdu.search.util.SearchRequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -82,7 +82,7 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     QueryRequest searchRequest = (QueryRequest) request;
 
     // set the indexes to search against
-    SearchRequest elasticSearchRequest = new SearchRequest(this.getIndex(request));
+    SearchRequest elasticSearchRequest = SearchRequestUtil.createSearchRequest(this.getIndex(request));
 
     // build query
     SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);

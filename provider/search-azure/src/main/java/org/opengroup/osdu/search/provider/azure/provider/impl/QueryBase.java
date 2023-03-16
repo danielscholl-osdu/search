@@ -53,6 +53,7 @@ import org.opengroup.osdu.core.common.model.search.AggregationResponse;
 import org.opengroup.osdu.core.common.model.search.Point;
 import org.opengroup.osdu.core.common.model.search.Polygon;
 import org.opengroup.osdu.core.common.model.search.Query;
+import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryUtils;
 import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
@@ -72,7 +73,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.geoBoundingBoxQuery;
@@ -82,6 +88,8 @@ import static org.elasticsearch.index.query.QueryBuilders.geoPolygonQuery;
 import static org.elasticsearch.index.query.QueryBuilders.geoWithinQuery;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
+import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.CURSOR_QUERY_DEPENDENCY_NAME;
+import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.QUERY_DEPENDENCY_NAME;
 
 abstract class QueryBase {
 
@@ -111,10 +119,8 @@ abstract class QueryBase {
     @Qualifier("azureUtilsDependencyLogger")
     private DependencyLogger dependencyLogger;
 
-    static final String AGGREGATION_NAME = "agg";
     private static final String GEO_SHAPE_INDEXED_TYPE = "geo_shape";
     private static final int MINIMUM_POLYGON_POINTS_SIZE = 4;
-    private static final String DEPENDENCY_NAME = "QUERY_ELASTICSEARCH";
 
     // if returnedField contains property matching from excludes than query result will NOT include that property
     private final Set<String> excludes = new HashSet<>(Arrays.asList(RecordMetaAttribute.X_ACL.getValue()));
@@ -155,10 +161,11 @@ abstract class QueryBase {
                     spatialQueryBuilder = getDistanceQuery(spatialFilter);
                 } else if (spatialFilter.getByGeoPolygon() != null) {
                     spatialQueryBuilder = getGeoPolygonQuery(spatialFilter);
+                } else if (spatialFilter.getByIntersection() != null) {
+                    spatialQueryBuilder = getGeoShapeIntersectionQuery(spatialFilter);
                 }
             }
         }
-
 
         if (textQueryBuilder != null) {
             queryBuilder = boolQuery().must(textQueryBuilder);
@@ -208,14 +215,14 @@ abstract class QueryBase {
 
         GeoPoint topLeft = new GeoPoint(spatialFilter.getByBoundingBox().getTopLeft().getLatitude(), spatialFilter.getByBoundingBox().getTopLeft().getLongitude());
         GeoPoint bottomRight = new GeoPoint(spatialFilter.getByBoundingBox().getBottomRight().getLatitude(), spatialFilter.getByBoundingBox().getBottomRight().getLongitude());
-        return geoBoundingBoxQuery(spatialFilter.getField()).setCorners(topLeft, bottomRight);
+        return geoBoundingBoxQuery(spatialFilter.getField()).setCorners(topLeft, bottomRight).ignoreUnmapped(true);
     }
 
     private QueryBuilder getDistanceQuery(SpatialFilter spatialFilter) throws AppException {
 
         return geoDistanceQuery(spatialFilter.getField())
                 .point(spatialFilter.getByDistance().getPoint().getLatitude(), spatialFilter.getByDistance().getPoint().getLongitude())
-                .distance(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS);
+                .distance(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS).ignoreUnmapped(true);
     }
 
     private QueryBuilder getGeoPolygonQuery(SpatialFilter spatialFilter) throws AppException {
@@ -224,7 +231,7 @@ abstract class QueryBase {
         for (Point point : spatialFilter.getByGeoPolygon().getPoints()) {
             points.add(new GeoPoint(point.getLatitude(), point.getLongitude()));
         }
-        return geoPolygonQuery(spatialFilter.getField(), points);
+        return geoPolygonQuery(spatialFilter.getField(), points).ignoreUnmapped(true);
     }
 
     private QueryBuilder getGeoShapePolygonQuery(SpatialFilter spatialFilter) throws IOException {
@@ -234,20 +241,20 @@ abstract class QueryBase {
             points.add(new Coordinate(point.getLongitude(), point.getLatitude()));
         }
         CoordinatesBuilder cb = new CoordinatesBuilder().coordinates(points);
-        return geoWithinQuery(spatialFilter.getField(), new PolygonBuilder(cb));
+        return geoWithinQuery(spatialFilter.getField(), new PolygonBuilder(cb)).ignoreUnmapped(true);
     }
 
     private QueryBuilder getGeoShapeBoundingBoxQuery(SpatialFilter spatialFilter) throws IOException {
 
         Coordinate topLeft = new Coordinate(spatialFilter.getByBoundingBox().getTopLeft().getLongitude(), spatialFilter.getByBoundingBox().getTopLeft().getLatitude());
         Coordinate bottomRight = new Coordinate(spatialFilter.getByBoundingBox().getBottomRight().getLongitude(), spatialFilter.getByBoundingBox().getBottomRight().getLatitude());
-        return geoWithinQuery(spatialFilter.getField(), new EnvelopeBuilder(topLeft, bottomRight));
+        return geoWithinQuery(spatialFilter.getField(), new EnvelopeBuilder(topLeft, bottomRight)).ignoreUnmapped(true);
     }
 
     private QueryBuilder getGeoShapeDistanceQuery(SpatialFilter spatialFilter) throws IOException {
         Coordinate center = new Coordinate(spatialFilter.getByDistance().getPoint().getLongitude(), spatialFilter.getByDistance().getPoint().getLatitude());
         CircleBuilder circleBuilder = new CircleBuilder().center(center).radius(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS);
-        return geoWithinQuery(spatialFilter.getField(), circleBuilder);
+        return geoWithinQuery(spatialFilter.getField(), circleBuilder).ignoreUnmapped(true);
     }
 
     private QueryBuilder getGeoShapeIntersectionQuery(SpatialFilter spatialFilter) throws IOException {
@@ -266,7 +273,7 @@ abstract class QueryBase {
 
         GeometryCollectionBuilder geometryCollection = new GeometryCollectionBuilder();
         geometryCollection.shape(multiPolygonBuilder);
-        return geoIntersectionQuery(spatialFilter.getField(), geometryCollection.buildGeometry());
+        return geoIntersectionQuery(spatialFilter.getField(), geometryCollection.buildGeometry()).ignoreUnmapped(true);
     }
 
     private void checkPolygon(List<Coordinate> coordinates) {
@@ -390,7 +397,7 @@ abstract class QueryBase {
             if (searchRequest.getSpatialFilter() != null) {
                 useGeoShapeQuery = this.useGeoShapeQuery(client, searchRequest, index);
             }
-            elasticSearchRequest = createElasticRequest(searchRequest);
+            elasticSearchRequest = createElasticRequest(searchRequest, index);
             if (searchRequest.getSort() != null) {
                 List<FieldSortBuilder> sortBuilders = this.sortParserUtil.getSortQuery(client, searchRequest.getSort(), index);
                 for (FieldSortBuilder fieldSortBuilder : sortBuilders) {
@@ -435,7 +442,8 @@ abstract class QueryBase {
                 String request = elasticSearchRequest != null ? elasticSearchRequest.source().toString() : searchRequest.toString();
                 this.log.debug(String.format("Elastic request-payload: %s", request));
             }
-            dependencyLogger.logDependency(DEPENDENCY_NAME, searchRequest.getQuery(), dpsHeaders.getPartitionId(), latency, statusCode, statusCode == HttpStatus.SC_OK);
+            String dependencyName = searchRequest instanceof QueryRequest ? QUERY_DEPENDENCY_NAME : CURSOR_QUERY_DEPENDENCY_NAME;
+            dependencyLogger.logDependency(dependencyName, searchRequest.getQuery(), String.valueOf(searchRequest.getKind()), latency, statusCode, statusCode == HttpStatus.SC_OK);
             this.auditLog(searchRequest, searchResponse);
         }
     }
@@ -454,7 +462,7 @@ abstract class QueryBase {
         return indexedTypes.contains(GEO_SHAPE_INDEXED_TYPE);
     }
 
-    abstract SearchRequest createElasticRequest(Query request) throws AppException, IOException;
+    abstract SearchRequest createElasticRequest(Query request, String index) throws AppException, IOException;
 
     abstract void querySuccessAuditLogger(Query request);
 

@@ -152,6 +152,8 @@ abstract class QueryBase {
                     spatialQueryBuilder = getDistanceQuery(spatialFilter);
                 } else if (spatialFilter.getByGeoPolygon() != null) {
                     spatialQueryBuilder = getGeoPolygonQuery(spatialFilter);
+                } else if (spatialFilter.getByIntersection() != null) {
+                    spatialQueryBuilder = getGeoShapeIntersectionQuery(spatialFilter);
                 }
             }
         }
@@ -204,14 +206,14 @@ abstract class QueryBase {
 
         GeoPoint topLeft = new GeoPoint(spatialFilter.getByBoundingBox().getTopLeft().getLatitude(), spatialFilter.getByBoundingBox().getTopLeft().getLongitude());
         GeoPoint bottomRight = new GeoPoint(spatialFilter.getByBoundingBox().getBottomRight().getLatitude(), spatialFilter.getByBoundingBox().getBottomRight().getLongitude());
-        return geoBoundingBoxQuery(spatialFilter.getField()).setCorners(topLeft, bottomRight);
+        return geoBoundingBoxQuery(spatialFilter.getField()).setCorners(topLeft, bottomRight).ignoreUnmapped(true);
     }
 
     private QueryBuilder getDistanceQuery(SpatialFilter spatialFilter) {
 
         return geoDistanceQuery(spatialFilter.getField())
                 .point(spatialFilter.getByDistance().getPoint().getLatitude(), spatialFilter.getByDistance().getPoint().getLongitude())
-                .distance(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS);
+                .distance(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS).ignoreUnmapped(true);
     }
 
     private QueryBuilder getGeoPolygonQuery(SpatialFilter spatialFilter) {
@@ -220,7 +222,7 @@ abstract class QueryBase {
         for (Point point : spatialFilter.getByGeoPolygon().getPoints()) {
             points.add(new GeoPoint(point.getLatitude(), point.getLongitude()));
         }
-        return geoPolygonQuery(spatialFilter.getField(), points);
+        return geoPolygonQuery(spatialFilter.getField(), points).ignoreUnmapped(true);
     }
 
     private QueryBuilder getGeoShapePolygonQuery(SpatialFilter spatialFilter) throws IOException {
@@ -231,7 +233,7 @@ abstract class QueryBase {
         }
         CoordinatesBuilder cb = new CoordinatesBuilder().coordinates(points);
         Geometry geometry = new PolygonBuilder(cb).buildGeometry();
-        return geoWithinQuery(spatialFilter.getField(), geometry);
+        return geoWithinQuery(spatialFilter.getField(), geometry).ignoreUnmapped(true);
     }
 
     private QueryBuilder getGeoShapeBoundingBoxQuery(SpatialFilter spatialFilter) throws IOException {
@@ -239,14 +241,14 @@ abstract class QueryBase {
         Coordinate topLeft = new Coordinate(spatialFilter.getByBoundingBox().getTopLeft().getLongitude(), spatialFilter.getByBoundingBox().getTopLeft().getLatitude());
         Coordinate bottomRight = new Coordinate(spatialFilter.getByBoundingBox().getBottomRight().getLongitude(), spatialFilter.getByBoundingBox().getBottomRight().getLatitude());
         Rectangle rectangle = new EnvelopeBuilder(topLeft, bottomRight).buildGeometry();
-        return geoWithinQuery(spatialFilter.getField(), rectangle);
+        return geoWithinQuery(spatialFilter.getField(), rectangle).ignoreUnmapped(true);
     }
 
     private QueryBuilder getGeoShapeDistanceQuery(SpatialFilter spatialFilter) throws IOException {
 
         Coordinate center = new Coordinate(spatialFilter.getByDistance().getPoint().getLongitude(), spatialFilter.getByDistance().getPoint().getLatitude());
         CircleBuilder circleBuilder = new CircleBuilder().center(center).radius(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS);
-        return geoWithinQuery(spatialFilter.getField(), circleBuilder);
+        return geoWithinQuery(spatialFilter.getField(), circleBuilder).ignoreUnmapped(true);
     }
 
     private QueryBuilder getGeoShapeIntersectionQuery(SpatialFilter spatialFilter)
@@ -266,7 +268,7 @@ abstract class QueryBase {
 
         GeometryCollectionBuilder geometryCollection = new GeometryCollectionBuilder();
         geometryCollection.shape(multiPolygonBuilder);
-        return geoIntersectionQuery(spatialFilter.getField(), geometryCollection.buildGeometry());
+        return geoIntersectionQuery(spatialFilter.getField(), geometryCollection.buildGeometry()).ignoreUnmapped(true);
     }
 
     private void checkPolygon(List<Coordinate> coordinates) {
@@ -292,7 +294,7 @@ abstract class QueryBase {
         GeometryCollectionBuilder geometryCollection = new GeometryCollectionBuilder();
         geometryCollection.multiPoint(multiPointBuilder);
         // geoWithinQuery doesn't work with a polygon as the field to search on
-        return geoIntersectionQuery(spatialFilter.getField(), geometryCollection.buildGeometry());
+        return geoIntersectionQuery(spatialFilter.getField(), geometryCollection.buildGeometry()).ignoreUnmapped(true);
     }
 
     String getIndex(Query request) {
