@@ -454,7 +454,6 @@ The following software have components provided under the terms of this license:
 - Hamcrest Core (from http://hamcrest.org/, http://hamcrest.org/JavaHamcrest/, https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core)
 - JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from https://repo1.maven.org/maven2/org/jboss/spec/javax/ws/rs/jboss-jaxrs-api_2.1_spec)
 - JBoss Jakarta Annotations API (from <https://github.com/jboss/jboss-jakarta-annotations-api_spec>, https://github.com/jboss/jboss-jakarta-annotations-api_spec)
-- Jackson module: Afterburner (from http://wiki.fasterxml.com/JacksonHome, https://github.com/FasterXML/jackson-modules-base)
 - Jakarta Activation (from https://repo1.maven.org/maven2/com/sun/activation/jakarta.activation)
 - Jakarta Activation API (from https://github.com/eclipse-ee4j/jaf, https://github.com/jakartaee/jaf-api, https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api)
 - Jakarta Annotations API (from https://projects.eclipse.org/projects/ee4j.ca)
@@ -538,7 +537,6 @@ The following software have components provided under the terms of this license:
 
 - Guava: Google Core Libraries for Java (from http://code.google.com/p/guava-libraries, https://github.com/google/guava, https://repo1.maven.org/maven2/com/google/guava/guava)
 - HdrHistogram (from http://hdrhistogram.github.io/HdrHistogram/)
-- Hibernate Validator (from https://repo1.maven.org/maven2/org/hibernate/hibernate-validator, https://repo1.maven.org/maven2/org/hibernate/validator/hibernate-validator)
 - LatencyUtils (from http://latencyutils.github.io/LatencyUtils/)
 - MongoDB Java Driver (from http://mongodb.org/, http://www.mongodb.org, https://www.mongodb.com/)
 - Netty/Common (from https://repo1.maven.org/maven2/io/netty/netty-common)
@@ -623,7 +621,6 @@ The following software have components provided under the terms of this license:
 - Microsoft Application Insights Java SDK Spring Boot starter (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Microsoft Application Insights Java SDK Web Module (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Microsoft Application Insights Log4j 2 Appender (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Spring Data KeyValue (from https://repo1.maven.org/maven2/org/springframework/data/spring-data-keyvalue)
 - aopalliance-repackaged (from https://repo1.maven.org/maven2/org/glassfish/hk2/external/aopalliance-repackaged)
 - jersey-core-common (from https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-common)
 - jersey-core-server (from https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-server)
@@ -937,13 +934,6 @@ The following software have components provided under the terms of this license:
 - RabbitMQ Java Client (from http://www.rabbitmq.com, https://www.rabbitmq.com)
 
 ========================================================================
-NCSA
-========================================================================
-The following software have components provided under the terms of this license:
-
-- Spring Context Support (from https://github.com/spring-projects/spring-framework)
-
-========================================================================
 RSA-MD
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -999,6 +989,13 @@ The following software have components provided under the terms of this license:
 - Netty/Codec (from https://repo1.maven.org/maven2/io/netty/netty-codec)
 
 ========================================================================
+mit-old-style-no-advert
+========================================================================
+The following software have components provided under the terms of this license:
+
+- Brave (from https://repo1.maven.org/maven2/io/zipkin/brave/brave)
+
+========================================================================
 public-domain
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -1008,6 +1005,7 @@ The following software have components provided under the terms of this license:
 - JBoss Logging 3 (from http://www.jboss.org)
 - JSON in Java (from https://github.com/douglascrockford/JSON-java)
 - LatencyUtils (from http://latencyutils.github.io/LatencyUtils/)
+- Microsoft Azure client library for Blob Storage (from https://github.com/Azure/azure-sdk-for-java)
 - PostgreSQL JDBC Driver
 - RESTEasy JAX-RS Implementation (from https://repo1.maven.org/maven2/org/jboss/resteasy/resteasy-jaxrs)
 - RESTEasy Validator Provider BV 1.1 (from http://maven.apache.org)
