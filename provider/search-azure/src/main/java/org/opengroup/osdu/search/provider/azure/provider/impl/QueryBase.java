@@ -32,7 +32,9 @@ import org.elasticsearch.common.geo.builders.PolygonBuilder;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.index.query.WrapperQueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
@@ -136,7 +138,7 @@ abstract class QueryBase {
 
         QueryBuilder textQueryBuilder = null;
         QueryBuilder spatialQueryBuilder = null;
-        QueryBuilder queryBuilder = null;
+        BoolQueryBuilder queryBuilder = null;
 
         if (!Strings.isNullOrEmpty(simpleQuery)) {
             textQueryBuilder = queryParserUtil.buildQueryBuilderFromQueryString(simpleQuery);
@@ -183,23 +185,20 @@ abstract class QueryBase {
         }
     }
 
-    private QueryBuilder getQueryBuilderWithAuthorization(QueryBuilder queryBuilder, boolean asOwner) {
+    private QueryBuilder getQueryBuilderWithAuthorization(BoolQueryBuilder queryBuilder, boolean asOwner) {
         if (userHasFullDataAccess()) {
             return queryBuilder;
         }
 
-        QueryBuilder authorizationQueryBuilder = null;
         String groups = dpsHeaders.getHeaders().get(providerHeaderService.getDataGroupsHeader());
         if (groups != null) {
             String[] groupArray = groups.trim().split("\\s*,\\s*");
+            List<QueryBuilder> authFilterClauses = queryBuilder.filter();
             if (asOwner) {
-                authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(AclRole.OWNERS.getPath(), groupArray));
+                authFilterClauses.add(new TermsQueryBuilder(AclRole.OWNERS.getPath(), Arrays.asList(groupArray)));
             } else {
-                authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(RecordMetaAttribute.X_ACL.getValue(), groupArray));
+                authFilterClauses.add(new TermsQueryBuilder(RecordMetaAttribute.X_ACL.getValue(), Arrays.asList(groupArray)));
             }
-        }
-        if (authorizationQueryBuilder != null) {
-            queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(authorizationQueryBuilder) : boolQuery().must(authorizationQueryBuilder);
         }
         return queryBuilder;
     }
