@@ -26,6 +26,13 @@ Packages are only needed for installation from a local computer.
 
 You need to set variables in **values.yaml** file using any code editor. Some of the values are prefilled, but you need to specify some values as well. You can find more information about them below.
 
+### Global variables
+
+| Name | Description | Type | Default |Required |
+|------|-------------|------|---------|---------|
+**global.domain** | your domain for the external endpoint, ex `example.com` | string | - | yes
+**global.onPremEnabled** | whether on-prem is enabled | boolean | false | yes
+
 ### Configmap variables
 
 | Name | Description | Type | Default | Required |
@@ -61,8 +68,6 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 |------|-------------|------|---------|----------|
 **conf.appName** | Service name | string | `search` | yes
 **conf.elasticSecretName** | secret for elasticsearch | string | `search-elastic-secret` | yes
-**conf.onPremEnabled** | whether on-prem is enabled | boolean | false | yes
-**conf.domain** | your domain, ex `example.com` | string | - | yes
 **conf.searchRedisSecretName** | search Redis secret that contains redis password with REDIS_PASSWORD key | string | `search-redis-secret` | yes
 
 ### Istio variables
