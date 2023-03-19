@@ -1,3 +1,7 @@
+global:
+  domain: ""
+  onPremEnabled: false
+
 data:
   # Configmaps
   springProfilesActive: "gcp"
@@ -21,12 +25,12 @@ data:
   redisSearchHost: ""
   redisSearchPort: 6379
   redisImage: "docker.io/library/redis:7"
+
 conf:
   appName: "search"
   elasticSecretName: "search-elastic-secret"
-  onPremEnabled: false
-  domain: ""
   searchRedisSecretName: "search-redis-secret"
+
 istio:
   proxyCPU: "10m"
   proxyCPULimit: "200m"

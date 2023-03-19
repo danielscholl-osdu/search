@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ .Values.conf.appName | quote }}
   annotations:
-  {{- if not .Values.conf.onPremEnabled }}
+  {{- if not .Values.global.onPremEnabled }}
     cloud.google.com/neg: '{"ingress": true}'
   {{- end }}
   namespace: {{ .Release.Namespace | quote }}
