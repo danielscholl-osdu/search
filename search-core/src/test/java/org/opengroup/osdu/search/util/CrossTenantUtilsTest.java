@@ -24,10 +24,7 @@ import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.search.ElasticIndexNameResolver;
 import org.opengroup.osdu.search.service.IndexAliasService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -110,6 +107,150 @@ public class CrossTenantUtilsTest {
         assertEquals(getIndexName(kinds), this.sut.getIndexName(queryRequest));
     }
 
+    @Test
+    public void should_return_IndexNameWithHyphen_when_KindNameHasHyphen() {
+        String kind = "opendes-1:*:*:*";
+        String index = kind.replace(":", "-");
+        String indexName = String.format("%s,%s", index, "-.*");
+
+        mock_getIndexNameFromKind();
+        when(queryRequest.getKind()).thenReturn(kind);
+
+        assertEquals(indexName, this.sut.getIndexName(queryRequest));
+    }
+
+    @Test
+    public void should_return_alias_when_searchingHundredSameKinds_01() {
+        Integer kindCount = 300;
+        String kind = "opendes:welldb-v2:wellbore:2.0.0";
+        List<String> kinds = Collections.nCopies(kindCount, kind);
+        String alias = String.format("a%d", kind.hashCode());
+        Map<String, String> aliasMap = new HashMap<>();
+        aliasMap.put(kind, alias);
+        String hundredsKinds = getHundredsKinds(kindCount, kind);
+        String indexName = getHundredsIndexNameFromAlias(kindCount, alias);
+
+        when(queryRequest.getKind()).thenReturn(hundredsKinds);
+        mock_getIndexNameFromKind();
+        when(indexAliasService.getIndicesAliases(kinds)).thenReturn(aliasMap);
+
+        assertEquals(indexName, this.sut.getIndexName(queryRequest));
+    }
+
+    @Test
+    public void should_return_alias_when_searchingHundredSameKinds_02() {
+        Integer kindCount = 300;
+        String kind = "opendes:welldb-v2:wellbore:2.*.*";
+        List<String> kinds = Collections.nCopies(kindCount, kind);
+        String alias = String.format("a%d", kind.hashCode());
+        Map<String, String> aliasMap = new HashMap<>();
+        aliasMap.put(kind, alias);
+        String hundredsKinds = getHundredsKinds(kindCount, kind);
+        String indexName = getHundredsIndexNameFromAlias(kindCount, alias);
+
+        when(queryRequest.getKind()).thenReturn(hundredsKinds);
+        mock_getIndexNameFromKind();
+        when(indexAliasService.getIndicesAliases(kinds)).thenReturn(aliasMap);
+
+        assertEquals(indexName, this.sut.getIndexName(queryRequest));
+    }
+
+    @Test
+    public void should_return_index_when_searchingHundredUnsupportedSameKinds_01() {
+        Integer kindCount = 300;
+        String kind = "opendes:welldb-v2:wellbore:2.*";
+        String index = kind.replace(":", "-");
+        List<String> kinds = Collections.nCopies(kindCount, kind);
+        String hundredsKinds = getHundredsKinds(kindCount, kind);
+        String indexName = getHundredsIndexNameFromIndex(kindCount, index);
+
+        when(queryRequest.getKind()).thenReturn(hundredsKinds);
+        mock_getIndexNameFromKind();
+        when(indexAliasService.getIndicesAliases(kinds)).thenReturn(new HashMap<>());
+
+        assertEquals(indexName, this.sut.getIndexName(queryRequest));
+    }
+
+    @Test
+    public void should_return_index_when_searchingHundredUnsupportedSameKinds_02() {
+        Integer kindCount = 300;
+        String kind = "opendes:welldb-v2:wellbore:2.*.0";
+        String index = kind.replace(":", "-");
+        List<String> kinds = Collections.nCopies(kindCount, kind);
+        String hundredsKinds = getHundredsKinds(kindCount, kind);
+        String indexName = getHundredsIndexNameFromIndex(kindCount, index);
+
+        when(queryRequest.getKind()).thenReturn(hundredsKinds);
+        mock_getIndexNameFromKind();
+        when(indexAliasService.getIndicesAliases(kinds)).thenReturn(new HashMap<>());
+
+        assertEquals(indexName, this.sut.getIndexName(queryRequest));
+    }
+
+    @Test
+    public void should_return_index_when_searchingHundredUnsupportedSameKinds_03() {
+        Integer kindCount = 300;
+        String kind = "opendes:welldb-v2:wellbore:2.0.*";
+        String index = kind.replace(":", "-");
+        List<String> kinds = Collections.nCopies(kindCount, kind);
+        String hundredsKinds = getHundredsKinds(kindCount, kind);
+        String indexName = getHundredsIndexNameFromIndex(kindCount, index);
+
+        when(queryRequest.getKind()).thenReturn(hundredsKinds);
+        mock_getIndexNameFromKind();
+        when(indexAliasService.getIndicesAliases(kinds)).thenReturn(new HashMap<>());
+
+        assertEquals(indexName, this.sut.getIndexName(queryRequest));
+    }
+
+    @Test
+    public void should_return_index_when_searchingHundredUnsupportedSameKinds_04() {
+        Integer kindCount = 300;
+        String kind = "opendes:welldb-v2:wellbore:*.0.0";
+        String index = kind.replace(":", "-");
+        List<String> kinds = Collections.nCopies(kindCount, kind);
+        String hundredsKinds = getHundredsKinds(kindCount, kind);
+        String indexName = getHundredsIndexNameFromIndex(kindCount, index);
+
+        when(queryRequest.getKind()).thenReturn(hundredsKinds);
+        mock_getIndexNameFromKind();
+        when(indexAliasService.getIndicesAliases(kinds)).thenReturn(new HashMap<>());
+
+        assertEquals(indexName, this.sut.getIndexName(queryRequest));
+    }
+
+    @Test
+    public void should_return_index_when_searchingHundredUnsupportedSameKinds_05() {
+        Integer kindCount = 300;
+        String kind = "opendes:welldb-v2:wellbore:*.*.0";
+        String index = kind.replace(":", "-");
+        List<String> kinds = Collections.nCopies(kindCount, kind);
+        String hundredsKinds = getHundredsKinds(kindCount, kind);
+        String indexName = getHundredsIndexNameFromIndex(kindCount, index);
+
+        when(queryRequest.getKind()).thenReturn(hundredsKinds);
+        mock_getIndexNameFromKind();
+        when(indexAliasService.getIndicesAliases(kinds)).thenReturn(new HashMap<>());
+
+        assertEquals(indexName, this.sut.getIndexName(queryRequest));
+    }
+
+    @Test
+    public void should_return_index_when_searchingHundredUnsupportedSameKinds_06() {
+        Integer kindCount = 300;
+        String kind = "opendes:welldb-v2:wellbore:*.*.*";
+        String index = kind.replace(":", "-");
+        List<String> kinds = Collections.nCopies(kindCount, kind);
+        String hundredsKinds = getHundredsKinds(kindCount, kind);
+        String indexName = getHundredsIndexNameFromIndex(kindCount, index);
+
+        when(queryRequest.getKind()).thenReturn(hundredsKinds);
+        mock_getIndexNameFromKind();
+        when(indexAliasService.getIndicesAliases(kinds)).thenReturn(new HashMap<>());
+
+        assertEquals(indexName, this.sut.getIndexName(queryRequest));
+    }
+
     private void mock_getIndexNameFromKind() {
         when(this.elasticIndexNameResolver.getIndexNameFromKind(anyString())).thenAnswer(invocation ->
         {
@@ -154,4 +295,31 @@ public class CrossTenantUtilsTest {
         builder.append("-.*");
         return builder.toString();
     }
+
+    private String getHundredsKinds(Integer kindCount, String kind) {
+        StringBuilder kindBuilder = new StringBuilder();
+        for (int i = 0; i < kindCount; i++) {
+            if (i == 0) {
+                kindBuilder.append(kind);
+            } else {
+                kindBuilder.append("," + kind);
+            }
+        }
+        return kindBuilder.toString();
+    }
+
+    private String getHundredsIndexNameFromAlias(Integer kindCount, String alias) {
+        List<String> aliases = Collections.nCopies(kindCount, alias);
+        StringBuilder aliasBuilder = new StringBuilder();
+        aliases.forEach((item) -> aliasBuilder.append(item + ","));
+        return String.format("%s%s", aliasBuilder, "-.*");
+    }
+
+    private String getHundredsIndexNameFromIndex(Integer kindCount, String index) {
+        List<String> indexes = Collections.nCopies(kindCount, index);
+        StringBuilder indexBuilder = new StringBuilder();
+        indexes.forEach((item) -> indexBuilder.append(item + ","));
+        return String.format("%s%s", indexBuilder, "-.*");
+    }
+
 }
