@@ -34,6 +34,7 @@ import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.index.query.WrapperQueryBuilder;
 import org.elasticsearch.rest.RestStatus;
@@ -82,7 +83,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.geoBoundingBoxQuery;
 import static org.elasticsearch.index.query.QueryBuilders.geoDistanceQuery;
 import static org.elasticsearch.index.query.QueryBuilders.geoIntersectionQuery;
@@ -138,7 +138,7 @@ abstract class QueryBase {
 
         QueryBuilder textQueryBuilder = null;
         QueryBuilder spatialQueryBuilder = null;
-        BoolQueryBuilder queryBuilder = null;
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
 
         if (!Strings.isNullOrEmpty(simpleQuery)) {
             textQueryBuilder = queryParserUtil.buildQueryBuilderFromQueryString(simpleQuery);
@@ -170,16 +170,16 @@ abstract class QueryBase {
         }
 
         if (textQueryBuilder != null) {
-            queryBuilder = boolQuery().must(textQueryBuilder);
+            queryBuilder.must(textQueryBuilder);
         }
         if (spatialQueryBuilder != null) {
-            queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(spatialQueryBuilder) : boolQuery().must(spatialQueryBuilder);
+            queryBuilder.must(spatialQueryBuilder);
         }
 
         if (this.iPolicyService != null) {
             String compiledESPolicy = this.iPolicyService.getCompiledPolicy(providerHeaderService);
             WrapperQueryBuilder wrapperQueryBuilder = new WrapperQueryBuilder(compiledESPolicy);
-            return queryBuilder != null ? boolQuery().must(queryBuilder).must(wrapperQueryBuilder) : boolQuery().must(wrapperQueryBuilder);
+            return queryBuilder.must(wrapperQueryBuilder);
         } else {
             return getQueryBuilderWithAuthorization(queryBuilder, asOwner);
         }
