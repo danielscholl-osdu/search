@@ -81,6 +81,7 @@ import org.opengroup.osdu.search.util.QueryParserUtil;
 import org.opengroup.osdu.search.util.SortParserUtil;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -511,6 +512,27 @@ public class QueryServiceImplTest {
 
         Set<String> indexedTypes = new HashSet<>();
         String dummyTimeoutMessage = "listener timeout after waiting for 1m";
+
+        doThrow(exception).when(client).search(any(), any(RequestOptions.class));
+        doReturn(dummyTimeoutMessage).when(exception).getMessage();
+        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
+
+        try {
+            sut.queryIndex(searchRequest);
+        } catch (AppException e) {
+            int errorCode = 504;
+            String errorMessage = "Request timed out after waiting for 1m";
+            validateAppException(e, errorCode, errorMessage);
+            throw (e);
+        }
+    }
+
+    @Test(expected = AppException.class)
+    public void testQueryBase_SocketTimeoutException_ListenerTimeout_throwsException() throws IOException {
+        SocketTimeoutException exception = mock(SocketTimeoutException.class);
+
+        Set<String> indexedTypes = new HashSet<>();
+        String dummyTimeoutMessage = "60,000 milliseconds timeout on connection";
 
         doThrow(exception).when(client).search(any(), any(RequestOptions.class));
         doReturn(dummyTimeoutMessage).when(exception).getMessage();
