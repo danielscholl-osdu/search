@@ -70,3 +70,11 @@ go-swagger brings to the go community a complete suite of fully-featured, high-p
   indexpattern is defined in web.xml (in indexer) file with an environment variable as CRON_INDEX_CLEANUP_PATTERN
   The scheduling of cron is done in the following repository:
   https://slb-swt.visualstudio.com/data-management/_git/deployment-init-scripts?path=%2F3_post_deploy%2F1_appengine_cron%2Fcron.yaml&version=GBmaster
+
+### Open API 3.0 - Swagger
+- Swagger UI : https://host/context-path/swagger (will redirect to https://host/context-path/swagger-ui/index.html)
+- api-docs (JSON) : https://host/context-path/api-docs
+- api-docs (YAML) : https://host/context-path/api-docs.yaml
+
+All the Swagger and OpenAPI related common properties are managed here [swagger.properties](./search-core/src/main/resources/swagger.properties)
+
