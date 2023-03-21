@@ -36,7 +36,6 @@ import org.opengroup.osdu.core.common.model.search.*;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
 import org.opengroup.osdu.search.provider.aws.provider.impl.QueryServiceAwsImpl;
-import org.opengroup.osdu.search.provider.aws.util.AwsCrossTenantUtils;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.*;
@@ -53,6 +52,7 @@ public class QueryServiceAwsImplTest {
 	private final String DATA_GROUPS = "X-Data-Groups";
 	private final String DATA_GROUP_1 = "data.welldb.viewers@common.evd.cloud.slb-ds.com";
 	private final String DATA_GROUP_2 = "data.npd.viewers@common.evd.cloud.slb-ds.com";
+	private final String PARTITION_ID = "opendes";
 
 	@InjectMocks
 	QueryServiceAwsImpl queryServiceAws;
@@ -69,7 +69,7 @@ public class QueryServiceAwsImplTest {
 	private IProviderHeaderService providerHeaderService;
 
 	@Mock
-	private AwsCrossTenantUtils crossTenantUtils;
+	private CrossTenantUtils crossTenantUtils;
 
 	@Mock
 	private IFieldMappingTypeService fieldMappingTypeService;
@@ -187,8 +187,9 @@ public class QueryServiceAwsImplTest {
 		headers.put("groups", "[]");
 		when(dpsHeaders.getHeaders())
 				.thenReturn(headers);
+		when(dpsHeaders.getPartitionId()).thenReturn(PARTITION_ID);
 
-		String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPolygon\",\"coordinates\":[[[[-8.61,1.02],[-2.48,1.02],[-2.48,10.74],[-8.61,10.74],[-8.61,1.02]]]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]}}";
+		String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"prefix\":{\"id\":{\"value\":\"opendes:\",\"boost\":1.0}}},{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPolygon\",\"coordinates\":[[[[-8.61,1.02],[-2.48,1.02],[-2.48,10.74],[-8.61,10.74],[-8.61,1.02]]]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]}}";
 
 		// act
 		QueryResponse response = queryServiceAws.queryIndex(queryRequest);
@@ -268,8 +269,9 @@ public class QueryServiceAwsImplTest {
 		headers.put("groups", "[]");
 		when(dpsHeaders.getHeaders())
 				.thenReturn(headers);
+		when(dpsHeaders.getPartitionId()).thenReturn(PARTITION_ID);
 
-		String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPoint\",\"coordinates\":[[-8.61,1.02]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]}}";
+		String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"prefix\":{\"id\":{\"value\":\"opendes:\",\"boost\":1.0}}},{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPoint\",\"coordinates\":[[-8.61,1.02]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]}}";
 
 		// act
 		QueryResponse response = queryServiceAws.queryIndex(queryRequest);
@@ -285,38 +287,50 @@ public class QueryServiceAwsImplTest {
 	@Test
 	public void should_searchAll_when_requestHas_noQueryString() throws IOException {
 
+		when(dpsHeaders.getPartitionId()).thenReturn(PARTITION_ID);
 		BoolQueryBuilder builder = (BoolQueryBuilder) this.queryServiceAws.buildQuery(null, null, true);
 		assertNotNull(builder);
 
 		List<QueryBuilder> topLevelMustClause = builder.must();
-		assertEquals(1, topLevelMustClause.size());
+		assertEquals(2, topLevelMustClause.size());
 
-		verifyAcls(topLevelMustClause.get(0), true);
+		verifyAcls(topLevelMustClause.get(1), true);
 	}
 
 	@Test
 	public void should_return_ownerOnlyMustClause_when_searchAsOwners() throws IOException {
 
+		when(dpsHeaders.getPartitionId()).thenReturn(PARTITION_ID);
 		BoolQueryBuilder builder = (BoolQueryBuilder) this.queryServiceAws.buildQuery(null, null, false);
 		assertNotNull(builder);
 
 		List<QueryBuilder> topLevelMustClause = builder.must();
-		assertEquals(1, topLevelMustClause.size());
+		assertEquals(2, topLevelMustClause.size());
 
-		verifyAcls(topLevelMustClause.get(0), false);
+		verifyAcls(topLevelMustClause.get(1), false);
 	}
 
 	@Test
-	public void should_return_nullQuery_when_searchAsDataRootUser() throws IOException {
+	public void should_return_notNullQuery_when_searchAsDataRootUser() throws IOException {
+		String expectedBuilder =
+			"{\n" +
+			"  \"prefix\" : {\n" +
+			"    \"id\" : {\n" +
+			"      \"value\" : \"opendes:\",\n" +
+			"      \"boost\" : 1.0\n" +
+			"    }\n" +
+			"  }\n" +
+			"}";
 		Map<String, String> HEADERS = new HashMap<>();
 		HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
 		HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
 		HEADERS.put(DATA_GROUPS, String.format("%s,%s", DATA_GROUP_1, DATA_GROUP_2));
 		HEADERS.put(providerHeaderService.getDataRootUserHeader(), "true");
 		when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
+		when(dpsHeaders.getPartitionId()).thenReturn(PARTITION_ID);
 
 		QueryBuilder builder = this.queryServiceAws.buildQuery(null, null, false);
-		assertNull(builder);
+		assertEquals(builder.toString(), expectedBuilder);
 	}
 
 	private void verifyAcls(QueryBuilder aclMustClause, boolean asOwner) {
