@@ -76,6 +76,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -428,6 +429,11 @@ abstract class QueryBase {
             }
         } catch (AppException e) {
             throw e;
+        } catch (SocketTimeoutException e) {
+            if (e.getMessage().startsWith("60,000 milliseconds timeout on connection")) {
+                throw new AppException(HttpServletResponse.SC_GATEWAY_TIMEOUT, "Search error", String.format("Request timed out after waiting for %sm", REQUEST_TIMEOUT.getMinutes()), e);
+            }
+            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
         } catch (IOException e) {
             if (e.getMessage().startsWith("listener timeout after waiting for")) {
                 throw new AppException(HttpServletResponse.SC_GATEWAY_TIMEOUT, "Search error", String.format("Request timed out after waiting for %sm", REQUEST_TIMEOUT.getMinutes()), e);
