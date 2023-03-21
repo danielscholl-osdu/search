@@ -1,53 +1,50 @@
 package org.opengroup.osdu.search.swagger;
 
-import io.swagger.v3.oas.models.servers.Server;
-import org.springframework.context.annotation.Configuration;
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Contact;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.info.License;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.annotations.servers.Server;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
-import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import javax.servlet.ServletContext;
-import java.util.Collections;
 
+@OpenAPIDefinition(
+        info = @Info(
+                title = "${api.title}",
+                description = "${api.description}",
+                version = "${api.version}",
+                contact = @Contact(name = "${api.contact.name}", email = "${api.contact.email}"),
+                license = @License(name = "${api.license.name}", url = "${api.license.url}")),
+        servers = @Server(url = "${api.server.url}"),
+        security = @SecurityRequirement(name = "Authorization"),
+        tags = {
+                @Tag(name = "search-api", description = "Service endpoints to search data in datalake"),
+                @Tag(name = "health-check-api", description = "Health Check API"),
+                @Tag(name = "info", description = "Version info endpoint")
+        }
+)
+@SecurityScheme(name = "Authorization", scheme = "bearer", bearerFormat = "Authorization", type = SecuritySchemeType.HTTP)
 @Configuration
 public class SwaggerConfiguration {
-
-    @Bean
-    public OpenAPI openApi(ServletContext servletContext) {
-        Server server = new Server().url(servletContext.getContextPath());
-        return new OpenAPI()
-                .servers(Collections.singletonList(server))
-                .info(new Info()
-                        .description("Search service that provides a set of APIs " +
-                                "to search records against Elasticsearch")
-                        .title("Search Service")
-                        .version("1.0"))
-                .components(new Components()
-                        .addSecuritySchemes("Authorization",
-                                new SecurityScheme()
-                                        .type(SecurityScheme.Type.HTTP)
-                                        .scheme("bearer")
-                                        .bearerFormat("Authorization")
-                                        .in(SecurityScheme.In.HEADER)
-                                        .name("Authorization")))
-                .addSecurityItem(
-                        new SecurityRequirement()
-                                .addList("Authorization"));
-    }
-
     @Bean
     public OperationCustomizer customize() {
-        return (operation, handlerMethod) -> operation.addParametersItem(
-                new Parameter()
-                        .in("header")
-                        .required(true)
-                        .description("Tenant Id")
-                        .name(DpsHeaders.DATA_PARTITION_ID));
+        return (operation, handlerMethod) -> {
+            Parameter dataPartitionId = new Parameter()
+                    .name(DpsHeaders.DATA_PARTITION_ID)
+                    .description("Tenant Id")
+                    .in("header")
+                    .required(true)
+                    .schema(new StringSchema());
+            return operation.addParametersItem(dataPartitionId);
+        };
     }
 }

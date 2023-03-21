@@ -31,6 +31,15 @@ public class AADSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private AADAppRoleStatelessAuthenticationFilter appRoleAuthFilter;
 
+    public static final String[] AUTH_ALLOWLIST = {"/", "/index.html",
+            "/api-docs.yaml",
+            "/api-docs/swagger-config",
+            "/api-docs/**",
+            "/swagger",
+            "/swagger-ui.html",
+            "/swagger-ui/**"
+    };
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -38,16 +47,7 @@ public class AADSecurityConfig extends WebSecurityConfigurerAdapter {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER)
             .and()
             .authorizeRequests()
-                .antMatchers("/", "/index.html",
-                        "/v2/api-docs",
-                        "/v3/api-docs",
-                        "/configuration/ui",
-                        "/swagger-resources/**",
-                        "/configuration/security",
-                        "/swagger",
-                        "/swagger-ui.html",
-                        "/swagger-ui/**",
-                        "/webjars/**").permitAll()
+                .antMatchers(AUTH_ALLOWLIST).permitAll()
                 .anyRequest().authenticated()
             .and()
             .addFilterBefore(appRoleAuthFilter, UsernamePasswordAuthenticationFilter.class);
