@@ -14,13 +14,21 @@
 
 package org.opengroup.osdu.search.api;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.opengroup.osdu.core.common.SwaggerDoc;
 import org.opengroup.osdu.core.common.model.http.AppError;
-import org.opengroup.osdu.core.common.model.http.AppException;
-import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.model.search.*;
-import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
+import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
+import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
+import org.opengroup.osdu.core.common.model.search.QueryRequest;
+import org.opengroup.osdu.core.common.model.search.QueryResponse;
+import org.opengroup.osdu.core.common.model.search.SearchServiceRole;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
 import org.springframework.http.HttpStatus;
@@ -38,17 +46,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-@Api(
-        value = SwaggerDoc.SEARCH_TAG,
-        authorizations = {@Authorization(value = SwaggerDoc.BEARER_AUTH),
-                @Authorization(value = SwaggerDoc.GOOGLE_ID_AUTH)})
+
 @RestController
 @RequestScope
 @RequestMapping("/")
 @Validated
-@ApiImplicitParams({
-        @ApiImplicitParam(name = DpsHeaders.ACCOUNT_ID, value = SwaggerDoc.PARAMETER_ACCOUNT_ID, required = true, defaultValue = TenantInfo.COMMON, dataType = "string", paramType = "header"),
-        @ApiImplicitParam(name = DpsHeaders.ON_BEHALF_OF, value = SwaggerDoc.PARAMETER_ONBEHALF_ACCOUNT_ID, dataType = "string", paramType = "header")})
+@Tag(name = "search-api", description = "Service endpoints to search data in datalake")
 public class SearchApi {
 
     @Inject
@@ -56,35 +59,38 @@ public class SearchApi {
     @Inject
     private IScrollQueryService scrollQueryService;
 
+
+    @Operation(summary = "${searchApi.queryRecords.summary}", description = "${searchApi.queryRecords.description}",
+            security = {@SecurityRequirement(name = "Authorization")}, tags = { "search-api" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success", content = { @Content(schema = @Schema(implementation = QueryResponse.class)) }),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters were given on request",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "403", description = "User not authorized to perform the action",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "404", description = "Not Found",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "502", description = "Search service scale-up is taking longer than expected. Wait 10 seconds and retry.",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "503", description = "Service Unavailable",  content = {@Content(schema = @Schema(implementation = AppError.class))})
+    })
     @PostMapping("/query")
     @PreAuthorize("@authorizationFilter.hasPermission('" + SearchServiceRole.ADMIN + "', '" + SearchServiceRole.USER + "')")
-    @ApiOperation(
-            value = SwaggerDoc.QUERY_POST_TITLE,
-            nickname = SwaggerDoc.QUERY_OPERATION_ID,
-            code = HttpServletResponse.SC_ACCEPTED,
-            notes = SwaggerDoc.QUERY_POST_NOTES)
-    @ApiResponses({
-            @ApiResponse(
-                    code = HttpServletResponse.SC_OK,
-                    message = SwaggerDoc.QUERY_POST_RESPONSE_OK,
-                    response = QueryResponse.class),
-            @ApiResponse(
-                    code = HttpServletResponse.SC_BAD_REQUEST,
-                    message = SwaggerDoc.QUERY_POST_RESPONSE_BAD_REQUEST,
-                    response = AppError.class),
-            @ApiResponse(
-                    code = HttpServletResponse.SC_FORBIDDEN,
-                    message = SwaggerDoc.QUERY_POST_RESPONSE_NOT_AUTHORIZED,
-                    response = AppError.class),
-            @ApiResponse(
-                    code = HttpServletResponse.SC_BAD_GATEWAY,
-                    message = SwaggerDoc.RESPONSE_BAD_GATEWAY,
-                    response = String.class)})
     public ResponseEntity<QueryResponse> queryRecords(@NotNull(message = SwaggerDoc.REQUEST_VALIDATION_NOT_NULL_BODY) @RequestBody @Valid QueryRequest queryRequest) throws Exception {
         QueryResponse searchResponse = queryService.queryIndex(queryRequest);
         return new ResponseEntity<QueryResponse>(searchResponse, HttpStatus.OK);
     }
 
+    @Operation(summary = "${searchApi.queryWithCursor.summary}", description = "${searchApi.queryWithCursor.description}",
+            security = {@SecurityRequirement(name = "Authorization")}, tags = { "search-api" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success", content = { @Content(schema = @Schema(implementation = CursorQueryResponse.class)) }),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters were given on request",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "403", description = "User not authorized to perform the action",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "404", description = "Not Found",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "502", description = "Search service scale-up is taking longer than expected. Wait 10 seconds and retry.",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "503", description = "Service Unavailable",  content = {@Content(schema = @Schema(implementation = AppError.class))})
+    })
     @PostMapping("/query_with_cursor")
     @PreAuthorize("@authorizationFilter.hasPermission('" + SearchServiceRole.ADMIN + "', '" + SearchServiceRole.USER + "')")
     @ApiOperation(
@@ -92,23 +98,6 @@ public class SearchApi {
             nickname = SwaggerDoc.QUERY_WITH_CURSOR_OPERATION_ID,
             code = HttpServletResponse.SC_ACCEPTED,
             notes = SwaggerDoc.QUERY_WITH_CURSOR_POST_NOTES)
-    @ApiResponses({
-            @ApiResponse(
-                    code = HttpServletResponse.SC_OK,
-                    message = SwaggerDoc.QUERY_WITH_CURSOR_POST_RESPONSE_OK,
-                    response = CursorQueryResponse.class),
-            @ApiResponse(
-                    code = HttpServletResponse.SC_BAD_REQUEST,
-                    message = SwaggerDoc.QUERY_WITH_CURSOR_POST_RESPONSE_BAD_REQUEST,
-                    response = AppError.class),
-            @ApiResponse(
-                    code = HttpServletResponse.SC_FORBIDDEN,
-                    message = SwaggerDoc.QUERY_WITH_CURSOR_POST_RESPONSE_NOT_AUTHORIZED,
-                    response = AppError.class),
-            @ApiResponse(
-                    code = HttpServletResponse.SC_BAD_GATEWAY,
-                    message = SwaggerDoc.RESPONSE_BAD_GATEWAY,
-                    response = String.class)})
     public ResponseEntity<CursorQueryResponse> queryWithCursor(@NotNull(message = SwaggerDoc.REQUEST_VALIDATION_NOT_NULL_BODY) @RequestBody @Valid CursorQueryRequest queryRequest) throws Exception {
         CursorQueryResponse searchResponse = scrollQueryService.queryIndex(queryRequest);
         return new ResponseEntity<CursorQueryResponse>(searchResponse, HttpStatus.OK);

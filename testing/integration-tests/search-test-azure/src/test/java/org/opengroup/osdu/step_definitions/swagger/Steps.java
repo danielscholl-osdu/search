@@ -1,14 +1,14 @@
-package org.opengroup.osdu.step_definitions.info;
+package org.opengroup.osdu.step_definitions.swagger;
 
 import cucumber.api.Scenario;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
-import org.opengroup.osdu.common.info.InfoSteps;
+import org.opengroup.osdu.common.swagger.SwaggerSteps;
 import org.opengroup.osdu.util.AzureHTTPClient;
 import org.opengroup.osdu.util.Config;
 
-public class Steps extends InfoSteps {
+public class Steps extends SwaggerSteps {
 
   public Steps() {
     super(new AzureHTTPClient());
@@ -22,16 +22,16 @@ public class Steps extends InfoSteps {
 
   /******************Inputs being set**************/
 
-  @When("^I send get request to version info endpoint$")
-  public void i_send_get_request_to_version_info_endpoint() {
-    super.i_send_get_request_to_version_info_endpoint();
+  @When("^I send get request to swagger endpoint$")
+  public void i_send_get_request_to_swagger_endpoint() {
+    super.i_send_get_request_to_swagger_endpoint();
   }
 
   /******************Assert final response**************/
 
-  @Then("^I should get version info in response$")
-  public void i_should_get_version_info_in_response() {
-    super.i_should_get_version_info_in_response();
+  @Then("^I should get openapi spec in response$")
+  public void i_should_get_openapi_spec_in_response() {
+    super.i_should_get_openapi_spec_in_response();
   }
 
   @Override
@@ -41,6 +41,6 @@ public class Steps extends InfoSteps {
 
   @Override
   protected String getApi() {
-    return Config.getSearchBaseURL() + "info";
+    return Config.getSearchBaseURL() + "api-docs";
   }
 }
