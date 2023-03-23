@@ -174,7 +174,7 @@ abstract class QueryBase {
             queryBuilder.must(textQueryBuilder);
         }
         if (spatialQueryBuilder != null) {
-            queryBuilder.must(spatialQueryBuilder);
+            queryBuilder.filter().add(spatialQueryBuilder);
         }
 
         if (this.iPolicyService != null) {
