@@ -582,7 +582,7 @@ public class QueryServiceImplTest {
     }
 
     @Test
-    public void should_return_ownerOnlyMustClause_when_searchAsOwners() throws IOException {
+    public void should_return_ownerOnlyFilterClause_when_searchAsOwners() throws IOException {
 
         BoolQueryBuilder builder = (BoolQueryBuilder) this.sut.buildQuery(null, null, false);
         assertNotNull(builder);
