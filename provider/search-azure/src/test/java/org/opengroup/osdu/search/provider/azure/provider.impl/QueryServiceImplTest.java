@@ -164,9 +164,6 @@ public class QueryServiceImplTest {
     @Mock
     private IProviderHeaderService providerHeaderService;
 
-    @Mock
-    private FieldMappingTypeService fieldMappingTypeService;
-
     @Spy
     private SearchConfigurationProperties properties = new SearchConfigurationProperties();
 
@@ -188,6 +185,9 @@ public class QueryServiceImplTest {
     @Mock
     private DependencyLogger dependencyLogger;
 
+    @Mock
+    private GeoQueryBuilder geoQueryBuilder;
+
     @InjectMocks
     private QueryServiceImpl sut;
 
@@ -199,7 +199,6 @@ public class QueryServiceImplTest {
         doReturn(indexName).when(crossTenantUtils).getIndexName(any());
         doReturn(client).when(elasticClientHandler).createRestClient();
         doReturn(spatialFilter).when(searchRequest).getSpatialFilter();
-        doReturn(fieldName).when(spatialFilter).getField();
         when(elasticLoggingConfig.getEnabled()).thenReturn(false);
         when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
 //        doReturn(searchResponse).when(client).search(any(), any(RequestOptions.class));
@@ -219,9 +218,7 @@ public class QueryServiceImplTest {
     @Ignore
     public void testQueryBase_whenSearchHitsIsEmpty() throws IOException {
         SearchHit[] hits = {};
-        Set<String> indexedTypes = new HashSet<>();
 
-        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
         doReturn(hits).when(searchHits).getHits();
 
         QueryResponse queryResponse = sut.queryIndex(searchRequest);
@@ -235,11 +232,9 @@ public class QueryServiceImplTest {
     @Ignore
     public void testQueryBase_whenSearchHitsIsNotEmpty() throws IOException {
         SearchHit[] hits = {searchHit};
-        Set<String> indexedTypes = new HashSet<>();
 
         Map<String, HighlightField> highlightFields = getHighlightFields();
 
-        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
         doReturn(hits).when(searchHits).getHits();
         doReturn(highlightFields).when(searchHit).getHighlightFields();
 
@@ -257,10 +252,8 @@ public class QueryServiceImplTest {
     @Ignore
     public void testQueryBase_useGeoShapeQueryIsFalse_getByBoundingBox() throws IOException {
         SearchHit[] hits = {};
-        Set<String> indexedTypes = new HashSet<>();
         SpatialFilter.ByBoundingBox boundingBox = getValidBoundingBox();
 
-        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
         doReturn(boundingBox).when(spatialFilter).getByBoundingBox();
         doReturn(hits).when(searchHits).getHits();
 
@@ -286,12 +279,9 @@ public class QueryServiceImplTest {
     @Ignore
     public void testQueryBase_useGeoShapeQueryIsTrue_getByBoundingBox() throws IOException {
         SearchHit[] hits = {};
-        Set<String> indexedTypes = new HashSet<>();
-        indexedTypes.add(GEO_SHAPE);
         SpatialFilter.ByBoundingBox boundingBox = getValidBoundingBox();
 
         doReturn(boundingBox).when(spatialFilter).getByBoundingBox();
-        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
         doReturn(hits).when(searchHits).getHits();
 
         QueryResponse queryResponse = sut.queryIndex(searchRequest);
@@ -318,11 +308,9 @@ public class QueryServiceImplTest {
     @Ignore
     public void testQueryBase_useGeoShapeQueryIsFalse_getByDistance() throws IOException {
         SearchHit[] hits = {};
-        Set<String> indexedTypes = new HashSet<>();
         SpatialFilter.ByDistance distance = getDistance(1.0, dummyPoint);
 
         doReturn(distance).when(spatialFilter).getByDistance();
-        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
         doReturn(hits).when(searchHits).getHits();
 
         QueryResponse queryResponse = sut.queryIndex(searchRequest);
@@ -347,12 +335,10 @@ public class QueryServiceImplTest {
     @Ignore
     public void testQueryBase_useGeoShapeQueryIsFalse_getByGeoPolygon() throws IOException {
         SearchHit[] hits = new SearchHit[0];
-        Set<String> indexedTypes = new HashSet<>();
 
         SpatialFilter.ByGeoPolygon geoPolygon = new SpatialFilter.ByGeoPolygon(polygonPoints);
 
         doReturn(geoPolygon).when(spatialFilter).getByGeoPolygon();
-        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
         doReturn(hits).when(searchHits).getHits();
 
         QueryResponse queryResponse = sut.queryIndex(searchRequest);
@@ -373,12 +359,9 @@ public class QueryServiceImplTest {
     @Ignore
     public void testQueryBase_useGeoShapeQueryIsTrue_getByGeoPolygon() throws IOException {
         SearchHit[] hits = {};
-        Set<String> indexedTypes = new HashSet<>();
-        indexedTypes.add(GEO_SHAPE);
         SpatialFilter.ByGeoPolygon geoPolygon = getGeoPolygon(closedPolygonPoints);
 
         doReturn(geoPolygon).when(spatialFilter).getByGeoPolygon();
-        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
         doReturn(hits).when(searchHits).getHits();
 
         QueryResponse queryResponse = sut.queryIndex(searchRequest);
@@ -405,11 +388,8 @@ public class QueryServiceImplTest {
     public void testQueryBase_whenClientSearchResultsInElasticsearchStatusException_statusNotFound_throwsException() throws IOException {
         ElasticsearchStatusException exception = mock(ElasticsearchStatusException.class);
 
-        Set<String> indexedTypes = new HashSet<>();
-
         doThrow(exception).when(client).search(any(), any(RequestOptions.class));
         doReturn(RestStatus.NOT_FOUND).when(exception).status();
-        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
 
         try {
             sut.queryIndex(searchRequest);
@@ -425,11 +405,8 @@ public class QueryServiceImplTest {
     public void testQueryBase_whenClientSearchResultsInElasticsearchStatusException_statusBadRequest_throwsException() throws IOException {
         ElasticsearchStatusException exception = mock(ElasticsearchStatusException.class);
 
-        Set<String> indexedTypes = new HashSet<>();
-
         doThrow(exception).when(client).search(any(), any(RequestOptions.class));
         doReturn(RestStatus.BAD_REQUEST).when(exception).status();
-        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
 
         try {
             sut.queryIndex(searchRequest);
@@ -447,7 +424,6 @@ public class QueryServiceImplTest {
         ElasticsearchStatusException exception = new ElasticsearchStatusException("blah", RestStatus.BAD_REQUEST, new ElasticsearchException(dummySortError));
 
         doThrow(exception).when(client).search(any(), any(RequestOptions.class));
-        doReturn(new HashSet<>()).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
         SortQuery sortQuery = new SortQuery();
         sortQuery.setField(Collections.singletonList("data.name"));
         sortQuery.setOrder(Collections.singletonList(SortOrder.DESC));
@@ -469,11 +445,8 @@ public class QueryServiceImplTest {
     public void testQueryBase_whenClientSearchResultsInElasticsearchStatusException_statusServiceUnavailable_throwsException() throws IOException {
         ElasticsearchStatusException exception = mock(ElasticsearchStatusException.class);
 
-        Set<String> indexedTypes = new HashSet<>();
-
         doThrow(exception).when(client).search(any(), any(RequestOptions.class));
         doReturn(RestStatus.SERVICE_UNAVAILABLE).when(exception).status();
-        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
 
         try {
             sut.queryIndex(searchRequest);
@@ -489,11 +462,8 @@ public class QueryServiceImplTest {
     public void testQueryBase_whenClientSearchResultsInElasticsearchStatusException_statusTooManyRequests_throwsException() throws IOException {
         ElasticsearchStatusException exception = mock(ElasticsearchStatusException.class);
 
-        Set<String> indexedTypes = new HashSet<>();
-
         doThrow(exception).when(client).search(any(), any(RequestOptions.class));
         doReturn(RestStatus.TOO_MANY_REQUESTS).when(exception).status();
-        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
 
         try {
             sut.queryIndex(searchRequest);
@@ -509,12 +479,29 @@ public class QueryServiceImplTest {
     public void testQueryBase_IOException_ListenerTimeout_throwsException() throws IOException {
         IOException exception = mock(IOException.class);
 
-        Set<String> indexedTypes = new HashSet<>();
         String dummyTimeoutMessage = "listener timeout after waiting for 1m";
 
         doThrow(exception).when(client).search(any(), any(RequestOptions.class));
         doReturn(dummyTimeoutMessage).when(exception).getMessage();
-        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
+
+        try {
+            sut.queryIndex(searchRequest);
+        } catch (AppException e) {
+            int errorCode = 504;
+            String errorMessage = "Request timed out after waiting for 1m";
+            validateAppException(e, errorCode, errorMessage);
+            throw (e);
+        }
+    }
+
+    @Test(expected = AppException.class)
+    public void testQueryBase_SocketTimeoutException_ListenerTimeout_throwsException() throws IOException {
+        SocketTimeoutException exception = mock(SocketTimeoutException.class);
+
+        String dummyTimeoutMessage = "60,000 milliseconds timeout on connection";
+
+        doThrow(exception).when(client).search(any(), any(RequestOptions.class));
+        doReturn(dummyTimeoutMessage).when(exception).getMessage();
 
         try {
             sut.queryIndex(searchRequest);
@@ -551,12 +538,10 @@ public class QueryServiceImplTest {
     public void testQueryBase_IOException_EmptyMessage_throwsException() throws IOException {
         IOException exception = mock(IOException.class);
 
-        Set<String> indexedTypes = new HashSet<>();
         String dummyTimeoutMessage = "";
 
         doThrow(exception).when(client).search(any(), any(RequestOptions.class));
         doReturn(dummyTimeoutMessage).when(exception).getMessage();
-        doReturn(indexedTypes).when(fieldMappingTypeService).getFieldTypes(eq(client), eq(fieldName), eq(indexName));
 
         try {
             sut.queryIndex(searchRequest);
@@ -675,11 +660,6 @@ public class QueryServiceImplTest {
         String index = "some-index";
         Mockito.when(crossTenantUtils.getIndexName(Mockito.any()))
                 .thenReturn(index);
-
-        Set<String> indexedTypes = new HashSet<>();
-        indexedTypes.add("geo_shape");
-        Mockito.when(fieldMappingTypeService.getFieldTypes(Mockito.eq(client), Mockito.anyString(), Mockito.eq(index)))
-                .thenReturn(indexedTypes);
 
         Mockito.when(providerHeaderService.getDataGroupsHeader())
                 .thenReturn("groups");
