@@ -92,7 +92,6 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
@@ -576,22 +575,22 @@ public class QueryServiceImplTest {
         BoolQueryBuilder builder = (BoolQueryBuilder) this.sut.buildQuery(null, null, true);
         assertNotNull(builder);
 
-        List<QueryBuilder> topLevelMustClause = builder.must();
-        assertEquals(1, topLevelMustClause.size());
+        List<QueryBuilder> topLevelFilterClause = builder.filter();
+        assertEquals(1, topLevelFilterClause.size());
 
-        verifyAcls(topLevelMustClause.get(0), true);
+        verifyAcls(topLevelFilterClause.get(0), true);
     }
 
     @Test
-    public void should_return_ownerOnlyMustClause_when_searchAsOwners() throws IOException {
+    public void should_return_ownerOnlyFilterClause_when_searchAsOwners() throws IOException {
 
         BoolQueryBuilder builder = (BoolQueryBuilder) this.sut.buildQuery(null, null, false);
         assertNotNull(builder);
 
-        List<QueryBuilder> topLevelMustClause = builder.must();
-        assertEquals(1, topLevelMustClause.size());
+        List<QueryBuilder> topLevelFilterClause = builder.filter();
+        assertEquals(1, topLevelFilterClause.size());
 
-        verifyAcls(topLevelMustClause.get(0), false);
+        verifyAcls(topLevelFilterClause.get(0), false);
     }
 
     @Test
@@ -604,7 +603,7 @@ public class QueryServiceImplTest {
         when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
 
         QueryBuilder builder = this.sut.buildQuery(null, null, false);
-        assertNull(builder);
+        assertNotNull(builder);
     }
 
     @Test
@@ -690,7 +689,7 @@ public class QueryServiceImplTest {
         Mockito.when(dpsHeaders.getHeaders())
                 .thenReturn(headers);
 
-        String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"query_string\":{\"query\":\"data.ID:\\\"EPSG::1078\\\"\",\"fields\":[],\"type\":\"best_fields\",\"default_operator\":\"or\",\"max_determinized_states\":10000,\"allow_leading_wildcard\":false,\"enable_position_increments\":true,\"fuzziness\":\"AUTO\",\"fuzzy_prefix_length\":0,\"fuzzy_max_expansions\":50,\"phrase_slop\":0,\"escape\":false,\"auto_generate_synonyms_phrase_query\":true,\"fuzzy_transpositions\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPolygon\",\"coordinates\":[[[[-8.61,1.02],[-2.48,1.02],[-2.48,10.74],[-8.61,10.74],[-8.61,1.02]]]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]}}";
+        String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"query_string\":{\"query\":\"data.ID:\\\"EPSG::1078\\\"\",\"fields\":[],\"type\":\"best_fields\",\"default_operator\":\"or\",\"max_determinized_states\":10000,\"allow_leading_wildcard\":false,\"enable_position_increments\":true,\"fuzziness\":\"AUTO\",\"fuzzy_prefix_length\":0,\"fuzzy_max_expansions\":50,\"phrase_slop\":0,\"escape\":false,\"auto_generate_synonyms_phrase_query\":true,\"fuzzy_transpositions\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPolygon\",\"coordinates\":[[[[-8.61,1.02],[-2.48,1.02],[-2.48,10.74],[-8.61,10.74],[-8.61,1.02]]]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"filter\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]}}";
 
         // act
         QueryResponse response = this.sut.queryIndex(queryRequest);
@@ -778,15 +777,8 @@ public class QueryServiceImplTest {
         assertEquals(points.get(0), points.get(length));
     }
 
-    private void verifyAcls(QueryBuilder aclMustClause, boolean asOwner) {
-        BoolQueryBuilder aclLevelBuilder = (BoolQueryBuilder) aclMustClause;
-        assertNotNull(aclLevelBuilder);
-        assertEquals("1", aclLevelBuilder.minimumShouldMatch());
-
-        List<QueryBuilder> aclShouldClause = aclLevelBuilder.should();
-        assertEquals(1, aclShouldClause.size());
-
-        TermsQueryBuilder aclQuery = (TermsQueryBuilder) aclShouldClause.get(0);
+    private void verifyAcls(QueryBuilder aclFilterClause, boolean asOwner) {
+        TermsQueryBuilder aclQuery = (TermsQueryBuilder) aclFilterClause;
         assertNotNull(aclQuery);
         if (asOwner) {
             assertEquals("acl.owners", aclQuery.fieldName());

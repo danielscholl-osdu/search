@@ -32,7 +32,10 @@ import org.elasticsearch.common.geo.builders.PolygonBuilder;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.index.query.WrapperQueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
@@ -81,7 +84,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.geoBoundingBoxQuery;
 import static org.elasticsearch.index.query.QueryBuilders.geoDistanceQuery;
 import static org.elasticsearch.index.query.QueryBuilders.geoIntersectionQuery;
@@ -137,7 +139,7 @@ abstract class QueryBase {
 
         QueryBuilder textQueryBuilder = null;
         QueryBuilder spatialQueryBuilder = null;
-        QueryBuilder queryBuilder = null;
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
 
         if (!Strings.isNullOrEmpty(simpleQuery)) {
             textQueryBuilder = queryParserUtil.buildQueryBuilderFromQueryString(simpleQuery);
@@ -169,38 +171,35 @@ abstract class QueryBase {
         }
 
         if (textQueryBuilder != null) {
-            queryBuilder = boolQuery().must(textQueryBuilder);
+            queryBuilder.must(textQueryBuilder);
         }
         if (spatialQueryBuilder != null) {
-            queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(spatialQueryBuilder) : boolQuery().must(spatialQueryBuilder);
+            queryBuilder.must(spatialQueryBuilder);
         }
 
         if (this.iPolicyService != null) {
             String compiledESPolicy = this.iPolicyService.getCompiledPolicy(providerHeaderService);
             WrapperQueryBuilder wrapperQueryBuilder = new WrapperQueryBuilder(compiledESPolicy);
-            return queryBuilder != null ? boolQuery().must(queryBuilder).must(wrapperQueryBuilder) : boolQuery().must(wrapperQueryBuilder);
+            return queryBuilder.must(wrapperQueryBuilder);
         } else {
             return getQueryBuilderWithAuthorization(queryBuilder, asOwner);
         }
     }
 
-    private QueryBuilder getQueryBuilderWithAuthorization(QueryBuilder queryBuilder, boolean asOwner) {
+    private QueryBuilder getQueryBuilderWithAuthorization(BoolQueryBuilder queryBuilder, boolean asOwner) {
         if (userHasFullDataAccess()) {
             return queryBuilder;
         }
 
-        QueryBuilder authorizationQueryBuilder = null;
         String groups = dpsHeaders.getHeaders().get(providerHeaderService.getDataGroupsHeader());
         if (groups != null) {
             String[] groupArray = groups.trim().split("\\s*,\\s*");
+            List<QueryBuilder> authFilterClauses = queryBuilder.filter();
             if (asOwner) {
-                authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(AclRole.OWNERS.getPath(), groupArray));
+                authFilterClauses.add(new TermsQueryBuilder(AclRole.OWNERS.getPath(), Arrays.asList(groupArray)));
             } else {
-                authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(RecordMetaAttribute.X_ACL.getValue(), groupArray));
+                authFilterClauses.add(new TermsQueryBuilder(RecordMetaAttribute.X_ACL.getValue(), Arrays.asList(groupArray)));
             }
-        }
-        if (authorizationQueryBuilder != null) {
-            queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(authorizationQueryBuilder) : boolQuery().must(authorizationQueryBuilder);
         }
         return queryBuilder;
     }
