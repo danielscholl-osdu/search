@@ -14,6 +14,7 @@
 
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
+import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.builders.CircleBuilder;
 import org.elasticsearch.common.geo.builders.CoordinatesBuilder;
 import org.elasticsearch.common.geo.builders.EnvelopeBuilder;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.elasticsearch.index.query.QueryBuilders.geoIntersectionQuery;
+import static org.elasticsearch.index.query.QueryBuilders.geoPolygonQuery;
 import static org.elasticsearch.index.query.QueryBuilders.geoWithinQuery;
 
 public final class GeoQueryBuilder {
@@ -53,18 +55,15 @@ public final class GeoQueryBuilder {
         return null;
     }
 
-    private QueryBuilder getPolygonQuery(SpatialFilter spatialFilter) throws IOException {
-
-        List<Coordinate> points = new ArrayList<>();
+    private QueryBuilder getPolygonQuery(SpatialFilter spatialFilter) {
+        List<GeoPoint> points = new ArrayList<>();
         for (Point point : spatialFilter.getByGeoPolygon().getPoints()) {
-            points.add(new Coordinate(point.getLongitude(), point.getLatitude()));
+            points.add(new GeoPoint(point.getLatitude(), point.getLongitude()));
         }
-        CoordinatesBuilder cb = new CoordinatesBuilder().coordinates(points);
-        return geoWithinQuery(spatialFilter.getField(), new PolygonBuilder(cb)).ignoreUnmapped(true);
+        return geoPolygonQuery(spatialFilter.getField(), points).ignoreUnmapped(true);
     }
 
     private QueryBuilder getBoundingBoxQuery(SpatialFilter spatialFilter) throws IOException {
-
         Coordinate topLeft = new Coordinate(spatialFilter.getByBoundingBox().getTopLeft().getLongitude(), spatialFilter.getByBoundingBox().getTopLeft().getLatitude());
         Coordinate bottomRight = new Coordinate(spatialFilter.getByBoundingBox().getBottomRight().getLongitude(), spatialFilter.getByBoundingBox().getBottomRight().getLatitude());
         return geoWithinQuery(spatialFilter.getField(), new EnvelopeBuilder(topLeft, bottomRight)).ignoreUnmapped(true);
