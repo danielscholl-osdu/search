@@ -43,8 +43,6 @@ public class QueryServiceImpl extends QueryBase implements IQueryService {
     @Inject
     private AuditLogger auditLogger;
     @Inject
-    private SearchConfigurationProperties configurationProperties;
-    @Inject
     private IAggregationParserUtil aggregationParserUtil;
 
     @Override

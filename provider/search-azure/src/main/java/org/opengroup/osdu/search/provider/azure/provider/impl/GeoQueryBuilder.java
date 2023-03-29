@@ -55,12 +55,20 @@ public final class GeoQueryBuilder {
         return null;
     }
 
-    private QueryBuilder getPolygonQuery(SpatialFilter spatialFilter) {
-        List<GeoPoint> points = new ArrayList<>();
-        for (Point point : spatialFilter.getByGeoPolygon().getPoints()) {
-            points.add(new GeoPoint(point.getLatitude(), point.getLongitude()));
+    private QueryBuilder getPolygonQuery(SpatialFilter spatialFilter) throws IOException {
+        List<Point> queryPolygon = spatialFilter.getByGeoPolygon().getPoints();
+        List<Coordinate> points = new ArrayList<>();
+        if (!queryPolygon.get(0).equals(queryPolygon.get(queryPolygon.size() - 1))) {
+            List<Point> closedRing = new ArrayList<>();
+            closedRing.addAll(queryPolygon);
+            closedRing.add(queryPolygon.get(0));
+            spatialFilter.getByGeoPolygon().setPoints(closedRing);
         }
-        return geoPolygonQuery(spatialFilter.getField(), points).ignoreUnmapped(true);
+        for (Point point : spatialFilter.getByGeoPolygon().getPoints()) {
+            points.add(new Coordinate(point.getLongitude(), point.getLatitude()));
+        }
+        CoordinatesBuilder cb = new CoordinatesBuilder().coordinates(points);
+        return geoWithinQuery(spatialFilter.getField(), new PolygonBuilder(cb)).ignoreUnmapped(true);
     }
 
     private QueryBuilder getBoundingBoxQuery(SpatialFilter spatialFilter) throws IOException {
