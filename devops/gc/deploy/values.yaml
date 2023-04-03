@@ -12,7 +12,7 @@ data:
   indexerHost: "http://indexer"
   policyId: "osdu.instance.search"
   securityHttpsCertificateTrust: "true"
-  servicePolicyEnabled: false
+  servicePolicyEnabled: true
   # Deployments
   requestsCpu: "20m"
   requestsMemory: "550Mi"
