@@ -18,7 +18,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.opengroup.osdu</groupId>
     <artifactId>os-search</artifactId>
-    <version>0.20.0-SNAPSHOT</version>
+    <version>0.21.0-SNAPSHOT</version>
     <description>Root Search Service Project</description>
     <packaging>pom</packaging>
 
@@ -42,7 +42,7 @@
         <commons-compress.version>1.21</commons-compress.version>
         <osdu.oscorecommon.version>0.20.0-rc1</osdu.oscorecommon.version>
         <tomcat-embed-core.version>9.0.67</tomcat-embed-core.version>
-        <openapi.version>1.6.9</openapi.version>
+        <openapi.version>1.6.14</openapi.version>
         <json-smart.version>2.4.7</json-smart.version>
     </properties>
 
