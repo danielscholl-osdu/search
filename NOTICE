@@ -408,7 +408,6 @@ The following software have components provided under the terms of this license:
 - GAX (Google Api eXtensions) for Java (gRPC) (from <https://repo1.maven.org/maven2/com/google/api/gax-grpc>, https://repo1.maven.org/maven2/com/google/api/gax-grpc)
 - Hamcrest (from http://hamcrest.org/JavaHamcrest/)
 - Hamcrest Core (from http://hamcrest.org/, http://hamcrest.org/JavaHamcrest/, https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core)
-- HdrHistogram (from http://hdrhistogram.github.io/HdrHistogram/)
 - Jodd BeanUtil (from http://jodd.org)
 - Jodd Core (from http://jodd.org)
 - Lucene Common Analyzers (from <https://repo1.maven.org/maven2/org/apache/lucene/lucene-analyzers-common>, https://repo1.maven.org/maven2/org/apache/lucene/lucene-analyzers-common)
