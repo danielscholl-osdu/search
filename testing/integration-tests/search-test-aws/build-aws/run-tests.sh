@@ -37,6 +37,32 @@ export ELASTIC_PORT=$ELASTIC_PORT
 export ELASTIC_PASSWORD=$ELASTIC_PASSWORD
 export ELASTIC_USER_NAME=$ELASTIC_USERNAME
 
+#### POPULATE LEGAL TAGS #########################################################################
+
+pip3 install -r aws-jwt-client/requirements.txt
+token=$(python3 aws-jwt-client/aws_jwt_client.py)
+echo '**** Generating token *****************'
+echo 'Register Legal tag before Integration Tests ...'
+curl --location --request POST "$LEGAL_URL"'legaltags' \
+  --header 'accept: application/json' \
+  --header 'authorization: Bearer '"$token" \
+  --header 'content-type: application/json' \
+  --header 'data-partition-id: opendes' \
+  --data '{
+        "name": "public-usa-dataset-1",
+        "description": "test legal tag for search integration tests",
+        "properties": {
+            "countryOfOrigin":["US"],
+            "contractId":"A1234",
+            "expirationDate":"2099-01-25",
+            "dataType":"Public Domain Data",
+            "originator":"Default",
+            "securityClassification":"Public",
+            "exportClassification":"EAR99",
+            "personalData":"No Personal Data"
+        }
+}'
+
 #### RUN INTEGRATION TEST #########################################################################
 
 mvn -ntp test -f "$SCRIPT_SOURCE_DIR"/../pom.xml -Dcucumber.options="--plugin junit:target/junit-report.xml"
