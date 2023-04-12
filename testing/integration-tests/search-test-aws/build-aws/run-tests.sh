@@ -39,9 +39,8 @@ export ELASTIC_USER_NAME=$ELASTIC_USERNAME
 timestamp=$(date +%s)
 export LEGAL_TAG=opendes-public-usa-dataset-1-$timestamp
 #### POPULATE LEGAL TAGS #########################################################################
-
-pip3 install -r aws-jwt-client/requirements.txt
-token=$(python3 aws-jwt-client/aws_jwt_client.py)
+pip3 install -r $SCRIPT_SOURCE_DIR/requirements.txt
+token=$(python3 $SCRIPT_SOURCE_DIR/aws_jwt_client.py)
 echo '**** Generating token *****************'
 echo 'Register Legal tag before Integration Tests ...'
 curl --location --request POST "$LEGAL_URL"'legaltags' \

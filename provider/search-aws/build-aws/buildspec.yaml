@@ -76,6 +76,9 @@ phases:
       - GIT_SECRETS_SCAN_RESULT=$(git secrets --scan 2> ${OUTPUT_DIR}/git_secrets.out.txt && echo OK || echo FAILED)
       - if [ "$GIT_SECRETS_SCAN_RESULT" = "FAILED" ]; then echo "Secrets detected!" && exit 1; fi
 
+      - cp devops/aws/aws_jwt_client.py testing/integration-tests/search-test-aws/build-aws/aws_jwt_client.py
+      - cp devops/aws/requirements.txt testing/integration-tests/search-test-aws/build-aws/requirements.txt
+
       - echo "Building primary service assemblies..."
       - mvn -ntp -B test install sonar:sonar -pl .,search-core,provider/search-aws -Ddeployment.environment=prod -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME}
 
