@@ -23,7 +23,6 @@ export HOST=$SCHEMA_URL
 export SEARCH_HOST=$SEARCH_URL
 export STORAGE_HOST=$STORAGE_URL
 export OTHER_RELEVANT_DATA_COUNTRIES=US
-export LEGAL_TAG=opendes-public-usa-dataset-1
 export DEFAULT_DATA_PARTITION_ID_TENANT1=opendes
 export DEFAULT_DATA_PARTITION_ID_TENANT2=common
 export ENTITLEMENTS_DOMAIN=example.com
@@ -36,6 +35,33 @@ export ELASTIC_HOST=$ELASTIC_HOST
 export ELASTIC_PORT=$ELASTIC_PORT
 export ELASTIC_PASSWORD=$ELASTIC_PASSWORD
 export ELASTIC_USER_NAME=$ELASTIC_USERNAME
+
+timestamp=$(date +%s)
+export LEGAL_TAG=opendes-public-usa-dataset-1-$timestamp
+#### POPULATE LEGAL TAGS #########################################################################
+pip3 install -r $SCRIPT_SOURCE_DIR/requirements.txt
+token=$(python3 $SCRIPT_SOURCE_DIR/aws_jwt_client.py)
+echo '**** Generating token *****************'
+echo 'Register Legal tag before Integration Tests ...'
+curl --location --request POST "$LEGAL_URL"'legaltags' \
+  --header 'accept: application/json' \
+  --header 'authorization: Bearer '"$token" \
+  --header 'content-type: application/json' \
+  --header 'data-partition-id: opendes' \
+  --data '{
+        "name": "public-usa-dataset-1-'$timestamp'",
+        "description": "test legal tag for search integration tests",
+        "properties": {
+            "countryOfOrigin":["US"],
+            "contractId":"A1234",
+            "expirationDate":"2099-01-25",
+            "dataType":"Public Domain Data",
+            "originator":"Default",
+            "securityClassification":"Public",
+            "exportClassification":"EAR99",
+            "personalData":"No Personal Data"
+        }
+}'
 
 #### RUN INTEGRATION TEST #########################################################################
 
@@ -50,3 +76,12 @@ if [ -n "$1" ]
 fi
 
 exit $TEST_EXIT_CODE
+
+
+#### DELETE LEGAL TAGS #########################################################################
+
+echo Delete legaltag after Integration Tests...
+curl --location --request DELETE "$LEGAL_URL"'legaltags/'$LEGAL_TAG \
+--header 'Authorization: Bearer '"$token" \
+--header 'data-partition-id: opendes' \
+--header 'Content-Type: application/json'
