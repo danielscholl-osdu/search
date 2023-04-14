@@ -20,7 +20,7 @@
 
     <parent>
         <groupId>org.opengroup.osdu</groupId>
-        <artifactId>os-search</artifactId>
+        <artifactId>os-search-testing</artifactId>
         <version>0.21.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
