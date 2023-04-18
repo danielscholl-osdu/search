@@ -166,6 +166,6 @@ public class IndexAliasServiceImpl implements IndexAliasService {
                     return actualIndex;
             }
         }
-        return null;
+        return index;
     }
 }
