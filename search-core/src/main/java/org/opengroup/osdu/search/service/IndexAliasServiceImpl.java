@@ -41,6 +41,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class IndexAliasServiceImpl implements IndexAliasService {
+    private static final String KIND_COMPLETE_VERSION_PATTERN = "[\\w-\\.\\*]+:[\\w-\\.\\*]+:[\\w-\\.\\*]+:(\\d+\\.\\d+\\.\\d+)$";
+
     @Inject
     private ElasticClientHandler elasticClientHandler;
     @Inject
@@ -107,8 +109,10 @@ public class IndexAliasServiceImpl implements IndexAliasService {
     private String createIndexAlias(RestHighLevelClient restClient, String kind) throws IOException {
         String index = elasticIndexNameResolver.getIndexNameFromKind(kind);
         String alias = elasticIndexNameResolver.getIndexAliasFromKind(kind);
-        // To create an alias for an index, the index name must the concrete index name, not alias
-        index = resolveConcreteIndexName(restClient, index);
+        if(isCompleteVersionKind(kind)) {
+            // To create an alias for an index, the index name must the concrete index name, not alias
+            index = resolveConcreteIndexName(restClient, index);
+        }
         if (!Strings.isNullOrEmpty(index)) {
             IndicesAliasesRequest addRequest = new IndicesAliasesRequest();
             IndicesAliasesRequest.AliasActions aliasActions = new IndicesAliasesRequest.AliasActions(IndicesAliasesRequest.AliasActions.Type.ADD)
@@ -122,6 +126,10 @@ public class IndexAliasServiceImpl implements IndexAliasService {
         }
 
         return null;
+    }
+
+    private boolean isCompleteVersionKind(String kind) {
+        return !Strings.isNullOrEmpty(kind) && kind.matches(KIND_COMPLETE_VERSION_PATTERN);
     }
 
     private String resolveConcreteIndexName(RestHighLevelClient restClient, String index) throws IOException {
