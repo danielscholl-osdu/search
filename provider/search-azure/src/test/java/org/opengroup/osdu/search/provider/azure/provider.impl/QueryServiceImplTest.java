@@ -17,6 +17,7 @@ package org.opengroup.osdu.search.provider.azure.provider.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import org.apache.http.ContentTooLongException;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
@@ -527,6 +528,25 @@ public class QueryServiceImplTest {
         } catch (AppException e) {
             int errorCode = 500;
             String errorMessage = "Error processing search request";
+
+            validateAppException(e, errorCode, errorMessage);
+            throw (e);
+        }
+    }
+
+    @Test(expected = AppException.class)
+    public void testQueryBase_IOException_RespopnseTooLong_throwsException() throws IOException {
+        IOException exception = mock(IOException.class);
+        doReturn(new ContentTooLongException(null)).when(exception).getCause();
+        doReturn("dummyMessage").when(exception).getMessage();
+
+        doThrow(exception).when(client).search(any(), any(RequestOptions.class));
+
+        try {
+            sut.queryIndex(searchRequest);
+        } catch (AppException e) {
+            int errorCode = 413;
+            String errorMessage = "Elasticsearch response is too long";
 
             validateAppException(e, errorCode, errorMessage);
             throw (e);

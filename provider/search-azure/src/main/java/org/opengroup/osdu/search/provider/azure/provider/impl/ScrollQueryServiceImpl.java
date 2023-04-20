@@ -16,6 +16,7 @@ package org.opengroup.osdu.search.provider.azure.provider.impl;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import org.apache.http.ContentTooLongException;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
@@ -112,6 +113,11 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                     if (e.status() == NOT_FOUND
                             && (e.getMessage().startsWith(invalidScrollMessage)) || this.exceptionParser.parseException(e).stream().anyMatch(r -> r.contains(invalidScrollMessage)))
                         throw new AppException(HttpStatus.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired", e);
+                    throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
+                } catch (IOException e) {
+                    if (e.getCause() instanceof ContentTooLongException) {
+                        throw new AppException(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Response is too long", "Elasticsearch response is too long", e);
+                    }
                     throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
                 } catch (Exception e) {
                     throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
