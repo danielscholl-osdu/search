@@ -76,7 +76,10 @@ public class IndexAliasServiceImplTest {
 
     private static String kind = "common:welldb:wellbore:1.2.0";
     private static String index = "common-welldb-wellbore-1.2.0";
-    private static String alias = "a1234567890";
+    private static String alias = "a-714731401";
+    private static String kindWithMajor = "common:welldb:wellbore:1.*.*";
+    private static String indexWithMajor = "common-welldb-wellbore-1.*.*";
+    private static String aliasForKindWithMajor = "a-714739095";
 
     @Before
     public void setup() {
@@ -87,7 +90,7 @@ public class IndexAliasServiceImplTest {
     }
 
     @Test
-    public void getInDicesAliases_when_kind_is_not_supported_for_alias() throws IOException {
+    public void getIndicesAliases_when_kind_is_not_supported_for_alias() throws IOException {
         when(elasticIndexNameResolver.isIndexAliasSupported(any())).thenReturn(false);
         List<String> kinds = Arrays.asList(kind);
         Map<String, String> kindAliasMap = sut.getIndicesAliases(kinds);
@@ -95,7 +98,7 @@ public class IndexAliasServiceImplTest {
     }
 
     @Test
-    public void getInDicesAliases_when_alias_exist() throws IOException {
+    public void getIndicesAliases_when_alias_exist() throws IOException {
         setup_when_alias_exist();
 
         List<String> kinds = Arrays.asList(kind);
@@ -106,7 +109,7 @@ public class IndexAliasServiceImplTest {
     }
 
     @Test
-    public void getInDicesAliases_when_alias_exist_with_cache_take_effect() throws IOException {
+    public void getIndicesAliases_when_alias_exist_with_cache_take_effect() throws IOException {
         setup_when_alias_exist();
 
         List<String> kinds = Arrays.asList(kind);
@@ -134,17 +137,29 @@ public class IndexAliasServiceImplTest {
     }
 
     @Test
-    public void getInDicesAliases_when_alias_not_exist_and_create_alias_successfully() throws IOException {
+    public void getIndicesAliases_when_alias_not_exist_and_create_alias_successfully() throws IOException {
         setup_when_alias_not_exist_and_try_create_alias(true);
 
         List<String> kinds = Arrays.asList(kind);
         Map<String, String> kindAliasMap = sut.getIndicesAliases(kinds);
         assertTrue(kindAliasMap.containsKey(kind));
         assertEquals(alias, kindAliasMap.get(kind));
+        verify(this.indicesClient, times(2)).getAlias(any(), any());
     }
 
     @Test
-    public void getInDicesAliases_when_alias_not_exist_and_fail_create_alias() throws IOException {
+    public void getIndicesAliases_for_major_version_when_alias_not_exist_and_create_alias_successfully() throws IOException {
+        setup__for_major_version_when_alias_not_exist_and_try_create_alias(true);
+
+        List<String> kinds = Arrays.asList(kindWithMajor);
+        Map<String, String> kindAliasMap = sut.getIndicesAliases(kinds);
+        assertTrue(kindAliasMap.containsKey(kindWithMajor));
+        assertEquals(aliasForKindWithMajor, kindAliasMap.get(kindWithMajor));
+        verify(this.indicesClient, times(1)).getAlias(any(), any());
+    }
+
+    @Test
+    public void getIndicesAliases_when_alias_not_exist_and_fail_create_alias() throws IOException {
         setup_when_alias_not_exist_and_try_create_alias(false);
 
         List<String> kinds = Arrays.asList(kind);
@@ -191,6 +206,32 @@ public class IndexAliasServiceImplTest {
         when(getAliasesResponse.status()).thenReturn(RestStatus.OK);
         when(getAliasesResponse.getAliases()).thenReturn(aliases);
         when(getAliasesResponseWithAliasConstraint.status()).thenReturn(RestStatus.NOT_FOUND);
+        when(indicesClient.updateAliases(any(IndicesAliasesRequest.class), any(RequestOptions.class))).thenReturn(updateAliasesResponse);
+    }
+
+    private void setup__for_major_version_when_alias_not_exist_and_try_create_alias(boolean create_ok) throws IOException {
+        GetAliasesResponse getAliasesResponseWithAliasConstraint = PowerMockito.mock(GetAliasesResponse.class);
+        Map<String, Set<AliasMetadata>> aliases = new HashMap<>();
+        Set<AliasMetadata> aliasMetadataSet = new HashSet<>();
+        aliasMetadataSet.add(AliasMetadata.builder("otherAlias").build());
+        aliases.put("otherIndex", aliasMetadataSet);
+        AcknowledgedResponse updateAliasesResponse = new AcknowledgedResponse(create_ok);
+        when(elasticIndexNameResolver.getIndexNameFromKind(any())).thenReturn(indexWithMajor);
+        when(elasticIndexNameResolver.getIndexAliasFromKind(any())).thenReturn(aliasForKindWithMajor);
+        when(elasticIndexNameResolver.isIndexAliasSupported(any())).thenReturn(true);
+        when(elasticClientHandler.createRestClient()).thenReturn(restHighLevelClient);
+        when(restHighLevelClient.indices()).thenReturn(indicesClient);
+        when(indicesClient.getAlias(any(GetAliasesRequest.class), any(RequestOptions.class)))
+                .thenAnswer(invocation ->
+                {
+                    GetAliasesRequest request = invocation.getArgument(0);
+                    if (request.aliases().length == 0)
+                        return getAliasesResponse;
+                    else
+                        return getAliasesResponseWithAliasConstraint;
+                });
+        when(getAliasesResponse.status()).thenReturn(RestStatus.OK);
+        when(getAliasesResponse.getAliases()).thenReturn(aliases);
         when(indicesClient.updateAliases(any(IndicesAliasesRequest.class), any(RequestOptions.class))).thenReturn(updateAliasesResponse);
     }
 }
