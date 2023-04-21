@@ -116,7 +116,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                     throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
                 } catch (IOException e) {
                     if (e.getCause() instanceof ContentTooLongException) {
-                        throw new AppException(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Response is too long", "Elasticsearch response is too long", e);
+                        throw new AppException(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Response is too long", "Elasticsearch response is too long, max is 100Mb", e);
                     }
                     throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
                 } catch (Exception e) {

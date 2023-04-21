@@ -342,7 +342,7 @@ public class ScrollQueryServiceImplTest {
             int errorCode = 413;
             AppError error = e.getError();
             assertEquals(error.getReason(), "Response is too long");
-            assertEquals(error.getMessage(), "Elasticsearch response is too long");
+            assertEquals(error.getMessage(), "Elasticsearch response is too long, max is 100Mb");
             assertEquals(error.getCode(), errorCode);
             throw (e);
         }

@@ -304,7 +304,7 @@ abstract class QueryBase {
             if (e.getMessage().startsWith("listener timeout after waiting for")) {
                 throw new AppException(HttpServletResponse.SC_GATEWAY_TIMEOUT, "Search error", String.format("Request timed out after waiting for %sm", REQUEST_TIMEOUT.getMinutes()), e);
             } else if (e.getCause() instanceof ContentTooLongException) {
-                throw new AppException(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Response is too long", "Elasticsearch response is too long", e);
+                throw new AppException(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Response is too long", "Elasticsearch response is too long, max is 100Mb", e);
             }
             throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
         } catch (Exception e) {

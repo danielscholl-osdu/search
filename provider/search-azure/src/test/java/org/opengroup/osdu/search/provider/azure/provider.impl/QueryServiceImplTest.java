@@ -546,7 +546,7 @@ public class QueryServiceImplTest {
             sut.queryIndex(searchRequest);
         } catch (AppException e) {
             int errorCode = 413;
-            String errorMessage = "Elasticsearch response is too long";
+            String errorMessage = "Elasticsearch response is too long, max is 100Mb";
 
             validateAppException(e, errorCode, errorMessage);
             throw (e);
