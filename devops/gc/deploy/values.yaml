@@ -14,8 +14,8 @@ data:
   securityHttpsCertificateTrust: "true"
   servicePolicyEnabled: true
   # Deployments
-  requestsCpu: "20m"
-  requestsMemory: "550Mi"
+  requestsCpu: "15m"
+  requestsMemory: "400Mi"
   limitsCpu: "1"
   limitsMemory: "1G"
   serviceAccountName: "search"
@@ -32,7 +32,7 @@ conf:
   searchRedisSecretName: "search-redis-secret"
 
 istio:
-  proxyCPU: "10m"
+  proxyCPU: "5m"
   proxyCPULimit: "200m"
-  proxyMemory: "100Mi"
+  proxyMemory: "50Mi"
   proxyMemoryLimit: "256Mi"
