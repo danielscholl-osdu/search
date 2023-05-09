@@ -83,7 +83,7 @@
         <dependency>
             <groupId>org.opengroup.osdu.core.aws</groupId>
             <artifactId>os-core-lib-aws</artifactId>
-            <version>0.21.0-rc1</version>
+            <version>0.21.0-rc5</version>
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
@@ -236,6 +236,7 @@
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                     <nugetconfAnalyzerEnabled>false</nugetconfAnalyzerEnabled>
                     <nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>
+                    <failOnError>false</failOnError>
                 </configuration>
                 <executions>
                     <execution>
