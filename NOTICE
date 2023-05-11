@@ -453,7 +453,6 @@ The following software have components provided under the terms of this license:
 - Hamcrest Core (from http://hamcrest.org/, http://hamcrest.org/JavaHamcrest/, https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core)
 - JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from https://repo1.maven.org/maven2/org/jboss/spec/javax/ws/rs/jboss-jaxrs-api_2.1_spec)
 - JBoss Jakarta Annotations API (from <https://github.com/jboss/jboss-jakarta-annotations-api_spec>, https://github.com/jboss/jboss-jakarta-annotations-api_spec)
-- Jakarta Activation (from https://repo1.maven.org/maven2/com/sun/activation/jakarta.activation)
 - Jakarta Activation API (from https://github.com/eclipse-ee4j/jaf, https://github.com/jakartaee/jaf-api, https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api)
 - Jakarta Annotations API (from https://projects.eclipse.org/projects/ee4j.ca)
 - Jakarta RESTful WS API (from https://github.com/eclipse-ee4j/jaxrs-api)
@@ -596,6 +595,13 @@ The following software have components provided under the terms of this license:
 - System Rules (from http://stefanbirkner.github.com/system-rules/, http://stefanbirkner.github.io/system-rules/)
 
 ========================================================================
+EDL-1.0
+========================================================================
+The following software have components provided under the terms of this license:
+
+- Jakarta Activation (from https://repo1.maven.org/maven2/com/sun/activation/jakarta.activation)
+
+========================================================================
 EPL-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -644,7 +650,6 @@ The following software have components provided under the terms of this license:
 - JUnit Jupiter Params (from http://junit.org/junit5/, https://junit.org/junit5/)
 - JUnit Platform Commons (from http://junit.org/junit5/, https://junit.org/junit5/)
 - JUnit Platform Engine API (from http://junit.org/junit5/, https://junit.org/junit5/)
-- Jakarta Activation (from https://repo1.maven.org/maven2/com/sun/activation/jakarta.activation)
 - Jakarta Activation API (from https://github.com/eclipse-ee4j/jaf, https://github.com/jakartaee/jaf-api, https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api)
 - Jakarta Annotations API (from https://projects.eclipse.org/projects/ee4j.ca)
 - Jakarta Bean Validation API (from https://beanvalidation.org)
@@ -709,7 +714,6 @@ The following software have components provided under the terms of this license:
 - HK2 core module (from https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-core)
 - JAX-RS 2.1: The Java(TM) API for RESTful Web Services (from https://repo1.maven.org/maven2/org/jboss/spec/javax/ws/rs/jboss-jaxrs-api_2.1_spec)
 - JBoss Jakarta Annotations API (from <https://github.com/jboss/jboss-jakarta-annotations-api_spec>, https://github.com/jboss/jboss-jakarta-annotations-api_spec)
-- Jakarta Activation (from https://repo1.maven.org/maven2/com/sun/activation/jakarta.activation)
 - Jakarta Activation API (from https://github.com/eclipse-ee4j/jaf, https://github.com/jakartaee/jaf-api, https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api)
 - Jakarta Annotations API (from https://projects.eclipse.org/projects/ee4j.ca)
 - Jakarta Bean Validation API (from https://beanvalidation.org)
@@ -740,7 +744,6 @@ GPL-3.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- Jakarta Activation (from https://repo1.maven.org/maven2/com/sun/activation/jakarta.activation)
 - Jakarta Annotations API (from https://projects.eclipse.org/projects/ee4j.ca)
 - Java Architecture for XML Binding (from http://jaxb.java.net/, https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api)
 - null (from https://github.com/fge/jackson-coreutils)
