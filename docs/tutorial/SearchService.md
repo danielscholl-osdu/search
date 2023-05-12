@@ -5,10 +5,14 @@
 - [Introduction](#introduction)
 - [Search API access](#search-api-access)
 - [Permissions](#permissions)
-- [Query](#query)
+- [Normalization](#normalization)
+- [Query API](#query)
   - [Query by kind](#query-by-kind)
-  - [Text Queries](#text-queries)
+  - [Text queries](#text-queries)
     - [Examples](#examples)
+    - [`text` field indexing](#text-field-indexing)
+    - [Exact match](#exact-match)
+    - [Query `null` or `empty` values](#query-null-values)
     - [Grouping](#grouping)
     - [Reserved characters](#reserved-characters)
     - [Wildcards](#wildcards)
@@ -16,30 +20,31 @@
   - [Aggregation](#aggregate-queries)
     - [Aggregation by `nested` arrays objects](#nested-aggregation)
   - [Sort](#sort-queries)
-    - [Sort by `nested` arrays objects](#nested-sort)
-  - [Range Queries](#range-queries)
-  - [Geo-Spatial Queries](#geo-spatial-queries)
-    - [Geo Distance](#geo-distance)
-      - [Distance Units](#distance-units)
-    - [Geo Bounding Box](#bounding-box)
-    - [Geo Polygon](#geo-polygon)
-  - [Cross-Kind Queries](#cross-kind-queries)
-- [Query With Cursor](#query-with-cursor)
+  - [Range queries](#range-queries)
+  - [Geo-spatial queries](#geo-spatial-queries)
+    - [Geo distance](#geo-distance)
+      - [Distance units](#distance-units)
+    - [Bounding box](#bounding-box)
+    - [Geo polygon](#geo-polygon)
+    - [Geo polygon intersection query](#geo-polygon-intersection)
+  - [Cross-kind queries](#cross-kind-queries)
+- [Query with cursor API](#query-with-cursor)
+- [Common discovery within and across kind via `VirtualProperties`](#common-discovery-within-and-across-kind)
+- [Version info API](#version-info)
 - [Get indexing status](#get-indexing-status)
-- [Version info endpoint](#version-info-endpoint)
-- [Known limitations](#known-limitations)
+- [Known issues/limitations](#known-limitations)
 
 ## Introduction <a name="introduction"></a>
 
-The Search API provides a mechanism for indexing documents that contain structured data. You can search an index, and organize and present search results. Documents and indexes are saved in a separate persistent store optimized for search operations. The Search API can index any number of documents.
+The Search API provides a mechanism for indexing documents that contain structured data. You can search an index and organize and present search results. Documents and indexes are saved in a separate persistent store optimized for search operations. The Search API can index any number of documents.
 
-The API supports full text search on string fields, range queries on date, numeric or string fields etc. along with geo-spatial search.
+The API supports full-text search on string fields, range queries on dates, numeric or string fields, etc., along with geo-spatial search.
 
 ## Search API access <a name="search-api-access"></a>
 
 - Required roles
 
-  Search service requires that users have dedicated roles in order to use it. Users must be a member of `users.datalake.viewers` or `users.datalake.editors` or `users.datalake.admins`, roles can be assigned using the [Entitlements Service](/solutions/osdu/tutorials/core-services/entitlementsservice). Please look at the API documentation for specific requirements.
+  The Search service requires that users have dedicated roles in order to use it. Users must be a member of `users.datalake.viewers`, `users.datalake.editors`, or `users.datalake.admins`. Roles can be assigned using the [Entitlements service](https://community.opengroup.org/osdu/platform/security-and-compliance/entitlements). Please look at the API documentation for specific requirements.
 
   In addition to service roles, users __must__ be a member of data groups to access the data.
 
@@ -47,8 +52,8 @@ The API supports full text search on string fields, range queries on date, numer
 
   The OSDU Data Platform stores data in different partitions, depending on the different accounts in the OSDU system.
 
-  A user may belong to more than one account.  As a user, after logging into the OSDU portal, you need to select the account you wish to be active.
-  Likewise, when using the Search APIs, you need to specify the active account in the header called `Data-Partition-Id`. The correct `Data-Partition-Id` can be obtained from the CFS services. The `Data-Partition-Id` enables the search within the mapped partition. e.g.
+  A user may belong to more than one account.  As a user, after logging into the OSDU portal, you must select the account you wish to be active.
+  Likewise, when using the Search APIs, you must specify the active account in the header called `Data-Partition-Id`. The `Data-Partition-Id` enables the search within the mapped partition.
 
   ```
   Data-Partition-Id: opendes
@@ -56,34 +61,52 @@ The API supports full text search on string fields, range queries on date, numer
 
 - Optional headers
 
-  The Correlation-Id is a traceable ID to track the journey of a single request. The Correlation-Id can be a GUID on the header with a key. It is best practice to provide the Correlation-Id so the request can be tracked through all the services.
+  The Correlation-Id is a traceable ID to track the journey of a single request. The Correlation-Id can be a GUID in the header with a key. It is a best practice to provide the Correlation-Id so that the request can be tracked through all the services.
 
   ```
   Correlation-Id: 1e0fef08-22fd-49b1-a5cc-dffa21bc0b70
   ```
 
-If the service is initiating the request, an ID should be generated. If the Correlation-Id is not provided, then a new ID will be generated by the service so that the request would be traceable.
+If the service is initiating the request, an ID should be generated. If the Correlation-Id is not provided, then a new ID will be generated by the service so that the request will be traceable.
 
 [Back to table of contents](#TOC)
 
 ## Permissions <a name="permissions"></a>
 
-| **_Endpoint URL_** | **_Method_** | **_Minimum Permissions Required_** | ___Data Permissions Required ___ |
+| **Endpoint URL** | **Method** | **Minimum permissions required** | **Data permissions required** |
 | --- | --- | --- | --- |
 | /search/v2/query | POST | users.datalake.viewers | Yes |
 | /search/v2/query_with_cursor | POST | users.datalake.viewers | Yes |
 
 [Back to table of contents](#TOC)
 
+## Normalization <a name="normalization"></a>
+
+Retrieved data from the OSDU Data Platform is normalized to a common standard that allows for comparison from multiple data sources. We currently support conversion for only Unit, CRS, and DateTime, whose common standards are in SI, WGS84, and UTC respectively.
+
+For any attribute that has a [`AbstractSpatialLocation`](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Authoring/abstract/AbstractSpatialLocation.1.0.0.json) schema reference, the coordinates can have attribute named <code>AsIngestedCoordinates</code> using an [`AbstractAnyCrsFeatureCollection`](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/abstract/AbstractAnyCrsFeatureCollection.1.0.0.json) schema reference or <code>WGS84Coordinates</code> attribute using an [`AbstractFeatureCollection`](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/abstract/AbstractFeatureCollection.1.0.0.json) schema reference. However, The search cannot use the <code>AsIngestedCoordinates</code> in a meaningful way, so it does not index the <code>AsIngestedCoordinates</code>.
+
+The Indexer service uses Storage service's frame of reference conversion API (<code>/records:batch</code> API) for conversion. If the Storage API returns with a valid converted <code>WGS84Coordinates</code> for the <code>AsIngestedCoordinates</code>, then the converted coordinates will be indexed. If the conversion fails, then the Indexer will not index the shape in the <code>WGS84Coordinates</code> attribute. Indexer service will index conversion error for the record with `400` error code instead. Please refer to [Get indexing status](#get-indexing-status) for details on index status. Only the <code>WGS84Coordinates</code> are returned in the search response.
+
+### How conversion is handled for `AsIngestedCoordinates` and `WGS84Coordinates`:
+
+1. If the `WGS84Coordinates` block is provided in the record, then we take the values from the block. The Storage <code>/records:batch</code> API does no conversion.
+1. If only the `AsIngestedCoordinates` block is provided in the record, then the Storage <code>/records:batch</code> API performs the conversion for the coordinates provided. If the conversion fails, then indexing of the attribute is skipped, instead error message is indexed. You can query the Indexing status using [Get indexing status](#get-indexing-status).
+1. If BOTH the `AsIngestedCoordinates` and `WGS84Coordinates` blocks are provided in the record, then the `AsIngestedCoordinates` block is ignored, and it takes the values from the `WGS84Coordinates` block. The Storage <code>/records:batch</code> API does no conversion.
+
+>__NOTE__: If a storage record has correct frame of reference conversion information (`meta` block), then records are <em>always</em> normalized and indexed according to common standard mentioned above. Users can only perform queries on Search service on standardized indexed records.
+
+[Back to table of contents](#TOC)
+
 ## Query <a name="query"></a>
 
-OSDU Data Platform search provides a JSON-style domain-specific language that you can use to execute queries. Query request URL and samples are as follows:
+The OSDU Data Platform search provides a JSON-style domain-specific language that you can use to execute queries. The Query request URL and example follow:
 
 ```json
-POST /api/search/v2/query
+POST /search/v2/query
 {
-  "kind": "opendes:welldb:wellbore:1.0.0",
-  "query": "data.Status:Active AND nested(data.VerticalMeasurements)",
+  "kind": "osdu:wks:master-data--Well:1.0.0",
+  "query": "data.FacilityName:\"OSDU-A34\"",
   "offset": 0,
   "limit": 30,
   "sort": {
@@ -92,19 +115,20 @@ POST /api/search/v2/query
   },
   "queryAsOwner": false,
   "spatialFilter": {
-    "field": "data.Location",
+    "field": "data.SpatialLocation.Wgs84Coordinates",
     "byBoundingBox": {
       "topLeft": {
-        "latitude": 37.450727,
-        "longitude": -122.174762
+        "latitude": 90,
+        "longitude": -180
       },
       "bottomRight": {
-        "latitude": 36.450727,
-        "longitude": -122.174762
+        "latitude": -90,
+        "longitude": 180
       }
     }
   },
-  "returnedFields": [ "data.Status" ]
+  "trackTotalCount": true,
+  "returnedFields": [ "kind", "id", "data.FacilityName", "data.SpatialLocation.Wgs84Coordinates", "data.TechnicalAssuranceID" ]
 }
 ```
 
@@ -112,14 +136,14 @@ POST /api/search/v2/query
 
 ```bash
 curl --request POST \
-  --url '/api/search/v2/query' \
+  --url '/search/v2/query' \
   --header 'accept: application/json' \
   --header 'authorization: Bearer <JWT>' \
   --header 'content-type: application/json' \
   --header 'data-partition-id: opendes' \
   --data '{
-  "kind": "opendes:welldb:wellbore:1.0.0",
-  "query": "data.Status:Active",
+  "kind": "osdu:wks:master-data--Well:1.0.0",
+  "query": "data.FacilityName:\"OSDU-A34\"",
   "offset": 0,
   "limit": 30,
   "sort": {
@@ -128,53 +152,87 @@ curl --request POST \
   },
   "queryAsOwner": false,
   "spatialFilter": {
-    "field": "data.Location",
+    "field": "data.SpatialLocation.Wgs84Coordinates",
     "byBoundingBox": {
       "topLeft": {
-        "latitude": 37.450727,
-        "longitude": -122.174762
+        "latitude": 90,
+        "longitude": -180
       },
       "bottomRight": {
-        "latitude": 36.450727,
-        "longitude": -122.174762
+        "latitude": -90,
+        "longitude": 180
       }
     }
   },
-  "returnedFields": [ "data.Status" ]
+  "trackTotalCount": true,
+   "returnedFields": [ "kind", "id", "data.FacilityName", "data.SpatialLocation.Wgs84Coordinates", "data.TechnicalAssuranceID" ]
 }'
 ```
 
-</details>
+</details><br>
 
-__Note:__ : It can take a delay of atleast 30 seconds once records are successfully ingested via Storage service to become searchable in OSDU Data Platform. You can check the [index status](#get-indexing-status).
+Example response:
 
-#### Parameters <a name="parameters"></a>
+```json
+{
+  "results": [
+    {
+      "data": {
+        "SpatialLocation.Wgs84Coordinates": {
+          "geometries": [
+            {
+              "coordinates": [
+                173.2900972,
+                -39.4324222
+              ],
+              "type": "point"
+            }
+          ],
+          "type": "geometrycollection"
+        },
+        "TechnicalAssuranceID": "opendes:reference-data--TechnicalAssuranceType:Suitable:",
+        "FacilityName": "OSDU-A34"
+      },
+      "kind": "osdu:wks:master-data--Well:1.0.0",
+      "id": "opendes:master-data--Well:ca3271c789964d54a1c4d873d2c1aef1"
+    }
+    ....
+  ],
+  "totalCount": 4644
+}
+```
+
+> __Note:__ : Once the records have been successfully ingested by the Storage service, it can take *at least 30 seconds* to become searchable via Search service in the OSDU Data Platform. Record level indexing status can be retrieved via [index status](#get-indexing-status).
+
+### Parameters <a name="parameters"></a>
 
 | Parameter | Description |
 | :--- | :--- |
-| kind | The kind(s) of the record to query. It could be a string as mono-kind or string array as multi-kinds that consists of 1 or more mono-kind, e.g. "opendes:welldb:wellbore:1.0.0" or "opendes:welldb:wellbore:1.0.0,opendes:welldb:wellbore:2.0.0" or ["opendes:welldb:wellbore:1.0.0", "opendes:welldb:wellbore:2.0.0"]. kind is a __required__ field and a mono-kind can be formatted as authority/data-partition-id:data-source-id:entity-type:schema-version |
-| query | Query string based on Lucene query string syntax, supplemented with a specific format for describing queries to fields of object arrays indexed with the `nested` hint. |
+| kind | The kind of records to query. kind is unique identifier (or a tag) given to the schema. Kind is case-insensitive. For details about the schema, refer to [Schema Service](https://community.opengroup.org/osdu/platform/system/schema-service). In the query, kind is a __required__ field, and its value can be a single schema identity or a list of schema identities, such as `"osdu:wks:master-data--Well:1.0.0"` or `["osdu:wks:master-data--Well:1.0.0", "osdu:wks:master-data--Wellbore:1.0.0"]`. |
+| query | The Query string is based on Lucene query string syntax, supplemented with a specific format for describing queries to fields of object arrays indexed with the `nested` hint. The maximum number of clauses on a query can be __1024__.|
 | offset | The starting offset from which to return results. |
-| limit | The maximum number of results to return from the given offset. If no limit is provided, then it will return __10__ items. Max number of items which can be fetched by the query is __1000__. (If you wish to fetch large set of items, please use [query_with_cursor](#query-with-cursor) API). |
-| sort | Allows you to add one or more sorts on specific fields. The length of fields and the length of order must match. Order value must be either ASC or DESC (case insensitive). For more details, ability and limitation about this feature, please refer to [Sort](#sort-queries)
-| queryAsOwner | If true, the result only contains the records that the user owns. If false, the result contains all records that the user is entitled to see. Default value is false |
-| spatialFilter | A spatial filter to apply, please see [Geo-Spatial Queries](#geo-spatial-queries). |
-| trackTotalCount | Tracks accurate record count matching the query if 'true', partial count otherwise. Partial count queries are more performant. Default is 'false' and returns 10000 if matching records are higher than 10000. |
-| aggregateBy | Allows user to get unique value of given field, please see [Aggregate Queries](#aggregate-queries). |
-| returnedFields | The fields on which to project the results. |
+| limit | The maximum number of results to return from the given offset. If no limit is provided, then it returns __10__ items. The maximum number of items that the query can fetch is __1000__. (If you wish to fetch a larger set of items, use the [query_with_cursor](#query-with-cursor) API). |
+| sort | Allows you to add one or more sorts on specific fields. The length of fields and the length of order must match. The order value must be either ASC or DESC (case insensitive). For more details and limitations about this feature, refer to [Sort](#sort-queries). |
+| queryAsOwner | If true, the result only contains the records that the user owns. If false, the result contains all records that the user is entitled to see. The default value is false. | 
+| spatialFilter | A spatial filter to apply. See [Geo-spatial queries](#geo-spatial-queries) for details. |
+| trackTotalCount | Tracks the accurate record count matching the query if 'true'; otherwise it is a partial count. Partial count queries are more performant. The default is 'false' and returns 10000 if matching records are higher than 10000. |
+| aggregateBy | Allows you to get a unique value of a given field, see [Aggregate Queries](#aggregate-queries) for details. |
+| returnedFields | Specifies the fields on which to project the results. |
 
-> __Important:__ Field names in request parameters are case-sensitive.
+__Important:__ Field names in request parameters are case-sensitive. Field values are case-insensitive, unless you are querying for  an [exact match](#exact-match) with a `keyword` subfield for the attribute.
 
-__Note:__ Offset + Limit can not be more than the 10,000. See the [Query With Cursor](#query-with-cursor) for more efficient ways to do deep scrolling.
+__Note:__ The Offset + Limit can not be more than 10,000. See the [Query with cursor](#query-with-cursor) topic for more efficient ways to do deep scrolling.
 
 ### Query by kind <a name="query-by-kind"></a>
 
-"kind" can be formatted as authority/data-partition-id:data-source-id:entity-type:schema-version and a __required__ field. Available list of "kind" can be retrieved via Storage service(GET /query/kinds API). Users can make search documents just by providing "kind" as shown:
+`kind` can be formatted as authority/data-partition-id:data-source-id:entity-type:schema-version and a __required__ field. You can retrieve the available list of `kind` by using the Storage service(GET /query/kinds API). Users can make search documents by providing `kind` as shown:
+
+* Search documents just by providing a single `kind`:
 
 ```json
-POST /api/search/v2/query
+POST /search/v2/query
 {
-  "kind": "opendes:welldb:wellbore:1.0.0"
+  "kind": "osdu:wks:master-data--Wellbore:1.0.0"
 }
 ```
 
@@ -182,37 +240,73 @@ POST /api/search/v2/query
 
 ```bash
 curl --request POST \
-  --url '/api/search/v2/query' \
+  --url '/search/v2/query' \
   --header 'accept: application/json' \
   --header 'authorization: Bearer <JWT>' \
   --header 'content-type: application/json' \
   --header 'data-partition-id: opendes' \
   --data '{
-  "kind": "opendes:welldb:wellbore:1.0.0"
+  "kind": "osdu:wks:master-data--Wellbore:1.0.0"
 }'
 ```
 
-</details>
+</details><br> 
 
-The query will return 10 (default limit) documents for the kind.
+* Search documents just by providing a multi-kinds:
 
-Wildcard queries on kind are also supported, please look at [Cross-Kind Queries](#cross-kind-queries) for more information.
+```json
+POST /search/v2/query
+{
+  "kind": ["osdu:wks:master-data--Well:1.0.0","osdu:wks:master-data--Wellbore:1.0.0"]
+}
+```
 
-OSDU Data Platform indexer also splits "kind" and index each part individually. These terms can then be queried by `query` request parameter, e.g. `opendes:welldb:wellbore:1.0.0` will be indexed as `authority=opendes`, `source=welldb`, `namespace=opendes:welldb`, `type=well` and `version=1.0.0`. OSDU Data Platform can be now queried to search based on one these attributes.
+<details><summary>**Curl**</summary>
 
-### Text Queries <a name="text-queries"></a>
+```bash
+curl --request POST \
+  --url '/search/v2/query' \
+  --header 'accept: application/json' \
+  --header 'authorization: Bearer <JWT>' \
+  --header 'content-type: application/json' \
+  --header 'data-partition-id: opendes' \
+  --data '{
+  "kind": ["osdu:wks:master-data--Well:1.0.0","osdu:wks:master-data--Wellbore:1.0.0"]
+}'
+```
 
-OSDU Data Platform provides comprehensive query options in [Lucene query syntax](https://lucene.apache.org/core/2_9_4/queryparsersyntax.html). The query string is parsed into a series of terms and operators. A term can be a single word - "producing" or "well" - or a phrase, surrounded by double quotes - "producing well" - which searches for all the words in the phrase, in the same order. The default operator for query is __OR__.
+</details><br> 
 
-A field in the document can be searched by using `<field-name>:<value>`. If field is not defined, then it defaults to all queryable fields; and the query will automatically attempt to determine the existing fields in the index’s mapping that are queryable, and perform the search on those fields.
+The query returns 10 (default limit) documents for the `kind`.
+
+Wildcard queries on `kind` are also supported, refer to [Cross-kind queries](#cross-kind-queries) for more information.
+
+#### Additional kind attributes
+The OSDU Data Platform indexer splits `kind` and indexes each part individually. These terms can then be queried with the `query` request parameter. For example `osdu:wks:master-data--Wellbore:1.0.0` will be indexed as `authority=osdu` `source=wks` `namespace=osdu:wks`, `type=master-data--Wellbore`, and `version=1.0.0`. The OSDU Data Platform can be now queried to search based on one of these attributes.
+
+#### Kind case sensitivity <a name="kind-case-sensitivity"></a>
+Search does not differentiate kind request parameter case sensitivity while querying records across kinds differing in case.
+
+```json
+{
+  "kind": ["osdu:wks:USER:1.1.0", "osdu:wks:user:1.1.0"]
+}
+```
+If there are 2 records of kind `osdu:wks:USER:1.1.0` and 2 records of kind `osdu:wks:user:1.1.0`, the search query will return 4 records, since Search service considers these 2 kinds to be the same.
+
+### Text queries <a name="text-queries"></a>
+
+The OSDU Data Platform provides comprehensive query options in [Lucene query syntax](https://lucene.apache.org/core/2_9_4/queryparsersyntax.html). The query string is parsed into a series of terms and operators. A term can be a single word, such as "producing" or "well", or a phrase, surrounded by double quotes, such as "producing well", which searches for all the words in the phrase, in the same order. The default operator for the query is __OR__.
+
+You can search a field in the document `<field-name>:<value>`. If field is not defined, then it defaults to all queryable fields, and the query will automatically attempt to determine the existing fields in the index’s mapping that are queryable, and perform the search on those fields. l
 
 The query language is quite comprehensive and can be intimidating at first glance, but the best way to actually learn it is to start with a few basic examples.
 
-__Note:__ __kind__ is a required parameter and is omitted for brevity in following examples. Also, all storage record properties are in 'data' block, any reference to a field inside the block should be prefixed with 'data.'
+__Note:__ __`kind`__ is a required parameter and is omitted for brevity in following examples. Also, all storage record properties are in `data` block. Any reference to a field inside the block should be prefixed with `data`.
 
 #### Examples <a name="examples"></a>
 
-- search all fields which contains text 'well'
+- Search all fields that contain the text 'well':
 
 ```json
 {
@@ -220,9 +314,9 @@ __Note:__ __kind__ is a required parameter and is omitted for brevity in followi
 }
 ```
 
-__Note:__ In absence of `<field-name>`, the query string will automatically attempt to determine the existing fields in the index’s mapping that are queryable, and perform the search on those fields. Search query will be more performant if field name are specified in the query instead of searching across all queryable attribute. The following examples cover this:
+__Note:__ If `<field-name>` is not specified, the query string will automatically attempt to determine the existing fields in the index’s mapping that are queryable, and perform the search on those fields. The search query will be *more performant* if field names are specified in the query instead of searching across all queryable attributes. The following examples cover this:
 
-- where the Basin field contains "Permian"
+- Where the Basin field contains "Permian":
 
 ```json
 {
@@ -230,7 +324,7 @@ __Note:__ In absence of `<field-name>`, the query string will automatically atte
 }
 ```
 
-- where the Rig_Contractor field contains "Ocean" or "Drilling". OR is the default operator
+- Where the Rig_Contractor field contains "Ocean" or "Drilling". OR is the default operator:
 
 ```json
 {
@@ -246,7 +340,7 @@ or
 }
 ```
 
-- where the Rig_Contractor field contains the exact `phrase` "Ocean Drilling"
+- Where the Rig_Contractor field contains the exact `phrase` "Ocean Drilling":
 
 ```json
 {
@@ -254,7 +348,9 @@ or
 }
 ```
 
-- where any of the fields ValueList.OriginalValue, ValueList.Value or ValueList.AppDataType contains "PRODUCING" or "DUAINE" (note how we need to escape the * with a backslash)
+The Search service offers additional query patterns to query `precise` values. For details see [exact match](#exact-match).
+
+- Where any of the fields ValueList.OriginalValue, ValueList.Value, or ValueList.AppDataType contains "PRODUCING" or "DUAINE". (Note that you need to escape the * with a backslash.)
 
 ```json
 {
@@ -262,7 +358,7 @@ or
 }
 ```
 
-- where the field Status has any non-null value, use the \_exists\_ prefix for a field will search to see if the field exists
+- Where the field Status has any non-null value. Use the \_exists\_ prefix for a field to search to see if the field exists.
 
 ```json
 {
@@ -270,9 +366,61 @@ or
 }
 ```
 
+#### `text` field indexing <a name="text-field-indexing"></a>
+
+By default, search back-end server analyzes the values of `text` fields during indexing. The Indexer service analyzer changes text field values as follows:
+
+- Removes most punctuation.
+- Divides the remaining content into individual words, called tokens.
+- Changes the tokens to lowercase.
+
+To better support a `precise` exact match, aggregation & sort on `text` field, an additional field is indexed (on kinds indexed after April 2021) for every `text` field (including `text` fields with `nested` `x-osdu-indexing` hints), that is not analyzed (as per rules mentioned above). As an example, if record has a `text` field named `data.name`, then the indexer will add the non-analyzed field: `data.name.keyword`. Newly added `text` fields can be identified as: field-name.**keyword** .
+
+__Note 1:__ The `keyword` field value can have a maximum of 256 characters, and only exact match is supported for this field, so a partial field value query will not return any response. If a `text` field is longer than 256 characters, then the `keyword` field will have only the first 256 characters.
+
+__Note 2__: `text` fields indexed with `flattened` indexing hint are non-analyzed during indexing by default and do not require `keyword` subfield. Exact match, aggregations and sort queries on such fields do not require `keyword` suffix.
+
+#### Exact match <a name="exact-match"></a>
+
+Use the exact match query to search records based on a `precise` value using `keyword` subfield mentioned [here](#text-field-indexing), such as well ID, name, etc. on `text` fields.
+
+Here is an example query:
+
+```json
+{
+    "query": "data.name.keyword:\"Spillpath DA no.109\""
+}
+```
+
+As `keyword` is not analyzed, no escaping is required for special characters covered in the [reserved characters](#reserved-characters) section. The example above has two special characters, space and period, without any escaping.
+
+__Note__: This section is a workaround to query `precise` values. At a later point in time, the Search service query API syntax will be modified to handle `keyword` queries. This solution is being worked on by the OSDU community.
+
+#### Query `null` or empty values <a name="query-null-values"></a>
+
+`text` field's `keyword` subfield can also be utilized to query records by `null` or empty value on `text` attributes. `null` value search/index workflows are only supported on `text` fields.
+
+Here is a sample query to search `null` value:
+
+```json
+{
+   "kind": "osdu:wks:master-data--Well:1.0.0",
+   "query": "data.FacilityID.keyword:null"
+}
+```
+
+Here is an example query to search `empty` value:
+
+```json
+{
+   "kind": "osdu:wks:master-data--Well:1.0.0",
+   "query": "data.FacilityID.keyword:\"\""
+}
+```
+
 #### Grouping <a name="grouping"></a>
 
-Multiple terms or clauses can be grouped together with parentheses, to form sub-queries
+Multiple terms or clauses can be grouped together with parentheses to form sub-queries.
 
 ```json
 {
@@ -282,9 +430,9 @@ Multiple terms or clauses can be grouped together with parentheses, to form sub-
 
 #### Reserved characters <a name="reserved-characters"></a>
 
-If you need to use any of the characters which function as operators in your query itself (and not as operators), then you should escape them with a leading backslash. For instance, to search for (1+1)=2, you would need to write your query as \\(1\\+1\\)\\=2.
+If you need to use any of the characters which function as operators in your query itself (and not as operators), then you must escape them with a leading backslash. For example, to search for (1+1)=2, you would need to write your query as \\(1\\+1\\)\\=2.
 
-The reserved characters are: + - = && || > < ! ( ) { } [ ] ^ " ~ * ? : \ /
+The reserved characters are: `+ - = && || > < ! ( ) { } [ ] ^ " ~ * ? : \ /`
 
 Failing to escape these special characters correctly could lead to a syntax error which prevents your query from running.
 
@@ -292,7 +440,7 @@ __Note:__ < and > can’t be escaped at all. The only way to prevent them from a
 
 #### Wildcards <a name="wildcards"></a>
 
-Wildcard searches can be run on individual terms, using ? to replace a single character, and * to replace zero or more characters.
+Wildcard searches can be run on individual terms using ? to replace a single character and * to replace zero or more characters.
 
 ```json
 {
@@ -302,11 +450,11 @@ Wildcard searches can be run on individual terms, using ? to replace a single ch
 
 Be aware that wildcard queries can use an enormous amount of memory and therefore can effect the performance.  They should be used very sparingly.
 
-__Note:__ Leading wildcards are disabled by OSDU Data Platform Search Service. Allowing a wildcard at the beginning of a word (e.g. "*ean") is particularly heavy, because all terms in the index need to be examined, just in case they match.
+__Note:__ Leading wildcards are disabled by the OSDU Data Platform Search service. Allowing a wildcard at the beginning of a word, such as "*ean", is particularly heavy because all the terms in the index need to be examined, just in case they match.
 
 #### Date Format <a name="date-format"></a>
 
-If you need to use date in your query, it has to be in one of the following formats
+If you need to use the date in your query, it must be in one of the following formats:
 
 ```
  date-opt-time = date-element ['T' [time-element] [offset]]
@@ -315,7 +463,6 @@ If you need to use date in your query, it has to be in one of the following form
  
  Please note that the time element is optional
 ```
-
 ```
  date-element = std-date-element 
   
@@ -336,57 +483,59 @@ If you need to use date in your query, it has to be in one of the following form
  offset = 'Z' | (('+' | '-') HH [':' mm [':' ss [('.' | ',') SSS]]])
 ```
 
-For more info please refer to [Date format](http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateOptionalTimeParser--)
+For more information, refer to [Date format](http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateOptionalTimeParser--).
 
 ### Query by `nested` arrays objects <a name="nested-queries"></a>
 
-Starting from OSDU version 0.9.0, we can set `nested` hints in data schemes object array nodes. It leads to accurate indexing of those arrays objects in the underlying search backend.
+Starting with OSDU version 0.9.0, you can set `nested` hints in a data scheme's object array nodes. It leads to accurate indexing of those arrays objects in the underlying search backend.
 
-`nested` attributes can be queried via Search service in the form of the ```nested()``` function:
+`nested` attributes can be queried using the Search service in the form of the ```nested()``` function:
 
-- for one level "nested array":
-
-```json
-nested(<path-to-root-nested-array-node>, <root-nested-array-object-fields-query>)
-```
-
-- for nested (multi-level) "nested array" queries
+- For one level "nested array":
 
 ```json
-nested(<path-to-root-nested-array-node>, nested(<path-to-subrootA-nested-array-node>, <subrootA-nested-array-object-fields-query>))
+{
+  "query": "nested(<path-to-root-nested-array-node>, <root-nested-array-object-fields-query>)"
+}
 ```
 
-Multi-level nested queries are not limited in their depth. You nest them as required by the certain schema.
+- For nested (multi-level) "nested array" queries:
 
-Several examples of the root and multi-level nested queries examples you can see in the below paragraphs. The syntax of those queries is the same we learned from the above sections. The only distinction is that their conditions are scoped by the own fields of objects of the array, pointed in the first argument of the current `nested(path,(conditions))` function.
+```json
+{
+  "query": "nested(<path-to-root-nested-array-node>, nested(<path-to-subrootA-nested-array-node>, <subrootA-nested-array-object-fields-query>))"
+}
+```
 
-For more details, ability and limitation about this feature, please refer to [ArrayOfObjects](#docs/tutorial/ArrayOfObjects.md).
+Multi-level nested queries are not limited in their depth. You nest them as required by the particular schema.
+
+In the examples below, you can see several examples of the root and multi-level nested queries. The syntax of those queries is the same as described in the previous sections. The only distinction is that their conditions are scoped by their own fields of objects of the array, pointed in the first argument of the current `nested(path,(conditions))` function.
 
 #### Single-level one condition `nested` query
 
-- where `work-product-component--WellboreMarkerSet` has any Marker with MarkerMeasuredDepth field value greater than 10000
+- Where `work-product-component--WellboreMarkerSet` has any marker with `MarkerMeasuredDepth` field value greater than 10000:
 
 ```json
 {
   "kind" : "osdu:wks:work-product-component--WellboreMarkerSet:1.0.0",
-  "query":"nested(data.Markers, (MarkerMeasuredDepth:(>10000)))"
+  "query": "nested(data.Markers, (MarkerMeasuredDepth:(>10000)))"
 }
 ```
 
 #### Single-level several conditions `nested` query
 
-- where `work-product-component--WellboreMarkerSet` has any Marker with VerticalMeasurement field value greater than 100 and VerticalMeasurementPathID field value is "osdu-openness:reference-data--VerticalMeasurementPath:ELEV:"
+- Where `work-product-component--WellboreMarkerSet` has any marker with `VerticalMeasurement` field value greater than 100 and `VerticalMeasurementPathID` field value is `osdu-openness:reference-data--VerticalMeasurementPath:ELEV:`:
 
 ```json
 {
-    "kind": "osdu:wks:work-product-component--WellboreMarkerSet:1.0.0",
+    "kind": "osdu:wks:master-data--Wellbore:1.0.0",
     "query": "nested(data.VerticalMeasurements, (VerticalMeasurement:(>100) AND VerticalMeasurementPathID:\"osdu-openness:reference-data--VerticalMeasurementPath:ELEV:\"))"
 }
 ```
 
 #### Combination of single-level `nested` queries
 
-- where `work-product-component--WellboreMarkerSet` has any Marker with MarkerMeasuredDepth field value greater 10000 or SurfaceDipAzimuth field value less than 360
+- Where `work-product-component--WellboreMarkerSet` has any marker with `MarkerMeasuredDepth` field value greater `10000` or `SurfaceDipAzimuth` field value less than `360`:
 
 ```json
 {
@@ -397,7 +546,7 @@ For more details, ability and limitation about this feature, please refer to [Ar
 
 #### Multi-level `nested` queries
 
-Assume we have data.Markers Marker object has a nested "Revisions" array of Revision objects having two own fields: "RevisionDate" and "RevisionEngineer". An indexed document might then look like this:
+Assume a marker object has a nested `Revisions` array of Revision objects that have the fields: `RevisionDate` and `RevisionEngineer`. An indexed document might then look like this:
 
 ```json
   "data": {
@@ -416,7 +565,7 @@ Assume we have data.Markers Marker object has a nested "Revisions" array of Revi
 }
 ```
 
-We then might wish to search for `work-product-component--WellboreMarkerSet` having any Marker revised on a certain date by a certain engineer:
+You might want to search for `work-product-component--WellboreMarkerSet` that has any marker revised on a certain date by a certain engineer:
 
 ```json
 {
@@ -427,7 +576,7 @@ We then might wish to search for `work-product-component--WellboreMarkerSet` hav
 
 #### Nested and non-nested queries parts combinations
 
-We can combine both types of queries in one request, eg:
+We can combine both types of queries in one request, such as in the following example:
 
 ```json
 {
@@ -436,11 +585,58 @@ We can combine both types of queries in one request, eg:
 }
 ```
 
-__Note__: Supported boolean operator for `nested` queries are `AND`, `OR`, `NOT`. These operators are case-sensitives.
+__Note__: Supported boolean operators for `nested` queries are `AND`, `OR`, `NOT`. These operators are case-sensitives.
+
+#### Filtering using grouping with nested syntax <a name="groupnested"></a>
+
+The nested query parser throws an exception if using a grouping with nested syntax due to the current nested query parser. As a workaround, you can rewrite the query so that it does not involve grouping.
+
+__Case 1:__
+
+Instead of:
+
+```json
+{
+  "kind":"*:*:*:*",
+  "query":"((nested(data.VerticalMeasurements, (VerticalMeasurementID:\"KB\"))) AND (( kind: \"opendes:welldb:wellbore:1.1.3\") OR (kind: \"opendes:wks:wellbore:1.0.0\") OR ( kind: \"opendes:welldb:wellbore:1.1.4\"))) AND NOT data.DocumentRelationshipType:\"child\" NOT type:\"page\""
+}
+```
+
+Use:
+
+```json
+
+{
+    "kind": "*:*:*:*",
+    "query": "nested(data.VerticalMeasurements, (VerticalMeasurementID:\"KB\")) AND (kind: \"opendes:welldb:wellbore:1.1.3\" OR kind: \"opendes:wks:wellbore:1.0.0\" OR kind: \"opendes:welldb:wellbore:1.1.4\") NOT data.DocumentRelationshipType:\"child\" NOT type:\"page\""
+}
+```
+
+__Case 2:__
+
+Instead of:
+
+```json
+
+{
+  "kind":"*:*:*:*",
+  "query":"((nested(data.VerticalMeasurements, (VerticalMeasurementID:\"KB\"))) AND (kind: \"opendes:wks:wellbore:1.0.0\")) AND NOT data.DocumentRelationshipType:\"child\" NOT type:\"page\""
+}
+```
+
+Use:
+```json
+
+{
+ {
+    "kind": "*:*:*:*", 
+    "query": "nested(data.VerticalMeasurements, (VerticalMeasurementID:\"KB\")) AND kind: \"opendes:wks:wellbore:1.0.0\" NOT data.DocumentRelationshipType:\"child\" NOT type:\"page\""
+}
+```
 
 ## Aggregation <a name="aggregate-queries"></a>
 
-Allows user to get unique value of field specified by `aggregateBy` request parameter. It supports String, numeric & boolean fields. Maximum 1000 unique values can be returned by this request.
+Allows user to get the unique value of a field specified by the `aggregateBy` request parameter. It supports `text`, `numeric`, and `boolean` fields. A maximum of `1000` unique values can be returned by this request.
 
 ```json
 {
@@ -451,7 +647,7 @@ Allows user to get unique value of field specified by `aggregateBy` request para
 
 ### Aggregation by `nested` arrays objects <a name="nested-aggregation"></a>
 
-`nested` attributes can be aggregated by `nested(<path-to-root-nested-array-node>, <root-nested-array-object-fields-query>)` function.
+`nested` attributes can be aggregated by using the `nested(<path-to-root-nested-array-node>, <root-nested-array-object-fields-query>)` function.
 
 ```json
 {
@@ -460,22 +656,42 @@ Allows user to get unique value of field specified by `aggregateBy` request para
 }
 ```
 
-For more details, ability and limitation about this feature, please refer to [ArrayOfObjects](#docs/tutorial/ArrayOfObjects.md).
+### Aggregation on `text` fields <a name="text-field-aggregation"></a>
+
+As mentioned on [`text` field indexing](#text-field-indexing) section, a non-analyzed subfield is added on each `text` field to enable aggregations workflow. This can be utilized to perform aggregation query on `text` fields.
+
+- Aggregate by `WellName`
+```json
+{
+  "kind": "opendes:welldb:*:*",
+  "aggregateBy": "data.WellName.keyword"
+}
+```
+
+- Aggregate by `nested` attribute `TechnicalAssuranceTypeID`
+```json
+{
+  "kind": "osdu:wks:work-product-component--SeismicTraceData:*",
+  "aggregateBy": "nested(data.TechnicalAssurances, TechnicalAssuranceTypeID.keyword)"
+}
+```
+
+__Caution__: Aggregation on a `text` field inside `data` block will respond with `400` if `keyword` subfield is not used on query.
 
 ## Sort <a name="sort-queries"></a>
 
-Sort query allows to add one or more sorts on specific fields. Each sort can be reversed as well.
+The sort query allows you to add one or more sorts on specific fields. Each sort can be reversed as well.
 
-The sort feature supports string, int, float, double, long, datetime, nested object & nested array of objects. Sorting on array of string, geo-point & geo-shape type is not supported.
+The sort feature supports `text`, `int`, `float`, `double`, `long`, `datetime`, `nested` object, and `nested` array of objects. Sorting on a geo-point, or a geo-shape type is not supported.
 
 The records either do not have the sorted fields or have empty values that are listed last in the result.
 
-E.g. Consider following scenarios:
+Consider following scenarios:
 
-1. opendes data partition has two kinds for welldb data source: opendes:welldb:wellbore:1.0.0 and opendes:welldb:well:1.0.0
-2. data.Id in opendes:welldb:wellbore:1.0.0 has been ingested as INTEGER, but data.Id in opendes:welldb:well:1.0.0 has been ingested as TEXT
-3. opendes:welldb:wellbore:1.0.0 has 10 records in total and 5 of them have empty value of data.Id field
-4. opendes:welldb:well:1.0.0 also has 10 records in total and all of them have values in data.Id field
+1. The `opendes` data partition has two kinds for welldb data source: `opendes:welldb:wellbore:1.0.0` and `opendes:welldb:well:1.0.0`.
+2. The `data.Id` in `opendes:welldb:wellbore:1.0.0` has been ingested as `int`, but `data.Id` in `opendes:welldb:well:1.0.0` has been ingested as `text`.
+3. `opendes:welldb:wellbore:1.0.0` has 10 records in total and 5 of them have an empty value in the `data.Id` field.
+4. `opendes:welldb:well:1.0.0` also has 10 records in total and all of them have values in the `data.Id` field.
 
 ```json
 {
@@ -485,50 +701,51 @@ E.g. Consider following scenarios:
     "order": ["ASC"]
   }
 }
-```
+``` 
 
-The above request payload asks Search service to sort on "data.Id" in an ascending order, and the expected response will have "totalCount: 10" (instead of 20, please note that the 10 returned records are only from opendes:welldb:wellbore:1.0.0 because the data.Id in opendes:welldb:well:1.0.0 is of data type string, which is not currently supported - and therefore, will not be returned) and should list the 5 records which have empty data.Id value at last.
+The above request payload asks the Search service to sort on `data.Id` in an ascending order, and the expected response will have "totalCount: 10" instead of 20. Note that the 10 returned records are only from `opendes:welldb:wellbore:1.0.0` because the `data.Id` in `opendes:welldb:well:1.0.0` is of data type `text` will not be returned (see [Sort on `text` fields](#text-field-sort) for details), and it should list the 5 records which have an empty `data.Id` value at last.
 
-Search results are by default ordered by relevancy `_score` in descending order. Users are not required to provide any sort query for this. Users can also make request to query record in reverse relevancy order.
+__Note:__ The Search service does not validate the provided sort field, whether it exists or is of the supported data types. Different kinds may have attributes with the same names, but are different data types. Therefore, it is user's responsibility to be aware and validate this in their own workflow.
 
+The sort query could be very expensive, especially if the given kind is too broad, such as "kind": "*:*:*:*". The current time-out threshold is 60 seconds. A 504 error, "Request timed out after waiting for 1m," will be returned if the request times out. Consider making the kind parameter as narrow as possible while using the sort feature.
+
+### Sort on `text` fields <a name="text-field-sort"></a>
+
+As mentioned on [`text` field indexing](#text-field-indexing) section, a non-analyzed subfield is added on each `text` field to enable sort workflow. This can be utilized to perform sort query on `text` fields.
+
+- Sort by `WellName`
 ```json
 {
-  "kind": "*:*:*:*",
-  "query": "well",
-  "sort": {
-    "field": ["_score"],
+  "kind": "opendes:welldb:*:*",
+   "sort": {
+    "field": ["data.WellName.keyword"],
     "order": ["ASC"]
   }
 }
 ```
 
-__NOTE:__ Search service does not validate the provided sort field, whether it exists or is of the supported data types. Different kinds may have attributes with the same names, but are different data types. Therefore, it is the user's responsibility to be aware and validate this in one's own workflow.
-
-The sort query could be very expensive, especially if the given kind is too broad (e.g. "kind": "*:_:_:*"). The current time-out threshold is 60 seconds; a 504 error ("Request timed out after waiting for 1m") will be returned if the request times out. The suggestion is to make the kind parameter as narrow as possible while using the sort feature.
-
-### Sort by `nested` arrays objects <a name="nested-sort"></a>
-
-We generally have several objects in each `nested` array. The `mode` option (in sorting function: `nested(path, field, mode)`) controls what array value is picked for sorting the document it belongs to. For this, there is the third parameter "mode" of the . The `mode` option can have following values: min, max, avg.
-
-In the following example we apply two levels of sorting by different fields of the `nested` Markers array objects. For the first level we use 'min' mode and then ASC sorting order, for the second level - 'max' mode and then DESC sorting order.
-
+- Sort by `nested` attribute `FacilityEventTypeID`
 ```json
 {
-"kind" : "osdu:wks:work-product-component--WellboreMarkerSet:1.0.0", 
-"sort": {
-    "field": ["nested(data.Markers, MarkerMeasuredDepth, min)", "nested(data.Markers, SurfaceDipAzimuth, max)"],
-    "order": ["ASC", "DESC"]
+  "kind": "osdu:wks:master-data--Wellbore:1.1.0",
+  "sort": {
+    "sort": {
+        "field": [
+             "nested(data.FacilityEvents, FacilityEventTypeID.keyword, min)"
+        ],
+        "order": [
+            "ASC"
+        ]
+    }
   }
 }
 ```
 
-For more details, ability and limitation about this feature, please refer to [ArrayOfObjects](#docs/tutorial/ArrayOfObjects.md).
+## Range queries <a name="range-queries"></a>
 
-## Range Queries <a name="range-queries"></a>
+Ranges can be specified for `date`, `numeric`, or `text` fields. Inclusive ranges are specified with square brackets `[min TO max]` and exclusive ranges with curly brackets `{min TO max}`. Here are some of the examples:
 
-Ranges can be specified for date, numeric or string fields. Inclusive ranges are specified with square brackets `[min TO max]` and exclusive ranges with curly brackets `{min TO max}`. Here are some of the examples:
-
-- All SpudDate in 2012
+- All SpudDate in 2012:
 
 ```json
 {
@@ -536,7 +753,7 @@ Ranges can be specified for date, numeric or string fields. Inclusive ranges are
 }
 ```
 
-- Count 1..5
+- Count 1..5:
 
 ```json
 {
@@ -544,7 +761,7 @@ Ranges can be specified for date, numeric or string fields. Inclusive ranges are
 }
 ```
 
-- Count from 10 upwards
+- Count from 10 upwards:
 
 ```json
 {
@@ -552,7 +769,7 @@ Ranges can be specified for date, numeric or string fields. Inclusive ranges are
 }
 ```
 
-- Ranges with one side unbounded can use the following syntax
+- Ranges with one side unbounded can use the following syntax:
 
 ```json
 {
@@ -560,7 +777,7 @@ Ranges can be specified for date, numeric or string fields. Inclusive ranges are
 }
 ```
 
-- combine an upper and lower bound with the simplified syntax, you would need to join two clauses with an AND operator
+- Combine an upper and lower bound with the simplified syntax, you would need to join two clauses with an AND operator:
 
 ```json
 {
@@ -568,7 +785,7 @@ Ranges can be specified for date, numeric or string fields. Inclusive ranges are
 }
 ```
 
-- jobStatus tags between IN_PROGRESS & SUCCESS
+- jobStatus tags between IN_PROGRESS & SUCCESS:
 
 ```json
 {
@@ -578,24 +795,24 @@ Ranges can be specified for date, numeric or string fields. Inclusive ranges are
 
 [Back to table of contents](#TOC)
 
-## Geo-Spatial Queries <a name="geo-spatial-queries"></a>
+## Geo-spatial queries <a name="geo-spatial-queries"></a>
 
-OSDU Data Platform supports geo-point geo data which supports lat/lon pairs. `spatialFilter` and `query` group in the request have AND relationship. If both of the criteria are defined in the query, then the search service will return results which match both clauses.
+The OSDU Data Platform supports geo-point (lat/lon pairs) & geo-shape based on [GeoJson standard](https://www.rfc-editor.org/rfc/rfc7946). The `spatialFilter` and `query` groups in the request have an AND relationship. If both of the criteria are defined in the query, then the Search service will return results which match both clauses.
 
-The queries in this group are [Geo Distance](#geo-distance), [Geo Polygon](#geo-polygon) and [Bounding Box](#bounding-box). Only __one__ spatial criteria can be used while defining filter.
+The queries in this group are [Geo distance](#geo-distance), [Geo polygon](#geo-polygon), and [Bounding box](#bounding-box). Only __one__ spatial criteria can be used while defining the filter.
 
-__Note:__ Geo-spatial fields (which are indexed with GeoJSON FeatureCollection payload) in Search service query response have different structure compared to Storage records and optimized for search use-case. These are no valid GeoJSON. To retrieve, valid GeoJSON please use Storage service's record API.
+__Note:__ Geo-spatial fields, which are indexed with GeoJSON FeatureCollection payload, in the Search service query response have a different structure compared to storage records and are optimized for search use-case. These are no valid GeoJSON. To retrieve a valid GeoJSON, use the Storage service's record API.
 
-### Geo Distance <a name="geo-distance"></a>
+### Geo distance query <a name="geo-distance"></a>
 
-Filters documents that include only hits that exist within a specific distance from a geo point.
+Filters documents that include only hits that exist *within* a specific distance from a geo point.
 
 ```json
-POST /api/search/v2/query
+POST /search/v2/query
 {
-  "kind": "opendes:welldb:wellbore:1.0.0",
+  "kind": "osdu:wks:master-data--Wellbore:1.0.0",
   "spatialFilter": {
-    "field": "data.Location",
+    "field": "data.ProjectedBottomHoleLocation.Wgs84Coordinates",
     "byDistance": {
       "point": {
         "latitude": 37.450727,
@@ -613,15 +830,15 @@ POST /api/search/v2/query
 
 ```bash
 curl --request POST \
-  --url '/api/search/v2/query' \
+  --url '/search/v2/query' \
   --header 'accept: application/json' \
   --header 'authorization: Bearer <JWT>' \
   --header 'content-type: application/json' \
   --header 'data-partition-id: opendes' \
   --data '{
-  "kind": "opendes:welldb:wellbore:1.0.0",
+  "kind": "osdu:wks:master-data--Wellbore:1.0.0",
   "spatialFilter": {
-    "field": "data.Location",
+    "field": "data.ProjectedBottomHoleLocation.Wgs84Coordinates",
     "byDistance": {
       "point": {
         "latitude": 37.450727,
@@ -635,31 +852,31 @@ curl --request POST \
 }'
 ```
 
-</details>
+</details><br>
 
 | Parameter | Description |
 | :--- | :--- |
-| field | `geo-point` field in the index on which filtering will be performed. |
-| distance | The radius of the circle centered on the specified location. Points which fall into this circle are considered to be matches. The distance can be specified in various units. See [Distance Units](#distance-units) |
-| point.latitude | latitude of field. |
-| point.longitude | longitude of field. |
+| field | The `geo-point` or `geo-shape` field in the index on which filtering will be performed. |
+| distance | The radius of the circle centered on the specified location. Points which falls *within* this circle are considered to be matches. The distance can be specified in various units. See [Distance units](#distance-units). |
+| point.latitude | Latitude of field. |
+| point.longitude | Longitude of field. |
 
-### Distance Units <a name="distance-units"></a>
+### Distance units <a name="distance-units"></a>
 
 If no unit is specified, then the default unit of the distance parameter is meter. Distance can be specified in other units, such as "1km" or "2mi" (2 miles).
 
 __Note:__ In the current version, the Search API only supports distance in meters. In future versions, distance in other units will be made available. The maximum value of distance is 1.5E308.
 
-### Bounding Box <a name="bounding-box"></a>
+### Bounding box query <a name="bounding-box"></a>
 
-A query allowing to filter hits based on a point location within a bounding box.
+A query allowing you to filter hits based on a point location *within* a bounding box.
 
 ```json
-POST /api/search/v2/query
+POST /search/v2/query
 {
-  "kind": "opendes:welldb:wellbore:1.0.0",
+  "kind": "osdu:wks:master-data--Wellbore:1.0.0",
   "spatialFilter": {
-    "field": "data.Location",
+    "field": "data.ProjectedBottomHoleLocation.Wgs84Coordinates",
     "byBoundingBox": {
       "topLeft": {
         "latitude": 37.450727,
@@ -680,15 +897,15 @@ POST /api/search/v2/query
 
 ```bash
 curl --request POST \
-  --url '/api/search/v2/query' \
+  --url '/search/v2/query' \
   --header 'accept: application/json' \
   --header 'authorization: Bearer <JWT>' \
   --header 'content-type: application/json' \
   --header 'data-partition-id: opendes' \
   --data '{
-  "kind": "opendes:welldb:wellbore:1.0.0",
+  "kind": "osdu:wks:master-data--Wellbore:1.0.0",
   "spatialFilter": {
-    "field": "data.Location",
+    "field": "data.ProjectedBottomHoleLocation.Wgs84Coordinates",
     "byBoundingBox": {
       "topLeft": {
         "latitude": 37.450727,
@@ -705,26 +922,26 @@ curl --request POST \
 }'
 ```
 
-</details>
+</details><br>
 
-| Parameter | Description |
+| Parameter | Description | 
 | :--- | :--- |
-| field | `geo-point` field in the index on which filtering will be performed. |
-| topLeft.latitude | latitude of top left corner of bounding box. |
-| topLeft.longitude | longitude of top left corner of bounding box. |
-| bottomRight.latitude | latitude of bottom right corner of bounding box. |
-| bottomRight.longitude | longitude of bottom right corner of bounding box. |
+| field | The `geo-point` or `geo-shape` field in the index on which filtering will be performed. |
+| topLeft.latitude | The latitude of top left corner of bounding box. |
+| topLeft.longitude | The longitude of top left corner of bounding box. |
+| bottomRight.latitude | The latitude of bottom right corner of bounding box. |
+| bottomRight.longitude | The longitude of bottom right corner of bounding box. |
 
-### Geo Polygon <a name="geo-polygon"></a>
+### Geo polygon query <a name="geo-polygon"></a>
 
-A query allowing to filter hits that only fall within a closed polygon.
+A query allowing you to filter hits that only fall *within* a closed polygon.
 
 ```json
-POST /api/search/v2/query
+POST /search/v2/query
 {
-  "kind": "opendes:welldb:wellbore:1.0.0",
+  "kind": "osdu:wks:master-data--Wellbore:1.0.0",
   "spatialFilter": {
-    "field": "data.Location",
+    "field": "data.ProjectedBottomHoleLocation.Wgs84Coordinates",
     "byGeoPolygon": {
       "points": [
         {"longitude":-90.65, "latitude":28.56},
@@ -744,15 +961,15 @@ POST /api/search/v2/query
 
 ```bash
 curl --request POST \
-  --url '/api/search/v2/query' \
+  --url '/search/v2/query' \
   --header 'accept: application/json' \
   --header 'authorization: Bearer <JWT>' \
   --header 'content-type: application/json' \
   --header 'data-partition-id: opendes' \
   --data '{
-  "kind": "opendes:welldb:wellbore:1.0.0",
+  "kind": "osdu:wks:master-data--Wellbore:1.0.0",
   "spatialFilter": {
-    "field": "data.Location",
+    "field": "data.ProjectedBottomHoleLocation.Wgs84Coordinates",
     "byGeoPolygon": {
      "points": [
         {"longitude":-90.65, "latitude":28.56},
@@ -768,20 +985,89 @@ curl --request POST \
 }'
 ```
 
-</details>
+</details><br>
 
-| Parameter | Description |
+| Parameter | Description | 
 | :--- | :--- |
-| field | `geo-point` field in the index on which filtering will be performed. |
-| points | list of `geo-point` describing polygon. |
+| field | The `geo-point` or `geo-shape` field in the index on which filtering will be performed. |
+| points | The list of `geo-point` describing polygon. |
+
+### Geo polygon intersection query <a name="geo-polygon-intersection"></a>
+
+A query allowing you to filter hits *intersecting* a closed polygon.
+
+```json
+POST /search/v2/query
+{
+  "kind": "osdu:wks:master-data--Wellbore:1.0.0",
+  "spatialFilter": {
+    "field": "data.ProjectedBottomHoleLocation.Wgs84Coordinates",
+    "byIntersection": {
+      "polygons": [
+        {
+          "points": [
+            {"longitude":-90.65, "latitude":28.56},
+            {"longitude":-90.65, "latitude":35.56},
+            {"longitude":-85.65, "latitude":35.56},
+            {"longitude":-85.65, "latitude":28.56},
+            {"longitude":-90.65, "latitude":28.56} 
+          ]
+        }
+      ]
+    }
+  },
+  "offset": 0,
+  "limit": 30
+}
+```
+
+<details><summary>**Curl**</summary>
+
+```bash
+curl --request POST \
+  --url '/search/v2/query' \
+  --header 'accept: application/json' \
+  --header 'authorization: Bearer <JWT>' \
+  --header 'content-type: application/json' \
+  --header 'data-partition-id: opendes' \
+  --data '{
+  "kind": "osdu:wks:master-data--Wellbore:1.0.0",
+  "spatialFilter": {
+    "field": "data.ProjectedBottomHoleLocation.Wgs84Coordinates",
+    "byIntersection": {
+      "polygons": [
+        {
+          "points": [
+            {"longitude":-90.65, "latitude":28.56},
+            {"longitude":-90.65, "latitude":35.56},
+            {"longitude":-85.65, "latitude":35.56},
+            {"longitude":-85.65, "latitude":28.56},
+            {"longitude":-90.65, "latitude":28.56} 
+          ]
+        }
+      ]
+    }
+  }
+  },
+  "offset": 0,
+  "limit": 30
+}'
+```
+
+</details><br>
+
+| Parameter | Description | 
+| :--- | :--- |
+| field | The `geo-point` or `geo-shape` field in the index on which filtering will be performed. |
+| points | The list of `geo-point` describing polygon. |
 
 [Back to table of contents](#TOC)
 
-## Cross-Kind Queries <a name="cross-kind-queries"></a>
+## Cross-kind queries <a name="cross-kind-queries"></a>
 
-OSDU Data Platform search supports cross-kind queries. A typical kind can be formatted as authority/data-partition-id:data-source-id:entity-type:schema-version. Each of the text partitioned by ':' can be replaced with wildcard characters to support cross-kind search.
+The OSDU Data Platform search supports cross-kind queries. A typical kind can be formatted as authority/data-partition-id:data-source-id:entity-type:schema-version. Each text partitioned by ':' can be replaced with wildcard characters to support cross-kind search.
 
-- search across all data-source, types & versions for opendes
+- Search across all data-sources, types, and versions for opendes authority:
 
 ```json
 {
@@ -789,7 +1075,7 @@ OSDU Data Platform search supports cross-kind queries. A typical kind can be for
 }
 ```
 
-- search across all data-source, type well with schema version 1.0.0
+- Search across all data-sources and type wells with schema version 1.0.0:
 
 ```json
 {
@@ -797,7 +1083,7 @@ OSDU Data Platform search supports cross-kind queries. A typical kind can be for
 }
 ```
 
-- search across all types and versions for welldb namespace in opendes
+- Search across all types and versions for the welldb namespace in opendes:
 
 ```json
 {
@@ -807,26 +1093,26 @@ OSDU Data Platform search supports cross-kind queries. A typical kind can be for
 
 [Back to table of contents](#TOC)
 
-## Query With Cursor <a name="query-with-cursor"></a>
+## Query with cursor <a name="query-with-cursor"></a>
 
-While a search request returns a single “page” of results, the `query_with_cursor` API can be used to retrieve large numbers of results (or even all results) from a single search request, in much the same way as you would use a cursor on a traditional database.
+While a search request returns a single `page` of results, the `query_with_cursor` API can be used to retrieve large numbers of results, or even all results, from a single search request, in much the same way as you would use a cursor on a traditional database.
 
-Cursor API is not intended for real time user requests, but rather for processing large amounts of data.
+The Cursor API is not intended for real-time user requests, but rather for processing large amounts of data.
 
-The [parameters](#parameters) passed in the request body are exactly the same as the `query` API except for the offset and cursor values. Please note that offset is not a valid parameter in `query_with_cursor` API
+The [parameters](#parameters) passed in the request body are exactly the same as the `query` API except for the offset and cursor values. Note that offset is not a valid parameter in `query_with_cursor` API.
 
-__Note:__ The results that are returned from a `query_with_cursor` request reflect the state of the index at the time that the initial search request was made, like a snapshot in time. Subsequent changes to documents (index, update or delete) will only affect later search requests.
+__Note:__ The results that are returned from a `query_with_cursor` request reflect the state of the index at the time that the initial search request was made, like a snapshot in time. Subsequent changes to documents (index, update, or delete)  only affect future search requests.
 
-In order to use the `query_with_cursor` request, initial search request should use the following endpoint:
+In order to use the `query_with_cursor` request, the initial search request should use the following endpoint:
 
 ```json
-POST /api/search/v2/query_with_cursor
+POST /search/v2/query_with_cursor
 {
-  "kind": "opendes:welldb:wellbore:1.0.0",
-  "query": "data.Status:Active",
+  "kind": "osdu:wks:master-data--Well:1.0.0",
+  "query": "data.FacilityName:\"OSDU-A34\"",
   "limit": 30,
   "spatialFilter": {
-    "field": "data.Location",
+    "field": "data.SpatialLocation.Wgs84Coordinates",
     "byBoundingBox": {
       "topLeft": {
         "latitude": 48.450727,
@@ -838,7 +1124,7 @@ POST /api/search/v2/query_with_cursor
       }
     }
   },
-  "returnedFields": [ "data.Status" ]
+  "returnedFields": [ "id", "data.FacilityName" ]
 }
 ```
 
@@ -846,17 +1132,17 @@ POST /api/search/v2/query_with_cursor
 
 ```bash
 curl --request POST \
-  --url '/api/search/v2/query_with_cursor' \
+  --url '/search/v2/query_with_cursor' \
   --header 'accept: application/json' \
   --header 'authorization: Bearer <JWT>' \
   --header 'content-type: application/json' \
   --header 'data-partition-id: opendes' \
   --data '{
-  "kind": "opendes:welldb:wellbore:1.0.0",
-  "query": "data.Status:Active",
+  "kind": "osdu:wks:master-data--Wellbore:1.0.0",
+  "query": "data.FacilityName:\"OSDU-A34\"",
   "limit": 30,
   "spatialFilter": {
-    "field": "data.Location",
+    "field": "data.SpatialLocation.Wgs84Coordinates",
     "byBoundingBox": {
       "topLeft": {
         "latitude": 48.450727,
@@ -868,18 +1154,18 @@ curl --request POST \
       }
     }
   },
-  "returnedFields": [ "data.Status" ]
+  "returnedFields": [ "id", "data.FacilityName" ]
 }'
 ```
 
-</details>
+</details><br>
 
-The successful response from the above request will include a "cursor", which should be passed to next call of `query_with_cursor` API in order to retrieve the next batch of results.
+The successful response from the above request will include a "cursor", which should be passed to the next call of the `query_with_cursor` API in order to retrieve the next batch of results.
 
 ```json
-POST /api/search/v2/query_with_cursor
+POST /search/v2/query_with_cursor
 {
-  "kind": "opendes:welldb:wellbore:1.0.0",
+  "kind": "osdu:wks:master-data--Well:1.0.0",
   "cursor": "cursor-key"
 }
 ```
@@ -888,28 +1174,130 @@ POST /api/search/v2/query_with_cursor
 
 ```bash
 curl --request POST \
-  --url '/api/search/v2/query_with_cursor' \
+  --url '/search/v2/query_with_cursor' \
   --header 'accept: application/json' \
   --header 'authorization: Bearer <JWT>' \
   --header 'content-type: application/json' \
   --header 'data-partition-id: opendes' \
   --data '{
-  "kind": "opendes:welldb:wellbore:1.0.0",
+  "kind": "osdu:wks:master-data--Wellbore:1.0.0",
   "cursor": "cursor-key"
 }'
 ```
 
-</details>
+</details><br>
 
-__Caution:__ As next batches of results are retrieved by `query_with_cursor` API, cursor value may or may not change. API users should not expect different cursor value in each `query_with_cursor` response.
+__Caution:__ As next batches of results are retrieved by the `query_with_cursor` API, the cursor value may or may not change. API users should not expect a different cursor value in each `query_with_cursor` response.
 
-__Note:__ To process the next `query_with_cursor` request, the search service keeps the search context alive for 1 minute, which is the time required to process the next batch of results. Each cursor request sets a new expiry time. The cursor will expire after 1 min and won't return any more results if the requests are not made in specified time.
+__Note:__ To process the next `query_with_cursor` request, the Search service keeps the search context alive for 1 minute, which is the time required to process the next batch of results. Each cursor request sets a new expiry time. The cursor will expire after 1 minute and will not return any more results if the requests are not made within the specified time.
+
+[Back to table of contents](#TOC)
+
+## Common discovery within and across kind via `VirtualProperties` <a name="common-discovery-within-and-across-kind"></a>
+
+A single schema can define multiple properties for geo-spatial data. For example `Wellbore` schema defines both the `GeographicBottomHoleLocation` and `ProjectedBottomHoleLocation` properties. The json key used for spatial data is also not consistent across schemas.
+
+This causes issues for common Search workflows like finding all entities that exist within a given area. This is because users don't know what property to query against for each type so to find all entities in a given area is complicated.
+
+Looking beyond spatial data this is a common problem across different data types, for instance in a `Wellbore` schema the name is represented by the property `FacilityName` however this key is not used for the name in other schemas.
+
+OSDU's M12 release has introduced a new `x-osdu-virtual-properties` property on Schemas to address common discovery within and across kind. This optional attribute defines a common property mapping. `x-osdu-virtual-properties` can be used to map any properties to a new property name that can be used for consumption. Schemas can then declare the same virtual property to allow easier cross schema consumption. Indexer service indexes new attributes based on `x-osdu-virtual-properties` property declaration.
+
+Here is an example of query on one such property:
+
+```json
+POST /search/v2/query
+{
+  "kind": "*:*:*:*", 
+  "spatialFilter": { 
+    "field": "data.VirtualProperties.DefaultLocation.Wgs84Coordinates", 
+    "byGeoPolygon": { 
+      "points": [ 
+         {"longitude":-90.65, "latitude":28.56}, 
+         {"longitude":-90.65, "latitude":35.56}, 
+         {"longitude":-85.65, "latitude":35.56}, 
+         {"longitude":-85.65, "latitude":28.56}, 
+         {"longitude":-90.65, "latitude":28.56} 
+      ] 
+  }
+}
+```
+
+<details><summary>**Curl**</summary>
+
+```bash
+curl --request POST \
+  --url '/search/v2/query' \
+  --header 'accept: application/json' \
+  --header 'authorization: Bearer <JWT>' \
+  --header 'content-type: application/json' \
+  --header 'data-partition-id: opendes' \
+  --data '{
+  "kind": "*:*:*:*",
+  "spatialFilter": { 
+    "field": "data.VirtualProperties.DefaultLocation.Wgs84Coordinates", 
+    "byGeoPolygon": { 
+      "points": [ 
+         {"longitude":-90.65, "latitude":28.56}, 
+         {"longitude":-90.65, "latitude":35.56}, 
+         {"longitude":-85.65, "latitude":35.56}, 
+         {"longitude":-85.65, "latitude":28.56}, 
+         {"longitude":-90.65, "latitude":28.56} 
+      ] 
+  }
+}'
+```
+
+</details><br>
+
+More information on supported default VirtualProperties can be found on [Data definition's schema documentation](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/E-R/VirtualPropertiesReport.md).
+
+__Note:__ The virtual property declared is never added to the Storage record and used by Indexer service to index new attribute and make the data discoverable based on this property.
+
+[Back to table of contents](#TOC)
+
+## Version info API <a name="version-info"></a>
+
+Provides build and git related information for Search service.
+
+```json
+GET /api/search/v2/info
+```
+
+Example response:
+
+```json
+{
+  "groupId": "org.opengroup.osdu",
+  "artifactId": "search-azure",
+  "version": "0.19.3",
+  "buildTime": "2023-05-08T18:57:10.854Z",
+  "branch": "master",
+  "commitId": "e39447ef448287538a273dc46393b3d9f795c0c1",
+  "commitMessage": "Merged PR 20150: Use 0.20.0-rc5 of core lib azure",
+  "connectedOuterServices": [
+    {
+      "name": "elasticSearch",
+      "version": "..."
+    },
+    {
+      "name": "redis",
+      "version":"..."
+    }
+  ]
+}
+```
+
+This endpoint takes information from files generated by `spring-boot-maven-plugin`, `git-commit-id-plugin` plugins. Need to specify paths for generated files to matching properties:
+
+- `version.info.buildPropertiesPath`
+- `version.info.gitPropertiesPath`
 
 [Back to table of contents](#TOC)
 
 ## Get indexing status <a name="get-indexing-status"></a>
 
-Indexer service adds internal meta data to each record which registers the status of the indexing. The meta data includes the status and the last indexing date and time. This additional meta block helps to see the details of indexing. The format of the index meta block is as follows:
+The Indexer service adds internal metadata to each record which registers the status of the indexing. The metadata includes the status and the last indexing date and time. This additional meta block helps to see the details of indexing. The format of the index meta block is as follows:
 
 ```json
 "index": {
@@ -922,7 +1310,7 @@ Indexer service adds internal meta data to each record which registers the statu
 }
 ```
 
-Example:
+Example response:
 
 ```json
 {
@@ -944,66 +1332,67 @@ Example:
 
 Details of the index block:
 
-1) trace: This field collects all the issues related to the indexing and concatinates using '|'. This is a String field.
-2) statusCode: This field determines the category of the error. This is integer field. It can have the following values:
-    - 200 - All OK
-    - 404 - Schema is missing in Schema and Storage service
-    - 400 - Some fields were not properly mapped with the schema defined, e.g. schema defined as `int` for field but input record had attribute value as `text`
-3) lastUpdateTime: This field captures the last time the record was updated by by the indexer service. This is datetime field so you can do range queries on this field.
+1. `trace`: This field collects all the issues related to the indexing and concatenates using '|'. This is a string field.
+
+2. `statusCode`: This field determines the category of the error. This is an integer field. It can have the following values:
+   - 200 - All OK
+   - 404 - Schema is missing in Schema service.
+   - 400 - Some fields were not properly mapped with the schema defined, such as the schema defined as `int` for field, but the input record had an attribute value of `text` etc.
+
+3. `lastUpdateTime`: This field captures the last time the record was updated by the Indexer service. This is datetime field, so you can do range queries on this field.
 
 You can query the index status using the following example query:
 
-```bash
-curl --request POST \
-  --url /api/search/v2/query \
-  --header 'Authorization: Token' \
-  --header 'Content-Type: application/json' \
-  --header 'Data-Partition-Id: Data partition id' \
-  --data '{"kind": "*:*:*:*","query": "index.statusCode:404","returnedFields": ["index"]}'
-  
-NOTE: By default, the API response excludes the 'index' attribute block. The user must specify 'index' as the 'returnedFields" in order to see it in the response.
-```
-
-The above query will return all records which had problems due to fields mismatch.
-
-[Back to table of contents](#TOC)
-
-## Version info endpoint
-
-Provides build and git related information for Search service.
-
-#### Example response
-
 ```json
-GET /api/search/v2/info
+POST /search/v2/query
 {
-    "groupId": "org.opengroup.osdu",
-    "artifactId": "search-gc",
-    "version": "0.10.0-SNAPSHOT",
-    "buildTime": "2021-07-09T14:29:51.584Z",
-    "branch": "feature/GONRG-2681_Build_info",
-    "commitId": "7777",
-    "commitMessage": "Added copyright to version info properties file",
-    "connectedOuterServices": [
-      {
-        "name": "elasticSearch",
-        "version":"..."
-      },
-      {
-        "name": "redis",
-        "version":"..."
-      }
-    ]
+  "kind": "*:*:*:*",
+  "query": "index.statusCode:404",
+  "limit": 1000,
+  "returnedFields": [ "id", "index" ]
 }
 ```
 
-This endpoint takes information from files generated by `spring-boot-maven-plugin`, `git-commit-id-plugin` plugins. Need to specify paths for generated files to matching properties:
+<details><summary>**Curl**</summary>
 
-- `version.info.buildPropertiesPath`
-- `version.info.gitPropertiesPath`
+```bash
+curl --request POST \
+  --url /search/v2/query \
+  --header 'Authorization: Token' \
+  --header 'Content-Type: application/json' \
+  --header 'Data-Partition-Id: opendes' \
+  --data '{"kind": "*:*:*:*","query": "index.statusCode:404","returnedFields": ["index"]}'
+```
 
-## Known limitations <a name="known-limitations"></a>
+</details><br>
 
-- The maximum content length of the elasticsearch response is 100Mb. If the response length exceeds 100Mb, a 413 status code will be returned without any search results.
+__Note__: By default, the API response excludes the `index` attribute block. You must specify `index` field in `returnedFields` in order to see it in the response.
+
+The above query returns all records which had problems due to fields mismatch.
 
 [Back to table of contents](#TOC)
+
+## Known issues/limitations <a name="known-limitations"></a>
+
+### `nested` query
+
+- The `nested` query syntax is sensitive to white spaces, the query below will not work. It does not have a white-space after the property `path-to-root-nested-array-node` in this case, `data.VerticalMeasurements`
+
+```json
+{
+  "kind": "osdu:wks:master-data--wellbore:1.0.0",
+  "query": "nested(data.VerticalMeasurements,(VerticalMeasurement:(>15)))"
+}
+```
+
+- The following features are not functional with the current `nested` implementation:
+  - The `nested` fields sort query returns erroneous ordering of results.
+  - The current nested query parser throws an exception if using a grouping with nested syntax due to the current nested query parser. As a workaround, you can rewrite the query so that it does not involve grouping. An example can be found [here](#groupnested).
+
+### Cursor query
+
+- By default, on each data partition only `500` concurrent cursor requests can be active. Cursor expires after `1 minute` timeout or if it's last page of the result. User may see response with `429` error code and `Too many requests` error message if request load exceeds this limit.
+
+### All queries
+
+- The maximum size of the response is `100MB`. If the response size exceeds `100MB`, a `413` status code response will be returned without any search results.
