@@ -28,6 +28,7 @@ import java.util.List;
 import org.opengroup.osdu.common.query.singlecluster.QuerySteps;
 import org.opengroup.osdu.util.AnthosHTTPClient;
 import org.opengroup.osdu.util.Config;
+import org.opengroup.osdu.util.conf.AnthosConfig;
 
 public class Steps extends QuerySteps {
 
@@ -47,6 +48,7 @@ public class Steps extends QuerySteps {
 
     @Before
     public void before(Scenario scenario) {
+        AnthosConfig.updateEntitlementsDomainVariable();
         this.scenario = scenario;
         this.httpClient = new AnthosHTTPClient();
     }
