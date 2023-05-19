@@ -26,7 +26,7 @@
     </parent>
 
     <groupId>org.opengroup.osdu.search</groupId>
-    <artifactId>search-test-anthos</artifactId>
+    <artifactId>search-test-baremetal</artifactId>
     <version>0.21.0-SNAPSHOT</version>
 
     <properties>

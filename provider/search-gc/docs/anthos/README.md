@@ -162,7 +162,7 @@ Execute following command to build code and run all the integration tests:
 ```bash
 # Note: this assumes that the environment variables for integration tests as outlined
 #       above are already exported in your environment.
-$ (cd testing/search-test-anthos/ && mvn clean test)
+$ (cd testing/search-test-baremetal/ && mvn clean test)
 ```
 
 ## License

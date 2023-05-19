@@ -3,7 +3,7 @@ variables:
   GC_VENDOR: gc
   GC_TESTING_DIR: "testing/integration-tests"
 
-gc-anthos-test:
+gc-baremetal-test:
   variables:
-    GC_VENDOR: anthos
+    GC_VENDOR: baremetal
     DEFAULT_DATA_PARTITION_ID_TENANT2: non-exist
