@@ -15,8 +15,9 @@ Pre-requisites
 # Configuration
 
 ## Service Configuration
-### Anthos:
-[Anthos service configuration ](docs/anthos/README.md)
+
+### Baremetal:
+[Baremetal service configuration ](docs/baremetal/README.md)
 ### Google Cloud:
 [Google Cloud service configuration ](docs/gc/README.md)
 
@@ -110,8 +111,8 @@ $ (cd testing/storage-test-core/ && mvn clean install)
 ### Running E2E Tests 
 This section describes how to run cloud OSDU E2E tests.
 
-### Anthos test configuration:
-[Anthos service configuration ](docs/anthos/README.md)
+### Baremetal test configuration:
+[Baremetal service configuration ](docs/baremetal/README.md)
 ### Google Cloud test configuration:
 [Google Cloud service configuration ](docs/gc/README.md)
 
