@@ -22,14 +22,14 @@ public class AggregationParserUtil implements IAggregationParserUtil {
     private static final String BAD_AGGREGATION_MESSAGE =
         "Must be in format: nested(<path>, <field>) OR nested(<parent_path>, .....nested(<child_path>, <field>))";
 
-    private final Pattern nestedAggregationPattern = Pattern.compile("(nested\\()(?<path>.+?),\\s(?<field>[^)]+)");
+    private final Pattern nestedAggregationPattern = Pattern.compile("(nested\\s?\\()(?<path>.+?),\\s?(?<field>[^)]+)");
 
     private final SearchConfigurationProperties configurationProperties;
 
     @Override
     public AbstractAggregationBuilder parseAggregation(String aggregation) {
         TermsAggregationBuilder termsAggregationBuilder = new TermsAggregationBuilder(TERM_AGGREGATION_NAME);
-        if (aggregation.contains("nested(")) {
+        if (aggregation.contains("nested(") || aggregation.contains("nested (")) {
             Matcher nestedMatcher = nestedAggregationPattern.matcher(aggregation);
             if (nestedMatcher.find()) {
                 return parseNestedInDepth(aggregation, termsAggregationBuilder);

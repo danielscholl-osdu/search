@@ -28,6 +28,8 @@ public class AggregationParserUtilTest {
     private String simpleAggregation = "data.SimpleField";
     private String nestedAggregation = "nested(data.Nested, NestedField)";
     private String multilevelNestedAggregation = "nested(data.Nested, nested(data.Nested.NestedInner, NestedInnerField)";
+    private String nestedAggregationWithSpace = "nested (data.Nested,NestedField)";
+    private String multilevelNestedAggregationWithSpace = "nested (data.Nested, nested(data.Nested.NestedInner,NestedInnerField)";
 
     @Mock
     private SearchConfigurationProperties properties;
@@ -69,6 +71,37 @@ public class AggregationParserUtilTest {
     @Test
     public void testMultilevelAggregation() {
         NestedAggregationBuilder actualNested = (NestedAggregationBuilder) aggregationParserUtil.parseAggregation(multilevelNestedAggregation);
+
+        TermsAggregationBuilder expectedTerms = new TermsAggregationBuilder(AggregationParserUtil.TERM_AGGREGATION_NAME);
+        expectedTerms.field(MULTILEVEL_NESTED_FIELD);
+        expectedTerms.size(1000);
+
+        NestedAggregationBuilder expectedInnerNested = new NestedAggregationBuilder(AggregationParserUtil.NESTED_AGGREGATION_NAME, NESTED_INNER_PATH);
+        expectedInnerNested.subAggregation(expectedTerms);
+
+        NestedAggregationBuilder expectedParentNested = new NestedAggregationBuilder(AggregationParserUtil.NESTED_AGGREGATION_NAME, PARENT_NESTED_PATH);
+        expectedParentNested.subAggregation(expectedInnerNested);
+
+        assertEquals(expectedParentNested, actualNested);
+    }
+
+    @Test
+    public void testNestedAggregationWithSpace(){
+        NestedAggregationBuilder actualNested = (NestedAggregationBuilder) aggregationParserUtil.parseAggregation(nestedAggregationWithSpace);
+
+        TermsAggregationBuilder expectedTerms = new TermsAggregationBuilder(AggregationParserUtil.TERM_AGGREGATION_NAME);
+        expectedTerms.field(SIMPLE_NESTED_FIELD);
+        expectedTerms.size(1000);
+
+        NestedAggregationBuilder expectedNested = new NestedAggregationBuilder(AggregationParserUtil.NESTED_AGGREGATION_NAME, SIMPLE_NESTED_PATH);
+        expectedNested.subAggregation(expectedTerms);
+
+        assertEquals(expectedNested, actualNested);
+    }
+
+    @Test
+    public void testMultilevelAggregationWithSpace(){
+        NestedAggregationBuilder actualNested = (NestedAggregationBuilder) aggregationParserUtil.parseAggregation(multilevelNestedAggregationWithSpace);
 
         TermsAggregationBuilder expectedTerms = new TermsAggregationBuilder(AggregationParserUtil.TERM_AGGREGATION_NAME);
         expectedTerms.field(MULTILEVEL_NESTED_FIELD);

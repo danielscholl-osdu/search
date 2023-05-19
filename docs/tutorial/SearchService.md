@@ -1376,15 +1376,6 @@ The above query returns all records which had problems due to fields mismatch.
 
 ### `nested` query
 
-- The `nested` query syntax is sensitive to white spaces, the query below will not work. It does not have a white-space after the property `path-to-root-nested-array-node` in this case, `data.VerticalMeasurements`
-
-```json
-{
-  "kind": "osdu:wks:master-data--wellbore:1.0.0",
-  "query": "nested(data.VerticalMeasurements,(VerticalMeasurement:(>15)))"
-}
-```
-
 - The following features are not functional with the current `nested` implementation:
   - The `nested` fields sort query returns erroneous ordering of results.
   - The current nested query parser throws an exception if using a grouping with nested syntax due to the current nested query parser. As a workaround, you can rewrite the query so that it does not involve grouping. An example can be found [here](#groupnested).
