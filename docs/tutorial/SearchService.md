@@ -874,6 +874,7 @@ curl --request POST \
   }
 }'
 ```
+</details><br> 
 
 ### Sort on `nested` `text` fields <a name="nested-text-field-sort"></a>
 
@@ -924,6 +925,7 @@ curl --request POST \
   }
 }'
 ```
+</details><br> 
 
 Please take a look at `nested` sort [documentation](https://community.opengroup.org/osdu/platform/system/search-service/-/blob/master/docs/tutorial/ArrayOfObjects.md#sort) for more details & examples.
 
