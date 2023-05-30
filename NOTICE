@@ -369,7 +369,7 @@ The following software have components provided under the terms of this license:
 - proto-google-cloud-iamcredentials-v1 (from https://github.com/googleapis/google-cloud-java, https://github.com/googleapis/java-iamcredentials/proto-google-cloud-iamcredentials-v1, https://repo1.maven.org/maven2/com/google/api/grpc/proto-google-cloud-iamcredentials-v1)
 - proto-google-cloud-logging-v2 (from https://github.com/googleapis/java-logging/proto-google-cloud-logging-v2, https://repo1.maven.org/maven2/com/google/api/grpc/proto-google-cloud-logging-v2)
 - proto-google-cloud-pubsub-v1 (from https://github.com/googleapis/googleapis, https://github.com/googleapis/java-pubsub/proto-google-cloud-pubsub-v1)
-- proto-google-common-protos (from https://github.com/googleapis/api-client-staging, https://github.com/googleapis/gapic-generator-java, https://github.com/googleapis/googleapis, https://github.com/googleapis/java-iam/proto-google-common-protos)
+- proto-google-common-protos (from https://github.com/googleapis/api-client-staging, https://github.com/googleapis/googleapis, https://github.com/googleapis/java-iam/proto-google-common-protos, https://github.com/googleapis/sdk-platform-java)
 - proto-google-iam-v1 (from https://github.com/googleapis/gapic-generator-java, https://github.com/googleapis/googleapis, https://github.com/googleapis/java-iam/proto-google-iam-v1)
 - rank-eval (from https://github.com/elastic/elasticsearch, https://github.com/elastic/elasticsearch.git)
 - resilience4j (from https://github.com/resilience4j/resilience4j, https://resilience4j.readme.io, ttps://resilience4j.readme.io)
@@ -931,13 +931,6 @@ MPL-2.0
 The following software have components provided under the terms of this license:
 
 - RabbitMQ Java Client (from http://www.rabbitmq.com, https://www.rabbitmq.com)
-
-========================================================================
-NCSA
-========================================================================
-The following software have components provided under the terms of this license:
-
-- Spring Context Support (from https://github.com/spring-projects/spring-framework)
 
 ========================================================================
 RSA-MD
