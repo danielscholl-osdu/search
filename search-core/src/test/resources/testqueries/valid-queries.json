@@ -13,6 +13,8 @@
     "combined-nested-query-with-not": "nested(data.ParentNested, nested(data.ParentNested.FirstInnerNested, (NumberTest:(12345.0 OR 0) AND StringTest:\"test string\")) NOT nested(data.ParentNested.SecondInnerNested, (NumberTest:\"12345.0\" AND StringTest:\"test string\")))",
     "nested-query-with-similar-inner-properties": "nested(data.VerticalMeasurements, (VerticalMeasurementID:\"Rotary Table\" AND VerticalMeasurement:(>30)))",
     "inner-nested-query": "(nested(data.NestedTest, (NumberTest:(12345.0 OR 0) AND StringTest:\"test string\")) AND data.First:\"Example*\")",
-    "inner-multilevel-nested-query": "(nested(data.FirstLevel, nested(data.FirstLevel.SecondLevel, nested(data.FirstLevel.SecondLevel.ThirdLevel, (ThirdLevelNumberTest:\"12345.0\")))))"
+    "inner-multilevel-nested-query": "(nested(data.FirstLevel, nested(data.FirstLevel.SecondLevel, nested(data.FirstLevel.SecondLevel.ThirdLevel, (ThirdLevelNumberTest:\"12345.0\")))))",
+    "nested-query-with-space": "nested (data.NestedTest,(NumberTest:(12345.0 OR 0) AND StringTest:\"test string\"))",
+    "multilevel-nested-query-with-space": "nested (data.FirstLevel, nested(data.FirstLevel.SecondLevel, nested(data.FirstLevel.SecondLevel.ThirdLevel,(ThirdLevelNumberTest:\"12345.0\"))))"
 }
 

@@ -9,6 +9,7 @@ import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import org.opengroup.osdu.util.conf.GCConfig;
 
 import java.util.List;
 
@@ -29,6 +30,7 @@ public class Steps extends QueryByCursorSteps {
     }
     @Before
     public void before(Scenario scenario) {
+        GCConfig.updateEntitlementsDomainVariable();
         this.scenario = scenario;
         this.httpClient = new GCPHTTPClient();
     }

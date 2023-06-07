@@ -141,7 +141,7 @@ You will need to have the following environment variables defined.
 | `ELASTIC_PORT` | ex `9243` | Port Elasticsearch | yes | output of infrastructure deployment |
 | `INDEXER_HOST` | ex `https://os-indexer-dot-opendes.appspot.com/api/indexer/v2/` | Indexer API endpoint | no | output of infrastructure deployment |
 | `DATA_GROUP` | `opendes` | The service account to this group and substitute | no | - |
-| `ENTITLEMENTS_DOMAIN` | ex `opendes-gc.projects.com` | OSDU R2 to run tests under  | no | - |
+| `GROUP_ID` | ex `opendes-gc.projects.com` | OSDU R2 to run tests under  | no | - |
 | `DEFAULT_DATA_PARTITION_ID_TENANT1` | ex `opendes` | HTTP Header 'Data-Partition-ID'  | no | - |
 | `DEFAULT_DATA_PARTITION_ID_TENANT2` | ex `not-exist` | HTTP Header 'Data-Partition-ID' with not existing tenant  | no | - |
 | `SEARCH_HOST` | ex `http://localhost:8080/api/search/v2/` | Endpoint of search service | no | - |
@@ -153,16 +153,16 @@ You will need to have the following environment variables defined.
 
 **Entitlements configuration for integration accounts**
 
-| INTEGRATION_TESTER | NO_DATA_ACCESS_TESTER |
-| ---  | ---   |
-| users<br/>service.entitlements.user<br/>service.search.user<br/>data.test1<br/>data.integration.test<br/>users@{tenant1}@{domain}.com |
+| INTEGRATION_TESTER                                                                                                                     | NO_DATA_ACCESS_TESTER |
+|----------------------------------------------------------------------------------------------------------------------------------------| ---   |
+| users<br/>service.entitlements.user<br/>service.search.user<br/>data.test1<br/>data.integration.test<br/>users@{tenant1}@{groupId}.com |
 
 Execute following command to build code and run all the integration tests:
 
 ```bash
 # Note: this assumes that the environment variables for integration tests as outlined
 #       above are already exported in your environment.
-$ (cd testing/search-test-anthos/ && mvn clean test)
+$ (cd testing/search-test-baremetal/ && mvn clean test)
 ```
 
 ## License

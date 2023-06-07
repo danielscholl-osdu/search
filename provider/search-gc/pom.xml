@@ -18,14 +18,14 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.opengroup.osdu</groupId>
     <artifactId>search-gc</artifactId>
-    <version>0.21.0-SNAPSHOT</version>
+    <version>0.22.0-SNAPSHOT</version>
     <description>Google cloud implementation of Search service APIs</description>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>org.opengroup.osdu</groupId>
         <artifactId>os-search</artifactId>
-        <version>0.21.0-SNAPSHOT</version>
+        <version>0.22.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -56,7 +56,7 @@
                 <dependency>
                     <groupId>org.springframework.security</groupId>
                     <artifactId>spring-security-web</artifactId>
-                    <version>5.7.3</version>
+                    <version>5.7.5</version>
                 </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
@@ -75,7 +75,7 @@
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>search-core</artifactId>
-            <version>0.21.0-SNAPSHOT</version>
+            <version>0.22.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.api-client</groupId>

@@ -15,6 +15,8 @@
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
 import com.google.common.collect.Lists;
+import java.io.IOException;
+import org.apache.http.ContentTooLongException;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
@@ -321,6 +323,28 @@ public class ScrollQueryServiceImplTest {
             assertEquals(error.getReason(), "Can't find the given cursor");
             assertEquals(error.getMessage(), "The given cursor is invalid or expired");
             assertEquals(error.getCode(), errorCode);
+        }
+    }
+
+    @Test(expected = AppException.class)
+    public void testQueryIndex_whenResponseTooLong_thenThrowException() throws Exception {
+        CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
+        doReturn("cursor").when(searchRequest).getCursor();
+        doReturn(userId).when(cursorSettings).getUserId();
+
+        IOException exception = mock(IOException.class);
+        doReturn(new ContentTooLongException(null)).when(exception).getCause();
+        doThrow(exception).when(client).scroll(any(), any(RequestOptions.class));
+
+        try {
+            sut.queryIndex(searchRequest);
+        } catch (AppException e) {
+            int errorCode = 413;
+            AppError error = e.getError();
+            assertEquals(error.getReason(), "Response is too long");
+            assertEquals(error.getMessage(), "Elasticsearch response is too long, max is 100Mb");
+            assertEquals(error.getCode(), errorCode);
+            throw (e);
         }
     }
 

@@ -33,8 +33,9 @@ public class SortParserUtilTest {
     private final String simpleSortString = "data.Data.IndividualTypeProperties.SequenceNumber";
     private final String simpleNestedSortString = "nested(data.NestedTest, NumberTest, min)";
     private final String malformedNestedSortString = "nested(data.NestedTest, )";
-    private final String multilevelNestedSortString = "nested(data.NestedTest, nested(data.NestedTest.NestedInnerTest, NumberInnerTest, min))";
     private final String malformedMultilevelNestedSortString = "nested(data.NestedTest, nested(data.NestedTest.NestedInnerTest,))";
+    private final String multilevelNestedSortString = "nested(data.NestedTest, nested(data.NestedTest.NestedInnerTest, NumberInnerTest, min))";
+    private final String multilevelNestedSortStringWithSpace = "nested (data.NestedTest,nested (data.NestedTest.NestedInnerTest,NumberInnerTest,min))";
 
     private SortParserUtil sortParserUtil = new SortParserUtil();
 
@@ -90,6 +91,24 @@ public class SortParserUtilTest {
             .sortMode(SortMode.fromString("min"))
             .missing("_last")
             .unmappedType("keyword");
+
+        assertEquals(expectedSortBuilder, actualFileSortBuilder);
+    }
+
+    @Test
+    public void testMultilevelNestedSortStringWithSpace() {
+        FieldSortBuilder actualFileSortBuilder = sortParserUtil.parseSort(multilevelNestedSortStringWithSpace, order);
+
+        NestedSortBuilder child = new NestedSortBuilder("data.NestedTest.NestedInnerTest");
+        NestedSortBuilder parent = new NestedSortBuilder("data.NestedTest")
+                .setNestedSort(child);
+
+        FieldSortBuilder expectedSortBuilder = new FieldSortBuilder("data.NestedTest.NestedInnerTest.NumberInnerTest")
+                .order(SortOrder.valueOf(order))
+                .setNestedSort(parent)
+                .sortMode(SortMode.fromString("min"))
+                .missing("_last")
+                .unmappedType("keyword");
 
         assertEquals(expectedSortBuilder, actualFileSortBuilder);
     }

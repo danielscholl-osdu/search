@@ -17,22 +17,19 @@ package org.opengroup.osdu.search.policy.service;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
+import org.opengroup.osdu.core.common.http.HttpResponse;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.policy.IPolicyFactory;
 import org.opengroup.osdu.core.common.policy.IPolicyProvider;
+import org.opengroup.osdu.core.common.policy.PolicyException;
 import org.opengroup.osdu.search.policy.di.PolicyServiceConfiguration;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @ConditionalOnProperty(value = "service.policy.enabled", havingValue = "true", matchIfMissing = false)
@@ -64,9 +61,29 @@ public class PolicyServiceImpl implements IPolicyService {
             IPolicyProvider serviceClient = this.policyFactory.create(this.headers);
             String esQuery = serviceClient.getCompiledPolicy(searchPolicyRule, unknownsList, input);
             return esQuery.substring(9, esQuery.length() - 1);
-        } catch (Exception e) {
-            String errorMessage = StringUtils.isBlank(e.getMessage()) ? "Error making request to Policy service" : e.getMessage();
-            throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Policy service unavailable", errorMessage, "Error calling translate endpoint", e);
-        }
+    } catch (PolicyException e) {
+      HttpResponse httpResponse = e.getHttpResponse();
+      String errorMessage =
+          StringUtils.isBlank(e.getMessage())
+              ? "Error making request to Policy service"
+              : e.getMessage();
+      throw new AppException(
+          httpResponse.getResponseCode(),
+          errorMessage,
+           httpResponse.getBody(),
+          "Error calling translate endpoint",
+          e);
+    } catch (Exception e) {
+      String errorMessage =
+          StringUtils.isBlank(e.getMessage())
+              ? "Error making request to Policy service"
+              : e.getMessage();
+      throw new AppException(
+          HttpStatus.SC_INTERNAL_SERVER_ERROR,
+          "Policy service unavailable",
+          errorMessage,
+          "Error calling translate endpoint",
+          e);
     }
+  }
 }

@@ -18,7 +18,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.opengroup.osdu</groupId>
 	<artifactId>os-search-testing</artifactId>
-	<version>0.21.0-SNAPSHOT</version>
+	<version>0.22.0-SNAPSHOT</version>
 	<description>Search Service Integration Test Root Project</description>
 	<packaging>pom</packaging>
 
@@ -36,7 +36,7 @@
 		<module>search-test-azure</module>
 		<module>search-test-gc</module>
 		<module>search-test-ibm</module>
-        <module>search-test-anthos</module>
+        <module>search-test-baremetal</module>
     </modules>
 
 	<repositories>

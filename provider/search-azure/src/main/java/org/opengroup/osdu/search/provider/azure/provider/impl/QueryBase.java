@@ -15,6 +15,7 @@
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
 import com.google.common.base.Strings;
+import org.apache.http.ContentTooLongException;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
@@ -302,6 +303,8 @@ abstract class QueryBase {
         } catch (IOException e) {
             if (e.getMessage().startsWith("listener timeout after waiting for")) {
                 throw new AppException(HttpServletResponse.SC_GATEWAY_TIMEOUT, "Search error", String.format("Request timed out after waiting for %sm", REQUEST_TIMEOUT.getMinutes()), e);
+            } else if (e.getCause() instanceof ContentTooLongException) {
+                throw new AppException(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Response is too long", "Elasticsearch response is too long, max is 100Mb", e);
             }
             throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
         } catch (Exception e) {
