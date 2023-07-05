@@ -60,11 +60,6 @@
                 <version>2.6.6</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework.security</groupId>
-                <artifactId>spring-security-core</artifactId>
-                <version>5.7.6</version>
-            </dependency>
-            <dependency>
                 <groupId>org.springframework.data</groupId>
                 <artifactId>spring-data-mongodb</artifactId>
                 <version>3.4.2</version>
