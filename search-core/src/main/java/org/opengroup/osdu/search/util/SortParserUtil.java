@@ -34,15 +34,15 @@ public class SortParserUtil implements ISortParserUtil {
     private static final String PARENT_PATH = "parentpath";
     private static final String INNER_GROUP = "innergroup";
 
-    private Pattern oneLevelNestedSort = Pattern.compile("(nested\\()(?<path>.+?),\\s(?<field>.+?),\\s(?<mode>[^)]+)");
-    private Pattern multilevelNestedPattern = Pattern.compile("(nested\\()(?<parentpath>.+?),\\s(?<innergroup>nested\\(.+)");
+    private Pattern oneLevelNestedSort = Pattern.compile("(nested\\s?\\()(?<path>.+?),\\s?(?<field>.+?),\\s?(?<mode>[^)]+)");
+    private Pattern multilevelNestedPattern = Pattern.compile("(nested\\s?\\()(?<parentpath>.+?),\\s?(?<innergroup>nested\\s?\\(.+)");
 
     @Autowired
     private IFieldMappingTypeService fieldMappingTypeService;
 
     @Override
     public FieldSortBuilder parseSort(String sortString, String sortOrder) {
-        if (sortString.contains("nested(")) {
+        if (sortString.contains("nested(") || sortString.contains("nested (")) {
             return parseNestedSort(sortString, sortOrder);
         } else {
             if (sortString.equalsIgnoreCase(SCORE_FIELD)) {

@@ -1,6 +1,6 @@
 /*
  *  Copyright 2020-2023 Google LLC
- *  Copyright 2020-2023EPAM Systems, Inc
+ *  Copyright 2020-2023 EPAM Systems, Inc
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,9 +20,11 @@ package org.opengroup.osdu.search.provider.gcp.cache;
 import lombok.RequiredArgsConstructor;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.cache.RedisCache;
+import org.opengroup.osdu.core.common.cache.VmCache;
 import org.opengroup.osdu.core.common.model.entitlements.Groups;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;
+import org.opengroup.osdu.core.common.partition.PartitionInfo;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticCredentialsCache;
 import org.opengroup.osdu.core.gcp.cache.RedisCacheBuilder;
 import org.opengroup.osdu.search.cache.CursorCache;
@@ -37,53 +39,65 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CacheConfig {
 
-    @Bean
-    public ICache<String, Groups> groupCache(GcpSearchConfigurationProperties appProperties) {
-        return new GcGroupCache();
-    }
+  private final RedisCacheBuilder<String, ClusterSettings> clusterSettingsCacheBuilder;
+  private final RedisCacheBuilder<String, CursorSettings> cursorSettingsCacheBuilderBuilder;
+  private final RedisCacheBuilder<String, Map> fieldTypeMappingCacheBuilder;
 
-    @Bean
-    public IFieldTypeMappingCache fieldTypeMappingCache(GcpSearchConfigurationProperties appProperties) {
-        RedisCacheBuilder<String, Map> cacheBuilder = new RedisCacheBuilder<>();
-        RedisCache<String, Map> fieldTypeMappingCache = cacheBuilder.buildRedisCache(
+  @Bean
+  public ICache<String, Groups> groupCache(GcpSearchConfigurationProperties appProperties) {
+    return new GcGroupCache();
+  }
+
+  @Bean
+  public IFieldTypeMappingCache fieldTypeMappingCache(
+      GcpSearchConfigurationProperties appProperties) {
+    RedisCache<String, Map> fieldTypeMappingCache =
+        fieldTypeMappingCacheBuilder.buildRedisCache(
             appProperties.getRedisSearchHost(),
             Integer.parseInt(appProperties.getRedisSearchPort()),
             appProperties.getRedisSearchPassword(),
             appProperties.getRedisSearchExpiration(),
             appProperties.getRedisSearchWithSsl(),
             String.class,
-            Map.class
-        );
-        return new FieldTypeMappingCache(fieldTypeMappingCache);
-    }
+            Map.class);
+    return new FieldTypeMappingCache(fieldTypeMappingCache);
+  }
 
-    @Bean
-    public IElasticCredentialsCache<String, ClusterSettings> elasticCredentialsCache(GcpSearchConfigurationProperties gcpAppServiceConfig) {
-        RedisCacheBuilder<String, ClusterSettings> cacheBuilder = new RedisCacheBuilder<>();
-        RedisCache<String, ClusterSettings> clusterSettingCache = cacheBuilder.buildRedisCache(
+  @Bean
+  public IElasticCredentialsCache<String, ClusterSettings> elasticCredentialsCache(
+      RedisCache<String, ClusterSettings> elasticCache) {
+    return new ElasticCredentialsCache(elasticCache);
+  }
+
+  @Bean
+  public RedisCache<String, ClusterSettings> elasticCache(
+      GcpSearchConfigurationProperties gcpAppServiceConfig) {
+    return clusterSettingsCacheBuilder.buildRedisCache(
+        gcpAppServiceConfig.getRedisSearchHost(),
+        Integer.parseInt(gcpAppServiceConfig.getRedisSearchPort()),
+        gcpAppServiceConfig.getRedisSearchPassword(),
+        gcpAppServiceConfig.getRedisSearchExpiration(),
+        gcpAppServiceConfig.getRedisSearchWithSsl(),
+        String.class,
+        ClusterSettings.class);
+  }
+
+  @Bean
+  public CursorCache cursorCache(GcpSearchConfigurationProperties gcpAppServiceConfig) {
+    RedisCache<String, CursorSettings> stringCursorSettingsCache =
+        cursorSettingsCacheBuilderBuilder.buildRedisCache(
             gcpAppServiceConfig.getRedisSearchHost(),
             Integer.parseInt(gcpAppServiceConfig.getRedisSearchPort()),
             gcpAppServiceConfig.getRedisSearchPassword(),
             gcpAppServiceConfig.getRedisSearchExpiration(),
             gcpAppServiceConfig.getRedisSearchWithSsl(),
             String.class,
-            ClusterSettings.class
-        );
-        return new ElasticCredentialsCache(clusterSettingCache);
-    }
+            CursorSettings.class);
+    return new CursorCacheImpl(stringCursorSettingsCache);
+  }
 
-    @Bean
-    public CursorCache cursorCache(GcpSearchConfigurationProperties gcpAppServiceConfig) {
-        RedisCacheBuilder<String, CursorSettings> cacheBuilder = new RedisCacheBuilder<>();
-        RedisCache<String, CursorSettings> cursorSettingsRedisCache = cacheBuilder.buildRedisCache(
-            gcpAppServiceConfig.getRedisSearchHost(),
-            Integer.parseInt(gcpAppServiceConfig.getRedisSearchPort()),
-            gcpAppServiceConfig.getRedisSearchPassword(),
-            gcpAppServiceConfig.getRedisSearchExpiration(),
-            gcpAppServiceConfig.getRedisSearchWithSsl(),
-            String.class,
-            CursorSettings.class
-        );
-        return new CursorCacheImpl(cursorSettingsRedisCache);
-    }
+  @Bean
+  public ICache<String, PartitionInfo> partitionInfoCache() {
+    return new VmCache<>(600, 2000);
+  }
 }

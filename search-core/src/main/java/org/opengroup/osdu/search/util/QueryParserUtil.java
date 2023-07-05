@@ -29,7 +29,7 @@ public class QueryParserUtil implements IQueryParserUtil {
      * Match example:
      *  "nested(data.NestedTest, nested(...."
      */
-    private static Pattern isMultilevelNestedPattern = Pattern.compile("(nested\\()((.+?)nested\\()+");
+    private static Pattern isMultilevelNestedPattern = Pattern.compile("(nested\\s?\\()((.+?)nested\\s?\\()+");
 
     /**
      * Match example:
@@ -39,7 +39,7 @@ public class QueryParserUtil implements IQueryParserUtil {
      *  <parentpath>: "data.NestedTest"
      *  <innernodes>:  "nested(data.NestedTest.NestedInnerTest, (DateTimeInnerTest:(>2024) AND NumberInnerTest:(>14))))"
      */
-    private static Pattern multiLevelNestedPattern = Pattern.compile("((?<operator>AND|OR|NOT)(\\s|\\s\\())*(nested\\()(?<parentpath>.+?),\\S*(?<innernodes>.+?\\)\\)\\)+)");
+    private static Pattern multiLevelNestedPattern = Pattern.compile("((?<operator>AND|OR|NOT)(\\s|\\s\\())*(nested\\s?\\()(?<parentpath>.+?),\\s?(?<innernodes>.+?\\)\\)\\)+)");
 
     /**
      * Match example:
@@ -50,7 +50,7 @@ public class QueryParserUtil implements IQueryParserUtil {
      *  <query>: "(StringTest:\"test*\"))"
      */
 
-    private static Pattern oneLevelNestedPattern = Pattern.compile("((?<operator>AND|OR|NOT)(\\s|\\s\\())*(nested\\()(?<path>.+?),\\S*(?<query>\\s\\(.+)");
+    private static Pattern oneLevelNestedPattern = Pattern.compile("((?<operator>AND|OR|NOT)(\\s|\\s\\())*(nested\\s?\\()(?<path>.+?),\\s?(?<query>\\s?\\(.+)");
     /**
      * Match example:
      *  (NumberTest:
@@ -94,7 +94,7 @@ public class QueryParserUtil implements IQueryParserUtil {
     @Override
     public QueryBuilder buildQueryBuilderFromQueryString(String query) {
         List<QueryNode> queryNodes = null;
-        if (query.contains("nested(")) {
+        if (query.contains("nested(") || query.contains("nested (")) {
             queryNodes = parseQueryNodesFromQueryString(query);
         } else {
             queryNodes = Collections.singletonList(new QueryNode(query, null));

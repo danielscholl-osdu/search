@@ -1,6 +1,6 @@
 /*
- *  Copyright 2020-2022 Google LLC
- *  Copyright 2020-2022 EPAM Systems, Inc
+ *  Copyright 2020-2023 Google LLC
+ *  Copyright 2020-2023 EPAM Systems, Inc
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.opengroup.osdu.search.provider.gcp.auth;
 
 import com.lambdaworks.redis.RedisException;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.Nullable;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.entitlements.AuthorizationServiceImpl;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
@@ -29,6 +28,7 @@ import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.util.Crc32c;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 @Service

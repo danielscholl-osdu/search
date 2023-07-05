@@ -1,6 +1,6 @@
 /*
- *  Copyright 2020-2022 Google LLC
- *  Copyright 2020-2022 EPAM Systems, Inc
+ *  Copyright 2020-2023 Google LLC
+ *  Copyright 2020-2023 EPAM Systems, Inc
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,18 +18,21 @@
 package org.opengroup.osdu.search.provider.gcp.di;
 
 import org.opengroup.osdu.core.common.partition.IPartitionProvider;
+import org.opengroup.osdu.core.common.partition.IPropertyResolver;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
 import org.opengroup.osdu.core.destination.elastic.ElasticSearchDestinationResolver;
-import org.opengroup.osdu.core.destination.util.IPartitionPropertyResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ElasticSearchConfig {
 
-    @Bean
-    public IElasticRepository elasticRepository(ElasticSearchConfigurationProperties properties,
-        IPartitionProvider partitionProvider, IPartitionPropertyResolver propertyResolver) {
-        return new ElasticSearchDestinationResolver(properties.getElasticsearchPropertiesPrefix(), partitionProvider, propertyResolver);
-    }
+  @Bean
+  public IElasticRepository elasticRepository(
+      ElasticSearchConfigurationProperties properties,
+      IPartitionProvider partitionProvider,
+      IPropertyResolver propertyResolver) {
+    return new ElasticSearchDestinationResolver(
+        properties.getElasticsearchPropertiesPrefix(), partitionProvider, propertyResolver);
+  }
 }

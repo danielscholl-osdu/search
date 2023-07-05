@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.opengroup.osdu</groupId>
         <artifactId>os-search</artifactId>
-        <version>0.21.0-SNAPSHOT</version>
+        <version>0.22.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -27,7 +27,7 @@
     <artifactId>search-aws</artifactId>
     <description>Search Service on AWS</description>
     <packaging>jar</packaging>
-    <version>0.21.0-SNAPSHOT</version>
+    <version>0.22.0-SNAPSHOT</version>
     <properties>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -38,7 +38,7 @@
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
         <aws.version>1.11.1018</aws.version>
         <deployment.environment>dev</deployment.environment>
-        <version.number>0.0.4-SNAPSHOT</version.number>
+        <version.number>0.22.0-SNAPSHOT</version.number>
         <nimbus-jose-jwt.version>9.18</nimbus-jose-jwt.version>
         <jackson-databind.version>2.13.2.2</jackson-databind.version>
         <jackson.version>2.13.2</jackson.version>
@@ -78,12 +78,12 @@
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>search-core</artifactId>
-            <version>0.21.0-SNAPSHOT</version>
+            <version>0.22.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu.core.aws</groupId>
             <artifactId>os-core-lib-aws</artifactId>
-            <version>0.21.0-rc5</version>
+            <version>0.21.0</version>
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
