@@ -5,13 +5,13 @@
     <parent>
         <groupId>org.opengroup.osdu</groupId>
         <artifactId>os-search-testing</artifactId>
-        <version>0.22.0-SNAPSHOT</version>
+        <version>0.23.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>org.opengroup.osdu.search</groupId>
     <artifactId>search-test-core</artifactId>
-    <version>0.22.0-SNAPSHOT</version>
+    <version>0.23.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
