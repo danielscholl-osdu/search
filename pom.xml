@@ -18,7 +18,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.opengroup.osdu</groupId>
     <artifactId>os-search</artifactId>
-    <version>0.22.0-SNAPSHOT</version>
+    <version>0.23.0-SNAPSHOT</version>
     <description>Root Search Service Project</description>
     <packaging>pom</packaging>
 
@@ -372,7 +372,7 @@
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-core</artifactId>
-                <version>5.6.4</version>
+                <version>5.7.8</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
