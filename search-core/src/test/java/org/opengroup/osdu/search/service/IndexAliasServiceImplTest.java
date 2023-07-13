@@ -35,7 +35,6 @@ import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.search.ElasticIndexNameResolver;
 import org.opengroup.osdu.search.cache.MultiPartitionIndexAliasCache;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.powermock.api.mockito.PowerMockito;
 import org.springframework.context.annotation.Lazy;
 
 import java.io.IOException;
@@ -51,6 +50,7 @@ import static junit.framework.TestCase.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -84,9 +84,9 @@ public class IndexAliasServiceImplTest {
     @Before
     public void setup() {
         initMocks(this);
-        indicesClient = PowerMockito.mock(IndicesClient.class);
-        restHighLevelClient = PowerMockito.mock(RestHighLevelClient.class);
-        getAliasesResponse = PowerMockito.mock(GetAliasesResponse.class);
+        indicesClient = mock(IndicesClient.class);
+        restHighLevelClient = mock(RestHighLevelClient.class);
+        getAliasesResponse = mock(GetAliasesResponse.class);
     }
 
     @Test
@@ -183,7 +183,7 @@ public class IndexAliasServiceImplTest {
     }
 
     private void setup_when_alias_not_exist_and_try_create_alias(boolean create_ok) throws IOException {
-        GetAliasesResponse getAliasesResponseWithAliasConstraint = PowerMockito.mock(GetAliasesResponse.class);
+        GetAliasesResponse getAliasesResponseWithAliasConstraint = mock(GetAliasesResponse.class);
         Map<String, Set<AliasMetadata>> aliases = new HashMap<>();
         Set<AliasMetadata> aliasMetadataSet = new HashSet<>();
         aliasMetadataSet.add(AliasMetadata.builder("otherAlias").build());
@@ -210,7 +210,7 @@ public class IndexAliasServiceImplTest {
     }
 
     private void setup__for_major_version_when_alias_not_exist_and_try_create_alias(boolean create_ok) throws IOException {
-        GetAliasesResponse getAliasesResponseWithAliasConstraint = PowerMockito.mock(GetAliasesResponse.class);
+        GetAliasesResponse getAliasesResponseWithAliasConstraint = mock(GetAliasesResponse.class);
         Map<String, Set<AliasMetadata>> aliases = new HashMap<>();
         Set<AliasMetadata> aliasMetadataSet = new HashSet<>();
         aliasMetadataSet.add(AliasMetadata.builder("otherAlias").build());

@@ -19,50 +19,45 @@ import org.opengroup.osdu.search.smart.models.Attribute;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.LinkedList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyObject;
-import static org.powermock.api.mockito.PowerMockito.doReturn;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(AttributeMappingReader.class)
+@RunWith(MockitoJUnitRunner.class)
 public class AttributeMappingReaderTest {
 
-    private AttributeMappingReader sut;
+    private AttributeMappingReader attributeMappingReader;
 
 
     @Test(expected = Test.None.class)
     public void should_return_correct_Attributes_when_valid_file() throws Exception {
-        sut = PowerMockito.spy(new AttributeMappingReader());
-        doReturn("[{}]").when(sut, "getFile", anyObject());
-        sut.convertJsonIntoAttributes("abcd");
+        attributeMappingReader = spy(new AttributeMappingReader());
+        attributeMappingReader.convertJsonIntoAttributes("testattributes/fileWithCorrectAttributes.json");
     }
 
     @Test(expected = AppException.class)
     public void should_throw_expection_when_invalid_json_file() throws Exception {
-        sut = PowerMockito.spy(new AttributeMappingReader());
-        doReturn("<>").when(sut, "getFile", anyObject());
-        sut.convertJsonIntoAttributes("abcd");
+        attributeMappingReader = spy(new AttributeMappingReader());
+        attributeMappingReader.convertJsonIntoAttributes("testattributes/invalidAttributeFile.json");
     }
 
     @Test(expected = AppException.class)
     public void should_throw_exception_when_invalid_file() throws Exception {
-        sut = PowerMockito.spy(new AttributeMappingReader());
-        List<Attribute> myList = sut.convertJsonIntoAttributes("abcd");
+        attributeMappingReader = spy(new AttributeMappingReader());
+        List<Attribute> myList = attributeMappingReader.convertJsonIntoAttributes("abcd");
         assertEquals(0, myList.size());
     }
 
     @Test
-    public void should_return_attributes_when_any_input_file_passed() throws Exception {
-        sut = PowerMockito.spy(new AttributeMappingReader());
-        doReturn(new LinkedList<>()).when(sut, "convertJsonIntoAttributes", anyObject());
-        List<Attribute> retList = sut.read();
+    public void should_return_attributes_when_input_file_passed() throws Exception {
+        attributeMappingReader = spy(AttributeMappingReader.class);
+        doReturn(new LinkedList<>()).when(attributeMappingReader).convertJsonIntoAttributes("attributemapping.json");
+        List<Attribute> retList = attributeMappingReader.read();
         assertEquals(0, retList.size());
     }
 

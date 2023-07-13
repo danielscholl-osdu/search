@@ -17,9 +17,10 @@ package org.opengroup.osdu.search.provider.gcp.smart.filters;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -34,25 +35,27 @@ import java.util.Set;
 import javax.inject.Provider;
 
 import com.google.common.collect.Ordering;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.opengroup.osdu.search.provider.interfaces.ICrossTenantInfoService;
 import org.opengroup.osdu.search.smart.filters.AllFilters;
 import org.opengroup.osdu.search.smart.filters.IFilter;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import org.opengroup.osdu.search.smart.attributes.AttributeLoader;
 import org.opengroup.osdu.search.smart.attributes.AttributesRepository;
 import org.opengroup.osdu.search.smart.models.Attribute;
 import org.opengroup.osdu.search.smart.models.AttributeCollection;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ AttributeLoader.class })
+@RunWith(MockitoJUnitRunner.class)
 public class AllFiltersTest {
+
+    private static MockedStatic<AttributeLoader> mockedSettings;
+
     @Mock
     private AttributesRepository attributesRepository;
     @Mock
@@ -65,8 +68,13 @@ public class AllFiltersTest {
     @Before
     public void setup() {
         List<Attribute> listAttributes = new ArrayList<>();
-        mockStatic(AttributeLoader.class);
+        mockedSettings = mockStatic(AttributeLoader.class);
         when(AttributeLoader.getAttributes()).thenReturn(listAttributes);
+    }
+
+    @After
+    public void close() {
+        mockedSettings.close();
     }
 
     @Test

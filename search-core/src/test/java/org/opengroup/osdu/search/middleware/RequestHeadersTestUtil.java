@@ -1,6 +1,6 @@
 package org.opengroup.osdu.search.middleware;
 
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.opengroup.osdu.search.middleware.RequestHeadersTestUtil.setupRequestHeaderMock;
 
@@ -27,33 +27,8 @@ public class RequestHeadersTestUtil {
     	    }
     	};
 
-    	when(request.getHeaderNames()).thenReturn(headerNames);
-    	
     	when(request.getHeader(anyString())).thenAnswer(invocation -> {
     		return headers.get(invocation.getArguments()[0]);
     	});
-    	
-    	when(request.getHeaders(anyString())).thenAnswer(invocation -> {
-    		
-    		ArrayList<String> values = new ArrayList<String>();
-    		values.add(headers.get(invocation.getArguments()[0]));
-    		
-    		
-        	Iterator<String> it = values.iterator();
-        	return new Enumeration<String>() {
-        	    @Override
-        	    public boolean hasMoreElements() {
-        	        return it.hasNext();
-        	    }
-
-        	    @Override
-        	    public String nextElement() {
-        	        return it.next();
-        	    }
-        	};
-    	});
-
-    	
-    	
     }
 }

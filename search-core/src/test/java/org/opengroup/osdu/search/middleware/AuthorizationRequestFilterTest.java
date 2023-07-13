@@ -16,7 +16,7 @@ package org.opengroup.osdu.search.middleware;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -47,8 +47,7 @@ import org.opengroup.osdu.core.common.model.entitlements.AuthorizationResponse;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.provider.interfaces.IAuthorizationService;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /* These tests indirectly test the AuthorizationFilter that is called via the 
  * @PreAuthorize annotations on API methods. They verify the behavior
@@ -56,8 +55,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
  * requests.
  */
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ContainerRequestContext.class})
+@RunWith(MockitoJUnitRunner.class)
 public class AuthorizationRequestFilterTest {
 
     private static final String ROLE1 = "role1";
@@ -101,7 +99,6 @@ public class AuthorizationRequestFilterTest {
 
 
         Method method = this.getClass().getMethod("rolesAllowedTestMethod");
-        when(this.resourceInfo.getResourceMethod()).thenReturn(method);
     }
 
 
@@ -132,7 +129,6 @@ public class AuthorizationRequestFilterTest {
 
         HashMap<String,String> headers =new HashMap<String, String>();
         setupRequestHeaderMock(headers, httpRequest);
-        when(this.authorizationService.authorizeAny(dpsHeaders, ROLE1, ROLE2)).thenReturn(authorizationResponse);
         org.springframework.test.util.ReflectionTestUtils.setField(sut, "ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS", "custom-domain");
 
         sut.doFilter(httpRequest, httpResponse, filterChain);
@@ -160,8 +156,6 @@ public class AuthorizationRequestFilterTest {
         dpsHeaders.put(DpsHeaders.ACCOUNT_ID, " tenant1, common ");
         setupRequestHeaderMock(headers, httpRequest);
 
-
-        when(this.authorizationService.authorizeAny(dpsHeaders, ROLE1, ROLE2)).thenReturn(authorizationResponse);
         org.springframework.test.util.ReflectionTestUtils.setField(sut, "ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS", "custom-domain");
 
         sut.doFilter(httpRequest, httpResponse, filterChain);
@@ -184,7 +178,6 @@ public class AuthorizationRequestFilterTest {
 
         HashMap<String,String> headers =new HashMap<String, String>();
         setupRequestHeaderMock(headers, httpRequest);
-        when(this.authorizationService.authorizeAny(dpsHeaders, ROLE1, ROLE2)).thenReturn(authorizationResponse);
         org.springframework.test.util.ReflectionTestUtils.setField(sut, "ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS", "custom-domain");
 
         try {

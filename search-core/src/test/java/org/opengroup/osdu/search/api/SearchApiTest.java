@@ -26,8 +26,7 @@ import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.provider.interfaces.ICcsQueryService;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletResponse;
@@ -37,11 +36,10 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({SearchConfigurationProperties.class})
+@RunWith(MockitoJUnitRunner.class)
 public class SearchApiTest {
 
     @Mock
@@ -62,7 +60,6 @@ public class SearchApiTest {
     @Before
     public void setup() {
         queryRequest = new QueryRequest();
-        when(searchConfigurationProperties.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.LOCAL);
     }
 
     @Test
@@ -148,9 +145,6 @@ public class SearchApiTest {
 
     @Test
     public void should_returnRecords_whenCursorQueried() throws Exception {
-
-        when(this.cursorQueryRequest.getKind()).thenReturn("tenant1:welldb:well:1.0.2");
-
         Map<String, Object> hit = new HashMap<>();
         hit.put("_id", "tenant1:welldb:well-33fe05e1-df20-49d9-bd63-74cf750a206f");
         hit.put("type", "well");

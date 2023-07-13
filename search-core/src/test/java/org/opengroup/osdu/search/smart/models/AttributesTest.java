@@ -28,11 +28,13 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.stubbing.Answer;
 import org.opengroup.osdu.core.common.http.IUrlFetchService;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
@@ -42,9 +44,7 @@ import org.opengroup.osdu.core.common.provider.interfaces.IAttributesCache;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.smart.attributes.AttributeLoader;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -54,16 +54,13 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ RestHighLevelClient.class, IndicesClient.class, SearchConfigurationProperties.class, AttributeLoader.class })
-
+@RunWith(MockitoJUnitRunner.class)
 public class AttributesTest {
 
+	private static MockedStatic<AttributeLoader> mockedSettings;
 	@Mock
 	private SearchConfigurationProperties searchConfigurationProperties;
 	@Mock
@@ -87,18 +84,18 @@ public class AttributesTest {
 	@InjectMocks
 	private AttributeCollection sut;
 
-	private RestHighLevelClient restHighLevelClient;
-	private IndicesClient indicesClient;
 	private final String index = "tenant-test-test-1.0.0";
 
 	@Before
 	public void setup() throws IOException {
-		this.restHighLevelClient = PowerMockito.mock(RestHighLevelClient.class);
-		this.indicesClient = PowerMockito.mock(IndicesClient.class);
-		mockStatic(AttributeLoader.class);
+		mockedSettings = mockStatic(AttributeLoader.class);
 		when(searchConfigurationProperties.getDeployedServiceId()).thenReturn("search");
 		when(AttributeLoader.getAttributes()).thenAnswer((Answer<List<Attribute>>) invocation -> new ArrayList<>());
 
+	}
+	@After
+	public void close() {
+		mockedSettings.close();
 	}
 
 	@Test
@@ -113,11 +110,7 @@ public class AttributesTest {
 		attribute.setSchemaMapping(schemaMapping);
 		ls.add(attribute);
 
-		when(dpsHeaders.getPartitionId()).thenReturn("tenant1");
-		when(elasticClientHandler.createRestClient()).thenReturn(restHighLevelClient);
-		doReturn(this.indicesClient).when(this.restHighLevelClient).indices();
 		GetFieldMappingsResponse getFieldMappingsResponse = mock(GetFieldMappingsResponse.class);
-		when(this.indicesClient.getFieldMapping((GetFieldMappingsRequest) any(), any())).thenReturn(getFieldMappingsResponse);
 		XContentBuilder builder = XContentFactory.jsonBuilder();
 		builder.startObject();
 		Map<String, Object> fields = new HashMap();
@@ -133,11 +126,6 @@ public class AttributesTest {
 		mappingBuilder.put("any index 2", mapBuilder);
 		Map<String, Map<String, Map<String, FieldMappingMetadata>>> mapping = new HashMap<>();
 		mapping.put("indices 1", mappingBuilder);
-		when(searchResponse.getAggregations()).thenReturn(null);
-		when(getFieldMappingsResponse.mappings()).thenReturn(mapping);
-		when(urlFetchService.sendRequest(any())).thenReturn(response);
-		when(response.getResponseCode()).thenReturn(200);
-		PowerMockito.when(restHighLevelClient.search(any(), any(RequestOptions.class))).thenReturn(searchResponse);
 
 		try {
 			sut.cacheSync();
