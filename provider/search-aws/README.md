@@ -38,7 +38,7 @@ example:
 $ mvn --version
 Apache Maven 3.8.3 (ff8e977a158738155dc465c6a97ffaf31982d739)
 Maven home: /usr/local/Cellar/maven/3.8.3/libexec
-Java version: 17.0.7, vendor: Amazon.com Inc., runtime: /Library/Java/JavaVirtualMachines/amazon-corretto-8.jdk/Contents/Home/jre
+Java version: 17.0.7, vendor: Amazon.com Inc.
 ...
 ```
 
