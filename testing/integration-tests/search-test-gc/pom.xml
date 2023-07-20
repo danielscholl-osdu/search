@@ -18,6 +18,13 @@
         <maven.compiler.source>17</maven.compiler.source>
         <cucumber.version>1.2.5</cucumber.version>
         <elasticsearch.version>7.8.1</elasticsearch.version>
+        <argLine>
+            --add-opens=java.base/java.util=ALL-UNNAMED
+            --add-opens java.base/java.lang=ALL-UNNAMED
+            --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+            --add-opens java.base/java.text=ALL-UNNAMED
+            --add-opens java.desktop/java.awt.font=ALL-UNNAMED
+        </argLine>
     </properties>
 
     <dependencies>

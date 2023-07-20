@@ -2,7 +2,7 @@
 
 ## Run args
 
-In order to run Legal with Java 17 additional run args must be provided:
+In order to run Search with Java 17 additional run args must be provided:
 
 ```bash
 --add-opens java.base/java.lang=ALL-UNNAMED --add-opens  java.base/java.lang.reflect=ALL-UNNAMED
