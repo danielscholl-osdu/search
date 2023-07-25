@@ -208,6 +208,7 @@ Feature: Search with different queries
       | "tenant1:search<timestamp>:*:*"     | None        | {"field":["namespace","data.Rank"],"order":["ASC","DESC"]}                   | "tenant1:search<timestamp>:3"   | "tenant1:search<timestamp>:2.0.0:1"   |
       | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | None  | {"field":["nested(data.VerticalMeasurements, VerticalMeasurement, min)"],"order":["ASC"]} | "tenant1:well<timestamp>:2" | "tenant1:well<timestamp>:1" |
       | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | None  | {"field":["nested(data.FacilityOperators, TerminationDateTime, min)"],"order":["DESC"]}   | "tenant1:well<timestamp>:2" | "tenant1:well<timestamp>:1" |
+      | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | None  | {"field":["nested(data.VerticalMeasurements, VerticalMeasurement, min)"],"order":["ASC"], "filter": ["nested(data.VerticalMeasurements, (VerticalMeasurement:(>30)))"]} | "tenant1:well<timestamp>:1" | "tenant1:well<timestamp>:2" |
 
   Scenario Outline: Search data in a given kind with invalid sort field
     When I send <query> with <kind>

@@ -116,7 +116,8 @@ public class QueryParserUtil implements IQueryParserUtil {
         return boolQueryBuilder;
     }
 
-    private List<QueryNode> parseQueryNodesFromQueryString(String queryString) {
+    @Override
+    public List<QueryNode> parseQueryNodesFromQueryString(String queryString) {
         int height = 0;
         int position = 0;
         List<Integer> andPositions = new ArrayList();

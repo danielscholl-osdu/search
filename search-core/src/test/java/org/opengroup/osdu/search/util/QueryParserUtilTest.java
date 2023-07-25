@@ -22,6 +22,7 @@ import org.junit.experimental.theories.Theory;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.search.model.QueryNode;
 
 @RunWith(Theories.class)
 public class QueryParserUtilTest {
@@ -54,6 +55,12 @@ public class QueryParserUtilTest {
     }
 
     @Theory
+    public void shouldReturnQueryNodesForValidQueries(@FromDataPoints("VALID_QUERIES") ImmutablePair<String, String> pair) {
+        List<QueryNode> queryNodes = queryParserUtil.parseQueryNodesFromQueryString(pair.getValue());
+        assertEquals(getClauseCounts(pair.getKey()), queryNodes.size());
+    }
+
+    @Theory
     public void shouldThrowExceptionForNotValidQueries(@FromDataPoints("NOT_VALID_QUERIES") ImmutablePair<String, String> pair) {
         exceptionRule.expect(AppException.class);
         exceptionRule.expectMessage(pair.getKey());
@@ -68,6 +75,15 @@ public class QueryParserUtilTest {
         List<ImmutablePair> pairs =
             queriesMap.entrySet().stream().map(entry -> new ImmutablePair(entry.getKey(), entry.getValue())).collect(Collectors.toList());
         return pairs;
+    }
+
+    private int getClauseCounts(String query) {
+        InputStream inStream = QueryParserUtilTest.class.getResourceAsStream("/testqueries/top-level-nodes-count.json");
+        BufferedReader br = new BufferedReader(new InputStreamReader(inStream));
+        Gson gson = new Gson();
+        JsonReader reader = new JsonReader(br);
+        Map<String, Double> queriesMap = gson.fromJson(reader, Map.class);
+        return queriesMap.get(query).intValue();
     }
 
     private JsonObject getExpectedQuery(String queryFile) {

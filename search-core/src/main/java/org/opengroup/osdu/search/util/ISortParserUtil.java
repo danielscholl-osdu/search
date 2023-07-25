@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface ISortParserUtil {
 
-    FieldSortBuilder parseSort(String sortString, String sortOrder);
+    FieldSortBuilder parseSort(String sortString, String sortOrder, String sortFilter);
 
     List<FieldSortBuilder> getSortQuery(RestHighLevelClient restClient, SortQuery sortQuery, String indexPattern) throws IOException;
 }

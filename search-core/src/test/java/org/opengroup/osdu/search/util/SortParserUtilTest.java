@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.NestedQueryBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.NestedSortBuilder;
 import org.elasticsearch.search.sort.SortMode;
@@ -18,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.search.SortQuery;
+import org.opengroup.osdu.search.model.QueryNode;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 
 import java.io.IOException;
@@ -36,17 +38,22 @@ public class SortParserUtilTest {
     private final String malformedMultilevelNestedSortString = "nested(data.NestedTest, nested(data.NestedTest.NestedInnerTest,))";
     private final String multilevelNestedSortString = "nested(data.NestedTest, nested(data.NestedTest.NestedInnerTest, NumberInnerTest, min))";
     private final String multilevelNestedSortStringWithSpace = "nested (data.NestedTest,nested (data.NestedTest.NestedInnerTest,NumberInnerTest,min))";
+    private final String simpleSortFilter = "nested(data.NestedTest, (InnerTestField:SomeValue))";
+    private final String noNestedBlockFilter = "simple string";
+    private final String topLevelOperatorFilter = "nested(data.NestedTest, (InnerTestField:SomeValue)) OR nested(data.NestedTest, (InnerTestField2:SomeValue))";
 
     private SortParserUtil sortParserUtil = new SortParserUtil();
 
     @Mock
     private IFieldMappingTypeService fieldMappingTypeService;
+    @Mock
+    private IQueryParserUtil queryParserUtil;
     @InjectMocks
     private SortParserUtil sut;
 
     @Test
     public void testSimpleSortString() {
-        FieldSortBuilder actualFieldSortBuilder = sortParserUtil.parseSort(simpleSortString, order);
+        FieldSortBuilder actualFieldSortBuilder = sortParserUtil.parseSort(simpleSortString, order, null);
         FieldSortBuilder expectedSortBuilder = new FieldSortBuilder(simpleSortString)
             .order(SortOrder.valueOf(order))
             .missing("_last")
@@ -57,7 +64,7 @@ public class SortParserUtilTest {
     @Test
     public void testScoreSortString() {
         String SCORE_FIELD = "_score";
-        FieldSortBuilder actualFieldSortBuilder = sortParserUtil.parseSort(SCORE_FIELD, order);
+        FieldSortBuilder actualFieldSortBuilder = sortParserUtil.parseSort(SCORE_FIELD, order, null);
         FieldSortBuilder expectedSortBuilder = new FieldSortBuilder(SCORE_FIELD)
                 .order(SortOrder.valueOf(order));
         assertEquals(expectedSortBuilder, actualFieldSortBuilder);
@@ -65,7 +72,7 @@ public class SortParserUtilTest {
 
     @Test
     public void testSimpleNestedSortString() {
-        FieldSortBuilder actualFileSortBuilder = sortParserUtil.parseSort(simpleNestedSortString, order);
+        FieldSortBuilder actualFileSortBuilder = sortParserUtil.parseSort(simpleNestedSortString, order, null);
         NestedSortBuilder nestedSortBuilder = new NestedSortBuilder("data.NestedTest");
         FieldSortBuilder expectedSortBuilder = new FieldSortBuilder("data.NestedTest.NumberTest")
             .order(SortOrder.valueOf(order))
@@ -78,8 +85,25 @@ public class SortParserUtilTest {
     }
 
     @Test
+    public void testSimpleNestedSortStringWithFilter() {
+        QueryParserUtil qUtil = new QueryParserUtil();
+        List<QueryNode> nodes = qUtil.parseQueryNodesFromQueryString(simpleSortFilter);
+        when(this.queryParserUtil.parseQueryNodesFromQueryString(simpleSortFilter)).thenReturn(nodes);
+        FieldSortBuilder actualFileSortBuilder = this.sut.parseSort(simpleNestedSortString, order, simpleSortFilter);
+        NestedSortBuilder nestedSortBuilder = new NestedSortBuilder("data.NestedTest").setFilter(((NestedQueryBuilder) nodes.get(0).toQueryBuilder()).query());
+        FieldSortBuilder expectedSortBuilder = new FieldSortBuilder("data.NestedTest.NumberTest")
+            .order(SortOrder.valueOf(order))
+            .setNestedSort(nestedSortBuilder)
+            .sortMode(SortMode.fromString("min"))
+            .missing("_last")
+            .unmappedType("keyword");
+
+        assertEquals(expectedSortBuilder, actualFileSortBuilder);
+    }
+
+    @Test
     public void testMultilevelNestedSortString() {
-        FieldSortBuilder actualFileSortBuilder = sortParserUtil.parseSort(multilevelNestedSortString, order);
+        FieldSortBuilder actualFileSortBuilder = sortParserUtil.parseSort(multilevelNestedSortString, order, null);
 
         NestedSortBuilder child = new NestedSortBuilder("data.NestedTest.NestedInnerTest");
         NestedSortBuilder parent = new NestedSortBuilder("data.NestedTest")
@@ -97,7 +121,7 @@ public class SortParserUtilTest {
 
     @Test
     public void testMultilevelNestedSortStringWithSpace() {
-        FieldSortBuilder actualFileSortBuilder = sortParserUtil.parseSort(multilevelNestedSortStringWithSpace, order);
+        FieldSortBuilder actualFileSortBuilder = sortParserUtil.parseSort(multilevelNestedSortStringWithSpace, order, null);
 
         NestedSortBuilder child = new NestedSortBuilder("data.NestedTest.NestedInnerTest");
         NestedSortBuilder parent = new NestedSortBuilder("data.NestedTest")
@@ -115,12 +139,29 @@ public class SortParserUtilTest {
 
     @Test(expected = AppException.class)
     public void testMalformedNestedSortString() {
-        FieldSortBuilder actualFileSortBuilder = sortParserUtil.parseSort(malformedNestedSortString, order);
+        FieldSortBuilder actualFileSortBuilder = sortParserUtil.parseSort(malformedNestedSortString, order, null);
     }
 
     @Test(expected = AppException.class)
     public void testMalformedMultilevelNestedSortString() {
-        FieldSortBuilder actualFileSortBuilder = sortParserUtil.parseSort(malformedMultilevelNestedSortString, order);
+        FieldSortBuilder actualFileSortBuilder = sortParserUtil.parseSort(malformedMultilevelNestedSortString, order, null);
+    }
+
+    @Test(expected = AppException.class)
+    public void testSortFilterWithoutNestedContext() {
+        QueryParserUtil qUtil = new QueryParserUtil();
+        List<QueryNode> nodes = qUtil.parseQueryNodesFromQueryString(simpleSortFilter);
+        when(this.queryParserUtil.parseQueryNodesFromQueryString(simpleSortFilter)).thenReturn(nodes);
+        FieldSortBuilder actualFileSortBuilder = this.sut.parseSort(simpleNestedSortString, order, noNestedBlockFilter);
+    }
+
+    @Test(expected = AppException.class)
+    public void testSortFilterTopLevelOperator() {
+        QueryParserUtil qUtil = new QueryParserUtil();
+        List<QueryNode> nodes = qUtil.parseQueryNodesFromQueryString(simpleSortFilter);
+        System.out.println(nodes);
+        when(this.queryParserUtil.parseQueryNodesFromQueryString(simpleSortFilter)).thenReturn(nodes);
+        FieldSortBuilder actualFileSortBuilder = this.sut.parseSort(simpleNestedSortString, order, topLevelOperatorFilter);
     }
 
     @Test
