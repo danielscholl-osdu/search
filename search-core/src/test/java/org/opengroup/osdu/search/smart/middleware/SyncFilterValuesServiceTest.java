@@ -26,12 +26,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.opengroup.osdu.core.common.model.http.AppException;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import org.opengroup.osdu.search.smart.models.AttributeCollection;
 import org.opengroup.osdu.search.smart.models.Kinds;
 
-@RunWith(PowerMockRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class SyncFilterValuesServiceTest {
 
     @Mock

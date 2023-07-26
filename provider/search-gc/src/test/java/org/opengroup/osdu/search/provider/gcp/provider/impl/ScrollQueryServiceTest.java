@@ -22,10 +22,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -50,11 +50,13 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortBuilders;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -71,15 +73,14 @@ import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({SearchRequest.class, SearchHits.class, RestHighLevelClient.class,
-    SearchConfigurationProperties.class})
+@RunWith(MockitoJUnitRunner.class)
 public class ScrollQueryServiceTest {
+
+  private static MockedStatic<RestHighLevelClient> mockedRestHighLevelClients;
+  private static MockedStatic<SearchRequest> mockedSearchRequests;
 
   @Mock
   private SearchConfigurationProperties searchConfigurationProperties;
@@ -120,10 +121,10 @@ public class ScrollQueryServiceTest {
   public void setup() {
     MockitoAnnotations.initMocks(this);
 
-    mockStatic(RestHighLevelClient.class);
-    mockStatic(SearchRequest.class);
+    mockedRestHighLevelClients = mockStatic(RestHighLevelClient.class);
+    mockedSearchRequests = mockStatic(SearchRequest.class);
 
-    restHighLevelClient = PowerMockito.mock(RestHighLevelClient.class);
+    restHighLevelClient = mock(RestHighLevelClient.class);
     Map<String, String> HEADERS = new HashMap<>();
     HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
     HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
@@ -133,9 +134,12 @@ public class ScrollQueryServiceTest {
     when(dpsHeaders.getUserEmail()).thenReturn(USER_EMAIL);
 
     when(providerHeaderService.getDataGroupsHeader()).thenReturn(DATA_GROUPS);
+  }
 
-    when(searchConfigurationProperties.getDeploymentEnvironment())
-        .thenReturn(DeploymentEnvironment.LOCAL);
+  @After
+  public void close() {
+    mockedRestHighLevelClients.close();
+    mockedSearchRequests.close();
   }
 
   @Test
@@ -301,12 +305,10 @@ public class ScrollQueryServiceTest {
 
     List<String> returnedFields = new ArrayList<>();
     returnedFields.add("id");
-    when(cursorQueryRequest.getKind()).thenReturn(kind);
     when(cursorQueryRequest.getLimit()).thenReturn(limit);
     when(cursorQueryRequest.getReturnedFields()).thenReturn(returnedFields);
-    when(searchConfig.getQueryLimitMaximum()).thenReturn(1000);
 
-    Mockito.when(crossTenantUtils.getIndexName(any()))
+    when(crossTenantUtils.getIndexName(any()))
         .thenReturn("tenant1-welldb-well-1.0.0,-.*");
 
     SearchRequest elasticRequest = this.sut.createElasticRequest(cursorQueryRequest);
@@ -346,7 +348,6 @@ public class ScrollQueryServiceTest {
     when(this.cursorQueryRequest.getCursor()).thenReturn("cursor");
 
     ElasticsearchStatusException exception = new ElasticsearchStatusException("No search context found for id [47500324]", RestStatus.NOT_FOUND);
-    doThrow(exception).when(restHighLevelClient).scroll(any(), any(RequestOptions.class));
 
     try {
       sut.queryIndex(cursorQueryRequest);

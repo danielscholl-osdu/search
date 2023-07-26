@@ -36,12 +36,12 @@ import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.search.provider.interfaces.ICrossTenantInfoService;
 import org.opengroup.osdu.search.smart.filters.AttributeFilter;
 import org.opengroup.osdu.search.provider.gcp.provider.impl.CrossTenantInfoServiceImpl;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import org.opengroup.osdu.search.smart.models.Attribute;
 import org.opengroup.osdu.search.smart.models.AttributeCollection;
 
-@RunWith(PowerMockRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class AttributeFilterTest {
 
 	@InjectMocks

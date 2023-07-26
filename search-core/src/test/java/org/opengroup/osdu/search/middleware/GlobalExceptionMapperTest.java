@@ -25,7 +25,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -35,9 +35,9 @@ import javax.validation.ValidationException;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
-import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.mockito.Mockito.mock;
 
-@RunWith(PowerMockRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class GlobalExceptionMapperTest {
 
     @Mock

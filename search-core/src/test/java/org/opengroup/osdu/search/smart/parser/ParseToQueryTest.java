@@ -16,7 +16,7 @@ package org.opengroup.osdu.search.smart.parser;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -27,14 +27,14 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.opengroup.osdu.core.common.model.http.AppException;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.search.smart.models.Filter;
 import org.opengroup.osdu.search.smart.models.FilterCollection;
 import org.opengroup.osdu.search.validation.QueryRequestConstraintValidator;
 
-@RunWith(PowerMockRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class ParseToQueryTest {
 	
     @Mock
@@ -44,7 +44,7 @@ public class ParseToQueryTest {
 
     @Test
     public void should_returnqueryForAllKindsAndLimitAs20_onAnyFilter(){
-    	when(this.offsetConstraintValidator.isValid(anyObject())).thenReturn(null);
+    	when(this.offsetConstraintValidator.isValid(any())).thenReturn(null);
         QueryRequest result = sut.parse(new ArrayList<>(),0,20);
 
         assertEquals(result.getKind(), "*:*:*:*");
@@ -53,7 +53,7 @@ public class ParseToQueryTest {
 
     @Test
     public void should_returnTextQuery_when_filterNameIsEmpty(){
-    	when(this.offsetConstraintValidator.isValid(anyObject())).thenReturn(null);
+    	when(this.offsetConstraintValidator.isValid(any())).thenReturn(null);
 
         List<FilterCollection> input = new ArrayList<>();
         FilterCollection col = new FilterCollection();
@@ -69,7 +69,7 @@ public class ParseToQueryTest {
 
     @Test
     public void should_convertQueryWithSpaceToAbsoluteMatch_when_filterIsTextQuery(){
-        when(this.offsetConstraintValidator.isValid(anyObject())).thenReturn(null);
+        when(this.offsetConstraintValidator.isValid(any())).thenReturn(null);
 
         List<FilterCollection> input = new ArrayList<>();
         FilterCollection col = new FilterCollection();
@@ -85,7 +85,7 @@ public class ParseToQueryTest {
 
     @Test
     public void should_returnTypeQuery_when_filterNameIsType(){
-    	when(this.offsetConstraintValidator.isValid(anyObject())).thenReturn(null);
+    	when(this.offsetConstraintValidator.isValid(any())).thenReturn(null);
 
         List<FilterCollection> input = new ArrayList<>();
         FilterCollection col = new FilterCollection();
@@ -102,7 +102,7 @@ public class ParseToQueryTest {
 
     @Test
     public void should_returnEmptyQuery_when_noFiltersGiven(){
-        when(this.offsetConstraintValidator.isValid(anyObject())).thenReturn(null);
+        when(this.offsetConstraintValidator.isValid(any())).thenReturn(null);
 
         List<FilterCollection> input = new ArrayList<>();
         QueryRequest result = sut.parse(input,0,0);
@@ -113,7 +113,7 @@ public class ParseToQueryTest {
 
     @Test
     public void should_returnTypeQueryAndSourceQuery_when_filterNameIsTypeAndSource(){
-    	when(this.offsetConstraintValidator.isValid(anyObject())).thenReturn(null);
+    	when(this.offsetConstraintValidator.isValid(any())).thenReturn(null);
 
         List<FilterCollection> input = new ArrayList<>();
         FilterCollection col = new FilterCollection();
@@ -137,8 +137,6 @@ public class ParseToQueryTest {
 
     @Test
     public void should_throwAppException_when_sameFilterUsedTwice(){
-    	when(this.offsetConstraintValidator.isValid(anyObject())).thenReturn(null);
-
         List<FilterCollection> input = new ArrayList<>();
         FilterCollection col = new FilterCollection();
         Filter f = new Filter();
@@ -158,7 +156,7 @@ public class ParseToQueryTest {
 
     @Test
     public void should_beAbleToUseTextFilterTwice(){
-        when(this.offsetConstraintValidator.isValid(anyObject())).thenReturn(null);
+        when(this.offsetConstraintValidator.isValid(any())).thenReturn(null);
 
         List<FilterCollection> input = new ArrayList<>();
         FilterCollection col = new FilterCollection();
@@ -177,7 +175,7 @@ public class ParseToQueryTest {
     
     @Test
     public void should_throwAppException_when_sameOffsetAndLimitIsGreaterThan10000(){
-    	when(this.offsetConstraintValidator.isValid(anyObject())).thenReturn(null);
+    	when(this.offsetConstraintValidator.isValid(any())).thenReturn(null);
 
         List<FilterCollection> input = new ArrayList<>();
         FilterCollection col = new FilterCollection();
@@ -196,7 +194,7 @@ public class ParseToQueryTest {
     
     @Test
     public void should_returnAttributeQuery_when_filterNameIsOperator(){
-    	when(this.offsetConstraintValidator.isValid(anyObject())).thenReturn(null);
+    	when(this.offsetConstraintValidator.isValid(any())).thenReturn(null);
     	
         List<FilterCollection> input = new ArrayList<>();
         FilterCollection col = new FilterCollection();
@@ -214,7 +212,7 @@ public class ParseToQueryTest {
     
     @Test
     public void should_returnAttributeQuery_when_filterNameIsOperatorAndField(){
-    	when(this.offsetConstraintValidator.isValid(anyObject())).thenReturn(null);
+    	when(this.offsetConstraintValidator.isValid(any())).thenReturn(null);
     	
         List<FilterCollection> input = new ArrayList<>();
         FilterCollection col = new FilterCollection();
@@ -237,7 +235,7 @@ public class ParseToQueryTest {
     
     @Test
     public void should_returnAttributeQuery_when_filterNameIsOperatorAndFieldAndText(){
-    	when(this.offsetConstraintValidator.isValid(anyObject())).thenReturn(null);
+    	when(this.offsetConstraintValidator.isValid(any())).thenReturn(null);
     	
         List<FilterCollection> input = new ArrayList<>();
         FilterCollection col = new FilterCollection();
@@ -263,4 +261,3 @@ public class ParseToQueryTest {
         assertEquals("(data.Operator:\"ash\" OR data.OriginalOperator:\"ash\") AND (data.field:\"ash1\" OR data.Field:\"ash1\") AND \"ash3\"", result.getQuery());
     }
 }
-
