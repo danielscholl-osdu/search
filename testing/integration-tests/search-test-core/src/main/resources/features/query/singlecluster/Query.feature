@@ -66,9 +66,9 @@ Feature: Search with different queries
 
     Examples:
       | tenant    | kind                                                      | number  | query                                | limit | offset | returned_fields | count |
-      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | 300     | "data.OriginalOperator:OFFICE4"      | None  | None   | All             | 1     |
-      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | 300     | None                                 | 0     | None   | NULL            | 3     |
-      | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | 300     | None                                 | 0     | None   | NULL            | 3     |
+      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | 295     | "data.OriginalOperator:OFFICE4"      | None  | None   | All             | 1     |
+      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | 295     | None                                 | 0     | None   | NULL            | 3     |
+      | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | 295     | None                                 | 0     | None   | NULL            | 3     |
 
   Scenario Outline: Search data in a given a kind with invalid inputs
     When I send <query> with <kind>

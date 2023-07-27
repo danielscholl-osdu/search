@@ -1,5 +1,19 @@
 ## Service Configuration for Anthos
 
+## Run args
+
+In order to run Search with Java 17 additional run args must be provided:
+
+```bash
+--add-opens java.base/java.lang=ALL-UNNAMED --add-opens  java.base/java.lang.reflect=ALL-UNNAMED
+```
+
+Full command:
+
+```bash
+java -jar search.jar --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+```
+
 ## Table of Contents <a name="TOC"></a>
 
 * [Environment variables](#Environment-variables)

@@ -18,16 +18,16 @@ package org.opengroup.osdu.search.provider.gcp.provider.impl;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -67,13 +67,14 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
-import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
@@ -103,15 +104,16 @@ import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.QueryParserUtil;
 import org.opengroup.osdu.search.util.SortParserUtil;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({SearchRequest.class, SearchHits.class, RestHighLevelClient.class})
+@RunWith(MockitoJUnitRunner.class)
 public class QueryServiceTest {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
+  private static MockedStatic<RestHighLevelClient> mockedRestHighLevelClients;
+  private static MockedStatic<SearchRequest> mockedSearchRequests;
+  private static MockedStatic<SearchHits> mockedSearchHits;
+
   @Mock
   private SpatialFilter spatialFilter;
   @Mock
@@ -166,12 +168,11 @@ public class QueryServiceTest {
   public void setup() {
     initMocks(this);
 
-    mockStatic(RestHighLevelClient.class);
-    mockStatic(SearchRequest.class);
-    mockStatic(SearchHits.class);
+    mockedRestHighLevelClients = mockStatic(RestHighLevelClient.class);
+    mockedSearchRequests = mockStatic(SearchRequest.class);
+    mockedSearchHits = mockStatic(SearchHits.class);
 
-    when(properties.getEnvironment()).thenReturn("evt");
-    restHighLevelClient = PowerMockito.mock(RestHighLevelClient.class);
+    restHighLevelClient = mock(RestHighLevelClient.class);
 
     Map<String, String> HEADERS = new HashMap<>();
     HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
@@ -180,6 +181,13 @@ public class QueryServiceTest {
 
     when(providerHeaderService.getDataGroupsHeader()).thenReturn(DATA_GROUPS);
     when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
+  }
+
+  @After
+  public void close() {
+    mockedRestHighLevelClients.close();
+    mockedSearchRequests.close();
+    mockedSearchHits.close();
   }
 
   @Test
@@ -238,8 +246,7 @@ public class QueryServiceTest {
         RestStatus.NOT_FOUND);
 
     doReturn(elasticSearchRequest).when(this.sut).createElasticRequest(any());
-    PowerMockito.when(restHighLevelClient.search(any(), any(RequestOptions.class)))
-        .thenThrow(notFound);
+    when(restHighLevelClient.search(any(), any(RequestOptions.class))).thenThrow(notFound);
 
     try {
       this.sut.makeSearchRequest(searchRequest, restHighLevelClient);
@@ -406,15 +413,10 @@ public class QueryServiceTest {
         RestStatus.BAD_REQUEST, new ElasticsearchException(dummySortError));
 
     doThrow(exception).when(restHighLevelClient).search(any(), any(RequestOptions.class));
-    doReturn(new HashSet<>()).when(fieldMappingTypeService)
-        .getFieldTypes(eq(restHighLevelClient), eq(fieldName), eq(indexName));
     SortQuery sortQuery = new SortQuery();
     sortQuery.setField(Collections.singletonList("name"));
     sortQuery.setOrder(Collections.singletonList(SortOrder.DESC));
     when(searchRequest.getSort()).thenReturn(sortQuery);
-    when(sortParserUtil.getSortQuery(restHighLevelClient, sortQuery, indexName))
-        .thenReturn(Collections.singletonList(
-            new FieldSortBuilder("name").order(org.elasticsearch.search.sort.SortOrder.DESC)));
 
     try {
       this.sut.makeSearchRequest(searchRequest, restHighLevelClient);
@@ -578,7 +580,6 @@ public class QueryServiceTest {
 
     List<String> returnedFields = new ArrayList<>();
     returnedFields.add("id");
-    when(searchRequest.getKind()).thenReturn(kind);
     when(searchRequest.getLimit()).thenReturn(limit);
     when(searchRequest.getFrom()).thenReturn(from);
     when(searchRequest.getReturnedFields()).thenReturn(returnedFields);
@@ -619,7 +620,6 @@ public class QueryServiceTest {
       throws IOException {
 
     List<String> returnedFields = new ArrayList<>(Arrays.asList("id", "index"));
-    when(searchRequest.getKind()).thenReturn("tenant1:welldb:well:1.0.0");
     when(searchRequest.getReturnedFields()).thenReturn(returnedFields);
 
     when(crossTenantUtils.getIndexName(any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
@@ -649,8 +649,6 @@ public class QueryServiceTest {
 
   @Test
   public void should_return_correctElasticRequest_given_noReturnedField() throws IOException {
-
-    when(searchRequest.getKind()).thenReturn("tenant1:welldb:well:1.0.0");
     when(crossTenantUtils.getIndexName(any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
 
     SearchRequest elasticRequest = this.sut.createElasticRequest(searchRequest);
@@ -677,7 +675,6 @@ public class QueryServiceTest {
 
   @Test
   public void should_return_correctElasticRequest_given_groupByField() throws IOException {
-    when(searchRequest.getKind()).thenReturn("tenant1:welldb:well:1.0.0");
     when(searchRequest.getAggregateBy()).thenReturn("namespace");
     when(crossTenantUtils.getIndexName(any())).thenReturn("tenant1-welldb-well-1.0.0,-.*");
 
@@ -839,8 +836,6 @@ public class QueryServiceTest {
     when(searchHits.getHits()).thenReturn(new SearchHit[]{});
     when(searchResponse.getHits()).thenReturn(searchHits);
 
-    when(restHighLevelClient.search(any(SearchRequest.class),
-        eq(RequestOptions.DEFAULT))).thenReturn(searchResponse);
     when(elasticClientHandler.createRestClient()).thenReturn(restHighLevelClient);
     when(restHighLevelClient.search(any(SearchRequest.class),
         eq(RequestOptions.DEFAULT))).thenReturn(searchResponse);

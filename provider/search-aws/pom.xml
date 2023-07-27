@@ -29,8 +29,8 @@
     <packaging>jar</packaging>
     <version>0.23.0-SNAPSHOT</version>
     <properties>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
         <maven.war.plugin>2.6</maven.war.plugin>
         <appengine.maven.plugin>1.0.0</appengine.maven.plugin>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -176,7 +176,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -185,11 +184,6 @@
             <!-- Using Mockito 2 specifically for ability to mock elasticsearch lib's "final" methods -->
             <version>2.0.0-beta</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <version>2.0.2</version>
         </dependency>
 
     </dependencies>

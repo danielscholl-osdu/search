@@ -37,13 +37,11 @@ import org.mockito.Mock;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import org.opengroup.osdu.core.common.model.http.Request;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ContainerRequestContext.class})
+@RunWith(MockitoJUnitRunner.class)
 public class CorrelationIDRequestFilterTest {
 
 
