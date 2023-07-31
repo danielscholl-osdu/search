@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.opengroup.osdu</groupId>
         <artifactId>os-search</artifactId>
-        <version>0.22.0-SNAPSHOT</version>
+        <version>0.23.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -27,10 +27,10 @@
     <artifactId>search-aws</artifactId>
     <description>Search Service on AWS</description>
     <packaging>jar</packaging>
-    <version>0.22.0-SNAPSHOT</version>
+    <version>0.23.0-SNAPSHOT</version>
     <properties>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
         <maven.war.plugin>2.6</maven.war.plugin>
         <appengine.maven.plugin>1.0.0</appengine.maven.plugin>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -38,7 +38,7 @@
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
         <aws.version>1.11.1018</aws.version>
         <deployment.environment>dev</deployment.environment>
-        <version.number>0.22.0-SNAPSHOT</version.number>
+        <version.number>0.23.0-SNAPSHOT</version.number>
         <nimbus-jose-jwt.version>9.18</nimbus-jose-jwt.version>
         <jackson-databind.version>2.13.2.2</jackson-databind.version>
         <jackson.version>2.13.2</jackson.version>
@@ -60,11 +60,6 @@
                 <version>2.6.6</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework.security</groupId>
-                <artifactId>spring-security-core</artifactId>
-                <version>5.7.6</version>
-            </dependency>
-            <dependency>
                 <groupId>org.springframework.data</groupId>
                 <artifactId>spring-data-mongodb</artifactId>
                 <version>3.4.2</version>
@@ -78,7 +73,7 @@
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>search-core</artifactId>
-            <version>0.22.0-SNAPSHOT</version>
+            <version>0.23.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu.core.aws</groupId>
@@ -181,7 +176,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -190,11 +184,6 @@
             <!-- Using Mockito 2 specifically for ability to mock elasticsearch lib's "final" methods -->
             <version>2.0.0-beta</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <version>2.0.2</version>
         </dependency>
 
     </dependencies>

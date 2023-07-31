@@ -16,30 +16,24 @@ package org.opengroup.osdu.search.provider.gcp.middleware;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerRequestContext;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.opengroup.osdu.core.common.model.search.DeploymentEnvironment;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.middleware.RedirectHttpRequestsHandler;
 import org.opengroup.osdu.search.service.ProviderHeaderServiceImpl;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({SearchConfigurationProperties.class})
+@RunWith(MockitoJUnitRunner.class)
 public class RedirectHttpRequestsHandlerTest {
 
 	@Mock
@@ -63,15 +57,9 @@ public class RedirectHttpRequestsHandlerTest {
 	@Mock
 	private FilterChain filterChain;
 
-    @Before
-    public void setup() throws Exception {
-        doNothing().when(filterChain).doFilter(httpRequest, httpResponse);
-    }
-
     @Test
     public void should_throwAppException302WithHttpsLocation_when_client_isNotUsingHttps() throws Exception {
         when(httpRequest.getScheme()).thenReturn("http");
-        when(searchConfigurationProperties.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.CLOUD);
         try {
             sut.doFilter(httpRequest, httpResponse, filterChain);
             fail("should throw");

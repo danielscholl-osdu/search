@@ -8,8 +8,8 @@ os-search-azure is a [Spring Boot](https://spring.io/projects/spring-boot) servi
 
 In order to run this service locally, you will need the following:
 
-- [Maven 3.6.0+](https://maven.apache.org/download.cgi)
-- [AdoptOpenJDK8](https://adoptopenjdk.net/)
+- [Maven 3.8.0+](https://maven.apache.org/download.cgi)
+- [Java 17](https://adoptopenjdk.net/)
 - Infrastructure dependencies, deployable through the relevant [infrastructure template](https://community.opengroup.org/osdu/platform/deployment-and-operations/infra-azure-provisioning/-/blob/master/docs/service-automation.md)
 - While not a strict dependency, example commands in this document use [bash](https://www.gnu.org/software/bash/)
 
@@ -87,9 +87,9 @@ az keyvault secret show --vault-name $KEY_VAULT_NAME --name $KEY_VAULT_SECRET_NA
 Check that maven is installed:
 ```bash
 $ mvn --version
-Apache Maven 3.6.0
+Apache Maven 3.8.0
 Maven home: /usr/share/maven
-Java version: 1.8.0_212, vendor: AdoptOpenJDK, runtime: /usr/lib/jvm/jdk8u212-b04/jre
+Java version: 17.0.7
 ...
 ```
 
@@ -109,7 +109,7 @@ $ (cd provider/search-azure/ && mvn clean package)
 #
 # Note: this assumes that the environment variables for running the service as outlined
 #       above are already exported in your environment.
-$ java -jar $(find provider/search-azure/target/ -name *-spring-boot.jar)
+$ java -jar $(find provider/search-azure/target/ -name *-spring-boot.jar) --add-opens java.base/java.lang=ALL-UNNAMED --add-opens  java.base/java.lang.reflect=ALL-UNNAMED
 
 # Alternately you can run using the Mavan Task
 $ mvn spring-boot:run
@@ -133,6 +133,28 @@ $ (cd testing/integration-tests/search-test-azure/ && mvn clean test)
 ## Debugging
 
 Jet Brains - the authors of Intellij IDEA, have written an [excellent guide](https://www.jetbrains.com/help/idea/debugging-your-first-java-application.html) on how to debug java programs.
+
+## Known Limitation for Azure Http Header Size
+
+In  Microsoft Azure, there is a limitation for the Http Header size in Azure. For more information, see: https://learn.microsoft.com/en-US/troubleshoot/developer/webapps/iis/www-administration-management/http-bad-request-response-kerberos#cause
+
+Consider If the user belongs to more than **2000** data groups. When Search calls Policy translate API, in the request header **'X-Data-Groups'** (>2000) values are passed. Microsoft Azure Application Gateway doesn't support such large headers. As a result, it returns a **'400 Request Header Or Cookie Too Large'** error before even reaching the policy service.
+
+This error body is translated as input query for ElasticSearch, which results in ElasticSearch exception. As a result, the search API response will be:
+
+```
+{
+    "code": 400,
+    "reason": "Bad Request",
+    "message": "Failed to derive xcontent"
+}
+```
+
+#### Workaround
+
+Delete any stale or test groups associated with the user via the Entitlements API, such that the number of data groups is within the limit of 2000.
+
+For more information, see: https://learn.microsoft.com/en-US/troubleshoot/developer/webapps/iis/www-administration-management/http-bad-request-response-kerberos#workaround-1-decrease-the-number-of-active-directory-groups
 
 
 ## Deploying service to Azure
