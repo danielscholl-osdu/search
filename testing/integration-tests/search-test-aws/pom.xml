@@ -35,13 +35,6 @@
         <elasticsearch.version>7.8.1</elasticsearch.version>
         <jackson-databind.version>2.13.2.2</jackson-databind.version>
         <jackson.version>2.13.2</jackson.version>
-        <argLine>
-            --add-opens java.base/java.util=ALL-UNNAMED
-            --add-opens java.base/java.lang=ALL-UNNAMED
-            --add-opens java.base/java.lang.reflect=ALL-UNNAMED
-            --add-opens java.base/java.text=ALL-UNNAMED
-            --add-opens java.desktop/java.awt.font=ALL-UNNAMED
-        </argLine>
     </properties>
 
     <dependencies>
@@ -176,6 +169,9 @@
                 </executions>                
                 <configuration>
                     <trimStackTrace>false</trimStackTrace>
+                    <argLine>
+                        --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED
+                    </argLine>
                 </configuration>
             </plugin>
         </plugins>
