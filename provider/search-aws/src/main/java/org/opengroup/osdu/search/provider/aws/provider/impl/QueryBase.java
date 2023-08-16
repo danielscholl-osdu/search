@@ -18,10 +18,14 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -290,14 +294,17 @@ abstract class QueryBase {
             for (SearchHit searchHitFields : searchHits.getHits()) {
                 Map<String, Object> hitFields = searchHitFields.getSourceAsMap();
                 if (!searchHitFields.getHighlightFields().isEmpty()) {
+                    Map<String, List<String>> highlights = new HashMap<>();
                     for (HighlightField hf : searchHitFields.getHighlightFields().values()) {
                         if (!hf.getName().equalsIgnoreCase(RecordMetaAttribute.X_ACL.getValue())) {
                             Text[] fragments = hf.getFragments();
-                            if (fragments.length > 0) {
-                                hitFields.put(hf.getName(), fragments[0].toString());
-                            }
+                            highlights.put(
+                                hf.getName(), 
+                                Arrays.asList(fragments).stream().map(x -> x.toString()).collect(Collectors.toList())
+                            );
                         }
                     }
+                    hitFields.put("highlight", highlights);
                 }
                 results.add(hitFields);
             }
@@ -351,11 +358,14 @@ abstract class QueryBase {
         }
 
         // set highlighter
-        if (request.isReturnHighlightedFields()) {
-            HighlightBuilder highlightBuilder = new HighlightBuilder().field("*", 200, 5);
+        if (!Objects.isNull(request.getHighlightedFields())) {
+            HighlightBuilder highlightBuilder = new HighlightBuilder();
+            highlightBuilder = request.getHighlightedFields().stream().reduce(
+                highlightBuilder, (builder, fieldName) -> builder.field(fieldName, 200, 5), (a, b) -> a
+            );
             sourceBuilder.highlighter(highlightBuilder);
         }
-
+        
         // set the return fields
         List<String> returnedFields = request.getReturnedFields();
         if (returnedFields == null) {

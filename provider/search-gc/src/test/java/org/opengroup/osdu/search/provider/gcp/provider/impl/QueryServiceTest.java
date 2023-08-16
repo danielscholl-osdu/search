@@ -43,6 +43,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import javax.servlet.http.HttpServletResponse;
 import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.search.TotalHits.Relation;
@@ -54,7 +56,10 @@ import org.elasticsearch.action.search.SearchResponseSections;
 import org.elasticsearch.action.search.ShardSearchFailure;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.bytes.BytesArray;
+import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.geo.GeoPoint;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.GeoBoundingBoxQueryBuilder;
 import org.elasticsearch.index.query.GeoDistanceQueryBuilder;
@@ -67,6 +72,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -216,6 +222,29 @@ public class QueryServiceTest {
     QueryResponse queryResponse = this.sut.queryIndex(searchRequest);
     assertNotNull(queryResponse);
     assertEquals(1, queryResponse.getTotalCount());
+  }
+
+  @Test
+  public void should_parse_response_when_hightlight_is_present() throws Exception {
+    TotalHits totalHits = new TotalHits(1, Relation.EQUAL_TO);
+    Map<String, HighlightField> highlightFields = Stream.of(new String[][] {
+      {"FieldName", "<em>TextValue</em>" },  
+    }).collect(Collectors.toMap(data -> data[0], data -> new HighlightField(data[0], new Text[] { new Text(data[1])})));
+    SearchHit searchHit = new SearchHit(42);
+    BytesReference source = new BytesArray("{\"FieldName\""
+        + ":\"TextValue\"}");
+    searchHit = searchHit.sourceRef(source);
+    searchHit.highlightFields(highlightFields);
+
+    SearchHits searchHits = new SearchHits(new SearchHit[] {searchHit}, totalHits, 2);
+    SearchResponse mockSearchResponse = new SearchResponse(
+        new SearchResponseSections(searchHits, null,
+            null, false, false, null, 1), "2",
+        5, 5, 0, 100, ShardSearchFailure.EMPTY_ARRAY,
+        SearchResponse.Clusters.EMPTY);
+
+    List<Map<String, Object>> results = this.sut.getHitsFromSearchResponse(mockSearchResponse);
+    assertEquals("[{highlight={FieldName=[<em>TextValue</em>]}, FieldName=TextValue}]", results.toString());
   }
 
   @Test
@@ -732,6 +761,8 @@ public class QueryServiceTest {
   public void should_return_CorrectQueryResponseForIntersectionSpatialFilter() throws Exception {
     QueryRequest queryRequest = new QueryRequest();
     queryRequest.setQuery("data.ID:\"EPSG::1078\"");
+
+    queryRequest.setHighlightedFields(Arrays.asList("data.field1", "data.field2"));
 
     SpatialFilter spatialFilter = new SpatialFilter();
     spatialFilter.setField("data.Wgs84Coordinates");

@@ -14,16 +14,24 @@
 
 package org.opengroup.osdu.search.provider.aws.provider.impl;
 
+import org.apache.lucene.search.TotalHits;
+import org.apache.lucene.search.TotalHits.Relation;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchResponseSections;
+import org.elasticsearch.action.search.ShardSearchFailure;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.bytes.BytesArray;
+import org.elasticsearch.common.bytes.BytesReference;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,6 +50,8 @@ import org.opengroup.osdu.search.util.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
@@ -189,7 +199,7 @@ public class QueryServiceAwsImplTest {
 				.thenReturn(headers);
 		when(dpsHeaders.getPartitionId()).thenReturn(PARTITION_ID);
 
-		String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"prefix\":{\"id\":{\"value\":\"opendes:\",\"boost\":1.0}}},{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPolygon\",\"coordinates\":[[[[-8.61,1.02],[-2.48,1.02],[-2.48,10.74],[-8.61,10.74],[-8.61,1.02]]]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]}}";
+		String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"prefix\":{\"id\":{\"value\":\"opendes:\",\"boost\":1.0}}},{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPolygon\",\"coordinates\":[[[[-8.61,1.02],[-2.48,1.02],[-2.48,10.74],[-8.61,10.74],[-8.61,1.02]]]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]},\"highlight\":{}}";
 
 		// act
 		QueryResponse response = queryServiceAws.queryIndex(queryRequest);
@@ -271,7 +281,7 @@ public class QueryServiceAwsImplTest {
 				.thenReturn(headers);
 		when(dpsHeaders.getPartitionId()).thenReturn(PARTITION_ID);
 
-		String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"prefix\":{\"id\":{\"value\":\"opendes:\",\"boost\":1.0}}},{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPoint\",\"coordinates\":[[-8.61,1.02]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]}}";
+		String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"prefix\":{\"id\":{\"value\":\"opendes:\",\"boost\":1.0}}},{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPoint\",\"coordinates\":[[-8.61,1.02]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]},\"highlight\":{}}";
 
 		// act
 		QueryResponse response = queryServiceAws.queryIndex(queryRequest);
@@ -332,6 +342,30 @@ public class QueryServiceAwsImplTest {
 		QueryBuilder builder = this.queryServiceAws.buildQuery(null, null, false);
 		assertEquals(builder.toString(), expectedBuilder);
 	}
+
+	@Test
+	public void should_parse_response_when_hightlight_is_present() throws Exception {
+		TotalHits totalHits = new TotalHits(1, Relation.EQUAL_TO);
+		Map<String, HighlightField> highlightFields = Stream.of(new String[][] {
+		{"FieldName", "<em>TextValue</em>" },  
+		}).collect(Collectors.toMap(data -> data[0], data -> new HighlightField(data[0], new Text[] { new Text(data[1])})));
+		SearchHit searchHit = new SearchHit(42);
+		BytesReference source = new BytesArray("{\"FieldName\""
+			+ ":\"TextValue\"}");
+		searchHit = searchHit.sourceRef(source);
+		searchHit.highlightFields(highlightFields);
+
+		SearchHits searchHits = new SearchHits(new SearchHit[] {searchHit}, totalHits, 2);
+		SearchResponse mockSearchResponse = new SearchResponse(
+			new SearchResponseSections(searchHits, null,
+				null, false, false, null, 1), "2",
+			5, 5, 0, 100, ShardSearchFailure.EMPTY_ARRAY,
+			SearchResponse.Clusters.EMPTY);
+
+		List<Map<String, Object>> results = this.queryServiceAws.getHitsFromSearchResponse(mockSearchResponse);
+		assertEquals("[{highlight={FieldName=[<em>TextValue</em>]}, FieldName=TextValue}]", results.toString());
+	}
+
 
 	private void verifyAcls(QueryBuilder aclMustClause, boolean asOwner) {
 		BoolQueryBuilder aclLevelBuilder = (BoolQueryBuilder) aclMustClause;
