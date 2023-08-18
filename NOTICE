@@ -420,6 +420,7 @@ The following software have components provided under the terms of this license:
 - Apache Lucene (module: suggest) (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-suggest)
 - AspectJ Weaver (from http://www.aspectj.org, https://www.eclipse.org/aspectj/)
 - Class Model for Hk2 (from https://repo1.maven.org/maven2/org/glassfish/hk2/class-model)
+- FindBugs-jsr305 (from http://findbugs.sourceforge.net/)
 - GAX (Google Api eXtensions) for Java (Core) (from https://github.com/googleapis, https://github.com/googleapis/gax-java, https://repo1.maven.org/maven2/com/google/api/gax)
 - GAX (Google Api eXtensions) for Java (gRPC) (from <https://repo1.maven.org/maven2/com/google/api/gax-grpc>, https://repo1.maven.org/maven2/com/google/api/gax-grpc)
 - Google APIs Client Library for Java (from https://repo1.maven.org/maven2/com/google/api-client/google-api-client)
@@ -578,6 +579,7 @@ EDL-1.0
 The following software have components provided under the terms of this license:
 
 - Jakarta Activation (from https://repo1.maven.org/maven2/com/sun/activation/jakarta.activation)
+- Jakarta Activation API (from https://github.com/eclipse-ee4j/jaf, https://github.com/jakartaee/jaf-api, https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api)
 
 ========================================================================
 EPL-1.0
@@ -717,7 +719,6 @@ GPL-3.0-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- Jakarta Activation API (from https://github.com/eclipse-ee4j/jaf, https://github.com/jakartaee/jaf-api, https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api)
 - Jakarta Annotations API (from https://projects.eclipse.org/projects/ee4j.ca)
 - null (from https://github.com/fge/jackson-coreutils)
 
