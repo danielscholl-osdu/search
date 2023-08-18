@@ -36,6 +36,7 @@
 - [Query with cursor API](#query-with-cursor)
 - [Cross `kind` queries](#cross-kind-queries)
 - [Common discovery within and across `kind` via `VirtualProperties`](#common-discovery-within-and-across-kind)
+- [Exclude kinds with authority as "system-meta-data" in wildcard query](#exclude-system-meta-data-kinds)
 - [Version info API](#version-info)
 - [Get indexing status](#get-indexing-status)
 - [Known issues/limitations](#known-limitations)
@@ -1498,6 +1499,33 @@ curl --request POST \
 More information on supported default VirtualProperties can be found on [Data definition's schema documentation](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/E-R/VirtualPropertiesReport.md).
 
 __Note:__ The virtual property declared is never added to the Storage record and used by Indexer service to index new attribute and make the data discoverable based on this property.
+
+[Back to table of contents](#TOC)
+
+## Exclude kinds with authority as "system-meta-data" in wildcard query <a name="exclude-system-meta-data-kinds"></a>
+Some applications or systems may need to have its system meta-data searchable via OSDU search but 
+the system meta-data are not expected to be included in the search results of normal keyword search. In order to 
+exclude the system meta-data in normal search, OSDU community proposed "system-meta-data" as the reserved authority 
+for the system meta-data kinds that are excluded if they are not explicitly specified in the query. 
+
+For example, assuming there is a system kind called "system-meta-data:schema-service:schema:1.0.0" for schema metadata.
+When users try to search data with keyword "wellbore" as below:
+```
+{
+  "kind": "*:*:*:*",
+  "query": "wellbore"
+} 
+```
+The meta-data from the kind "system-meta-data:schema-service:schema:1.0.0" will be excluded from the search result by default.
+
+In order to search meta-data with keyword "wellbore" from the kind "system-meta-data:schema-service:schema:1.0.0", user 
+should explicitly specify the kind as the example below:
+```
+{
+  "kind": "system-meta-data:schema-service:schema:1.0.0",
+  "query": "wellbore"
+} 
+```
 
 [Back to table of contents](#TOC)
 
