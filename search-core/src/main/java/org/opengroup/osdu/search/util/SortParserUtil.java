@@ -3,12 +3,16 @@ package org.opengroup.osdu.search.util;
 import joptsimple.internal.Strings;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.NestedQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.NestedSortBuilder;
 import org.elasticsearch.search.sort.SortMode;
 import org.elasticsearch.search.sort.SortOrder;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.search.SortQuery;
+import org.opengroup.osdu.search.model.NestedQueryNode;
+import org.opengroup.osdu.search.model.QueryNode;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,11 +43,14 @@ public class SortParserUtil implements ISortParserUtil {
 
     @Autowired
     private IFieldMappingTypeService fieldMappingTypeService;
+    
+    @Autowired
+    private IQueryParserUtil queryParserUtil;
 
     @Override
-    public FieldSortBuilder parseSort(String sortString, String sortOrder) {
+    public FieldSortBuilder parseSort(String sortString, String sortOrder, String sortFilter) {
         if (sortString.contains("nested(") || sortString.contains("nested (")) {
-            return parseNestedSort(sortString, sortOrder);
+            return parseNestedSort(sortString, sortOrder, sortFilter);
         } else {
             if (sortString.equalsIgnoreCase(SCORE_FIELD)) {
                 return new FieldSortBuilder(sortString)
@@ -86,15 +93,25 @@ public class SortParserUtil implements ISortParserUtil {
         List<FieldSortBuilder> out = new ArrayList<>();
 
         for (int idx = 0; idx < sortQuery.getField().size(); idx++) {
-            out.add(this.parseSort(sortQuery.getFieldByIndex(idx), sortQuery.getOrderByIndex(idx).name()));
+            out.add(this.parseSort(sortQuery.getFieldByIndex(idx), sortQuery.getOrderByIndex(idx).name(), sortQuery.getFilterByIndex(idx)));
         }
         return out;
     }
 
-    private FieldSortBuilder parseNestedSort(String sortString, String sortOrder) {
+    private QueryBuilder buildQueryBuilderFromQueryString(String sortNestedFilter) {
+        List<QueryNode> nodes = queryParserUtil.parseQueryNodesFromQueryString(sortNestedFilter);
+        if (nodes.size() != 1 || !(nodes.get(0) instanceof NestedQueryNode)) {
+            throw new AppException(HttpStatus.SC_BAD_REQUEST, String.format("Top level sort filter must be in nested context : %s", sortNestedFilter), BAD_SORT_MESSAGE);
+        }
+        NestedQueryNode topNode = (NestedQueryNode) nodes.get(0);
+        return ((NestedQueryBuilder) topNode.toQueryBuilder()).query();
+    }
+
+    private FieldSortBuilder parseNestedSort(String sortString, String sortOrder, String sortNestedFilter) {
         Matcher multilevelNestedMatcher = multilevelNestedPattern.matcher(sortString);
         String oneLevelSortString = sortString;
         NestedSortBuilder nestedSortBuilder = null;
+        QueryBuilder filterSortQuery = Objects.isNull(sortNestedFilter) ? null : buildQueryBuilderFromQueryString(sortNestedFilter);
 
         if (multilevelNestedMatcher.find()) {
             nestedSortBuilder = parseNestedSortInDepth(sortString);
@@ -114,6 +131,9 @@ public class SortParserUtil implements ISortParserUtil {
             String mode = oneLevelNestedMatcher.group(MODE_GROUP);
             if (Objects.isNull(nestedSortBuilder)) {
                 nestedSortBuilder = new NestedSortBuilder(path);
+            }
+            if (!Objects.isNull(filterSortQuery)) {
+                nestedSortBuilder = nestedSortBuilder.setFilter(filterSortQuery);
             }
             return new FieldSortBuilder(path + "." + field)
                     .setNestedSort(nestedSortBuilder)

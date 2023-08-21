@@ -889,7 +889,9 @@ nested(path, field, mode)
 - `min`: sort by minimum value in the array.
 - `max`: sort by maximum value in the array.
 
-- Sort by `nested` attribute `FacilityEventTypeID`
+Sorting on nested fields allow to specify condition filter which object on nested path has to fulfill to be taken into account in `mode` function. Often repeating the query part referring to nested path is useful. Filter is attached to top level nested field in case of sorting on field nested multiple times. Filter syntax is the same as `query` top level parameter, however entire query has to be within `nested()` context.
+
+- Sort by `nested` attribute `FacilityEventTypeID` where `FacilityEventTypeID` value is unequal to `test`
 ```http
 POST /search/v2/query HTTP/1.1
 {
@@ -900,6 +902,9 @@ POST /search/v2/query HTTP/1.1
     ],
     "order": [
         "ASC"
+    ],
+    "filter": [
+        "nested(data.FacilityEvents, (NOT FacilityEventTypeID.keyword:test))"
     ]
   }
 }
@@ -922,6 +927,9 @@ curl --request POST \
     ],
     "order": [
         "ASC"
+    ],
+    "filter": [
+        "nested(data.FacilityEvents, (NOT FacilityEventTypeID.keyword:test))"
     ]
   }
 }'
@@ -1662,7 +1670,7 @@ The above query returns all records which had problems due to fields mismatch.
 ### `nested` query
 
 - The following features are not functional with the current `nested` implementation:
-  - The `nested` fields sort query returns erroneous ordering of results.
+  - The `nested` fields sort query filter can now be only attached to top level nested field. Lack of control of attachment level may impact some rare use cases on structures nested multiple times, however this would require completely new different syntax that is very hard to understand.
   - The current nested query parser throws an exception if using a grouping with nested syntax due to the current nested query parser. As a workaround, you can rewrite the query so that it does not involve grouping. An example can be found [here](#groupnested).
 
 ### Cursor query

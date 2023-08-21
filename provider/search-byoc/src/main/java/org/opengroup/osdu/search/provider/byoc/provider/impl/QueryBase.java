@@ -252,7 +252,8 @@ abstract class QueryBase {
             for (int idx = 0; idx < request.getSort().getField().size(); idx++) {
                 sourceBuilder.sort(sortParserUtil.parseSort(
                     request.getSort().getFieldByIndex(idx),
-                    request.getSort().getOrderByIndex(idx).name())
+                    request.getSort().getOrderByIndex(idx).name(),
+                    request.getSort().getFilterByIndex(idx))    
                 );
             }
         }
