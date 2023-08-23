@@ -1535,6 +1535,11 @@ should explicitly specify the kind as the example below:
 } 
 ```
 
+References to OSDU data-definitions documents:
+- [6.1.2 Record `kind`](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Guides/Chapters/06-LifecycleProperties.md#612-record-kind)
+- [Appendix D.1.3 Schema Identifier `kind` Limitations](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Guides/Chapters/93-OSDU-Schemas.md#appendix-d13-schema-identifier-kind-limitations)
+
+
 [Back to table of contents](#TOC)
 
 ## Version info API <a name="version-info"></a>
