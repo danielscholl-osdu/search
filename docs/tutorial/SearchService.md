@@ -1510,23 +1510,23 @@ __Note:__ The virtual property declared is never added to the Storage record and
 
 [Back to table of contents](#TOC)
 
-## Exclude kinds with authority as "system-meta-data" in wildcard query <a name="exclude-system-meta-data-kinds"></a>
+## Exclude kinds with authority as `system-meta-data` in wildcard query <a name="exclude-system-meta-data-kinds"></a>
 Some applications or systems may need to have its system meta-data searchable via OSDU search but 
 the system meta-data are not expected to be included in the search results of normal keyword search. In order to 
 exclude the system meta-data in normal search, OSDU community proposed "system-meta-data" as the reserved authority 
 for the system meta-data kinds that are excluded if they are not explicitly specified in the query. 
 
-For example, assuming there is a system kind called "system-meta-data:schema-service:schema:1.0.0" for schema metadata.
-When users try to search data with keyword "wellbore" as below:
+For example, assuming there is a system kind called `system-meta-data:schema-service:schema:1.0.0` for schema metadata.
+When users try to search data with keyword `wellbore` as below:
 ```
 {
   "kind": "*:*:*:*",
   "query": "wellbore"
 } 
 ```
-The meta-data from the kind "system-meta-data:schema-service:schema:1.0.0" will be excluded from the search result by default.
+The meta-data from the kind `system-meta-data:schema-service:schema:1.0.0` will be excluded from the search result by default.
 
-In order to search meta-data with keyword "wellbore" from the kind "system-meta-data:schema-service:schema:1.0.0", user 
+In order to search meta-data with keyword `wellbore` from the kind `system-meta-data:schema-service:schema:1.0.0`, user
 should explicitly specify the kind as the example below:
 ```
 {
