@@ -31,6 +31,8 @@ public class CrossTenantUtils {
     // For details, please refer to implementation of class
     // org.opengroup.osdu.core.common.model.search.validation.MultiKindValidator
     private static final int MAX_INDEX_NAME_LENGTH = 3840;
+    // The last '-' in "-system-meta-data-*" is converted from kind delimiter ":" between authority and source
+    private static final String[] excludedIndices = {"-.*", "-system-meta-data-*"};
 
     @Inject
     private ElasticIndexNameResolver elasticIndexNameResolver;
@@ -62,7 +64,8 @@ public class CrossTenantUtils {
             }
             builder.append(",");
         }
-        builder.append("-.*"); // Exclude Lucene/ElasticSearch internal indices
+        // Exclude Lucene/ElasticSearch internal indices and system/metadata indices in searches with wildcard kind
+        builder.append(String.join(",", excludedIndices));
         return builder.toString();
     }
 }
