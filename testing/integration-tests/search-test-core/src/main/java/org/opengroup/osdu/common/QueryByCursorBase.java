@@ -1,18 +1,16 @@
 package org.opengroup.osdu.common;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import com.google.gson.Gson;
+import java.util.List;
+import org.opengroup.osdu.core.common.model.search.SortQuery;
 import org.opengroup.osdu.request.CursorQuery;
-import org.opengroup.osdu.request.SortQuery;
 import org.opengroup.osdu.response.ErrorResponseMock;
 import org.opengroup.osdu.response.ResponseMock;
 import org.opengroup.osdu.util.Config;
 import org.opengroup.osdu.util.HTTPClient;
-
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class QueryByCursorBase extends TestsBase {
 
