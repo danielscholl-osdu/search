@@ -790,6 +790,73 @@ __Caution__: `aggregations` on response may be empty if correct field is not sup
 
 [Back to table of contents](#TOC)
 
+## Highlight
+
+Specifying optional field `highlightedFields` will add to each result additional dictionary under key `highlight` with phrases from selected fields which matched the query.
+Hightlight is working only for text and keyword fields. Specifying a field of different type or not existing in the mapping is causing that such field is ignored.
+There can be maximally 5 fragments up to 200 characters each for a single field.  
+
+
+Request:
+```
+{
+  "kind": "*:*:master-data--Well:*",
+  "query": "Example",
+  "highlightedFields": ["data.FacilityName", "data.NameAliases.*"]
+}
+```
+Record:
+
+```
+{
+  "kind": "osdu:wks:master-data--Well:1.0.0",
+  "id": "osdu:master-data--Well:example",
+  "data": {
+    "FacilityName": "Example test"
+    "NameAliases": [
+      {
+        "AliasName": "Example test"
+      },
+      {
+        "AliasName": "Example test 2" 
+      },
+      {
+        "AliasName": "Another name" 
+      }
+    ],
+    "Source": "Example test"
+  }
+}
+```
+
+Search response:
+
+```
+{
+  "results": [
+    {
+      "data": {
+          ...
+      },
+      "kind": "osdu:wks:master-data--Well:1.0.0",
+      "id": "osdu:master-data--Well:example",
+      "highlight": {
+        "data.FacilityName": [
+          "<em>Example</em> test"
+        ],
+        "data.NameAliases.AliasName": [
+          "<em>Example</em> test",
+          "<em>Example</em> test 2"
+        ]
+      }
+    },
+     ...
+  ]
+}
+```
+
+[Back to table of contents](#TOC)
+
 ## Sort <a name="sort-queries"></a>
 
 The sort query allows you to add one or more sorts on specific fields. Each sort can be reversed as well.

@@ -119,5 +119,6 @@
       "x-acl",
       "index"
     ]
-  }
+  },
+  "highlight":{"fields":{"data.field1":{"fragment_size":200,"number_of_fragments":5},"data.field2":{"fragment_size":200,"number_of_fragments":5}}}
 }
