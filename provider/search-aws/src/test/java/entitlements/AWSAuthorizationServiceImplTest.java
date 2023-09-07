@@ -21,11 +21,12 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.entitlements.IEntitlementsFactory;
 import org.opengroup.osdu.core.common.entitlements.IEntitlementsService;
+import org.opengroup.osdu.core.common.http.HttpResponse;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.entitlements.*;
+import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.search.provider.aws.cache.GroupCache;
 import org.opengroup.osdu.search.provider.aws.entitlements.AWSAuthorizationServiceImpl;
@@ -33,6 +34,7 @@ import org.opengroup.osdu.search.provider.aws.entitlements.AWSAuthorizationServi
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -108,5 +110,91 @@ public class AWSAuthorizationServiceImplTest {
 
 
         assertEquals(response, this.sut.authorizeAny(this.headers, "role2"));
+    }
+
+    @Test(expected = AppException.class)
+    public void should_throw_AppException_when_EntitlementsException() throws Exception {
+
+        GroupInfo g1 = new GroupInfo();
+        g1.setEmail("role1@gmail.com");
+        g1.setName("role1");
+
+        GroupInfo g2 = new GroupInfo();
+        g2.setEmail("role2@gmail.com");
+        g2.setName("role2");
+
+        List<GroupInfo> groupsInfo = new ArrayList<>();
+        groupsInfo.add(g1);
+        groupsInfo.add(g2);
+
+        Groups groups = new Groups();
+        groups.setGroups(groupsInfo);
+        groups.setMemberEmail(MEMBER_EMAIL);
+        groups.setDesId(MEMBER_EMAIL);
+
+        when(this.entitlementService.getGroups()).thenThrow(new EntitlementsException("String", new HttpResponse()));
+
+        AuthorizationResponse response = AuthorizationResponse.builder().groups(groups).user(MEMBER_EMAIL).build();
+        assertEquals(response, this.sut.authorizeAny(this.headers, "role2"));
+    }
+
+    @Test(expected = AppException.class)
+    public void should_throw_RedisException_when_Cache_return_NULL() throws Exception {
+
+        GroupInfo g1 = new GroupInfo();
+        g1.setEmail("role1@gmail.com");
+        g1.setName("role1");
+
+        GroupInfo g2 = new GroupInfo();
+        g2.setEmail("role2@gmail.com");
+        g2.setName("role2");
+
+        List<GroupInfo> groupsInfo = new ArrayList<>();
+        groupsInfo.add(g1);
+        groupsInfo.add(g2);
+
+        Groups groups = new Groups();
+        groups.setGroups(groupsInfo);
+        groups.setMemberEmail(MEMBER_EMAIL);
+        groups.setDesId(MEMBER_EMAIL);
+
+        AuthorizationResponse response = AuthorizationResponse.builder().groups(groups).user(MEMBER_EMAIL).build();
+
+        when(this.cache.get(anyString())).thenReturn(null);
+
+        assertEquals(response, this.sut.authorizeAny(this.headers, "role2"));
+    }
+
+    @Test(expected = AppException.class)
+    public void should_throw_AppException_when_Entitlement_error() throws Exception {
+
+        GroupInfo g1 = new GroupInfo();
+        g1.setEmail("role1@gmail.com");
+        g1.setName("role1");
+
+        GroupInfo g2 = new GroupInfo();
+        g2.setEmail("role2@gmail.com");
+        g2.setName("role2");
+
+        List<GroupInfo> groupsInfo = new ArrayList<>();
+        groupsInfo.add(g1);
+        groupsInfo.add(g2);
+
+        Groups groups = new Groups();
+        groups.setGroups(groupsInfo);
+        groups.setMemberEmail(MEMBER_EMAIL);
+        groups.setDesId(MEMBER_EMAIL);
+
+        AuthorizationResponse response = AuthorizationResponse.builder().groups(groups).user(MEMBER_EMAIL).build();
+
+
+        assertEquals(response, this.sut.authorizeAny(this.headers, "role2"));
+    }
+
+    @Test(expected = AppException.class)
+    public void should_throw_Exception_with_null_roles(){
+
+        DpsHeaders headers = new DpsHeaders();
+        AuthorizationResponse respones = this.sut.authorizeAny(headers, null);
     }
 }
