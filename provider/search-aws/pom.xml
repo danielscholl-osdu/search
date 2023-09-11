@@ -132,16 +132,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.locationtech.spatial4j</groupId>
-            <artifactId>spatial4j</artifactId>
-            <version>0.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.locationtech.jts.io</groupId>
-            <artifactId>jts-io-common</artifactId>
-            <version>1.15.0</version>
-        </dependency>
-        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${jackson.version}</version>

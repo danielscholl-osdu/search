@@ -16,9 +16,11 @@
  */
 package org.opengroup.osdu.search.provider.gcp.provider.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -44,7 +46,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.servlet.http.HttpServletResponse;
 import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.search.TotalHits.Relation;
@@ -58,12 +59,12 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.bytes.BytesArray;
 import org.elasticsearch.common.bytes.BytesReference;
-import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.text.Text;
+import org.elasticsearch.geometry.Circle;
+import org.elasticsearch.geometry.LinearRing;
+import org.elasticsearch.geometry.Rectangle;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.GeoBoundingBoxQueryBuilder;
-import org.elasticsearch.index.query.GeoDistanceQueryBuilder;
-import org.elasticsearch.index.query.GeoPolygonQueryBuilder;
+import org.elasticsearch.index.query.GeoShapeQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
@@ -83,6 +84,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.Spy;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
@@ -104,13 +106,13 @@ import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.DetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
+import org.opengroup.osdu.search.util.GeoQueryBuilder;
 import org.opengroup.osdu.search.util.IAggregationParserUtil;
 import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.QueryParserUtil;
 import org.opengroup.osdu.search.util.SortParserUtil;
-import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryServiceTest {
@@ -155,6 +157,8 @@ public class QueryServiceTest {
   @Spy
   private IDetailedBadRequestMessageUtil detailedBadRequestMessageUtil = new DetailedBadRequestMessageUtil(
       objectMapper);
+  @Spy
+  private GeoQueryBuilder geoQueryBuilder = new GeoQueryBuilder();
 
   @Mock
   private RestHighLevelClient restHighLevelClient;
@@ -402,9 +406,9 @@ public class QueryServiceTest {
     assertNotNull(builder);
 
     List<QueryBuilder> topLevelMustClause = builder.must();
-    assertEquals(1, topLevelMustClause.size());
+    assertEquals(2, topLevelMustClause.size());
 
-    verifyAcls(topLevelMustClause.get(0), true);
+    verifyAcls(topLevelMustClause.get(1), true);
   }
 
   @Test
@@ -414,9 +418,9 @@ public class QueryServiceTest {
     assertNotNull(builder);
 
     List<QueryBuilder> topLevelMustClause = builder.must();
-    assertEquals(1, topLevelMustClause.size());
+    assertEquals(2, topLevelMustClause.size());
 
-    verifyAcls(topLevelMustClause.get(0), false);
+    verifyAcls(topLevelMustClause.get(1), false);
   }
 
   @Test
@@ -429,7 +433,7 @@ public class QueryServiceTest {
     when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
 
     QueryBuilder builder = this.sut.buildQuery(null, null, false);
-    assertNull(builder);
+    assertNotNull(builder);
   }
 
   @Test(expected = AppException.class)
@@ -492,19 +496,23 @@ public class QueryServiceTest {
     assertNotNull(queryLevelBuilder);
 
     List<QueryBuilder> queryLevelMustClause = queryLevelBuilder.must();
-    assertEquals(2, queryLevelMustClause.size());
+    List<QueryBuilder> filter = queryLevelBuilder.filter();
 
+    assertEquals(1, queryLevelMustClause.size());
+    assertEquals(1, filter.size());
     BoolQueryBuilder queryStringBoolQueryBuilder = (BoolQueryBuilder) queryLevelMustClause.get(0);
     assertNotNull(queryStringBoolQueryBuilder);
 
-    GeoBoundingBoxQueryBuilder geoBoundingBoxQueryBuilder = (GeoBoundingBoxQueryBuilder) queryLevelMustClause
-        .get(1);
-    assertNotNull(geoBoundingBoxQueryBuilder);
-    assertEquals(field, geoBoundingBoxQueryBuilder.fieldName());
-    assertEquals(topLeftLon, geoBoundingBoxQueryBuilder.topLeft().getLon(), .001);
-    assertEquals(topLeftLat, geoBoundingBoxQueryBuilder.topLeft().getLat(), .001);
-    assertEquals(bottomRightLon, geoBoundingBoxQueryBuilder.bottomRight().getLon(), .001);
-    assertEquals(bottomRightLat, geoBoundingBoxQueryBuilder.bottomRight().getLat(), .001);
+    GeoShapeQueryBuilder geoShapeQueryBuilder = (GeoShapeQueryBuilder) filter
+        .get(0);
+    Rectangle rectangle = (Rectangle) geoShapeQueryBuilder.shape();
+
+    assertNotNull(rectangle);
+    assertEquals(field, geoShapeQueryBuilder.fieldName());
+    assertEquals(topLeftLon, rectangle.getMinLon(), .001);
+    assertEquals(topLeftLat, rectangle.getMaxLat(), .001);
+    assertEquals(bottomRightLon, rectangle.getMaxLon(), .001);
+    assertEquals(bottomRightLat, rectangle.getMinLat(), .001);
 
     verifyAcls(topLevelMustClause.get(1), true);
   }
@@ -537,18 +545,22 @@ public class QueryServiceTest {
     assertNotNull(queryLevelBuilder);
 
     List<QueryBuilder> queryLevelMustClause = queryLevelBuilder.must();
-    assertEquals(2, queryLevelMustClause.size());
+    List<QueryBuilder> filter = queryLevelBuilder.filter();
+
+    assertEquals(1, queryLevelMustClause.size());
+    assertEquals(1, filter.size());
 
     BoolQueryBuilder queryStringBoolQueryBuilder = (BoolQueryBuilder) queryLevelMustClause.get(0);
     assertNotNull(queryStringBoolQueryBuilder);
 
-    GeoDistanceQueryBuilder geoDistanceQueryBuilder = (GeoDistanceQueryBuilder) queryLevelMustClause
-        .get(1);
-    assertNotNull(geoDistanceQueryBuilder);
-    assertEquals(field, geoDistanceQueryBuilder.fieldName());
-    assertEquals(distance, geoDistanceQueryBuilder.distance(), .001);
-    assertEquals(pointLon, geoDistanceQueryBuilder.point().getLon(), .001);
-    assertEquals(pointLat, geoDistanceQueryBuilder.point().getLat(), .001);
+    GeoShapeQueryBuilder geoShapeQueryBuilder = (GeoShapeQueryBuilder) filter
+        .get(0);
+    Circle circle = (Circle) geoShapeQueryBuilder.shape();
+    assertNotNull(circle);
+    assertEquals(field, geoShapeQueryBuilder.fieldName());
+    assertEquals(distance, circle.getRadiusMeters(), .001);
+    assertEquals(pointLon, circle.getLon(), .001);
+    assertEquals(pointLat, circle.getLat(), .001);
 
     verifyAcls(topLevelMustClause.get(1), true);
   }
@@ -580,24 +592,30 @@ public class QueryServiceTest {
     assertNotNull(queryLevelBuilder);
 
     List<QueryBuilder> queryLevelMustClause = queryLevelBuilder.must();
-    assertEquals(2, queryLevelMustClause.size());
+    List<QueryBuilder> filter = queryLevelBuilder.filter();
+
+    assertEquals(1, queryLevelMustClause.size());
+    assertEquals(1, filter.size());
 
     BoolQueryBuilder queryStringBoolQueryBuilder = (BoolQueryBuilder) queryLevelMustClause.get(0);
     assertNotNull(queryStringBoolQueryBuilder);
 
-    GeoPolygonQueryBuilder geoPolygonQueryBuilder = (GeoPolygonQueryBuilder) queryLevelMustClause
-        .get(1);
-    assertNotNull(geoPolygonQueryBuilder);
-    assertEquals(field, geoPolygonQueryBuilder.fieldName());
-    assertEquals(points.size(), geoPolygonQueryBuilder.points().size());
-    List<GeoPoint> points1 = geoPolygonQueryBuilder.points();
-    for (int i = 0; i < points1.size(); i++) {
-      GeoPoint geoPoint = points1.get(i);
-      Point requestPoint = points.get(i);
-      assertEquals(requestPoint.getLongitude(), geoPoint.getLon(), .001);
-      assertEquals(requestPoint.getLatitude(), geoPoint.getLat(), .001);
-    }
+    GeoShapeQueryBuilder geoShapeQueryBuilder = (GeoShapeQueryBuilder) filter
+        .get(0);
+    org.elasticsearch.geometry.Polygon polygon = (org.elasticsearch.geometry.Polygon)geoShapeQueryBuilder.shape();
+    ;
+    assertNotNull(polygon);
+    assertEquals(field, geoShapeQueryBuilder.fieldName());
+    assertEquals(points.size(), polygon.getPolygon().length());
 
+    LinearRing linearRing = polygon.getPolygon();
+    double[] lats = linearRing.getLats();
+    double[] lons = linearRing.getLons();
+
+    for (int i = 0; i < points.size(); i++) {
+      assertEquals(points.get(i).getLatitude(), lats[i], .001);
+      assertEquals(points.get(i).getLongitude(), lons[i], .001);
+    }
     verifyAcls(topLevelMustClause.get(1), true);
   }
 
@@ -806,8 +824,6 @@ public class QueryServiceTest {
 
     Set<String> indexedTypes = new HashSet<>();
     indexedTypes.add("geo_shape");
-    when(fieldMappingTypeService.getFieldTypes(eq(restHighLevelClient), anyString(),
-        eq(index))).thenReturn(indexedTypes);
 
     when(providerHeaderService.getDataGroupsHeader()).thenReturn("groups");
 
@@ -826,24 +842,6 @@ public class QueryServiceTest {
     assertEquals(expectedSource, actualSource);
   }
 
-  /* arrange
-     create query request according to this example query:
-        {
-            "kind": "osdu:wks:reference-data--CoordinateTransformation:1.0.1",
-            "query": "data.ID:\"EPSG::blahblah8\"",
-            "spatialFilter": {
-              "field": "data.SpatialLocation.Wgs84Coordinates",
-                  "byWithinPolygon": {
-                "points": [
-                {
-                  "latitude": 10.71,
-                    "longitude": -8.60
-                }
-                  ]
-              }
-
-            }
-        }*/
   @Test
   public void should_return_CorrectQueryResponseForWithinSpatialFilter() throws Exception {
     QueryRequest queryRequest = new QueryRequest();
@@ -878,8 +876,6 @@ public class QueryServiceTest {
     Set<String> indexedTypes = new HashSet<>();
     indexedTypes.add("geo_shape");
 
-    when(fieldMappingTypeService.getFieldTypes(eq(restHighLevelClient), anyString(),
-        eq(index))).thenReturn(indexedTypes);
     when(providerHeaderService.getDataGroupsHeader()).thenReturn("groups");
 
     Map<String, String> headers = new HashMap<>();

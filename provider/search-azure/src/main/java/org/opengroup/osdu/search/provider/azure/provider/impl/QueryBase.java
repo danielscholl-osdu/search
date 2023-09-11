@@ -14,7 +14,23 @@
 
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
+import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.CURSOR_QUERY_DEPENDENCY_NAME;
+import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.QUERY_DEPENDENCY_NAME;
+
 import com.google.common.base.Strings;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.http.ContentTooLongException;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.ElasticsearchStatusException;
@@ -55,28 +71,12 @@ import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
+import org.opengroup.osdu.search.util.GeoQueryBuilder;
 import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.CURSOR_QUERY_DEPENDENCY_NAME;
-import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.QUERY_DEPENDENCY_NAME;
 
 abstract class QueryBase {
 
@@ -101,12 +101,8 @@ abstract class QueryBase {
     @Autowired
     @Qualifier("azureUtilsDependencyLogger")
     private DependencyLogger dependencyLogger;
-
-    private final GeoQueryBuilder geoQueryBuilder;
-
-    public QueryBase() {
-        this.geoQueryBuilder = new GeoQueryBuilder();
-    }
+    @Autowired
+    private GeoQueryBuilder geoQueryBuilder;
 
     // if returnedField contains property matching from excludes than query result will NOT include that property
     private final Set<String> excludes = new HashSet<>(Arrays.asList(RecordMetaAttribute.X_ACL.getValue()));

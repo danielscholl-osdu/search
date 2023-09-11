@@ -151,7 +151,6 @@ public class SortParserUtilTest {
     public void testSortFilterWithoutNestedContext() {
         QueryParserUtil qUtil = new QueryParserUtil();
         List<QueryNode> nodes = qUtil.parseQueryNodesFromQueryString(simpleSortFilter);
-        when(this.queryParserUtil.parseQueryNodesFromQueryString(simpleSortFilter)).thenReturn(nodes);
         FieldSortBuilder actualFileSortBuilder = this.sut.parseSort(simpleNestedSortString, order, noNestedBlockFilter);
     }
 
@@ -160,7 +159,6 @@ public class SortParserUtilTest {
         QueryParserUtil qUtil = new QueryParserUtil();
         List<QueryNode> nodes = qUtil.parseQueryNodesFromQueryString(simpleSortFilter);
         System.out.println(nodes);
-        when(this.queryParserUtil.parseQueryNodesFromQueryString(simpleSortFilter)).thenReturn(nodes);
         FieldSortBuilder actualFileSortBuilder = this.sut.parseSort(simpleNestedSortString, order, topLevelOperatorFilter);
     }
 

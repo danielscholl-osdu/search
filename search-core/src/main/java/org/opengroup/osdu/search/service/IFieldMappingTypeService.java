@@ -14,15 +14,11 @@
 
 package org.opengroup.osdu.search.service;
 
-import org.elasticsearch.client.RestHighLevelClient;
-
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
+import org.elasticsearch.client.RestHighLevelClient;
 
 public interface IFieldMappingTypeService {
-
-    Set<String> getFieldTypes(RestHighLevelClient restClient, String fieldName, String indexPattern) throws IOException;
 
     Map<String, String> getSortableTextFields(RestHighLevelClient restClient, String fieldName, String indexPattern) throws IOException;
 }
