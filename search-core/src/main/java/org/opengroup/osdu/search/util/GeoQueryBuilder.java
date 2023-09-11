@@ -12,9 +12,15 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.opengroup.osdu.search.provider.azure.provider.impl;
+package org.opengroup.osdu.search.util;
 
-import org.elasticsearch.common.geo.GeoPoint;
+import static org.elasticsearch.index.query.QueryBuilders.geoIntersectionQuery;
+import static org.elasticsearch.index.query.QueryBuilders.geoWithinQuery;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.servlet.http.HttpServletResponse;
 import org.elasticsearch.common.geo.builders.CircleBuilder;
 import org.elasticsearch.common.geo.builders.CoordinatesBuilder;
 import org.elasticsearch.common.geo.builders.EnvelopeBuilder;
@@ -28,16 +34,9 @@ import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.search.Point;
 import org.opengroup.osdu.core.common.model.search.Polygon;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
+import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.elasticsearch.index.query.QueryBuilders.geoIntersectionQuery;
-import static org.elasticsearch.index.query.QueryBuilders.geoPolygonQuery;
-import static org.elasticsearch.index.query.QueryBuilders.geoWithinQuery;
-
+@Component
 public final class GeoQueryBuilder {
 
     private static final int MINIMUM_POLYGON_POINTS_SIZE = 4;

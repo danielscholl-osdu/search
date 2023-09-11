@@ -14,6 +14,20 @@
 
 package org.opengroup.osdu.search.provider.aws.provider.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.search.TotalHits.Relation;
 import org.elasticsearch.action.search.SearchRequest;
@@ -32,29 +46,33 @@ import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.model.search.*;
+import org.opengroup.osdu.core.common.model.search.Point;
+import org.opengroup.osdu.core.common.model.search.Polygon;
+import org.opengroup.osdu.core.common.model.search.QueryRequest;
+import org.opengroup.osdu.core.common.model.search.QueryResponse;
+import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
-import org.opengroup.osdu.search.provider.aws.provider.impl.QueryServiceAwsImpl;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
-import org.opengroup.osdu.search.util.*;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
+import org.opengroup.osdu.search.util.CrossTenantUtils;
+import org.opengroup.osdu.search.util.ElasticClientHandler;
+import org.opengroup.osdu.search.util.GeoQueryBuilder;
+import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
+import org.opengroup.osdu.search.util.IQueryParserUtil;
+import org.opengroup.osdu.search.util.ISortParserUtil;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryServiceAwsImplTest {
@@ -69,8 +87,6 @@ public class QueryServiceAwsImplTest {
 
 	@Mock
 	private ElasticClientHandler elasticClientHandler;
-
-	private ElasticClientHandler realElasticClientHandler = new ElasticClientHandler();
 
 	@Mock
 	private JaxRsDpsLog log;
@@ -101,6 +117,9 @@ public class QueryServiceAwsImplTest {
 
 	@Mock
 	private AuditLogger auditLogger;
+
+	@Spy
+	private GeoQueryBuilder geoQueryBuilder = new GeoQueryBuilder();
 
 	@Before
 	public void setup() {
@@ -187,8 +206,6 @@ public class QueryServiceAwsImplTest {
 
 		Set<String> indexedTypes = new HashSet<>();
 		indexedTypes.add("geo_shape");
-		when(fieldMappingTypeService.getFieldTypes(Mockito.eq(client), Mockito.anyString(), Mockito.eq(index)))
-				.thenReturn(indexedTypes);
 
 		when(providerHeaderService.getDataGroupsHeader())
 				.thenReturn("groups");
@@ -199,7 +216,7 @@ public class QueryServiceAwsImplTest {
 				.thenReturn(headers);
 		when(dpsHeaders.getPartitionId()).thenReturn(PARTITION_ID);
 
-		String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"prefix\":{\"id\":{\"value\":\"opendes:\",\"boost\":1.0}}},{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPolygon\",\"coordinates\":[[[[-8.61,1.02],[-2.48,1.02],[-2.48,10.74],[-8.61,10.74],[-8.61,1.02]]]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]},\"highlight\":{}}";
+		String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"prefix\":{\"id\":{\"value\":\"opendes:\",\"boost\":1.0}}}],\"filter\":[{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPolygon\",\"coordinates\":[[[[-8.61,1.02],[-2.48,1.02],[-2.48,10.74],[-8.61,10.74],[-8.61,1.02]]]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]},\"highlight\":{}}";
 
 		// act
 		QueryResponse response = queryServiceAws.queryIndex(queryRequest);
@@ -269,8 +286,6 @@ public class QueryServiceAwsImplTest {
 
 		Set<String> indexedTypes = new HashSet<>();
 		indexedTypes.add("geo_shape");
-		when(fieldMappingTypeService.getFieldTypes(Mockito.eq(client), Mockito.anyString(), Mockito.eq(index)))
-				.thenReturn(indexedTypes);
 
 		when(providerHeaderService.getDataGroupsHeader())
 				.thenReturn("groups");
@@ -281,8 +296,7 @@ public class QueryServiceAwsImplTest {
 				.thenReturn(headers);
 		when(dpsHeaders.getPartitionId()).thenReturn(PARTITION_ID);
 
-		String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"prefix\":{\"id\":{\"value\":\"opendes:\",\"boost\":1.0}}},{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPoint\",\"coordinates\":[[-8.61,1.02]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]},\"highlight\":{}}";
-
+		String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"prefix\":{\"id\":{\"value\":\"opendes:\",\"boost\":1.0}}}],\"filter\":[{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPoint\",\"coordinates\":[[-8.61,1.02]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]},\"highlight\":{}}";
 		// act
 		QueryResponse response = queryServiceAws.queryIndex(queryRequest);
 
@@ -323,14 +337,22 @@ public class QueryServiceAwsImplTest {
 	@Test
 	public void should_return_notNullQuery_when_searchAsDataRootUser() throws IOException {
 		String expectedBuilder =
-			"{\n" +
-			"  \"prefix\" : {\n" +
-			"    \"id\" : {\n" +
-			"      \"value\" : \"opendes:\",\n" +
-			"      \"boost\" : 1.0\n" +
-			"    }\n" +
-			"  }\n" +
-			"}";
+				"{\n"
+						+ "  \"bool\" : {\n"
+						+ "    \"must\" : [\n"
+						+ "      {\n"
+						+ "        \"prefix\" : {\n"
+						+ "          \"id\" : {\n"
+						+ "            \"value\" : \"opendes:\",\n"
+						+ "            \"boost\" : 1.0\n"
+						+ "          }\n"
+						+ "        }\n"
+						+ "      }\n"
+						+ "    ],\n"
+						+ "    \"adjust_pure_negative\" : true,\n"
+						+ "    \"boost\" : 1.0\n"
+						+ "  }\n"
+						+ "}";
 		Map<String, String> HEADERS = new HashMap<>();
 		HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
 		HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
