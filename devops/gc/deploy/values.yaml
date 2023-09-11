@@ -11,7 +11,7 @@ data:
   partitionHost: "http://partition"
   policyHost: "http://policy"
   indexerHost: "http://indexer"
-  policyId: "osdu.instance.search"
+  policyId: 'osdu.partition["%s"].search'
   securityHttpsCertificateTrust: "true"
   servicePolicyEnabled: true
   # Deployments
