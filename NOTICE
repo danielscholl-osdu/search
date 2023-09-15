@@ -328,7 +328,7 @@ The following software have components provided under the terms of this license:
 - jakarta.inject (from https://repo1.maven.org/maven2/org/glassfish/hk2/external/jakarta.inject)
 - java-cloudant (from https://cloudant.com)
 - javatuples (from http://www.javatuples.org)
-- javax.annotation-api (from http://jcp.org/en/jsr/detail?id=250)
+- javax.annotation API (from http://jcp.org/en/jsr/detail?id=250)
 - javax.inject (from http://code.google.com/p/atinject/, https://repo1.maven.org/maven2/org/glassfish/hk2/external/javax.inject)
 - javax.ws.rs-api (from https://github.com/eclipse-ee4j/jaxrs-api)
 - jersey-core (from https://repo1.maven.org/maven2/com/sun/jersey/jersey-core)
@@ -543,7 +543,7 @@ The following software have components provided under the terms of this license:
 - Jakarta Activation API (from https://github.com/eclipse-ee4j/jaf, https://github.com/jakartaee/jaf-api, https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api)
 - Java Architecture for XML Binding (from http://jaxb.java.net/, https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api)
 - JavaBeans Activation Framework (from <http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp>, http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp, https://repo1.maven.org/maven2/com/sun/activation/javax.activation)
-- javax.annotation-api (from http://jcp.org/en/jsr/detail?id=250)
+- javax.annotation API (from http://jcp.org/en/jsr/detail?id=250)
 
 ========================================================================
 CDDL-1.1
@@ -560,7 +560,7 @@ The following software have components provided under the terms of this license:
 - Java Architecture for XML Binding (from http://jaxb.java.net/, https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api)
 - JavaBeans Activation Framework (from <http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp>, http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp, https://repo1.maven.org/maven2/com/sun/activation/javax.activation)
 - Run Level Service (from https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-runlevel)
-- javax.annotation-api (from http://jcp.org/en/jsr/detail?id=250)
+- javax.annotation API (from http://jcp.org/en/jsr/detail?id=250)
 - javax.ws.rs-api (from https://github.com/eclipse-ee4j/jaxrs-api)
 - jersey-client (from https://repo1.maven.org/maven2/com/sun/jersey/jersey-client)
 - tomcat-embed-core (from http://tomcat.apache.org/)
@@ -700,7 +700,7 @@ The following software have components provided under the terms of this license:
 - ServiceLocator Default Implementation (from https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-locator)
 - aopalliance-repackaged (from https://repo1.maven.org/maven2/org/glassfish/hk2/external/aopalliance-repackaged)
 - jakarta.inject (from https://repo1.maven.org/maven2/org/glassfish/hk2/external/jakarta.inject)
-- javax.annotation-api (from http://jcp.org/en/jsr/detail?id=250)
+- javax.annotation API (from http://jcp.org/en/jsr/detail?id=250)
 - javax.ws.rs-api (from https://github.com/eclipse-ee4j/jaxrs-api)
 - jersey-container-servlet (from https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet)
 - jersey-container-servlet-core (from https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet-core)
