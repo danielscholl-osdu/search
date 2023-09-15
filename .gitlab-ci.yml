@@ -23,11 +23,12 @@ variables:
   DEFAULT_DATA_PARTITION_ID_TENANT1_IBM: tenant1
   IBM_HELM_CONFIG_PATH: devops/ibm/ibm-search-service-config
   IBM_HELM_DEPLOY_PATH: devops/ibm/ibm-search-service-deploy
-
+     
   AZURE_SERVICE: search
   AZURE_BUILD_SUBDIR: provider/search-azure
   AZURE_TEST_SUBDIR: testing/integration-tests/search-test-azure
-
+  SERVICE_JAVA_VERSION: "17"
+ 
 include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
@@ -43,7 +44,7 @@ include:
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-global.yml"
-
+ 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-maven.yml"
 
