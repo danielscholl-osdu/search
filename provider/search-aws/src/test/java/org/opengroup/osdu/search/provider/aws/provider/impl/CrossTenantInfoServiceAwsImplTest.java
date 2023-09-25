@@ -71,7 +71,7 @@ public class CrossTenantInfoServiceAwsImplTest {
 
         when(tenantFactory.listTenantInfo()).thenReturn(new ArrayList<TenantInfo>());
 
-        assertEquals((this.crossTenantInfoServiceAws.getAllTenantInfos()).size(), 0);
+        assertEquals(0, (this.crossTenantInfoServiceAws.getAllTenantInfos()).size());
     }
 
     @Test

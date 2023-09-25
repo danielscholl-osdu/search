@@ -46,7 +46,7 @@ public class ElasticRepositoryImplTest {
                                                                                                                 when(mockProvider.getLocalMode()).thenReturn(false);
                                                                                                                 when(mockProvider.getParameterAsStringOrDefault(eq("ELASTICSEARCH_HOST"), any())).thenReturn(host);
                                                                                                                 when(mockProvider.getParameterAsStringOrDefault(eq("ELASTICSEARCH_PORT"), any())).thenReturn(port);
-                                                                                                                when(mockProvider.getCredentialsAsMap(eq("ELASTICSEARCH_CREDENTIALS"))).thenReturn(null);
+                                                                                                                when(mockProvider.getCredentialsAsMap("ELASTICSEARCH_CREDENTIALS")).thenReturn(null);
                                                                                                             })) {                        
             ElasticRepositoryImpl elasticImpl = new ElasticRepositoryImpl();
                 
@@ -66,7 +66,7 @@ public class ElasticRepositoryImplTest {
                                                                                                                 when(mockProvider.getLocalMode()).thenReturn(false);
                                                                                                                 when(mockProvider.getParameterAsStringOrDefault(eq("ELASTICSEARCH_HOST"), any())).thenReturn(host);
                                                                                                                 when(mockProvider.getParameterAsStringOrDefault(eq("ELASTICSEARCH_PORT"), any())).thenReturn(port);
-                                                                                                                when(mockProvider.getCredentialsAsMap(eq("ELASTICSEARCH_CREDENTIALS"))).thenReturn(map);
+                                                                                                                when(mockProvider.getCredentialsAsMap("ELASTICSEARCH_CREDENTIALS")).thenReturn(map);
                                                                                                             })) {                        
             ElasticRepositoryImpl elasticImpl = new ElasticRepositoryImpl();
             elasticImpl.isHttps = true;

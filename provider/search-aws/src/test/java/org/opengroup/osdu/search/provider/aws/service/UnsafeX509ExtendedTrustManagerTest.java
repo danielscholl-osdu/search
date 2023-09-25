@@ -22,6 +22,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Principal;
+import javax.security.auth.x500.X500Principal;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
@@ -104,10 +105,14 @@ class Certificate extends X509Certificate{
     }
 
     @Override
-    public Principal getSubjectDN() {
+    public X500Principal getSubjectX500Principal() {
         return null;
     }
 
+    @Override
+    public Principal getSubjectDN() {
+        return null;
+    }
     @Override
     public Date getNotBefore() {
         return null;

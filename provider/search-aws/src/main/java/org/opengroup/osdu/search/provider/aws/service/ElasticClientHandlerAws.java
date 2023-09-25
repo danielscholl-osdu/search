@@ -31,8 +31,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
-// TODO: Elastic Client Handler should be designed to allow cloud providers to implement their own handler if not we have to inherited
-// SPI needs to be refactored
 @Primary
 @Component
 @Slf4j
@@ -40,32 +38,29 @@ public class ElasticClientHandlerAws extends ElasticClientHandler {
 
     private static final int REST_CLIENT_CONNECT_TIMEOUT = 60000;
     private static final int REST_CLIENT_SOCKET_TIMEOUT = 60000;
-    private static final int REST_CLIENT_RETRY_TIMEOUT = 60000;
 
     @Value("${aws.es.certificate.disableTrust:false}")
     // @Value("#{new Boolean('${aws.es.certificate.disableTrust:false}')}")
     private Boolean disableSslCertificateTrust;
 
-    public ElasticClientHandlerAws() {
-    }
-
     @Override
-    public RestClientBuilder createClientBuilder(String host, String basicAuthenticationHeaderVal, int port, String protocolScheme, String tls) {
+    public RestClientBuilder createClientBuilder(String host, String basicAuthenticationHeaderVal, int port,
+            String protocolScheme, String tls) {
 
         RestClientBuilder builder = RestClient.builder(new HttpHost(host, port, protocolScheme));
         builder.setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder
-                .setConnectTimeout(REST_CLIENT_CONNECT_TIMEOUT)
-                .setSocketTimeout(REST_CLIENT_SOCKET_TIMEOUT));        
+        .setConnectTimeout(REST_CLIENT_CONNECT_TIMEOUT)
+        .setSocketTimeout(REST_CLIENT_SOCKET_TIMEOUT));    
 
-        if(isLocalHost(host) || disableSslCertificateTrust) {            
+        Boolean isLocal = isLocalHost(host);
+        if (isLocal || disableSslCertificateTrust) {
 
-            SSLContext sslContext;            
+            SSLContext sslContext;
             try {
                 sslContext = SSLContext.getInstance("TLS");
-                sslContext.init(null, new TrustManager[]{ UnsafeX509ExtendedTrustManager.INSTANCE }, null);
-                builder.setHttpClientConfigCallback(httpClientBuilder -> 
-                httpClientBuilder.setSSLContext(sslContext)
-                                .setSSLHostnameVerifier((s, session) -> true));
+                sslContext.init(null, new TrustManager[] { UnsafeX509ExtendedTrustManager.INSTANCE }, null);
+                builder.setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setSSLContext(sslContext)
+                        .setSSLHostnameVerifier((s, session) -> true));
             } catch (NoSuchAlgorithmException e) {
                 log.error("No such algorithm", e);
             } catch (KeyManagementException e) {
@@ -73,7 +68,7 @@ public class ElasticClientHandlerAws extends ElasticClientHandler {
             }
 
         }
-        Header[] defaultHeaders = new Header[]{
+        Header[] defaultHeaders = new Header[] {
                 new BasicHeader("client.transport.nodes_sampler_interval", "30s"),
                 new BasicHeader("client.transport.ping_timeout", "30s"),
                 new BasicHeader("client.transport.sniff", "false"),

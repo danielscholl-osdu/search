@@ -47,7 +47,7 @@ public class IndexCacheImplTest {
         try (MockedConstruction<K8sLocalParameterProvider> provider = Mockito.mockConstruction(K8sLocalParameterProvider.class, (mockProvider, context) -> {
                                                                                                                 when(mockProvider.getLocalMode()).thenReturn(true);
                                                                                                             })) {                       
-            IndexCacheImpl cacheImpl = new IndexCacheImpl("String");                                                                
+            IndexCacheImpl cacheImpl = new IndexCacheImpl();                                                                
             cacheImpl.put(s, o);
             assertEquals(o, cacheImpl.get(s));
             cacheImpl.delete(s);
@@ -63,7 +63,7 @@ public class IndexCacheImplTest {
                                                                                                                 when(mockProvider.getLocalMode()).thenReturn(false);
                                                                                                                 when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_ENDPOINT"), any())).thenReturn(endpoint);
                                                                                                                 when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_PORT"), any())).thenReturn(port);
-                                                                                                                when(mockProvider.getCredentialsAsMap(eq("CACHE_CLUSTER_KEY"))).thenReturn(null);
+                                                                                                                when(mockProvider.getCredentialsAsMap("CACHE_CLUSTER_KEY")).thenReturn(null);
                                                                                                             })) {                       
             try (MockedConstruction<RedisCache> cache = Mockito.mockConstruction(RedisCache.class, (mockCache, context) -> {
                                                                                                                 doNothing().when(mockCache).put(s,o);
@@ -72,7 +72,7 @@ public class IndexCacheImplTest {
                                                                                                                 doNothing().when(mockCache).clearAll();
                                                                                                                 doNothing().when(mockCache).close();
                                                                                                             })) {   
-                IndexCacheImpl cacheImpl = new IndexCacheImpl("String");
+                IndexCacheImpl cacheImpl = new IndexCacheImpl();
                 cacheImpl.put(s, o);
                 assertEquals(o, cacheImpl.get(s));
                 cacheImpl.delete(s);
@@ -92,7 +92,7 @@ public class IndexCacheImplTest {
                                                                                                                 when(mockProvider.getLocalMode()).thenReturn(false);
                                                                                                                 when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_ENDPOINT"), any())).thenReturn(endpoint);
                                                                                                                 when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_PORT"), any())).thenReturn(port);
-                                                                                                                when(mockProvider.getCredentialsAsMap(eq("CACHE_CLUSTER_KEY"))).thenReturn(map);
+                                                                                                                when(mockProvider.getCredentialsAsMap("CACHE_CLUSTER_KEY")).thenReturn(map);
                                                                                                             })) {                       
             try (MockedConstruction<RedisCache> cache = Mockito.mockConstruction(RedisCache.class, (mockCache, context) -> {
                                                                                                                 doNothing().when(mockCache).put(s,o);
@@ -101,7 +101,7 @@ public class IndexCacheImplTest {
                                                                                                                 doNothing().when(mockCache).clearAll();
                                                                                                                 doNothing().when(mockCache).close();
                                                                                                             })) {   
-                IndexCacheImpl cacheImpl = new IndexCacheImpl("String");
+                IndexCacheImpl cacheImpl = new IndexCacheImpl();
                 cacheImpl.put(s, o);
                 assertEquals(o, cacheImpl.get(s));
                 cacheImpl.delete(s);

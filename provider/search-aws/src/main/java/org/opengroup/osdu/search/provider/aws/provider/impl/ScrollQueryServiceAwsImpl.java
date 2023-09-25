@@ -55,7 +55,7 @@ import static org.elasticsearch.rest.RestStatus.NOT_FOUND;
 @Service
 public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQueryService {
 
-    private final TimeValue SEARCH_SCROLL_TIMEOUT = TimeValue.timeValueSeconds(90L);
+    private final TimeValue searchScrollTimeout = TimeValue.timeValueSeconds(90L);
 
     @Inject
     private ElasticClientHandler elasticClientHandler;
@@ -75,56 +75,73 @@ public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQuery
     @Override
     public CursorQueryResponse queryIndex(CursorQueryRequest searchRequest) throws Exception {
 
-        CursorQueryResponse queryResponse = CursorQueryResponse.getEmptyResponse();
+        if (StringUtils.isEmpty(searchRequest.getCursor())) {
+            return queryIndexForEmptyCursor(searchRequest);
+        } else {
+            CursorQueryResponse queryResponse = CursorQueryResponse.getEmptyResponse();
+            try {
+                RestHighLevelClient client = this.elasticClientHandler.createRestClient();
+                CursorSettings cursorSettings = this.cursorCache.get(searchRequest.getCursor());
+                checkCursor(cursorSettings);
 
-        try (RestHighLevelClient client = this.elasticClientHandler.createRestClient()) {
-            if (StringUtils.isEmpty(searchRequest.getCursor())) {
-                try {
-                    return this.initCursorQuery(searchRequest, client);
-                } catch (AppException e) {
-                    if (this.exceptionParser.parseException(e).stream().anyMatch(r -> r.contains("Trying to create too many scroll contexts. Must be less than or equal to:"))) {
-                        throw new AppException(429, "Too many requests", "Too many cursor requests, please re-try after some time.", e);
-                    }
-                    throw e;
+                SearchScrollRequest scrollRequest = new SearchScrollRequest(cursorSettings.getCursor());
+                scrollRequest.scroll(searchScrollTimeout);
+                SearchResponse searchScrollResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
+
+                List<Map<String, Object>> results = getHitsFromSearchResponse(searchScrollResponse);
+                queryResponse.setTotalCount(searchScrollResponse.getHits().getTotalHits().value);
+                if (results != null) {
+                    queryResponse.setResults(results);
+                    queryResponse.setCursor(
+                            this.refreshCursorCache(searchScrollResponse.getScrollId(), dpsHeaders.getUserEmail()));
+
+                    List<String> resources = new ArrayList<>();
+                    resources.add(searchRequest.toString());
+                    this.querySuccessAuditLogger(searchRequest);
                 }
-            } else {
-                try {
-                    CursorSettings cursorSettings = this.cursorCache.get(searchRequest.getCursor());
-                    if (cursorSettings != null) {
-                        if (!this.dpsHeaders.getUserEmail().equals(cursorSettings.getUserId())) {
-                            throw new AppException(HttpServletResponse.SC_FORBIDDEN, "cursor issuer doesn't match the cursor consumer", "cursor sharing is forbidden");
-                        }
 
-                        SearchScrollRequest scrollRequest = new SearchScrollRequest(cursorSettings.getCursor());
-                        scrollRequest.scroll(SEARCH_SCROLL_TIMEOUT);
-                        SearchResponse searchScrollResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
-
-                        List<Map<String, Object>> results = getHitsFromSearchResponse(searchScrollResponse);
-                        queryResponse.setTotalCount(searchScrollResponse.getHits().getTotalHits().value);
-                        if (results != null) {
-                            queryResponse.setResults(results);
-                            queryResponse.setCursor(this.refreshCursorCache(searchScrollResponse.getScrollId(), dpsHeaders.getUserEmail()));
-
-                            List<String> resources = new ArrayList<>();
-                            resources.add(searchRequest.toString());
-                            this.querySuccessAuditLogger(searchRequest);
-                        }
-                    } else {
-                        throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired");
-                    }
-                } catch (AppException e) {
-                    throw e;
-                } catch (ElasticsearchStatusException e) {
-                    String invalidScrollMessage = "No search context found for id";
-                    if (e.status() == NOT_FOUND
-                            && (e.getMessage().startsWith(invalidScrollMessage)) || this.exceptionParser.parseException(e).stream().anyMatch(r -> r.contains(invalidScrollMessage)))
-                        throw new AppException(HttpStatus.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired", e);
-                    throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
-                } catch (Exception e) {
-                    throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
-                }
+            } catch (AppException e) {
+                throw e;
+            } catch (ElasticsearchStatusException e) {
+                String invalidScrollMessage = "No search context found for id";
+                if (e.status() == NOT_FOUND
+                        && (e.getMessage().startsWith(invalidScrollMessage))
+                        || this.exceptionParser.parseException(e).stream()
+                                .anyMatch(r -> r.contains(invalidScrollMessage)))
+                    throw new AppException(HttpStatus.SC_BAD_REQUEST, "Can't find the given cursor",
+                            "The given cursor is invalid or expired", e);
+                throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error",
+                        "Error processing search request", e);
+            } catch (Exception e) {
+                throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error",
+                        "Error processing search request", e);
             }
             return queryResponse;
+        }
+    }
+
+    private CursorQueryResponse queryIndexForEmptyCursor(CursorQueryRequest searchRequest) throws Exception {
+        try {
+            RestHighLevelClient client = this.elasticClientHandler.createRestClient();
+            return this.initCursorQuery(searchRequest, client);
+        } catch (AppException e) {
+            if (this.exceptionParser.parseException(e).stream().anyMatch(
+                    r -> r.contains("Trying to create too many scroll contexts. Must be less than or equal to:"))) {
+                throw new AppException(429, "Too many requests",
+                        "Too many cursor requests, please re-try after some time.", e);
+            }
+            throw e;
+        }
+    }
+
+    private void checkCursor(CursorSettings cursorSettings) throws AppException {
+        if (cursorSettings == null) {
+            throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Can't find the given cursor",
+                    "The given cursor is invalid or expired");
+        }
+        if (!this.dpsHeaders.getUserEmail().equals(cursorSettings.getUserId())) {
+            throw new AppException(HttpServletResponse.SC_FORBIDDEN,
+                "cursor issuer doesn't match the cursor consumer", "cursor sharing is forbidden");
         }
     }
 
@@ -135,18 +152,19 @@ public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQuery
         return queryResponse;
     }
 
-    private CursorQueryResponse executeCursorQuery(CursorQueryRequest searchRequest, RestHighLevelClient client) throws AppException {
+    private CursorQueryResponse executeCursorQuery(CursorQueryRequest searchRequest, RestHighLevelClient client)
+            throws AppException {
 
         SearchResponse searchResponse = this.makeSearchRequest(searchRequest, client);
         List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
-        if (results != null) {
-            return CursorQueryResponse.builder()
-                    .cursor(refreshCursorCache(searchResponse.getScrollId(), dpsHeaders.getUserEmail()))
-                    .results(results)
-                    .totalCount(searchResponse.getHits().getTotalHits().value)
-                    .build();
-        }
-        return CursorQueryResponse.getEmptyResponse();
+        if (results == null)
+            return CursorQueryResponse.getEmptyResponse();
+
+        return CursorQueryResponse.builder()
+                .cursor(refreshCursorCache(searchResponse.getScrollId(), dpsHeaders.getUserEmail()))
+                .results(results)
+                .totalCount(searchResponse.getHits().getTotalHits().value)
+                .build();
     }
 
     @Override
@@ -159,19 +177,18 @@ public class ScrollQueryServiceAwsImpl extends QueryBase implements IScrollQuery
         SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);
 
         elasticSearchRequest.source(sourceBuilder);
-        elasticSearchRequest.scroll(new Scroll(SEARCH_SCROLL_TIMEOUT));
+        elasticSearchRequest.scroll(new Scroll(searchScrollTimeout));
 
         return elasticSearchRequest;
     }
 
     String refreshCursorCache(String rawCursor, String userId) {
-        if (rawCursor != null) {
-            this.digest.update(rawCursor.getBytes());
-            String hashCursor = DatatypeConverter.printHexBinary(this.digest.digest()).toUpperCase();
-            this.cursorCache.put(hashCursor, CursorSettings.builder().cursor(rawCursor).userId(userId).build());
-            return hashCursor;
-        }
-        return null;
+        if (rawCursor == null)
+            return null;
+        this.digest.update(rawCursor.getBytes());
+        String hashCursor = DatatypeConverter.printHexBinary(this.digest.digest()).toUpperCase();
+        this.cursorCache.put(hashCursor, CursorSettings.builder().cursor(rawCursor).userId(userId).build());
+        return hashCursor;
     }
 
     @Override

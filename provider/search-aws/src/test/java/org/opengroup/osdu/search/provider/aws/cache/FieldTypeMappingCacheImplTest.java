@@ -35,7 +35,6 @@ import java.util.Map;
 @RunWith(MockitoJUnitRunner.class)
 public class FieldTypeMappingCacheImplTest {
 
-
     private final String s = "s";
     private final Map<String, String> o = new HashMap<String, String>();
     private final String password = "password";
@@ -43,67 +42,74 @@ public class FieldTypeMappingCacheImplTest {
     private final String port = "6369";
 
     @Test
-    public void local_VmCache_test() throws Exception{
-        try (MockedConstruction<K8sLocalParameterProvider> provider = Mockito.mockConstruction(K8sLocalParameterProvider.class, (mockProvider, context) -> {
-                                                                                                                when(mockProvider.getLocalMode()).thenReturn(true);
-                                                                                                            })) {                       
-            FieldTypeMappingCacheImpl cacheImpl = new FieldTypeMappingCacheImpl();                                                                
+    public void local_VmCache_test() throws Exception {
+        try (MockedConstruction<K8sLocalParameterProvider> provider = Mockito
+                .mockConstruction(K8sLocalParameterProvider.class, (mockProvider, context) -> {
+                    when(mockProvider.getLocalMode()).thenReturn(true);
+                })) {
+            FieldTypeMappingCacheImpl cacheImpl = new FieldTypeMappingCacheImpl();
             cacheImpl.put(s, o);
             assertEquals(o, cacheImpl.get(s));
             cacheImpl.delete(s);
             assertNull(cacheImpl.get(s));
-            cacheImpl.clearAll();                                                                                                                                                                                   
+            cacheImpl.clearAll();
         }
     }
 
     @Test
-    public void non_local_Null_Credential_RedisCache_test() throws Exception{
-        try (MockedConstruction<K8sLocalParameterProvider> provider = Mockito.mockConstruction(K8sLocalParameterProvider.class, (mockProvider, context) -> {
-                                                                                                                when(mockProvider.getLocalMode()).thenReturn(false);
-                                                                                                                when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_ENDPOINT"), any())).thenReturn(endpoint);
-                                                                                                                when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_PORT"), any())).thenReturn(port);
-                                                                                                                when(mockProvider.getCredentialsAsMap(eq("CACHE_CLUSTER_KEY"))).thenReturn(null);
-                                                                                                            })) {                       
-            try (MockedConstruction<RedisCache> cache = Mockito.mockConstruction(RedisCache.class, (mockCache, context) -> {
-                                                                                                                doNothing().when(mockCache).put(s,o);
-                                                                                                                when(mockCache.get(s)).thenReturn(o);
-                                                                                                                doNothing().when(mockCache).delete(s);
-                                                                                                                doNothing().when(mockCache).clearAll();
-                                                                                                                doNothing().when(mockCache).close();
-                                                                                                            })) {   
+    public void non_local_Null_Credential_RedisCache_test() throws Exception {
+        try (MockedConstruction<K8sLocalParameterProvider> provider = Mockito
+                .mockConstruction(K8sLocalParameterProvider.class, (mockProvider, context) -> {
+                    when(mockProvider.getLocalMode()).thenReturn(false);
+                    when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_ENDPOINT"), any()))
+                            .thenReturn(endpoint);
+                    when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_PORT"), any())).thenReturn(port);
+                    when(mockProvider.getCredentialsAsMap("CACHE_CLUSTER_KEY")).thenReturn(null);
+                })) {
+            try (MockedConstruction<RedisCache> cache = Mockito.mockConstruction(RedisCache.class,
+                    (mockCache, context) -> {
+                        doNothing().when(mockCache).put(s, o);
+                        when(mockCache.get(s)).thenReturn(o);
+                        doNothing().when(mockCache).delete(s);
+                        doNothing().when(mockCache).clearAll();
+                        doNothing().when(mockCache).close();
+                    })) {
                 FieldTypeMappingCacheImpl cacheImpl = new FieldTypeMappingCacheImpl();
                 cacheImpl.put(s, o);
                 assertEquals(o, cacheImpl.get(s));
                 cacheImpl.delete(s);
-                cacheImpl.clearAll();                                                                                                                                                                                   
+                cacheImpl.clearAll();
             }
         }
     }
 
     @Test
-    public void non_Local_notNull_Credential_RedisCache_test() throws Exception{
+    public void non_Local_notNull_Credential_RedisCache_test() throws Exception {
 
         Map<String, String> map = new HashMap<String, String>();
         map.put("token", password);
 
-        try (MockedConstruction<K8sLocalParameterProvider> provider = Mockito.mockConstruction(K8sLocalParameterProvider.class, (mockProvider, context) -> {
-                                                                                                                when(mockProvider.getLocalMode()).thenReturn(false);
-                                                                                                                when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_ENDPOINT"), any())).thenReturn(endpoint);
-                                                                                                                when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_PORT"), any())).thenReturn(port);
-                                                                                                                when(mockProvider.getCredentialsAsMap(eq("CACHE_CLUSTER_KEY"))).thenReturn(map);
-                                                                                                            })) {                       
-            try (MockedConstruction<RedisCache> cache = Mockito.mockConstruction(RedisCache.class, (mockCache, context) -> {
-                                                                                                                doNothing().when(mockCache).put(s,o);
-                                                                                                                when(mockCache.get(s)).thenReturn(o);
-                                                                                                                doNothing().when(mockCache).delete(s);
-                                                                                                                doNothing().when(mockCache).clearAll();
-                                                                                                                doNothing().when(mockCache).close();
-                                                                                                            })) {   
+        try (MockedConstruction<K8sLocalParameterProvider> provider = Mockito
+                .mockConstruction(K8sLocalParameterProvider.class, (mockProvider, context) -> {
+                    when(mockProvider.getLocalMode()).thenReturn(false);
+                    when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_ENDPOINT"), any()))
+                            .thenReturn(endpoint);
+                    when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_PORT"), any())).thenReturn(port);
+                    when(mockProvider.getCredentialsAsMap("CACHE_CLUSTER_KEY")).thenReturn(map);
+                })) {
+            try (MockedConstruction<RedisCache> cache = Mockito.mockConstruction(RedisCache.class,
+                    (mockCache, context) -> {
+                        doNothing().when(mockCache).put(s, o);
+                        when(mockCache.get(s)).thenReturn(o);
+                        doNothing().when(mockCache).delete(s);
+                        doNothing().when(mockCache).clearAll();
+                        doNothing().when(mockCache).close();
+                    })) {
                 FieldTypeMappingCacheImpl cacheImpl = new FieldTypeMappingCacheImpl();
                 cacheImpl.put(s, o);
                 assertEquals(o, cacheImpl.get(s));
                 cacheImpl.delete(s);
-                cacheImpl.clearAll();                                                                                                                                                                                   
+                cacheImpl.clearAll();
             }
         }
     }

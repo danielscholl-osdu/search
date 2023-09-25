@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Primary
-public class ElasticCredentialsCacheImpl implements IElasticCredentialsCache {
+public class ElasticCredentialsCacheImpl implements IElasticCredentialsCache<Object, Object> {
 
     // NOTE: this class is empty because ElasticCredentials are not used with the AWS implementation.
     // Instead, we're using the AWS Request Signing Apache Interceptor library to handle authentication.
@@ -28,7 +28,7 @@ public class ElasticCredentialsCacheImpl implements IElasticCredentialsCache {
 
     @Override
     public void put(Object o, Object o2) {
-
+        // NOTE: this class is empty because ElasticCredentials are not used with the AWS implementation.
     }
 
     @Override
@@ -38,11 +38,11 @@ public class ElasticCredentialsCacheImpl implements IElasticCredentialsCache {
 
     @Override
     public void delete(Object o) {
-
+        // NOTE: this class is empty because ElasticCredentials are not used with the AWS implementation.
     }
 
     @Override
     public void clearAll() {
-
+        // NOTE: this class is empty because ElasticCredentials are not used with the AWS implementation.
     }
 }

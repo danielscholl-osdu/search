@@ -63,7 +63,7 @@ public class CursorCacheImplTest {
                                                                                                                 when(mockProvider.getLocalMode()).thenReturn(false);
                                                                                                                 when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_ENDPOINT"), any())).thenReturn(endpoint);
                                                                                                                 when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_PORT"), any())).thenReturn(port);
-                                                                                                                when(mockProvider.getCredentialsAsMap(eq("CACHE_CLUSTER_KEY"))).thenReturn(null);
+                                                                                                                when(mockProvider.getCredentialsAsMap("CACHE_CLUSTER_KEY")).thenReturn(null);
                                                                                                             })) {                       
             try (MockedConstruction<RedisCache> cache = Mockito.mockConstruction(RedisCache.class, (mockCache, context) -> {
                                                                                                                 doNothing().when(mockCache).put(s,o);
@@ -91,7 +91,7 @@ public class CursorCacheImplTest {
                                                                                                                 when(mockProvider.getLocalMode()).thenReturn(false);
                                                                                                                 when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_ENDPOINT"), any())).thenReturn(endpoint);
                                                                                                                 when(mockProvider.getParameterAsStringOrDefault(eq("CACHE_CLUSTER_PORT"), any())).thenReturn(port);
-                                                                                                                when(mockProvider.getCredentialsAsMap(eq("CACHE_CLUSTER_KEY"))).thenReturn(map);
+                                                                                                                when(mockProvider.getCredentialsAsMap("CACHE_CLUSTER_KEY")).thenReturn(map);
                                                                                                             })) {                       
             try (MockedConstruction<RedisCache> cache = Mockito.mockConstruction(RedisCache.class, (mockCache, context) -> {
                                                                                                                 doNothing().when(mockCache).put(s,o);

@@ -28,43 +28,41 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 @Component
-public class GroupCache<K,V> implements ICache<K,V> {
+public class GroupCache<K, V> implements ICache<K, V> {
     @Value("${aws.elasticache.cluster.endpoint:null}")
-	String REDIS_SEARCH_HOST;
+    String redisSearchHost;
     @Value("${aws.elasticache.cluster.port:null}")
-	String REDIS_SEARCH_PORT;
+    String redisSearchPort;
     @Value("${aws.elasticache.cluster.key:null}")
-	String REDIS_SEARCH_KEY;
-    private ICache cache;
+    String redisSearchKey;
+    private ICache<K, V> cache;
+
     public GroupCache() throws K8sParameterNotFoundException, JsonProcessingException {
         K8sLocalParameterProvider provider = new K8sLocalParameterProvider();
-        if (provider.getLocalMode()){
-            if (Boolean.parseBoolean(System.getenv("DISABLE_CACHE"))){
-                this.cache =  new DummyCache();
+        Boolean isLocal = provider.getLocalMode();
+        if (Boolean.TRUE.equals(isLocal)) {
+            if (Boolean.parseBoolean(System.getenv("DISABLE_CACHE"))) {
+                this.cache = new DummyCache<>();
             }
-            this.cache =  new VmCache<>(60, 10);
-        }else {
-            String host = provider.getParameterAsStringOrDefault("CACHE_CLUSTER_ENDPOINT", REDIS_SEARCH_HOST);
-            int port = Integer.parseInt(provider.getParameterAsStringOrDefault("CACHE_CLUSTER_PORT", REDIS_SEARCH_PORT));
-            Map<String, String> credential =provider.getCredentialsAsMap("CACHE_CLUSTER_KEY");
-            String password;
-            if (credential !=null){
-                password = credential.get("token");
-            }else{
-                password = REDIS_SEARCH_KEY;
-            }
-            this.cache =  new RedisCache(host, port, password, 60, String.class, Groups.class);
+            this.cache = new VmCache<>(60, 10);
+        } else {
+            String host = provider.getParameterAsStringOrDefault("CACHE_CLUSTER_ENDPOINT", redisSearchHost);
+            int port = Integer
+                    .parseInt(provider.getParameterAsStringOrDefault("CACHE_CLUSTER_PORT", redisSearchPort));
+            Map<String, String> credential = provider.getCredentialsAsMap("CACHE_CLUSTER_KEY");
+            String password = credential == null ? redisSearchKey : credential.get("token");    
+            this.cache = new RedisCache(host, port, password, 60, String.class, Groups.class);
         }
     }
 
     @Override
     public void put(K k, V o) {
-        this.cache.put(k,o);
+        this.cache.put(k, o);
     }
 
     @Override
     public V get(K k) {
-        return (V) this.cache.get(k);
+        return this.cache.get(k);
     }
 
     @Override
