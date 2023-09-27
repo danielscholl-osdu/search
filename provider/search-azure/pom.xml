@@ -55,10 +55,22 @@
         <azure-core.version>1.31.0</azure-core.version>
         <azure-security-keyvault-keys.version>4.4.6</azure-security-keyvault-keys.version>
         <azure-security-keyvault-secrets.version>4.4.6</azure-security-keyvault-secrets.version>
+        <netty.version>4.1.98.Final</netty.version>
+        <guava.version>32.1.2-jre</guava.version>
+        <woodstox-core.version>6.4.0</woodstox-core.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- netty-bom dependency to be declared before spring-boot-dependencies,
+            to pull all netty-transitive dependencies with same version -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>${netty.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- Inherit managed dependencies from core-lib-azure -->
             <dependency>
                 <groupId>org.opengroup.osdu</groupId>
@@ -143,6 +155,10 @@
                 <exclusion>
                     <artifactId>azure-core</artifactId>
                     <groupId>com.azure</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.microsoft.azure</groupId>
+                    <artifactId>documentdb-bulkexecutor</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -265,6 +281,11 @@
             <groupId>com.azure</groupId>
             <artifactId>azure-security-keyvault-secrets</artifactId>
             <version>${azure-security-keyvault-secrets.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
         </dependency>
     </dependencies>
 
