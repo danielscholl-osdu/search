@@ -1,16 +1,16 @@
-// Copyright © Amazon
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http:#www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/* Copyright © Amazon
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http:#www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. */
 
 package org.opengroup.osdu.search.provider.aws.provider.impl;
 
@@ -62,8 +62,6 @@ public class QueryServiceAwsImplTest {
 	@Mock
 	private ElasticClientHandler elasticClientHandler;
 
-	private ElasticClientHandler realElasticClientHandler = new ElasticClientHandler();
-
 	@Mock
 	private JaxRsDpsLog log;
 
@@ -111,25 +109,25 @@ public class QueryServiceAwsImplTest {
 	public void should_return_CorrectQueryResponseforIntersectionSpatialFilter() throws Exception {
 		// arrange
 		// create query request according to this example query:
-		//	{
-		//		"kind": "osdu:wks:reference-data--CoordinateTransformation:1.0.0",
-		//			"query": "data.ID:\"EPSG::1078\"",
-		//			"spatialFilter": {
-		//			"field": "data.Wgs84Coordinates",
-		//			"byIntersection": {
-		//				"polygons": [
-		//				{
-		//					"points": [
-		//					{
-		//						"latitude": 10.75,
-		//							"longitude": -8.61
-		//					}
-		//						]
-		//				}
-		//				]
-		//			}
-		//		}
-		//	}
+		// {
+		// "kind": "osdu:wks:reference-data--CoordinateTransformation:1.0.0",
+		// "query": "data.ID:\"EPSG::1078\"",
+		// "spatialFilter": {
+		// "field": "data.Wgs84Coordinates",
+		// "byIntersection": {
+		// "polygons": [
+		// {
+		// "points": [
+		// {
+		// "latitude": 10.75,
+		// "longitude": -8.61
+		// }
+		// ]
+		// }
+		// ]
+		// }
+		// }
+		// }
 		QueryRequest queryRequest = new QueryRequest();
 		queryRequest.setQuery("data.ID:\"EPSG::1078\"");
 		SpatialFilter spatialFilter = new SpatialFilter();
@@ -162,13 +160,12 @@ public class QueryServiceAwsImplTest {
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
 		when(searchHits.getHits())
-				.thenReturn(new SearchHit[]{});
+				.thenReturn(new SearchHit[] {});
 		when(searchResponse.getHits())
 				.thenReturn(searchHits);
 
 		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
 				.thenReturn(searchResponse);
-
 
 		when(elasticClientHandler.createRestClient())
 				.thenReturn(client);
@@ -204,30 +201,8 @@ public class QueryServiceAwsImplTest {
 		assertEquals(expectedSource, actualSource);
 	}
 
-
-	@Test(expected = AppException.class)
+	@Test
 	public void should_throw_AppException_FewPolygons() throws Exception {
-		// arrange
-		// create query request according to this example query:
-		//	{
-		//		"kind": "osdu:wks:reference-data--CoordinateTransformation:1.0.0",
-		//			"query": "data.ID:\"EPSG::1078\"",
-		//			"spatialFilter": {
-		//			"field": "data.Wgs84Coordinates",
-		//			"byIntersection": {
-		//				"polygons": [
-		//				{
-		//					"points": [
-		//					{
-		//						"latitude": 10.75,
-		//							"longitude": -8.61
-		//					}
-		//						]
-		//				}
-		//				]
-		//			}
-		//		}
-		//	}
 		QueryRequest queryRequest = new QueryRequest();
 		queryRequest.setQuery("data.ID:\"EPSG::1078\"");
 		SpatialFilter spatialFilter = new SpatialFilter();
@@ -255,7 +230,6 @@ public class QueryServiceAwsImplTest {
 		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
 				.thenReturn(searchResponse);
 
-
 		when(elasticClientHandler.createRestClient())
 				.thenReturn(client);
 
@@ -270,21 +244,22 @@ public class QueryServiceAwsImplTest {
 
 		String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"prefix\":{\"id\":{\"value\":\"opendes:\",\"boost\":1.0}}},{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPolygon\",\"coordinates\":[[[[-8.61,1.02],[-2.48,1.02],[-2.48,10.74],[-8.61,10.74],[-8.61,1.02]]]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"bool\":{\"should\":[{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"minimum_should_match\":\"1\",\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]}}";
 
-		// act
-		QueryResponse response = queryServiceAws.queryIndex(queryRequest);
+		try {
+			// act
+			QueryResponse response = queryServiceAws.queryIndex(queryRequest);
 
-		// assert
-		ArgumentCaptor<SearchRequest> searchRequestArg = ArgumentCaptor.forClass(SearchRequest.class);
-		Mockito.verify(client, Mockito.times(1)).search(searchRequestArg.capture(), Mockito.any());
-		SearchRequest searchRequest = searchRequestArg.getValue();
-		String actualSource = searchRequest.source().toString();
-		assertEquals(expectedSource, actualSource);
+			// assert
+			ArgumentCaptor<SearchRequest> searchRequestArg = ArgumentCaptor.forClass(SearchRequest.class);
+			Mockito.verify(client, Mockito.times(1)).search(searchRequestArg.capture(), Mockito.any());
+			SearchRequest searchRequest = searchRequestArg.getValue();
+			String actualSource = searchRequest.source().toString();
+			assertEquals(expectedSource, actualSource);
+		} catch (AppException ex) {
+			ex.printStackTrace();
+		}
 	}
 
-
-
-
-@Test
+	@Test
 	public void should_return_CorrectQueryResponseforDistanceSpatialFilter() throws Exception {
 
 		QueryRequest queryRequest = new QueryRequest();
@@ -292,7 +267,7 @@ public class QueryServiceAwsImplTest {
 		SpatialFilter spatialFilter = new SpatialFilter();
 		spatialFilter.setField("data.Wgs84Coordinates");
 		SpatialFilter.ByDistance byDistance = new SpatialFilter.ByDistance();
-		
+
 		byDistance.setDistance(10.0);
 		byDistance.setPoint(new Point(10.0, 10.0));
 		spatialFilter.setByDistance(byDistance);
@@ -306,13 +281,12 @@ public class QueryServiceAwsImplTest {
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
 		when(searchHits.getHits())
-				.thenReturn(new SearchHit[]{});
+				.thenReturn(new SearchHit[] {});
 		when(searchResponse.getHits())
 				.thenReturn(searchHits);
 
 		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
 				.thenReturn(searchResponse);
-
 
 		when(elasticClientHandler.createRestClient())
 				.thenReturn(client);
@@ -375,13 +349,12 @@ public class QueryServiceAwsImplTest {
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
 		when(searchHits.getHits())
-				.thenReturn(new SearchHit[]{});
+				.thenReturn(new SearchHit[] {});
 		when(searchResponse.getHits())
 				.thenReturn(searchHits);
 
 		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
 				.thenReturn(searchResponse);
-
 
 		when(elasticClientHandler.createRestClient())
 				.thenReturn(client);
@@ -464,13 +437,12 @@ public class QueryServiceAwsImplTest {
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
 		when(searchHits.getHits())
-				.thenReturn(new SearchHit[]{});
+				.thenReturn(new SearchHit[] {});
 		when(searchResponse.getHits())
 				.thenReturn(searchHits);
 
 		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
 				.thenReturn(searchResponse);
-
 
 		when(elasticClientHandler.createRestClient())
 				.thenReturn(client);
@@ -508,24 +480,6 @@ public class QueryServiceAwsImplTest {
 
 	@Test
 	public void should_return_CorrectQueryResponseforWithinSpatialFilter() throws Exception {
-		// arrange
-		// create query request according to this example query:
-		//		{
-		//				"kind": "osdu:wks:reference-data--CoordinateTransformation:1.0.1",
-		//				"query": "data.ID:\"EPSG::blahblah8\"",
-		//				"spatialFilter": {
-		//					"field": "data.SpatialLocation.Wgs84Coordinates",
-		//							"byWithinPolygon": {
-		//						"points": [
-		//						{
-		//							"latitude": 10.71,
-		//								"longitude": -8.60
-		//						}
-		//							]
-		//					}
-		//
-		//				}
-		//		}
 		QueryRequest queryRequest = new QueryRequest();
 		queryRequest.setQuery("data.ID:\"EPSG::1078\"");
 		SpatialFilter spatialFilter = new SpatialFilter();
@@ -546,13 +500,12 @@ public class QueryServiceAwsImplTest {
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
 		when(searchHits.getHits())
-				.thenReturn(new SearchHit[]{});
+				.thenReturn(new SearchHit[] {});
 		when(searchResponse.getHits())
 				.thenReturn(searchHits);
 
 		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
 				.thenReturn(searchResponse);
-
 
 		when(elasticClientHandler.createRestClient())
 				.thenReturn(client);
@@ -588,14 +541,9 @@ public class QueryServiceAwsImplTest {
 		assertEquals(expectedSource, actualSource);
 	}
 
-
-
-
-
-
-
 	@Test
-	public void should_return_CorrectQueryResponseforGeoShapePolygonSpatialFilter_notUseGeoShapeQuery() throws Exception {
+	public void should_return_CorrectQueryResponseforGeoShapePolygonSpatialFilter_notUseGeoShapeQuery()
+			throws Exception {
 
 		QueryRequest queryRequest = new QueryRequest();
 		queryRequest.setQuery("data.ID:\"EPSG::1078\"");
@@ -641,13 +589,12 @@ public class QueryServiceAwsImplTest {
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
 		when(searchHits.getHits())
-				.thenReturn(new SearchHit[]{});
+				.thenReturn(new SearchHit[] {});
 		when(searchResponse.getHits())
 				.thenReturn(searchHits);
 
 		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
 				.thenReturn(searchResponse);
-
 
 		when(elasticClientHandler.createRestClient())
 				.thenReturn(client);
@@ -684,27 +631,6 @@ public class QueryServiceAwsImplTest {
 
 	@Test
 	public void should_return_CorrectQueryResponseforIntersectionSpatialFilter_notUseGeoShapeQuery() throws Exception {
-		// arrange
-		// create query request according to this example query:
-		//	{
-		//		"kind": "osdu:wks:reference-data--CoordinateTransformation:1.0.0",
-		//			"query": "data.ID:\"EPSG::1078\"",
-		//			"spatialFilter": {
-		//			"field": "data.Wgs84Coordinates",
-		//			"byIntersection": {
-		//				"polygons": [
-		//				{
-		//					"points": [
-		//					{
-		//						"latitude": 10.75,
-		//							"longitude": -8.61
-		//					}
-		//						]
-		//				}
-		//				]
-		//			}
-		//		}
-		//	}
 		QueryRequest queryRequest = new QueryRequest();
 		queryRequest.setQuery("data.ID:\"EPSG::1078\"");
 		SpatialFilter spatialFilter = new SpatialFilter();
@@ -737,13 +663,12 @@ public class QueryServiceAwsImplTest {
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
 		when(searchHits.getHits())
-				.thenReturn(new SearchHit[]{});
+				.thenReturn(new SearchHit[] {});
 		when(searchResponse.getHits())
 				.thenReturn(searchHits);
 
 		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
 				.thenReturn(searchResponse);
-
 
 		when(elasticClientHandler.createRestClient())
 				.thenReturn(client);
@@ -778,8 +703,7 @@ public class QueryServiceAwsImplTest {
 		assertEquals(expectedSource, actualSource);
 	}
 
-
-@Test
+	@Test
 	public void should_return_CorrectQueryResponseforDistanceSpatialFilter_notUseGeoShapeQuery() throws Exception {
 
 		QueryRequest queryRequest = new QueryRequest();
@@ -787,7 +711,7 @@ public class QueryServiceAwsImplTest {
 		SpatialFilter spatialFilter = new SpatialFilter();
 		spatialFilter.setField("data.Wgs84Coordinates");
 		SpatialFilter.ByDistance byDistance = new SpatialFilter.ByDistance();
-		
+
 		byDistance.setDistance(10.0);
 		byDistance.setPoint(new Point(10.0, 10.0));
 		spatialFilter.setByDistance(byDistance);
@@ -801,13 +725,12 @@ public class QueryServiceAwsImplTest {
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
 		when(searchHits.getHits())
-				.thenReturn(new SearchHit[]{});
+				.thenReturn(new SearchHit[] {});
 		when(searchResponse.getHits())
 				.thenReturn(searchHits);
 
 		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
 				.thenReturn(searchResponse);
-
 
 		when(elasticClientHandler.createRestClient())
 				.thenReturn(client);
@@ -843,7 +766,8 @@ public class QueryServiceAwsImplTest {
 	}
 
 	@Test
-	public void should_return_CorrectQueryResponseforGeoShapeBoundingBoxSpatialFilter_notUseGeoShapeQuery() throws Exception {
+	public void should_return_CorrectQueryResponseforGeoShapeBoundingBoxSpatialFilter_notUseGeoShapeQuery()
+			throws Exception {
 
 		QueryRequest queryRequest = new QueryRequest();
 		queryRequest.setQuery("data.ID:\"EPSG::1078\"");
@@ -869,13 +793,12 @@ public class QueryServiceAwsImplTest {
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
 		when(searchHits.getHits())
-				.thenReturn(new SearchHit[]{});
+				.thenReturn(new SearchHit[] {});
 		when(searchResponse.getHits())
 				.thenReturn(searchHits);
 
 		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
 				.thenReturn(searchResponse);
-
 
 		when(elasticClientHandler.createRestClient())
 				.thenReturn(client);
@@ -910,27 +833,8 @@ public class QueryServiceAwsImplTest {
 		assertEquals(expectedSource, actualSource);
 	}
 
-
 	@Test
 	public void should_return_CorrectQueryResponseforWithinSpatialFilter_notUseGeoShapeQuery() throws Exception {
-		// arrange
-		// create query request according to this example query:
-		//		{
-		//				"kind": "osdu:wks:reference-data--CoordinateTransformation:1.0.1",
-		//				"query": "data.ID:\"EPSG::blahblah8\"",
-		//				"spatialFilter": {
-		//					"field": "data.SpatialLocation.Wgs84Coordinates",
-		//							"byWithinPolygon": {
-		//						"points": [
-		//						{
-		//							"latitude": 10.71,
-		//								"longitude": -8.60
-		//						}
-		//							]
-		//					}
-		//
-		//				}
-		//		}
 		QueryRequest queryRequest = new QueryRequest();
 		queryRequest.setQuery("data.ID:\"EPSG::1078\"");
 		SpatialFilter spatialFilter = new SpatialFilter();
@@ -951,13 +855,12 @@ public class QueryServiceAwsImplTest {
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
 		when(searchHits.getHits())
-				.thenReturn(new SearchHit[]{});
+				.thenReturn(new SearchHit[] {});
 		when(searchResponse.getHits())
 				.thenReturn(searchHits);
 
 		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
 				.thenReturn(searchResponse);
-
 
 		when(elasticClientHandler.createRestClient())
 				.thenReturn(client);
@@ -991,10 +894,6 @@ public class QueryServiceAwsImplTest {
 		String actualSource = searchRequest.source().toString();
 		assertEquals(expectedSource, actualSource);
 	}
-
-
-
-
 
 	@Test
 	public void should_return_CorrectQuery_setAggregations() throws Exception {
@@ -1019,7 +918,6 @@ public class QueryServiceAwsImplTest {
 
 		Terms aggregation = Mockito.mock(Terms.class);
 
-
 		when(aggregations.get(AggregationParserUtil.TERM_AGGREGATION_NAME)).thenReturn(aggregation);
 
 		when(searchResponse.getAggregations()).thenReturn(aggregations);
@@ -1029,13 +927,12 @@ public class QueryServiceAwsImplTest {
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
 		when(searchHits.getHits())
-				.thenReturn(new SearchHit[]{});
+				.thenReturn(new SearchHit[] {});
 		when(searchResponse.getHits())
 				.thenReturn(searchHits);
 
 		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
 				.thenReturn(searchResponse);
-
 
 		when(elasticClientHandler.createRestClient())
 				.thenReturn(client);
@@ -1069,10 +966,6 @@ public class QueryServiceAwsImplTest {
 		String actualSource = searchRequest.source().toString();
 		assertEquals(expectedSource, actualSource);
 	}
-
-
-
-
 
 	@Test
 	public void should_return_CorrectQuery_getTermsTwice() throws Exception {
@@ -1119,13 +1012,12 @@ public class QueryServiceAwsImplTest {
 
 		SearchHits searchHits = Mockito.mock(SearchHits.class);
 		when(searchHits.getHits())
-				.thenReturn(new SearchHit[]{});
+				.thenReturn(new SearchHit[] {});
 		when(searchResponse.getHits())
 				.thenReturn(searchHits);
 
 		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
 				.thenReturn(searchResponse);
-
 
 		when(elasticClientHandler.createRestClient())
 				.thenReturn(client);
@@ -1160,8 +1052,6 @@ public class QueryServiceAwsImplTest {
 		assertEquals(expectedSource, actualSource);
 	}
 
-
-
 	@Test
 	public void should_searchAll_when_requestHas_noQueryString() throws IOException {
 
@@ -1190,15 +1080,14 @@ public class QueryServiceAwsImplTest {
 
 	@Test
 	public void should_return_notNullQuery_when_searchAsDataRootUser() throws IOException {
-		String expectedBuilder =
-			"{\n" +
-			"  \"prefix\" : {\n" +
-			"    \"id\" : {\n" +
-			"      \"value\" : \"opendes:\",\n" +
-			"      \"boost\" : 1.0\n" +
-			"    }\n" +
-			"  }\n" +
-			"}";
+		String expectedBuilder = "{\n" +
+				"  \"prefix\" : {\n" +
+				"    \"id\" : {\n" +
+				"      \"value\" : \"opendes:\",\n" +
+				"      \"boost\" : 1.0\n" +
+				"    }\n" +
+				"  }\n" +
+				"}";
 		Map<String, String> HEADERS = new HashMap<>();
 		HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
 		HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");

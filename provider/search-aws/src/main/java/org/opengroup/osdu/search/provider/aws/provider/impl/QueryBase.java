@@ -1,16 +1,16 @@
-// Copyright © Amazon Web Services
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/* Copyright © Amazon Web Services
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. */
 
 package org.opengroup.osdu.search.provider.aws.provider.impl;
 
@@ -34,6 +34,9 @@ import org.elasticsearch.common.geo.builders.*;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.geometry.Circle;
+import org.elasticsearch.geometry.Geometry;
+import org.elasticsearch.geometry.Rectangle;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.WrapperQueryBuilder;
 import org.elasticsearch.rest.RestStatus;
@@ -235,7 +238,8 @@ abstract class QueryBase {
             points.add(new Coordinate(point.getLongitude(), point.getLatitude()));
         }
         CoordinatesBuilder cb = new CoordinatesBuilder().coordinates(points);
-        return geoWithinQuery(spatialFilter.getField(), new PolygonBuilder(cb)).ignoreUnmapped(true);
+        Geometry geometry = new PolygonBuilder(cb).buildGeometry();
+        return geoWithinQuery(spatialFilter.getField(), geometry).ignoreUnmapped(true);
     }
 
     private QueryBuilder getGeoShapeBoundingBoxQuery(SpatialFilter spatialFilter) throws IOException {
@@ -244,7 +248,8 @@ abstract class QueryBase {
                 spatialFilter.getByBoundingBox().getTopLeft().getLatitude());
         Coordinate bottomRight = new Coordinate(spatialFilter.getByBoundingBox().getBottomRight().getLongitude(),
                 spatialFilter.getByBoundingBox().getBottomRight().getLatitude());
-        return geoWithinQuery(spatialFilter.getField(), new EnvelopeBuilder(topLeft, bottomRight)).ignoreUnmapped(true);
+        Rectangle rectangle = new EnvelopeBuilder(topLeft, bottomRight).buildGeometry();
+        return geoWithinQuery(spatialFilter.getField(), rectangle).ignoreUnmapped(true);
     }
 
     private QueryBuilder getGeoShapeIntersectionQuery(SpatialFilter spatialFilter) throws IOException {
@@ -289,8 +294,8 @@ abstract class QueryBase {
 
         Coordinate center = new Coordinate(spatialFilter.getByDistance().getPoint().getLongitude(),
                 spatialFilter.getByDistance().getPoint().getLatitude());
-        CircleBuilder circleBuilder = new CircleBuilder().center(center)
-                .radius(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS);
+        Circle circleBuilder = new CircleBuilder().center(center)
+                .radius(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS).buildGeometry();
         return geoWithinQuery(spatialFilter.getField(), circleBuilder).ignoreUnmapped(true);
     }
 
