@@ -22,6 +22,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Principal;
+
+import javax.net.ssl.SSLEngine;
 import javax.security.auth.x500.X500Principal;
 import java.security.PublicKey;
 import java.security.SignatureException;
@@ -47,14 +49,15 @@ public class UnsafeX509ExtendedTrustManagerTest {
         X509Certificate[] certificates = new X509Certificate[1];
 
         certificates[0] = new Certificate();
-        
+        SSLEngine mock = null;
         UnsafeX509ExtendedTrustManager manager = UnsafeX509ExtendedTrustManager.INSTANCE;
 
         manager.checkClientTrusted(certificates, "auth");
         manager.checkClientTrusted(certificates, "auth", new Socket());
         manager.checkServerTrusted(certificates, "auth");
         manager.checkServerTrusted(certificates, "auth", new Socket());
-
+        manager.checkServerTrusted(certificates, "auth", mock);
+        manager.getAcceptedIssuers();
     }
 
 }

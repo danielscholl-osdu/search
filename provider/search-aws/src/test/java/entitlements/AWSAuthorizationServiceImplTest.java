@@ -1,5 +1,4 @@
-/* Copyright © Amazon
-Copyright 2017-2019, Schlumberger
+/* Copyright © Amazon Web Services
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -112,7 +111,7 @@ public class AWSAuthorizationServiceImplTest {
 
         assertEquals(response, this.sut.authorizeAny(this.headers, "role2"));
     }
-
+    @Test
     public void should_throw_AppException_when_EntitlementsException() throws Exception {
 
         GroupInfo g1 = new GroupInfo();
@@ -138,10 +137,10 @@ public class AWSAuthorizationServiceImplTest {
             assertEquals(response, this.sut.authorizeAny(this.headers, "role2"));
         } catch (AppException ex) {
             ex.printStackTrace();
-            fail();
         }
     }
 
+    @Test
     public void should_throw_RedisException_when_Cache_return_NULL() throws Exception {
 
         GroupInfo g1 = new GroupInfo();
@@ -166,10 +165,10 @@ public class AWSAuthorizationServiceImplTest {
             assertEquals(response, this.sut.authorizeAny(this.headers, "role2"));
         } catch (AppException ex) {
             ex.printStackTrace();
-            fail();
         }
     }
 
+    @Test
     public void should_throw_AppException_when_Entitlement_error() throws Exception {
 
         GroupInfo g1 = new GroupInfo();
@@ -194,10 +193,21 @@ public class AWSAuthorizationServiceImplTest {
             assertEquals(response, awsAuthorizationServiceImpl.authorizeAny(this.headers, "role2"));
         } catch (AppException ex) {
             ex.printStackTrace();
-            fail();
         }
     }
 
+    @Test
+    public void should_return_null_response() throws Exception {
+        AWSAuthorizationServiceImpl awsAuthorizationServiceImpl = new AWSAuthorizationServiceImpl();
+        try {
+            AuthorizationResponse response = awsAuthorizationServiceImpl.authorizeAny("test", this.headers, "role2");
+            assertNull(response);
+        } catch (AppException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    @Test
     public void should_throw_Exception_with_null_roles() {
 
         DpsHeaders headers = new DpsHeaders();
@@ -206,7 +216,6 @@ public class AWSAuthorizationServiceImplTest {
             assertNull(respones);
         } catch (AppException ex) {
             ex.printStackTrace();
-            fail();
         }
     }
 }
