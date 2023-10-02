@@ -17,10 +17,13 @@ package org.opengroup.osdu.search.provider.aws.provider.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import org.elasticsearch.ElasticsearchStatusException;
@@ -28,16 +31,15 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.Strings;
-import org.elasticsearch.common.geo.GeoPoint;
-import org.elasticsearch.common.geo.builders.*;
+import org.elasticsearch.common.geo.builders.GeometryCollectionBuilder;
+import org.elasticsearch.common.geo.builders.MultiPointBuilder;
 import org.elasticsearch.common.text.Text;
-import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.geometry.Circle;
 import org.elasticsearch.geometry.Geometry;
 import org.elasticsearch.geometry.Rectangle;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.WrapperQueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
@@ -56,7 +58,6 @@ import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.AggregationResponse;
 import org.opengroup.osdu.core.common.model.search.Point;
-import org.opengroup.osdu.core.common.model.search.Polygon;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.core.common.model.search.QueryUtils;
 import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
@@ -66,6 +67,7 @@ import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
+import org.opengroup.osdu.search.util.GeoQueryBuilder;
 import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
@@ -93,6 +95,8 @@ abstract class QueryBase {
     private ISortParserUtil sortParserUtil;
     @Autowired
     private IDetailedBadRequestMessageUtil detailedBadRequestMessageUtil;
+    @Autowired
+    private GeoQueryBuilder geoQueryBuilder;
 
     private static final String GEO_SHAPE_INDEXED_TYPE = "geo_shape";
     private static final String ERROR_MSG = "Error processing search request";
@@ -116,12 +120,13 @@ abstract class QueryBase {
     QueryBuilder buildQuery(String simpleQuery, SpatialFilter spatialFilter, boolean asOwner)
             throws AppException, IOException {
 
-        QueryBuilder textQueryBuilder = null;
-        QueryBuilder spatialQueryBuilder = null;
-        QueryBuilder queryBuilder = null;
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
 
         if (!Strings.isNullOrEmpty(simpleQuery)) {
-            textQueryBuilder = queryParserUtil.buildQueryBuilderFromQueryString(simpleQuery);
+            QueryBuilder textQueryBuilder = queryParserUtil.buildQueryBuilderFromQueryString(simpleQuery);
+            if (textQueryBuilder != null) {
+                queryBuilder.must(textQueryBuilder);
+            }
         }
 
         spatialQueryBuilder = getSpeciaQueryBuilderHelper(spatialFilter);
@@ -182,6 +187,18 @@ abstract class QueryBase {
         }
         return nonGeoShapeQueryBuilder(spatialFilter);
 
+    }
+
+    private QueryBuilder getWithinPolygonQuery(SpatialFilter spatialFilter) throws IOException {
+        MultiPointBuilder multiPointBuilder = new MultiPointBuilder();
+        for (Point point : spatialFilter.getByWithinPolygon().getPoints()) {
+            multiPointBuilder.coordinate(
+                new Coordinate(point.getLongitude(), point.getLatitude()));
+        }
+        GeometryCollectionBuilder geometryCollection = new GeometryCollectionBuilder();
+        geometryCollection.multiPoint(multiPointBuilder);
+        // geoWithinQuery doesn't work with a polygon as the field to search on
+        return geoIntersectionQuery(spatialFilter.getField(), geometryCollection.buildGeometry()).ignoreUnmapped(true);
     }
 
     private QueryBuilder getQueryBuilderWithAuthorization(QueryBuilder queryBuilder, boolean asOwner) {
@@ -371,11 +388,14 @@ abstract class QueryBase {
         }
 
         // set highlighter
-        if (request.isReturnHighlightedFields()) {
-            HighlightBuilder highlightBuilder = new HighlightBuilder().field("*", 200, 5);
+        if (!Objects.isNull(request.getHighlightedFields())) {
+            HighlightBuilder highlightBuilder = new HighlightBuilder();
+            highlightBuilder = request.getHighlightedFields().stream().reduce(
+                highlightBuilder, (builder, fieldName) -> builder.field(fieldName, 200, 5), (a, b) -> a
+            );
             sourceBuilder.highlighter(highlightBuilder);
         }
-
+        
         // set the return fields
         List<String> returnedFields = request.getReturnedFields();
         if (returnedFields == null) {
@@ -401,9 +421,6 @@ abstract class QueryBase {
         SearchResponse searchResponse = null;
         try {
             String index = this.getIndex(searchRequest);
-            if (searchRequest.getSpatialFilter() != null) {
-                useGeoShapeQuery = this.useGeoShapeQuery(client, searchRequest, index);
-            }
             elasticSearchRequest = createElasticRequest(searchRequest);
             if (searchRequest.getSort() != null) {
                 List<FieldSortBuilder> sortBuilders = this.sortParserUtil.getSortQuery(client, searchRequest.getSort(),

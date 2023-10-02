@@ -17,8 +17,13 @@ package org.opengroup.osdu.search.provider.aws.provider.impl;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchResponseSections;
+import org.elasticsearch.action.search.ShardSearchFailure;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.bytes.BytesArray;
+import org.elasticsearch.common.bytes.BytesReference;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
@@ -30,23 +35,31 @@ import org.elasticsearch.search.aggregations.bucket.nested.ParsedNested;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
-import org.opengroup.osdu.core.common.model.search.*;
+import org.opengroup.osdu.core.common.model.search.Point;
+import org.opengroup.osdu.core.common.model.search.Polygon;
+import org.opengroup.osdu.core.common.model.search.QueryRequest;
+import org.opengroup.osdu.core.common.model.search.QueryResponse;
+import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
-import org.opengroup.osdu.search.util.*;
-
-import java.io.IOException;
-import java.util.*;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
+import org.opengroup.osdu.search.util.CrossTenantUtils;
+import org.opengroup.osdu.search.util.ElasticClientHandler;
+import org.opengroup.osdu.search.util.GeoQueryBuilder;
+import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
+import org.opengroup.osdu.search.util.IQueryParserUtil;
+import org.opengroup.osdu.search.util.ISortParserUtil;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryServiceAwsImplTest {
@@ -91,6 +104,9 @@ public class QueryServiceAwsImplTest {
 
 	@Mock
 	private AuditLogger auditLogger;
+
+	@Spy
+	private GeoQueryBuilder geoQueryBuilder = new GeoQueryBuilder();
 
 	@Before
 	public void setup() {
@@ -1099,6 +1115,30 @@ public class QueryServiceAwsImplTest {
 		QueryBuilder builder = this.queryServiceAws.buildQuery(null, null, false);
 		assertEquals(builder.toString(), expectedBuilder);
 	}
+
+	@Test
+	public void should_parse_response_when_hightlight_is_present() throws Exception {
+		TotalHits totalHits = new TotalHits(1, Relation.EQUAL_TO);
+		Map<String, HighlightField> highlightFields = Stream.of(new String[][] {
+		{"FieldName", "<em>TextValue</em>" },  
+		}).collect(Collectors.toMap(data -> data[0], data -> new HighlightField(data[0], new Text[] { new Text(data[1])})));
+		SearchHit searchHit = new SearchHit(42);
+		BytesReference source = new BytesArray("{\"FieldName\""
+			+ ":\"TextValue\"}");
+		searchHit = searchHit.sourceRef(source);
+		searchHit.highlightFields(highlightFields);
+
+		SearchHits searchHits = new SearchHits(new SearchHit[] {searchHit}, totalHits, 2);
+		SearchResponse mockSearchResponse = new SearchResponse(
+			new SearchResponseSections(searchHits, null,
+				null, false, false, null, 1), "2",
+			5, 5, 0, 100, ShardSearchFailure.EMPTY_ARRAY,
+			SearchResponse.Clusters.EMPTY);
+
+		List<Map<String, Object>> results = this.queryServiceAws.getHitsFromSearchResponse(mockSearchResponse);
+		assertEquals("[{highlight={FieldName=[<em>TextValue</em>]}, FieldName=TextValue}]", results.toString());
+	}
+
 
 	private void verifyAcls(QueryBuilder aclMustClause, boolean asOwner) {
 		BoolQueryBuilder aclLevelBuilder = (BoolQueryBuilder) aclMustClause;

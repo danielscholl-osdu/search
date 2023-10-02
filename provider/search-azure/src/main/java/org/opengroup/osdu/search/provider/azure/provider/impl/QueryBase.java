@@ -14,7 +14,23 @@
 
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
+import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.CURSOR_QUERY_DEPENDENCY_NAME;
+import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.QUERY_DEPENDENCY_NAME;
+
 import com.google.common.base.Strings;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.http.ContentTooLongException;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.ElasticsearchStatusException;
@@ -55,25 +71,12 @@ import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
+import org.opengroup.osdu.search.util.GeoQueryBuilder;
 import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.CURSOR_QUERY_DEPENDENCY_NAME;
-import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.QUERY_DEPENDENCY_NAME;
 
 abstract class QueryBase {
 
@@ -98,12 +101,8 @@ abstract class QueryBase {
     @Autowired
     @Qualifier("azureUtilsDependencyLogger")
     private DependencyLogger dependencyLogger;
-
-    private final GeoQueryBuilder geoQueryBuilder;
-
-    public QueryBase() {
-        this.geoQueryBuilder = new GeoQueryBuilder();
-    }
+    @Autowired
+    private GeoQueryBuilder geoQueryBuilder;
 
     // if returnedField contains property matching from excludes than query result will NOT include that property
     private final Set<String> excludes = new HashSet<>(Arrays.asList(RecordMetaAttribute.X_ACL.getValue()));
@@ -170,14 +169,17 @@ abstract class QueryBase {
             for (SearchHit searchHitFields : searchHits.getHits()) {
                 Map<String, Object> hitFields = searchHitFields.getSourceAsMap();
                 if (!searchHitFields.getHighlightFields().isEmpty()) {
+                    Map<String, List<String>> highlights = new HashMap<>();
                     for (HighlightField hf : searchHitFields.getHighlightFields().values()) {
                         if (!hf.getName().equalsIgnoreCase(RecordMetaAttribute.X_ACL.getValue())) {
                             Text[] fragments = hf.getFragments();
-                            if (fragments.length > 0) {
-                                hitFields.put(hf.getName(), fragments[0].toString());
-                            }
+                            highlights.put(
+                                hf.getName(), 
+                                Arrays.asList(fragments).stream().map(x -> x.toString()).collect(Collectors.toList())
+                            );
                         }
                     }
+                    hitFields.put("highlight", highlights);
                 }
                 results.add(hitFields);
             }
@@ -231,8 +233,11 @@ abstract class QueryBase {
         }
 
         // set highlighter
-        if (request.isReturnHighlightedFields()) {
-            HighlightBuilder highlightBuilder = new HighlightBuilder().field("*", 200, 5);
+        if (!Objects.isNull(request.getHighlightedFields())) {
+            HighlightBuilder highlightBuilder = new HighlightBuilder();
+            highlightBuilder = request.getHighlightedFields().stream().reduce(
+                highlightBuilder, (builder, fieldName) -> builder.field(fieldName, 200, 5), (a, b) -> a
+            );
             sourceBuilder.highlighter(highlightBuilder);
         }
 

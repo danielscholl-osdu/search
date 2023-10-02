@@ -14,9 +14,29 @@
 
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.QUERY_DEPENDENCY_NAME;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.http.ContentTooLongException;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ElasticsearchStatusException;
@@ -69,40 +89,17 @@ import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
-import org.opengroup.osdu.search.service.FieldMappingTypeService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.DetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
+import org.opengroup.osdu.search.util.GeoQueryBuilder;
 import org.opengroup.osdu.search.util.IAggregationParserUtil;
 import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.QueryParserUtil;
 import org.opengroup.osdu.search.util.SortParserUtil;
-
-import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.QUERY_DEPENDENCY_NAME;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryServiceImplTest {
@@ -186,8 +183,8 @@ public class QueryServiceImplTest {
     @Mock
     private DependencyLogger dependencyLogger;
 
-    @Mock
-    private GeoQueryBuilder geoQueryBuilder;
+    @Spy
+    private GeoQueryBuilder geoQueryBuilder = new GeoQueryBuilder();
 
     @InjectMocks
     private QueryServiceImpl sut;
@@ -668,7 +665,7 @@ public class QueryServiceImplTest {
         Mockito.when(dpsHeaders.getHeaders())
                 .thenReturn(headers);
 
-        String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"query_string\":{\"query\":\"data.ID:\\\"EPSG::1078\\\"\",\"fields\":[],\"type\":\"best_fields\",\"default_operator\":\"or\",\"max_determinized_states\":10000,\"allow_leading_wildcard\":false,\"enable_position_increments\":true,\"fuzziness\":\"AUTO\",\"fuzzy_prefix_length\":0,\"fuzzy_max_expansions\":50,\"phrase_slop\":0,\"escape\":false,\"auto_generate_synonyms_phrase_query\":true,\"fuzzy_transpositions\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}}],\"filter\":[{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPolygon\",\"coordinates\":[[[[-8.61,1.02],[-2.48,1.02],[-2.48,10.74],[-8.61,10.74],[-8.61,1.02]]]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}},{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]}}";
+        String expectedSource = "{\"from\":0,\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"query_string\":{\"query\":\"data.ID:\\\"EPSG::1078\\\"\",\"fields\":[],\"type\":\"best_fields\",\"default_operator\":\"or\",\"max_determinized_states\":10000,\"allow_leading_wildcard\":false,\"enable_position_increments\":true,\"fuzziness\":\"AUTO\",\"fuzzy_prefix_length\":0,\"fuzzy_max_expansions\":50,\"phrase_slop\":0,\"escape\":false,\"auto_generate_synonyms_phrase_query\":true,\"fuzzy_transpositions\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}}],\"filter\":[{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPolygon\",\"coordinates\":[[[[-8.61,1.02],[-2.48,1.02],[-2.48,10.74],[-8.61,10.74],[-8.61,1.02]]]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}},{\"terms\":{\"x-acl\":[\"[]\"],\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]},\"highlight\":{}}";
 
         // act
         QueryResponse response = this.sut.queryIndex(queryRequest);
@@ -680,7 +677,7 @@ public class QueryServiceImplTest {
         String actualSource = searchRequest.source().toString();
         JsonNode expectedJson = mapper.readTree(expectedSource);
         JsonNode actualJson = mapper.readTree(actualSource);
-        Assert.assertTrue(expectedJson.equals(actualJson));
+        Assert.assertEquals(expectedJson, actualJson);
     }
 
     private Map<String, HighlightField> getHighlightFields() {

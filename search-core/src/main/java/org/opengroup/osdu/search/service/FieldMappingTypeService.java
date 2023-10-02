@@ -38,39 +38,6 @@ public class FieldMappingTypeService implements IFieldMappingTypeService {
     @Autowired
     private DpsHeaders headers;
 
-    public Set<String> getFieldTypes(RestHighLevelClient restClient, String fieldName, String indexPattern) throws IOException {
-        String cacheKey = this.getCacheKey(fieldName, indexPattern);
-        Map<String, String> cachedTypes = this.typeMappingCache.get(cacheKey);
-        if (cachedTypes != null && cachedTypes.containsKey(fieldName)) {
-            return new HashSet<>(Arrays.asList(cachedTypes.get(fieldName).split(",")));
-        }
-
-        Map<String, String> fieldTypeMap = new HashMap<>();
-        Set<String> fieldTypes = new HashSet<>();
-        String fieldLeafNodeLabel = fieldName.substring(fieldName.lastIndexOf(".") + 1);
-        GetFieldMappingsResponse response = this.getFieldMappings(restClient, fieldName, indexPattern);
-        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> mappings = response.mappings();
-
-        for (Map.Entry<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> indexMapping : mappings.entrySet()) {
-            if (indexMapping.getValue().isEmpty()) continue;
-            Map<String, GetFieldMappingsResponse.FieldMappingMetadata> typeMapping = indexMapping.getValue();
-            GetFieldMappingsResponse.FieldMappingMetadata fieldMappingMetaData = typeMapping.values().iterator().next();
-            if (fieldMappingMetaData == null) continue;
-            Map<String, Object> mapping = fieldMappingMetaData.sourceAsMap();
-            if (mapping.isEmpty()) continue;
-            LinkedHashMap<String, Object> typeMap = (LinkedHashMap<String, Object>) mapping.get(fieldLeafNodeLabel);
-            if (typeMap == null || typeMap.isEmpty()) continue;
-            Object type = typeMap.get("type");
-            if (type == null) continue;
-            fieldTypes.add(type.toString());
-        }
-
-        fieldTypeMap.put(fieldName, String.join(",", fieldTypes));
-        this.typeMappingCache.put(cacheKey, fieldTypeMap);
-
-        return fieldTypes;
-    }
-
     public Map<String, String> getSortableTextFields(RestHighLevelClient restClient, String fieldName, String indexPattern) throws IOException {
         String cacheKey = this.getSortableTextFieldCacheKey(fieldName, indexPattern);
         Map<String, String> cachedTypes = this.typeMappingCache.get(cacheKey);
@@ -106,10 +73,6 @@ public class FieldMappingTypeService implements IFieldMappingTypeService {
         request.fields(fieldName);
         if (!Strings.isNullOrEmpty(indexPattern)) request.indices(indexPattern);
         return restClient.indices().getFieldMapping(request, RequestOptions.DEFAULT);
-    }
-
-    private String getCacheKey(String fieldName, String indexPattern) {
-        return String.format("%s-%s-%s", this.headers.getPartitionIdWithFallbackToAccountId(), indexPattern, fieldName);
     }
 
     private String getSortableTextFieldCacheKey(String fieldName, String indexPattern) {

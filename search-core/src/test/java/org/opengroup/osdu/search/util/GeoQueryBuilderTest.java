@@ -12,8 +12,16 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.opengroup.osdu.search.provider.azure.provider.impl;
+package org.opengroup.osdu.search.util;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.elasticsearch.geometry.Circle;
 import org.elasticsearch.geometry.Rectangle;
 import org.elasticsearch.index.query.GeoShapeQueryBuilder;
@@ -25,15 +33,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.core.common.model.search.Point;
 import org.opengroup.osdu.core.common.model.search.Polygon;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GeoQueryBuilderTest {

@@ -54,6 +54,7 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
@@ -178,15 +179,18 @@ abstract class QueryBase {
         if (searchHits.getHits().length != 0) {
             for (SearchHit searchHitFields : searchHits.getHits()) {
                 Map<String, Object> hitFields = searchHitFields.getSourceAsMap();
-                if(!searchHitFields.getHighlightFields().isEmpty()) {
+                if (!searchHitFields.getHighlightFields().isEmpty()) {
+                    Map<String, List<String>> highlights = new HashMap<>();
                     for (HighlightField hf : searchHitFields.getHighlightFields().values()) {
                         if (!hf.getName().equalsIgnoreCase(RecordMetaAttribute.X_ACL.getValue())) {
                             Text[] fragments = hf.getFragments();
-                            if(fragments.length > 0) {
-                            	hitFields.put(hf.getName(), fragments[0].toString());
-                            }
+                            highlights.put(
+                                hf.getName(), 
+                                Arrays.asList(fragments).stream().map(x -> x.toString()).collect(Collectors.toList())
+                            );
                         }
                     }
+                    hitFields.put("highlight", highlights);
                 }
                 results.add(hitFields);
             }
@@ -195,6 +199,8 @@ abstract class QueryBase {
 
         return null;
     }
+
+    
 
     List<AggregationResponse> getAggregationFromSearchResponse(SearchResponse searchResponse) {
         List<AggregationResponse> results = null;
@@ -240,8 +246,11 @@ abstract class QueryBase {
         }
 
         // set highlighter
-        if (request.isReturnHighlightedFields()) {
-            HighlightBuilder highlightBuilder = new HighlightBuilder().field("*", 200, 5);
+        if (!Objects.isNull(request.getHighlightedFields())) {
+            HighlightBuilder highlightBuilder = new HighlightBuilder();
+            highlightBuilder = request.getHighlightedFields().stream().reduce(
+                highlightBuilder, (builder, fieldName) -> builder.field(fieldName, 200, 5), (a, b) -> a
+            );
             sourceBuilder.highlighter(highlightBuilder);
         }
 
@@ -252,7 +261,8 @@ abstract class QueryBase {
             for (int idx = 0; idx < request.getSort().getField().size(); idx++) {
                 sourceBuilder.sort(sortParserUtil.parseSort(
                     request.getSort().getFieldByIndex(idx),
-                    request.getSort().getOrderByIndex(idx).name())
+                    request.getSort().getOrderByIndex(idx).name(),
+                    request.getSort().getFilterByIndex(idx))    
                 );
             }
         }

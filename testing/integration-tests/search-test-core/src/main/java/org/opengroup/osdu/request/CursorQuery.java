@@ -1,9 +1,9 @@
 package org.opengroup.osdu.request;
 
+import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
+import org.opengroup.osdu.core.common.model.search.SortQuery;
 
 @Data
 @NoArgsConstructor

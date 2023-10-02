@@ -20,13 +20,13 @@
     <parent>
         <groupId>org.opengroup.osdu</groupId>
         <artifactId>os-search</artifactId>
-        <version>0.23.0-SNAPSHOT</version>
+        <version>0.24.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <packaging>jar</packaging>
     <artifactId>search-azure</artifactId>
-    <version>0.23.0-SNAPSHOT</version>
+    <version>0.24.0-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.target>17</maven.compiler.target>
@@ -37,9 +37,8 @@
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
         <springboot.version>2.1.7.RELEASE</springboot.version>
         <osdu.corelibazure.version>0.20.0-rc5</osdu.corelibazure.version>
-        <osdu.search-core.version>0.23.0-SNAPSHOT</osdu.search-core.version>
+        <osdu.search-core.version>0.24.0-SNAPSHOT</osdu.search-core.version>
         <spatial4j.version>0.7</spatial4j.version>
-        <jts-io-common.version>1.15.0</jts-io-common.version>
         <reactor-netty.version>1.0.7</reactor-netty.version>
         <reactor-core.version>3.4.21</reactor-core.version>
         <jackson-dataformat-xml.version>2.11.4</jackson-dataformat-xml.version>
@@ -56,10 +55,22 @@
         <azure-core.version>1.31.0</azure-core.version>
         <azure-security-keyvault-keys.version>4.4.6</azure-security-keyvault-keys.version>
         <azure-security-keyvault-secrets.version>4.4.6</azure-security-keyvault-secrets.version>
+        <netty.version>4.1.98.Final</netty.version>
+        <guava.version>32.1.2-jre</guava.version>
+        <woodstox-core.version>6.4.0</woodstox-core.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- netty-bom dependency to be declared before spring-boot-dependencies,
+            to pull all netty-transitive dependencies with same version -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>${netty.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- Inherit managed dependencies from core-lib-azure -->
             <dependency>
                 <groupId>org.opengroup.osdu</groupId>
@@ -145,6 +156,10 @@
                     <artifactId>azure-core</artifactId>
                     <groupId>com.azure</groupId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.microsoft.azure</groupId>
+                    <artifactId>documentdb-bulkexecutor</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -197,16 +212,6 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.locationtech.spatial4j</groupId>
-            <artifactId>spatial4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.locationtech.jts.io</groupId>
-            <artifactId>jts-io-common</artifactId>
-            <version>${jts-io-common.version}</version>
-        </dependency>
-
         <!-- Azure dependencies -->
         <dependency>
             <groupId>com.azure.spring</groupId>
@@ -276,6 +281,11 @@
             <groupId>com.azure</groupId>
             <artifactId>azure-security-keyvault-secrets</artifactId>
             <version>${azure-security-keyvault-secrets.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
         </dependency>
     </dependencies>
 

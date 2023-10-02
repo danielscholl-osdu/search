@@ -36,6 +36,7 @@
 - [Query with cursor API](#query-with-cursor)
 - [Cross `kind` queries](#cross-kind-queries)
 - [Common discovery within and across `kind` via `VirtualProperties`](#common-discovery-within-and-across-kind)
+- [Exclude kinds with authority as "system-meta-data" in wildcard query](#exclude-system-meta-data-kinds)
 - [Version info API](#version-info)
 - [Get indexing status](#get-indexing-status)
 - [Known issues/limitations](#known-limitations)
@@ -789,6 +790,73 @@ __Caution__: `aggregations` on response may be empty if correct field is not sup
 
 [Back to table of contents](#TOC)
 
+## Highlight
+
+Specifying optional field `highlightedFields` will add to each result additional dictionary under key `highlight` with phrases from selected fields which matched the query.
+Hightlight is working only for text and keyword fields. Specifying a field of different type or not existing in the mapping is causing that such field is ignored.
+There can be maximally 5 fragments up to 200 characters each for a single field.  
+
+
+Request:
+```
+{
+  "kind": "*:*:master-data--Well:*",
+  "query": "Example",
+  "highlightedFields": ["data.FacilityName", "data.NameAliases.*"]
+}
+```
+Record:
+
+```
+{
+  "kind": "osdu:wks:master-data--Well:1.0.0",
+  "id": "osdu:master-data--Well:example",
+  "data": {
+    "FacilityName": "Example test"
+    "NameAliases": [
+      {
+        "AliasName": "Example test"
+      },
+      {
+        "AliasName": "Example test 2" 
+      },
+      {
+        "AliasName": "Another name" 
+      }
+    ],
+    "Source": "Example test"
+  }
+}
+```
+
+Search response:
+
+```
+{
+  "results": [
+    {
+      "data": {
+          ...
+      },
+      "kind": "osdu:wks:master-data--Well:1.0.0",
+      "id": "osdu:master-data--Well:example",
+      "highlight": {
+        "data.FacilityName": [
+          "<em>Example</em> test"
+        ],
+        "data.NameAliases.AliasName": [
+          "<em>Example</em> test",
+          "<em>Example</em> test 2"
+        ]
+      }
+    },
+     ...
+  ]
+}
+```
+
+[Back to table of contents](#TOC)
+
 ## Sort <a name="sort-queries"></a>
 
 The sort query allows you to add one or more sorts on specific fields. Each sort can be reversed as well.
@@ -888,7 +956,9 @@ nested(path, field, mode)
 - `min`: sort by minimum value in the array.
 - `max`: sort by maximum value in the array.
 
-- Sort by `nested` attribute `FacilityEventTypeID`
+Sorting on nested fields allow to specify condition filter which object on nested path has to fulfill to be taken into account in `mode` function. Often repeating the query part referring to nested path is useful. Filter is attached to top level nested field in case of sorting on field nested multiple times. Filter syntax is the same as `query` top level parameter, however entire query has to be within `nested()` context.
+
+- Sort by `nested` attribute `FacilityEventTypeID` where `FacilityEventTypeID` value is unequal to `test`
 ```http
 POST /search/v2/query HTTP/1.1
 {
@@ -899,6 +969,9 @@ POST /search/v2/query HTTP/1.1
     ],
     "order": [
         "ASC"
+    ],
+    "filter": [
+        "nested(data.FacilityEvents, (NOT FacilityEventTypeID.keyword:test))"
     ]
   }
 }
@@ -921,6 +994,9 @@ curl --request POST \
     ],
     "order": [
         "ASC"
+    ],
+    "filter": [
+        "nested(data.FacilityEvents, (NOT FacilityEventTypeID.keyword:test))"
     ]
   }
 }'
@@ -1501,6 +1577,38 @@ __Note:__ The virtual property declared is never added to the Storage record and
 
 [Back to table of contents](#TOC)
 
+## Exclude kinds with authority as `system-meta-data` in wildcard query <a name="exclude-system-meta-data-kinds"></a>
+Some applications or systems may need to have its system meta-data searchable via OSDU search but 
+the system meta-data are not expected to be included in the search results of normal keyword search. In order to 
+exclude the system meta-data in normal search, OSDU community proposed "system-meta-data" as the reserved authority 
+for the system meta-data kinds that are excluded if they are not explicitly specified in the query. 
+
+For example, assuming there is a system kind called `system-meta-data:schema-service:schema:1.0.0` for schema metadata.
+When users try to search data with keyword `wellbore` as below:
+```
+{
+  "kind": "*:*:*:*",
+  "query": "wellbore"
+} 
+```
+The meta-data from the kind `system-meta-data:schema-service:schema:1.0.0` will be excluded from the search result by default.
+
+In order to search meta-data with keyword `wellbore` from the kind `system-meta-data:schema-service:schema:1.0.0`, user
+should explicitly specify the kind as the example below:
+```
+{
+  "kind": "system-meta-data:schema-service:schema:1.0.0",
+  "query": "wellbore"
+} 
+```
+
+References to OSDU data-definitions documents:
+- [6.1.2 Record `kind`](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Guides/Chapters/06-LifecycleProperties.md#612-record-kind)
+- [Appendix D.1.3 Schema Identifier `kind` Limitations](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Guides/Chapters/93-OSDU-Schemas.md#appendix-d13-schema-identifier-kind-limitations)
+
+
+[Back to table of contents](#TOC)
+
 ## Version info API <a name="version-info"></a>
 
 Provides build and git related information for Search service.
@@ -1634,7 +1742,7 @@ The above query returns all records which had problems due to fields mismatch.
 ### `nested` query
 
 - The following features are not functional with the current `nested` implementation:
-  - The `nested` fields sort query returns erroneous ordering of results.
+  - The `nested` fields sort query filter can now be only attached to top level nested field. Lack of control of attachment level may impact some rare use cases on structures nested multiple times, however this would require completely new different syntax that is very hard to understand.
   - The current nested query parser throws an exception if using a grouping with nested syntax due to the current nested query parser. As a workaround, you can rewrite the query so that it does not involve grouping. An example can be found [here](#groupnested).
 
 ### Cursor query
