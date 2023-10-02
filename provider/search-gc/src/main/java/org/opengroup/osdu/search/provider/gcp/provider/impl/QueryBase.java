@@ -52,7 +52,6 @@ import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.geometry.Geometry;
 import org.elasticsearch.geometry.Rectangle;
-import org.elasticsearch.geometry.Circle;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.WrapperQueryBuilder;
 import org.elasticsearch.rest.RestStatus;
@@ -196,6 +195,13 @@ abstract class QueryBase {
         return queryBuilder;
     }
 
+    private QueryBuilder getSimpleQuery(String searchQuery) {
+
+        // if query is empty , then put *
+        String query = StringUtils.isNotBlank(searchQuery) ? searchQuery : "*";
+        return queryStringQuery(query).allowLeadingWildcard(false);
+    }
+
     private QueryBuilder getBoundingBoxQuery(SpatialFilter spatialFilter) {
 
         GeoPoint topLeft = new GeoPoint(spatialFilter.getByBoundingBox().getTopLeft().getLatitude(), spatialFilter.getByBoundingBox().getTopLeft().getLongitude());
@@ -241,7 +247,7 @@ abstract class QueryBase {
     private QueryBuilder getGeoShapeDistanceQuery(SpatialFilter spatialFilter) throws IOException {
 
         Coordinate center = new Coordinate(spatialFilter.getByDistance().getPoint().getLongitude(), spatialFilter.getByDistance().getPoint().getLatitude());
-        Circle circleBuilder = new CircleBuilder().center(center).radius(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS).buildGeometry();
+        CircleBuilder circleBuilder = new CircleBuilder().center(center).radius(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS);
         return geoWithinQuery(spatialFilter.getField(), circleBuilder).ignoreUnmapped(true);
     }
 
