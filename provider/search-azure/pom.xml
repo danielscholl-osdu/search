@@ -42,8 +42,8 @@
         <reactor-netty.version>1.0.7</reactor-netty.version>
         <reactor-core.version>3.4.21</reactor-core.version>
         <jackson-dataformat-xml.version>2.11.4</jackson-dataformat-xml.version>
-        <jackson-databind.version>2.13.2.2</jackson-databind.version>
-        <jackson.version>2.13.2</jackson.version>
+        <jackson-databind.version>2.15.2</jackson-databind.version>
+        <jackson.version>2.15.2</jackson.version>
         <spring-boot.version>2.1.18.RELEASE</spring-boot.version>
         <log4j.version>2.17.1</log4j.version>
         <azure.appservice.resourcegroup />
@@ -51,7 +51,6 @@
         <azure.appservice.appname />
         <azure.appservice.subscription />
         <spring-webmvc.version>5.3.22</spring-webmvc.version>
-        <jackson.version>2.13.2</jackson.version>
         <azure-core.version>1.31.0</azure-core.version>
         <azure-security-keyvault-keys.version>4.4.6</azure-security-keyvault-keys.version>
         <azure-security-keyvault-secrets.version>4.4.6</azure-security-keyvault-secrets.version>
