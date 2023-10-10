@@ -8,7 +8,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 Pre-requisites
 
-* JDK 17 (https://docs.aws.amazon.com/corretto/latest/corretto-8-ug/downloads-list.html)
+* JDK 17 (https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/downloads-list.html)
 * Maven 3.8.3 or later
 * Lombok 1.18 or later
 * OSDU Instance deployed on AWS
