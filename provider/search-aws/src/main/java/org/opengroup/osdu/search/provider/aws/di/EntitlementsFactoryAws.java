@@ -32,10 +32,10 @@ import javax.inject.Inject;
 @RequestScope
 public class EntitlementsFactoryAws extends AbstractFactoryBean<IEntitlementsFactory> {
 	@Value("${AUTHORIZE_API}")
-	private String AUTHORIZE_API;
+	private String authorizeAPI;
 
 	@Value("${AUTHORIZE_API_KEY:}")
-	private String AUTHORIZE_API_KEY;
+	private String authorizeApiKey;
 
 	@Inject
 	private HttpResponseBodyMapper httpResponseBodyMapper;
@@ -44,8 +44,8 @@ public class EntitlementsFactoryAws extends AbstractFactoryBean<IEntitlementsFac
 	protected IEntitlementsFactory createInstance() {
 		return new EntitlementsFactory(EntitlementsAPIConfig
 				.builder()
-				.rootUrl(AUTHORIZE_API)
-				.apiKey(AUTHORIZE_API_KEY)
+				.rootUrl(authorizeAPI)
+				.apiKey(authorizeApiKey)
 				.build(), httpResponseBodyMapper);
 	}
 

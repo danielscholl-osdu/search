@@ -16,7 +16,6 @@
 package org.opengroup.osdu.search.provider.aws.entitlements;
 
 import com.lambdaworks.redis.RedisException;
-import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.entitlements.IEntitlementsFactory;
 import org.opengroup.osdu.core.common.entitlements.IEntitlementsService;
 import org.opengroup.osdu.core.common.http.HeadersUtil;
@@ -76,7 +75,7 @@ public class AWSAuthorizationServiceImpl implements IAuthorizationService {
 	}
 
 	public Groups getGroups(DpsHeaders headers) {
-		String cacheKey = this.getGroupCacheKey(headers);
+		String cacheKey = AWSAuthorizationServiceImpl.getGroupCacheKey(headers);
 
 		Groups groups = null;
 		try {
@@ -85,20 +84,21 @@ public class AWSAuthorizationServiceImpl implements IAuthorizationService {
 			this.jaxRsDpsLog.error(String.format("Error getting key %s from redis: %s", cacheKey, ex.getMessage()), ex);
 		}
 
-		if (groups == null) {
-			IEntitlementsService service = this.factory.create(headers);
-			try {
-				groups = service.getGroups();
-				this.cache.put(cacheKey, groups);
-				this.jaxRsDpsLog.debug("Entitlements cache miss");
+		if (groups != null)
+			return groups;
 
-			} catch (EntitlementsException e) {
-				HttpResponse response = e.getHttpResponse();
-				this.jaxRsDpsLog.error(String.format("Error requesting entitlements service %s", response));
-				throw new AppException(e.getHttpResponse().getResponseCode(), ERROR_REASON, ERROR_MSG, e);
-			} catch (RedisException ex) {
-				this.jaxRsDpsLog.error(String.format("Error putting key %s into redis: %s", cacheKey, ex.getMessage()), ex);
-			}
+		IEntitlementsService service = this.factory.create(headers);
+		try {
+			groups = service.getGroups();
+			this.cache.put(cacheKey, groups);
+			this.jaxRsDpsLog.debug("Entitlements cache miss");
+
+		} catch (EntitlementsException e) {
+			HttpResponse response = e.getHttpResponse();
+			this.jaxRsDpsLog.error(String.format("Error requesting entitlements service %s", response));
+			throw new AppException(e.getHttpResponse().getResponseCode(), ERROR_REASON, ERROR_MSG, e);
+		} catch (RedisException ex) {
+			this.jaxRsDpsLog.error(String.format("Error putting key %s into redis: %s", cacheKey, ex.getMessage()), ex);
 		}
 		return groups;
 	}
@@ -121,7 +121,7 @@ public class AWSAuthorizationServiceImpl implements IAuthorizationService {
 	}
 
 	private void handleEntitlementsException(Exception e, DpsHeaders headers) {
-		throw new AppException(500, "Access denied", "The user is not authorized to perform this action", HeadersUtil.toLogMsg(headers, null), e);
+		throw new AppException(500, ERROR_REASON, ERROR_MSG, HeadersUtil.toLogMsg(headers, null), e);
 	}
 
 	private AuthorizationResponse authorizeAny(DpsHeaders headers, Groups groups, String... roles) {
@@ -134,7 +134,8 @@ public class AWSAuthorizationServiceImpl implements IAuthorizationService {
 		logMessages.add(String.format("groups: %s", getEmailFromGroups(groups)));
 		if (groups != null) {
 			userEmail = groups.getMemberEmail();
-			if (groups.any(roles)) {
+			Boolean hasRoles = groups.any(roles);
+			if (Boolean.TRUE.equals(hasRoles)){
 				return AuthorizationResponse.builder().user(userEmail).groups(groups).build();
 			}
 		}
