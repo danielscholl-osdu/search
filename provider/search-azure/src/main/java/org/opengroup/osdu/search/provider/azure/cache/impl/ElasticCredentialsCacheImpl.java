@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 @Component("clusterSettingsCache")
-@ConditionalOnProperty(value = "cache.provider", havingValue = "redis")
+@ConditionalOnProperty(value = "elasticSearchCred.cache.provider", havingValue = "redis")
 public class ElasticCredentialsCacheImpl extends ElasticCredentialsCache {
 
   @Resource(name = "clusterCache")
