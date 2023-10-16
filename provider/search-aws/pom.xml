@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.opengroup.osdu</groupId>
         <artifactId>os-search</artifactId>
-        <version>0.24.0-SNAPSHOT</version>
+        <version>0.25.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -27,7 +27,7 @@
     <artifactId>search-aws</artifactId>
     <description>Search Service on AWS</description>
     <packaging>jar</packaging>
-    <version>0.24.0-SNAPSHOT</version>
+    <version>0.25.0-SNAPSHOT</version>
     <properties>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.source>17</maven.compiler.source>
@@ -38,7 +38,7 @@
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
         <aws.version>1.11.1018</aws.version>
         <deployment.environment>dev</deployment.environment>
-        <version.number>0.24.0-SNAPSHOT</version.number>
+        <version.number>0.25.0-SNAPSHOT</version.number>
         <nimbus-jose-jwt.version>9.18</nimbus-jose-jwt.version>
         <jackson-databind.version>2.15.2</jackson-databind.version>
         <jackson.version>2.13.2</jackson.version>
@@ -73,7 +73,7 @@
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>search-core</artifactId>
-            <version>0.24.0-SNAPSHOT</version>
+            <version>0.25.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu.core.aws</groupId>
@@ -157,6 +157,20 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mockito</groupId>
+                    <artifactId>mockito-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mockito</groupId>
+                    <artifactId>mockito-all</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -166,13 +180,14 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
+        
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <!-- Using Mockito 2 specifically for ability to mock elasticsearch lib's "final" methods -->
-            <version>2.0.0-beta</version>
+            <artifactId>mockito-core</artifactId>
+            <version>3.11.2</version>
             <scope>test</scope>
         </dependency>
 
