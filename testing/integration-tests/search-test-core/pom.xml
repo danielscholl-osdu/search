@@ -20,7 +20,7 @@
         <cucumber.version>1.2.5</cucumber.version>
         <elasticsearch.version>7.8.1</elasticsearch.version>
         <osdu.oscorecommon.version>0.24.0</osdu.oscorecommon.version>
-        <jackson-databind.version>2.13.2.2</jackson-databind.version>
+        <jackson-databind.version>2.15.2</jackson-databind.version>
         <jackson.version>2.13.2</jackson.version>
         <argLine>
             --add-opens=java.base/java.util=ALL-UNNAMED
