@@ -43,23 +43,25 @@ public class RedisConfig {
     @Value("${redis.index.alias.expiration:86400}")
     private int aliasCacheExpiration;
 
+    @Value("${redis.command.timeout:5}")
+    private int commandTimeout;
     @Bean
     public RedisAzureCache<String, Groups> groupCache() {
-        return new RedisAzureCache<>(String.class, Groups.class, new RedisAzureConfiguration(database, expiration, port, timeout));
+        return new RedisAzureCache<>(String.class, Groups.class, new RedisAzureConfiguration(database, expiration, port, timeout, commandTimeout));
     }
 
     @Bean
     public RedisAzureCache<String, CursorSettings> cursorCache() {
-        return new RedisAzureCache<>(String.class, CursorSettings.class, new RedisAzureConfiguration(database, expiration, port, timeout));
+        return new RedisAzureCache<>(String.class, CursorSettings.class, new RedisAzureConfiguration(database, expiration, port, timeout, commandTimeout));
     }
 
     @Bean
     public RedisAzureCache<String, ClusterSettings> clusterCache() {
-        return new RedisAzureCache<>(String.class, ClusterSettings.class, new RedisAzureConfiguration(database, expiration, port, timeout));
+        return new RedisAzureCache<>(String.class, ClusterSettings.class, new RedisAzureConfiguration(database, expiration, port, timeout, commandTimeout));
     }
 
     @Bean
     public RedisAzureCache<String, String> aliasCache() {
-        return new RedisAzureCache<>(String.class, String.class, new RedisAzureConfiguration(database, aliasCacheExpiration, port, timeout));
+        return new RedisAzureCache<>(String.class, String.class, new RedisAzureConfiguration(database, aliasCacheExpiration, port, timeout, commandTimeout));
     }
 }
