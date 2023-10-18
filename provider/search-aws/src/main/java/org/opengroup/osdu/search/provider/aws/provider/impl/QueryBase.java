@@ -1,16 +1,16 @@
-// Copyright © Amazon Web Services
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/* Copyright © Amazon Web Services
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. */
 
 package org.opengroup.osdu.search.provider.aws.provider.impl;
 
@@ -68,7 +68,6 @@ import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
-import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.GeoQueryBuilder;
@@ -78,7 +77,7 @@ import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
-// TODO This class is a duplicate of byoc and gcp, should likely be moved to the core folder
+
 abstract class QueryBase {
 
     @Inject
@@ -89,8 +88,6 @@ abstract class QueryBase {
     private IProviderHeaderService providerHeaderService;
     @Inject
     private CrossTenantUtils crossTenantUtils;
-    @Inject
-    private IFieldMappingTypeService fieldMappingTypeService;
     @Autowired(required = false)
     private IPolicyService iPolicyService;
     @Autowired
@@ -102,9 +99,8 @@ abstract class QueryBase {
     @Autowired
     private GeoQueryBuilder geoQueryBuilder;
 
-    private static final String GEO_SHAPE_INDEXED_TYPE = "geo_shape";
-
-    private static final int MINIMUM_POLYGON_POINTS_SIZE = 4;
+    private static final String ERROR_MSG = "Error processing search request";
+    private static final String ERROR_REASON = "Search error";   
 
     // if returnedField contains property matching from excludes than query result will NOT include that property
     private final Set<String> excludes = new HashSet<>(Arrays.asList(RecordMetaAttribute.X_ACL.getValue()));
@@ -112,9 +108,10 @@ abstract class QueryBase {
     // queryableExcludes properties can be returned by query results
     private final Set<String> queryableExcludes = new HashSet<>(Arrays.asList(RecordMetaAttribute.INDEX_STATUS.getValue()));
 
-    private final TimeValue REQUEST_TIMEOUT = TimeValue.timeValueMinutes(1);
+    private final TimeValue requestTimeout = TimeValue.timeValueMinutes(1);
 
-    QueryBuilder buildQuery(String simpleQuery, SpatialFilter spatialFilter, boolean asOwner) throws AppException, IOException {
+    QueryBuilder buildQuery(String simpleQuery, SpatialFilter spatialFilter, boolean asOwner)
+            throws AppException, IOException {
 
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
 
@@ -137,15 +134,14 @@ abstract class QueryBase {
 
         queryBuilder.must(prefixQuery("id", String.format("%s:", this.dpsHeaders.getPartitionId())));
 
-        if (this.iPolicyService != null) {
-            String compiledESPolicy = this.iPolicyService.getCompiledPolicy(providerHeaderService);
-            WrapperQueryBuilder wrapperQueryBuilder = new WrapperQueryBuilder(compiledESPolicy);
-            return queryBuilder.must(wrapperQueryBuilder);
-        } else {
+        if (this.iPolicyService == null)
             return getQueryBuilderWithAuthorization(queryBuilder, asOwner);
-        }
-    }
 
+        String compiledESPolicy = this.iPolicyService.getCompiledPolicy(providerHeaderService);
+        WrapperQueryBuilder wrapperQueryBuilder = new WrapperQueryBuilder(compiledESPolicy);
+        return queryBuilder.must(wrapperQueryBuilder);
+    }
+    
     private QueryBuilder getWithinPolygonQuery(SpatialFilter spatialFilter) throws IOException {
         MultiPointBuilder multiPointBuilder = new MultiPointBuilder();
         for (Point point : spatialFilter.getByWithinPolygon().getPoints()) {
@@ -167,11 +163,7 @@ abstract class QueryBase {
         String groups = dpsHeaders.getHeaders().get(providerHeaderService.getDataGroupsHeader());
         if (groups != null) {
             String[] groupArray = groups.trim().split("\\s*,\\s*");
-            if (asOwner) {
-                authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(AclRole.OWNERS.getPath(), groupArray));
-            } else {
-                authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(RecordMetaAttribute.X_ACL.getValue(), groupArray));
-            }
+            authorizationQueryBuilder = asOwner ?  boolQuery().minimumShouldMatch("1").should(termsQuery(AclRole.OWNERS.getPath(), groupArray)) : boolQuery().minimumShouldMatch("1").should(termsQuery(RecordMetaAttribute.X_ACL.getValue(), groupArray));
         }
         if (authorizationQueryBuilder != null) {
             queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(authorizationQueryBuilder) : boolQuery().must(authorizationQueryBuilder);
@@ -184,51 +176,53 @@ abstract class QueryBase {
     }
 
     List<Map<String, Object>> getHitsFromSearchResponse(SearchResponse searchResponse) {
-        List<Map<String, Object>> results = new ArrayList<>();
+    
         SearchHits searchHits = searchResponse.getHits();
-        if (searchHits.getHits().length != 0) {
-            for (SearchHit searchHitFields : searchHits.getHits()) {
-                Map<String, Object> hitFields = searchHitFields.getSourceAsMap();
-                if (!searchHitFields.getHighlightFields().isEmpty()) {
-                    Map<String, List<String>> highlights = new HashMap<>();
-                    for (HighlightField hf : searchHitFields.getHighlightFields().values()) {
-                        if (!hf.getName().equalsIgnoreCase(RecordMetaAttribute.X_ACL.getValue())) {
-                            Text[] fragments = hf.getFragments();
-                            highlights.put(
-                                hf.getName(), 
-                                Arrays.asList(fragments).stream().map(x -> x.toString()).collect(Collectors.toList())
-                            );
-                        }
+        if (searchHits.getHits().length == 0)
+            return null;
+        return getSearchResults(searchHits);
+    }
+    
+    List<Map<String, Object>> getSearchResults(SearchHits searchHits) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        for (SearchHit searchHitFields : searchHits.getHits()) {
+            Map<String, Object> hitFields = searchHitFields.getSourceAsMap();
+            if (!searchHitFields.getHighlightFields().isEmpty()) {
+                Map<String, List<String>> highlights = new HashMap<>();
+                for (HighlightField hf : searchHitFields.getHighlightFields().values()) {
+                    if (!hf.getName().equalsIgnoreCase(RecordMetaAttribute.X_ACL.getValue())) {
+                        Text[] fragments = hf.getFragments();
+                        highlights.put(
+                            hf.getName(), 
+                            Arrays.asList(fragments).stream().map(x -> x.toString()).collect(Collectors.toList())
+                        );
                     }
-                    hitFields.put("highlight", highlights);
                 }
-                results.add(hitFields);
+                hitFields.put("highlight", highlights);
             }
-            return results;
+            results.add(hitFields);
         }
-
-        return null;
+        return results;
     }
 
     List<AggregationResponse> getAggregationFromSearchResponse(SearchResponse searchResponse) {
         List<AggregationResponse> results = null;
+        if (searchResponse.getAggregations() == null)
+            return results;
 
-        if (searchResponse.getAggregations() != null) {
-            Terms kindAgg = null;
-            ParsedNested nested = searchResponse.getAggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
-            if(nested != null){
-                kindAgg = (Terms) getTermsAggregationFromNested(nested);
-            }else {
-                kindAgg = searchResponse.getAggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME);
-            }
-            if (kindAgg.getBuckets() != null) {
-                results = new ArrayList<>();
-                for (Terms.Bucket bucket : kindAgg.getBuckets()) {
-                    results.add(AggregationResponse.builder().key(bucket.getKeyAsString()).count(bucket.getDocCount()).build());
-                }
-            }
+        Terms kindAgg = null;
+        ParsedNested nested = searchResponse.getAggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
+        kindAgg = (nested != null) ? (Terms) getTermsAggregationFromNested(nested)
+                : searchResponse.getAggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME);
+
+        if (kindAgg.getBuckets() == null)
+            return results;
+
+        results = new ArrayList<>();
+        for (Terms.Bucket bucket : kindAgg.getBuckets()) {
+            results.add(
+                    AggregationResponse.builder().key(bucket.getKeyAsString()).count(bucket.getDocCount()).build());
         }
-
         return results;
     }
 
@@ -248,7 +242,7 @@ abstract class QueryBase {
         QueryBuilder queryBuilder = buildQuery(request.getQuery(), request.getSpatialFilter(), request.isQueryAsOwner());
         sourceBuilder.size(QueryUtils.getResultSizeForQuery(request.getLimit()));
         sourceBuilder.query(queryBuilder);
-        sourceBuilder.timeout(REQUEST_TIMEOUT);
+        sourceBuilder.timeout(requestTimeout);
         if (request.isTrackTotalCount()) {
             sourceBuilder.trackTotalHits(request.isTrackTotalCount());
         }
@@ -306,19 +300,19 @@ abstract class QueryBase {
                 case BAD_REQUEST:
                     throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Bad Request", detailedBadRequestMessageUtil.getDetailedBadRequestMessage(elasticSearchRequest, e), e);
                 case SERVICE_UNAVAILABLE:
-                    throw new AppException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Search error", "Please re-try search after some time.", e);
+                    throw new AppException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, ERROR_REASON, "Please re-try search after some time.", e);
                 default:
-                    throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
+                    throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ERROR_REASON, ERROR_MSG, e);
             }
         } catch (AppException e){
             throw e;
         } catch (IOException e) {
             if (e.getMessage().startsWith("listener timeout after waiting for")) {
-                throw new AppException(HttpServletResponse.SC_GATEWAY_TIMEOUT, "Search error", String.format("Request timed out after waiting for %sm", REQUEST_TIMEOUT.getMinutes()), e);
+                throw new AppException(HttpServletResponse.SC_GATEWAY_TIMEOUT, ERROR_REASON, String.format("Request timed out after waiting for %sm", requestTimeout.getMinutes()), e);
             }
-            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
+            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ERROR_REASON, ERROR_MSG, e);
         } catch (Exception e) {
-            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
+            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ERROR_REASON, ERROR_MSG, e);
         } finally {
             Long latency = System.currentTimeMillis() - startTime;
             String request = elasticSearchRequest != null ? elasticSearchRequest.source().toString() : searchRequest.toString();
