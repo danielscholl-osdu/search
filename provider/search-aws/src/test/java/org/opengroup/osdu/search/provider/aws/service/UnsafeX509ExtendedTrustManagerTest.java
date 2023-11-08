@@ -36,7 +36,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import java.net.Socket;
 
 @RunWith(MockitoJUnitRunner.class)
