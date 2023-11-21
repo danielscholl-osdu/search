@@ -90,6 +90,11 @@ public class Steps extends QuerySteps {
         super.i_set_the_fields_I_want_in_response_as(returnedFileds);
     }
 
+    @When("^I set autocomplete phrase to (.*?)$")
+    public void i_set_autocomplete_phrase(String autocompletePhrase) {
+        super.i_set_autocomplete_phrase(autocompletePhrase);
+    }
+
     @When("^I set the offset of starting point as None$$|^I limit the count of returned results to None$$")
     public void offset_of_starting_point_as_None() {
         super.offset_of_starting_point_as_None();
@@ -164,6 +169,11 @@ public class Steps extends QuerySteps {
     @Then("^I should get ([^\"]*) response with reason: \"(.*?)\", message: \"(.*?)\" and errors: \"(.*?)\"$")
     public void i_should_get_response_with_reason_message_and_errors(List<Integer> codes, String type, String msg, String error) {
         super.i_should_get_response_with_reason_message_and_errors(codes, type, msg, error);
+    }
+
+    @Then("^I should get following autocomplete suggesstions (.*)")
+    public void i_should_get_following_autocomplete_suggestions(String autocompleteOptions) {
+        super.i_should_get_following_autocomplete_suggestions(autocompleteOptions);
     }
 
     @When("^define geo polygon with following points ([^\"]*)$")

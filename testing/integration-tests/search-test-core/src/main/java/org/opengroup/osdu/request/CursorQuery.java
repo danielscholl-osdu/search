@@ -15,6 +15,7 @@ public class CursorQuery {
     private List<String> returnedFields;
     private SortQuery sort;
     private Boolean queryAsOwner;
+    private String suggestPhrase;
     private SpatialFilter spatialFilter;
 
     @Override

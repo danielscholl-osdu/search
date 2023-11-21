@@ -60,3 +60,6 @@ load-tests/*.pyc
 *.iml
 
 dist/
+
+# Local history plugin
+.history/*

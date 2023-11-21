@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.gson.Gson;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 import org.opengroup.osdu.core.common.model.search.SortQuery;
 import org.opengroup.osdu.request.Query;
 import org.opengroup.osdu.response.ErrorResponseMock;
@@ -65,6 +66,10 @@ public class QueryBase extends TestsBase {
         else if (!returnedFileds.contains("All")) requestQuery.setReturnedFields(returnedFileds);
     }
 
+    public void i_set_autocomplete_phrase(String autocompletePhrase) {
+        requestQuery.setSuggestPhrase(autocompletePhrase);
+    }
+
     public void i_apply_geographical_query_on_field(String field) {
         spatialFilter.setField(field);
         requestQuery.setSpatialFilter(spatialFilter);
@@ -75,6 +80,13 @@ public class QueryBase extends TestsBase {
         ResponseMock response = executeQuery(payload, headers, httpClient.getAccessToken(), ResponseMock.class);
         assertEquals(200, response.getResponseCode());
         assertEquals(resultCount, response.getResults().size());
+    }
+
+    public void i_should_get_following_autocomplete_suggestions(String autocompleteOptions) {
+        String payload = requestQuery.toString();
+        ResponseMock response = executeQuery(payload, headers, httpClient.getAccessToken(), ResponseMock.class);
+        assertEquals(200, response.getResponseCode());
+        assertEquals(Arrays.asList(autocompleteOptions.split(",")), response.getPhraseSuggestions());
     }
 
     public void i_should_get_in_response_records_using_search_as_mode(int resultCount) {

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import com.google.gson.Gson;
 import java.util.List;
+import java.util.Arrays;
 import org.opengroup.osdu.core.common.model.search.SortQuery;
 import org.opengroup.osdu.request.CursorQuery;
 import org.opengroup.osdu.response.ErrorResponseMock;
@@ -46,6 +47,17 @@ public class QueryByCursorBase extends TestsBase {
     public void i_set_the_fields_I_want_in_response_as(List<String> returnedFileds) {
         if(returnedFileds.contains("NULL")) requestQuery.setReturnedFields(null);
         else if (!returnedFileds.contains("All")) requestQuery.setReturnedFields(returnedFileds);
+    }
+
+    public void i_set_autocomplete_phrase(String autocompletePhrase) {
+        requestQuery.setSuggestPhrase(autocompletePhrase);
+    }
+
+    public void i_should_get_following_autocomplete_suggestions(String autocompleteOptions) {
+        String payload = requestQuery.toString();
+        ResponseMock response = executeQuery(payload, headers, httpClient.getAccessToken(), ResponseMock.class);
+        assertEquals(200, response.getResponseCode());
+        assertEquals(Arrays.asList(autocompleteOptions.split(",")), response.getPhraseSuggestions());
     }
 
     public void i_apply_geographical_query_on_field(String field) {
