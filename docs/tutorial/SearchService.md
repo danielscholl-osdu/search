@@ -1339,6 +1339,32 @@ curl --request POST \
 
 [Back to table of contents](#TOC)
 
+## Phrase completion (autocomplete) preview <a name="autocomplete"></a>
+
+Feature available on OSDU deployments with autocomplete feature flag enabled and bagOfWords indexer feature enabled. 
+Users can retrieve phrase completions along with or instead of the results that may help them build more accurate queries.
+Suggestion behavior currently is based on completion suggester.
+
+```http
+POST /search/v2/query HTTP/1.1
+{
+  "kind": "osdu:wks:master-data--WellPlanningWellbore:1.0.0",
+  "query": "awseastusa",
+  "suggestPhrase": "someuniquesurveyprogramid",
+}
+
+Response:
+{
+    "results": [...],
+    "aggregations": ...,
+    "phraseSuggestions": [
+        "osdu:master-data--SurveyProgram:SomeUniqueSurveyProgramID:"
+    ],
+    "totalCount": ...
+}
+
+```
+
 ## Query with cursor <a name="query-with-cursor"></a>
 
 While a search request returns a single `page` of results, the `query_with_cursor` API can be used to retrieve large numbers of results, or even all results, from a single search request, in much the same way as you would use a cursor on a traditional database.

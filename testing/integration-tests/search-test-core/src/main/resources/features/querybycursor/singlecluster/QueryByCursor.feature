@@ -70,7 +70,7 @@ Feature: Search recursively on cursor with different queries
     Examples:
       | q1_tenant | q2_tenant | kind                                       | query  | limit | field           | top_left_latitude | top_left_longitude | bottom_right_latitude | bottom_right_longitude | first_count | final_count |
       | "tenant1" | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None   | None  | "data.Location" | 45                | -100               | 0                     | 0                      | 2           | 0           |
-      | "tenant1" | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICEd" | 1     | "data.Location" | 45                | -110               | 0                     | 0                      | 1           | 0           |
+      | "tenant1" | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | 1     | "data.Location" | 45                | -110               | 0                     | 0                      | 1           | 0           |
 
 
   Scenario Outline: Search data and sort the results with the given sort fields and order
