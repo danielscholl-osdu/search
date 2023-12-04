@@ -27,7 +27,6 @@
     <artifactId>search-aws</artifactId>
     <description>Search Service on AWS</description>
     <packaging>jar</packaging>
-    <version>0.25.0-SNAPSHOT</version>
     <properties>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.source>17</maven.compiler.source>
@@ -36,28 +35,13 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
-        <deployment.environment>dev</deployment.environment>
-        <version.number>0.25.0-SNAPSHOT</version.number>
         <nimbus-jose-jwt.version>9.18</nimbus-jose-jwt.version>
-        <jackson-databind.version>2.15.2</jackson-databind.version>
-        <jackson.version>2.15.1</jackson.version>
         <spring-webmvc.version>6.0.9</spring-webmvc.version>
     </properties>
 
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-web</artifactId>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-starter-tomcat</artifactId>
-                    </exclusion>
-                </exclusions>
-                <version>2.6.6</version>
-            </dependency>
             <dependency>
                 <groupId>org.springframework.data</groupId>
                 <artifactId>spring-data-mongodb</artifactId>
