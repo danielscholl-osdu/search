@@ -396,9 +396,9 @@ By default, search back-end server analyzes the values of `text` fields & `text`
 - Divides the remaining content into individual words, called tokens.
 - Changes the tokens to lowercase.
 
-To better support a `precise` exact match, aggregation & sort on `text` field, an additional field is indexed (on kinds indexed after April 2021) for every `text` field, that is not analyzed (as per rules mentioned above). As an example, if record has a `text` field named `data.name`, then the indexer will add the non-analyzed field: `data.name.keyword`. Newly added `text` fields can be identified as: field-name.**keyword**.
+To better support a `precise` exact match, aggregation & sort on `text` field, an additional field is indexed (on kinds indexed after April 2021) for every `text` field, that is not analyzed (as per rules mentioned above). As an example, if record has a `text` field named `data.name`, then the indexer will add the non-analyzed field: `data.name.keyword`. Newly added `text` fields can be identified as: field-name.**keyword**. Also installations with keywordLower feature flag enabled have additional **keywordLower** field, allowing case agnostic precise search. 
 
-__Note 1:__ The `keyword` field value can have a maximum of 256 characters, and only exact match is supported for this field, so a partial field value query will not return any response. If a `text` field is longer than 256 characters, then the `keyword` field will have only the first 256 characters.
+__Note 1:__ The `keyword` and `keywordLower` field value can have a maximum of 256 characters, and only exact match is supported for this field, so a partial field value query will not return any response. If a `text` field is longer than 256 characters, then both `keyword` and `keywordLower` fields will have only the first 256 characters.
 
 __Note 2__: `text` array fields indexed with `flattened` indexing hint are non-analyzed during indexing by default and do not require `keyword` subfield. Exact match, aggregations and sort queries on such fields do not require `keyword` suffix.
 
@@ -413,6 +413,14 @@ Here is an example query, it two special characters, space and period, without a
 ```json
 {
     "query": "data.name.keyword:\"Spillpath DA no.109\""
+}
+```
+
+The `keywordLower` (OSDU Data Platform deployment with keywordLower feature enabled) subfield has only one difference - it is allowing non-case sensitive search. Example:
+
+```json
+{
+    "query": "data.name.keywordLower:\"spillpath da no.109\""
 }
 ```
 
@@ -924,6 +932,8 @@ POST /search/v2/query HTTP/1.1
   }
 }
 ```
+
+To avoid effect that uppercase letters are before lowercase letters, query can use keywordLower instead of keyword subfield.
 
 <details><summary><b>cURL</b></summary>
 
