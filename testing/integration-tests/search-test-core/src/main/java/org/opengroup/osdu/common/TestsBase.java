@@ -4,12 +4,12 @@ import com.google.gson.Gson;
 
 import com.google.gson.reflect.TypeToken;
 import cucumber.api.DataTable;
+import lombok.extern.slf4j.Slf4j;
 import org.opengroup.osdu.core.common.model.entitlements.Acl;
 import org.opengroup.osdu.core.common.model.legal.Legal;
 import org.opengroup.osdu.core.common.model.search.Point;
 import org.opengroup.osdu.core.common.model.search.Polygon;
 import org.opengroup.osdu.models.Setup;
-import org.opengroup.osdu.models.TestIndex;
 import org.opengroup.osdu.models.schema.PersistentSchemaTestIndex;
 import org.opengroup.osdu.request.SpatialFilter;
 import org.opengroup.osdu.response.ResponseBase;
@@ -18,7 +18,6 @@ import org.opengroup.osdu.util.HTTPClient;
 
 import com.sun.jersey.api.client.ClientResponse;
 import cucumber.api.Scenario;
-import lombok.extern.java.Log;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
@@ -26,13 +25,13 @@ import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.opengroup.osdu.util.Config.*;
+import static org.opengroup.osdu.util.Utility.beautifyJsonString;
 
-@Log
+@Slf4j
 public abstract class TestsBase {
     protected HTTPClient httpClient;
     protected Scenario scenario;
@@ -142,6 +141,7 @@ public abstract class TestsBase {
         T response = new Gson().fromJson(responseEntity, typeParameterClass);
         response.setHeaders(clientResponse.getHeaders());
         response.setResponseCode(clientResponse.getStatus());
+        log.info(String.format("Response body: %s\nCorrelation id: %s\nResponse code: %s", beautifyJsonString(responseEntity), response.getHeaders().get("correlation-id"), response.getResponseCode()));
         return response;
     }
 
@@ -200,8 +200,10 @@ public abstract class TestsBase {
             List<String> recordIds = schemaRecords.get(kind);
             for (String id : recordIds) {
                 ClientResponse clientResponse = httpClient.send(HttpMethod.DELETE, getStorageBaseURL() + "records/" +id,payload,headers, httpClient.getAccessToken());
+                log.info(String.format("Deleted record with id: %s\nHttpMethod: %s\nStorage base URL: %s\nRequest body: %s\nCorrelation id: %s\nStatus code: %s",  id, HttpMethod.DELETE, getStorageBaseURL(), beautifyJsonString(payload), clientResponse.getHeaders().get("correlation-id"), clientResponse.getStatus()));
             }
             ClientResponse clientResponse = httpClient.send(HttpMethod.DELETE, getIndexerBaseURL() + "index?kind=" +kind,payload,headers, httpClient.getAccessToken());
+            log.info(String.format("Deleted index with kind: %s\nHttpMethod: %s\nIndexer base URL: %s\nRequest body: %s\nCorrelation id: %s\nStatus code: %s",  kind, HttpMethod.DELETE, getIndexerBaseURL(), beautifyJsonString(payload), clientResponse.getHeaders().get("correlation-id"), clientResponse.getStatus()));
         }
 
     }
@@ -248,8 +250,9 @@ public abstract class TestsBase {
             }
             schemaRecords.put(actualKind,recordsForKind);
             String payLoad = new Gson().toJson(records);
-            log.log(Level.INFO, "Start ingesting records={0}", payLoad);
+            log.info( "Start ingesting records= %s", payLoad);
             ClientResponse clientResponse = httpClient.send(HttpMethod.PUT, getStorageBaseURL() + "records", payLoad, headers, httpClient.getAccessToken());
+            log.info(String.format("Response body: %s\n Correlation id: %s\nStatus code: %s",beautifyJsonString(clientResponse.getEntity(String.class)) , clientResponse.getHeaders().get("correlation-id"), clientResponse.getStatus()));
             assertEquals(201, clientResponse.getStatus());
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 public void run() {
