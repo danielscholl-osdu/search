@@ -87,7 +87,6 @@ public class CorrelationIDRequestFilterTest {
 		final String CORRELATION_ID = "any previous correlation id";
 
         when(httpRequest.getMethod()).thenReturn("GET");
-        when(httpRequest.getServletPath()).thenReturn("/query");
         when(httpRequest.getRequestURI()).thenReturn("http://foobar/query");
 
         HashMap<String,String> headers =new HashMap<String, String>();
