@@ -14,28 +14,22 @@
 
 package org.opengroup.osdu.search.middleware;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import com.google.common.base.Strings;
 import org.apache.http.HttpStatus;
 import org.opengroup.osdu.core.common.http.ResponseHeadersFactory;
+import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.http.Request;
-import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import javax.inject.Inject;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.Map;
 
 @Component
 public class CorrelationIDRequestFilter implements Filter {
@@ -81,10 +75,6 @@ public class CorrelationIDRequestFilter implements Filter {
 		} else {
 			startTime = (long)property;
 		}
-
-		String path = httpRequest.getServletPath();
-		if (path.endsWith("/liveness_check") || path.endsWith("/readiness_check"))
-			return;
 
 		String fetchConversionHeader = ((HttpServletRequest) request).getHeader(FOR_HEADER_NAME);
 		if (!Strings.isNullOrEmpty(fetchConversionHeader)) {
