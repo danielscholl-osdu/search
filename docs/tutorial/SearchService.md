@@ -95,6 +95,10 @@ Retrieved data from the OSDU Data Platform is normalized to a common standard th
 
 For any attribute that has a [`AbstractSpatialLocation`](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Authoring/abstract/AbstractSpatialLocation.1.0.0.json) schema reference, the coordinates can have attribute named <code>AsIngestedCoordinates</code> using an [`AbstractAnyCrsFeatureCollection`](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/abstract/AbstractAnyCrsFeatureCollection.1.0.0.json) schema reference or <code>WGS84Coordinates</code> attribute using an [`AbstractFeatureCollection`](https://community.opengroup.org/osdu/data/data-definitions/-/blob/master/Generated/abstract/AbstractFeatureCollection.1.0.0.json) schema reference. However, The search cannot use the <code>AsIngestedCoordinates</code> in a meaningful way, so it does not index the <code>AsIngestedCoordinates</code>.
 
+>__NOTE__: See the indexer service for a feature flag (`featureFlag.asIngestedCoordinates.enabled`) which can be used to enable indexing of the `AsIngestedCoordinates`.
+When enabled, search queries can use a range query on the FirstPoint X and Y coordinates (staring with release M22).
+
+
 The Indexer service uses Storage service's frame of reference conversion API (<code>/records:batch</code> API) for conversion. If the Storage API returns with a valid converted <code>WGS84Coordinates</code> for the <code>AsIngestedCoordinates</code>, then the converted coordinates will be indexed. If the conversion fails, then the Indexer will not index the shape in the <code>WGS84Coordinates</code> attribute. Indexer service will index conversion error for the record with `400` error code instead. Please refer to [Get indexing status](#get-indexing-status) for details on index status. Only the <code>WGS84Coordinates</code> are returned in the search response.
 
 ### How conversion is handled for `AsIngestedCoordinates` and `WGS84Coordinates`:
