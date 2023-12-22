@@ -106,8 +106,7 @@ public class AuthorizationRequestFilterTest {
     @Test
     public void should_skipFilter_when_requestingSwaggerEndpoint() throws Exception {
         when(httpRequest.getMethod()).thenReturn("GET");
-        when(httpRequest.getServletPath()).thenReturn("/swagger.js");
-        when(httpRequest.getRequestURI()).thenReturn("http://foobar/");
+        when(httpRequest.getRequestURI()).thenReturn("http://foobar/swagger");
         org.springframework.test.util.ReflectionTestUtils.setField(sut, "ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS", "custom-domain");
 
         sut.doFilter(httpRequest, httpResponse, filterChain);
@@ -124,7 +123,6 @@ public class AuthorizationRequestFilterTest {
         AuthorizationResponse authorizationResponse = AuthorizationResponse.builder().groups(groups).user("user.1").build();
 
         when(httpRequest.getMethod()).thenReturn("GET");
-        when(httpRequest.getServletPath()).thenReturn("/query");
         when(httpRequest.getRequestURI()).thenReturn("http://foobar/query");
 
         HashMap<String,String> headers =new HashMap<String, String>();
@@ -148,7 +146,6 @@ public class AuthorizationRequestFilterTest {
         AuthorizationResponse authorizationResponse = AuthorizationResponse.builder().groups(groups).user("user.1").build();
 
         when(httpRequest.getMethod()).thenReturn("GET");
-        when(httpRequest.getServletPath()).thenReturn("/query");
         when(httpRequest.getRequestURI()).thenReturn("http://foobar/query");
 
         HashMap<String,String> headers =new HashMap<String, String>();
@@ -173,7 +170,6 @@ public class AuthorizationRequestFilterTest {
         AuthorizationResponse authorizationResponse = AuthorizationResponse.builder().groups(groups).user("user.1").build();
 
         when(httpRequest.getMethod()).thenReturn("GET");
-        when(httpRequest.getServletPath()).thenReturn("/query");
         when(httpRequest.getRequestURI()).thenReturn("http://foobar/query");
 
         HashMap<String,String> headers =new HashMap<String, String>();
@@ -191,7 +187,6 @@ public class AuthorizationRequestFilterTest {
     public void should_throwException_given_multipleAccountId_forNonQueryApi() throws Exception {
 
         when(httpRequest.getMethod()).thenReturn("GET");
-        when(httpRequest.getServletPath()).thenReturn("/index/schema");
         when(httpRequest.getRequestURI()).thenReturn("http://foobar/index/schema");
 
         HashMap<String,String> headers =new HashMap<String, String>();
@@ -213,7 +208,6 @@ public class AuthorizationRequestFilterTest {
     public void should_throwException_given_emptyAccountId() throws Exception {
 
         when(httpRequest.getMethod()).thenReturn("GET");
-        when(httpRequest.getServletPath()).thenReturn("/query");
         when(httpRequest.getRequestURI()).thenReturn("http://foobar/query");
 
         HashMap<String,String> headers = new HashMap<String, String>();
