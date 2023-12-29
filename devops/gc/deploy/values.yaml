@@ -13,7 +13,7 @@ data:
   indexerHost: "http://indexer"
   policyId: 'osdu.partition["%s"].search'
   securityHttpsCertificateTrust: "true"
-  servicePolicyEnabled: true
+  servicePolicyEnabled: false
   # Deployments
   requestsCpu: "15m"
   requestsMemory: "400Mi"
