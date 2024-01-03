@@ -78,7 +78,7 @@ The following software have components provided under the terms of this license:
 - Apache Lucene (module: misc) (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-misc)
 - Apache Lucene (module: spatial-extras) (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-spatial-extras)
 - Apache Lucene (module: suggest) (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-suggest)
-- AssertJ Core (from ${project.organization.url}#${project.artifactId})
+- AssertJ Core (from https://assertj.github.io/doc/#assertj-core)
 - Asynchronous Http Client (from https://repo1.maven.org/maven2/org/asynchttpclient/async-http-client)
 - Asynchronous Http Client Netty Utils (from https://repo1.maven.org/maven2/org/asynchttpclient/async-http-client-netty-utils)
 - AutoValue Annotations (from https://github.com/google/auto/tree/main/value, https://github.com/google/auto/tree/master/value, https://repo1.maven.org/maven2/com/google/auto/value/auto-value-annotations)
@@ -157,7 +157,7 @@ The following software have components provided under the terms of this license:
 - Java Native Access Platform (from https://github.com/java-native-access/jna)
 - Java archiving library (from http://rauschig.org/jarchivelib)
 - JavaBeans Activation Framework (from <http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp>, http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp, https://repo1.maven.org/maven2/com/sun/activation/javax.activation)
-- Javassist (from http://www.javassist.org/)
+- Javassist (from http://www.javassist.org/, https://www.javassist.org/)
 - JetBrains Java Annotations (from https://github.com/JetBrains/java-annotations)
 - Joda-Time (from http://joda-time.sourceforge.net, http://www.joda.org/joda-time/, https://www.joda.org/joda-time/)
 - KeePassJava2 :: All (from https://repo1.maven.org/maven2/org/linguafranca/pwdb/KeePassJava2)
@@ -415,6 +415,7 @@ BSD-3-Clause
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- ${project.groupId}:${project.artifactId} (from https://repo1.maven.org/maven2/org/locationtech/jts/io/jts-io-common)
 - API Common (from https://github.com/googleapis, https://github.com/googleapis/api-common-java, https://repo1.maven.org/maven2/com/google/api/api-common)
 - ASM Analysis (from http://asm.ow2.io/)
 - ASM Commons (from http://asm.ow2.io/, https://repo1.maven.org/maven2/org/ow2/asm/asm-commons)
@@ -478,7 +479,6 @@ The following software have components provided under the terms of this license:
 - jersey-core-server (from https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-server)
 - jersey-ext-bean-validation (from https://repo1.maven.org/maven2/org/glassfish/jersey/ext/jersey-bean-validation)
 - jersey-media-json-jackson (from https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson)
-- jts-io-common (from https://repo1.maven.org/maven2/org/locationtech/jts/io/jts-io-common)
 - org.locationtech.jts:jts-core (from https://repo1.maven.org/maven2/org/locationtech/jts/jts-core)
 
 ========================================================================
@@ -595,6 +595,7 @@ EPL-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- ${project.groupId}:${project.artifactId} (from https://repo1.maven.org/maven2/org/locationtech/jts/io/jts-io-common)
 - AspectJ Weaver (from http://www.aspectj.org, https://www.eclipse.org/aspectj/)
 - Expression Language 3.0 (from http://el-spec.java.net, http://uel.java.net, https://projects.eclipse.org/projects/ee4j.el)
 - JUnit Jupiter (Aggregator) (from https://junit.org/junit5/)
@@ -617,7 +618,6 @@ The following software have components provided under the terms of this license:
 - aopalliance-repackaged (from https://repo1.maven.org/maven2/org/glassfish/hk2/external/aopalliance-repackaged)
 - jersey-core-server (from https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-server)
 - jersey-media-json-jackson (from https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson)
-- jts-io-common (from https://repo1.maven.org/maven2/org/locationtech/jts/io/jts-io-common)
 - org.locationtech.jts:jts-core (from https://repo1.maven.org/maven2/org/locationtech/jts/jts-core)
 
 ========================================================================
@@ -800,7 +800,7 @@ The following software have components provided under the terms of this license:
 - Elastic JNA Distribution (from https://github.com/java-native-access/jna)
 - Java Native Access (from https://github.com/java-native-access/jna, https://github.com/twall/jna)
 - Java Native Access Platform (from https://github.com/java-native-access/jna)
-- Javassist (from http://www.javassist.org/)
+- Javassist (from http://www.javassist.org/, https://www.javassist.org/)
 
 ========================================================================
 LGPL-3.0-only
@@ -881,7 +881,7 @@ The following software have components provided under the terms of this license:
 - QpidJMS Client (from https://repo1.maven.org/maven2/org/apache/qpid/qpid-jms-client)
 - SLF4J API Module (from http://www.slf4j.org)
 - Spongy Castle (from http://rtyley.github.io/spongycastle/)
-- Spring Data for Azure Cosmos DB SQL API (from https://github.com/Azure/azure-sdk-for-java/tree/master/sdk/cosmos/azure-spring-data-cosmos)
+- Spring Data for Azure Cosmos DB SQL API (from https://github.com/Azure/azure-sdk-for-java/tree/master/sdk/cosmos/azure-spring-data-cosmos, https://github.com/Azure/azure-sdk-for-java/tree/master/sdk/spring/azure-spring-data-cosmos)
 - ThreeTen backport (from https://github.com/ThreeTen/threetenbp, https://www.threeten.org/threetenbp)
 - adal4j (from https://github.com/AzureAD/azure-activedirectory-library-for-java)
 - jersey-container-servlet (from https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet)
@@ -907,7 +907,7 @@ MPL-1.1
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- Javassist (from http://www.javassist.org/)
+- Javassist (from http://www.javassist.org/, https://www.javassist.org/)
 
 ========================================================================
 SunPro
