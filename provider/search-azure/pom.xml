@@ -38,7 +38,7 @@
         <osdu.corelibazure.version>0.25.0</osdu.corelibazure.version>
         <osdu.search-core.version>0.26.0-SNAPSHOT</osdu.search-core.version>
         <spatial4j.version>0.7</spatial4j.version>
-        <reactor-netty.version>1.1.13</reactor-netty.version>
+        <reactor-netty.version>1.1.14</reactor-netty.version>
         <reactor-core.version>3.4.21</reactor-core.version>
         <jackson-dataformat-xml.version>2.11.4</jackson-dataformat-xml.version>
         <log4j.version>2.17.1</log4j.version>
@@ -53,6 +53,7 @@
         <netty.version>4.1.101.Final</netty.version>
         <guava.version>32.1.2-jre</guava.version>
         <woodstox-core.version>6.4.0</woodstox-core.version>
+        <nimbus-jose-jwt.version>9.30.2</nimbus-jose-jwt.version>
     </properties>
 
     <dependencyManagement>
@@ -281,6 +282,11 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>${nimbus-jose-jwt.version}</version>
         </dependency>
     </dependencies>
 
