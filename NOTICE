@@ -78,7 +78,7 @@ The following software have components provided under the terms of this license:
 - Apache Lucene (module: misc) (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-misc)
 - Apache Lucene (module: spatial-extras) (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-spatial-extras)
 - Apache Lucene (module: suggest) (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-suggest)
-- AssertJ Core (from https://assertj.github.io/doc/#assertj-core)
+- AssertJ Core (from ${project.organization.url}#${project.artifactId})
 - Asynchronous Http Client (from https://repo1.maven.org/maven2/org/asynchttpclient/async-http-client)
 - Asynchronous Http Client Netty Utils (from https://repo1.maven.org/maven2/org/asynchttpclient/async-http-client-netty-utils)
 - AutoValue Annotations (from https://github.com/google/auto/tree/main/value, https://github.com/google/auto/tree/master/value, https://repo1.maven.org/maven2/com/google/auto/value/auto-value-annotations)
