@@ -34,6 +34,9 @@ public class RedisConfig {
     @Value("${redis.expiration}")
     private int expiration;
 
+    @Value("${redis.group.ttl:30}")
+    public int groupRedisTtl;
+
     @Value("${redis.database}")
     private int database;
 
@@ -47,7 +50,7 @@ public class RedisConfig {
     private int commandTimeout;
     @Bean
     public RedisAzureCache<String, Groups> groupCache() {
-        return new RedisAzureCache<>(String.class, Groups.class, new RedisAzureConfiguration(database, expiration, port, timeout, commandTimeout));
+        return new RedisAzureCache<>(String.class, Groups.class, new RedisAzureConfiguration(database, groupRedisTtl, port, timeout, commandTimeout));
     }
 
     @Bean
