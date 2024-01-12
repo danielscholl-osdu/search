@@ -14,24 +14,33 @@
 
 package org.opengroup.osdu.search.provider.azure.utils;
 
+import static org.mockito.Mockito.when;
+import static org.opengroup.osdu.search.provider.azure.utils.SearchDependencyLogger.QUERY_DEPENDENCY_NAME;
+
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.azure.logging.DependencyPayload;
 
 import java.time.Duration;
+import org.opengroup.osdu.core.common.model.search.QueryRequest;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DependencyLoggerTest {
+public class SearchDependencyLoggerTest {
 
-    private DependencyLogger dependencyLogger = new DependencyLogger();
+    private SearchDependencyLogger searchDependencyLogger = new SearchDependencyLogger();
+    @Mock
+    private QueryRequest queryRequest;
 
     @Test
     public void should_call_logDependencyFromICoreLogger_whenLogDependencyIsCalled() {
-        DependencyPayload payload = new DependencyPayload("name", "data", Duration.ofMillis(1000), String.valueOf(200), true);
+        DependencyPayload payload = new DependencyPayload(QUERY_DEPENDENCY_NAME, "data", Duration.ofMillis(1000), String.valueOf(200), true);
         payload.setType("Elasticsearch");
         payload.setTarget("target");
-        Assertions.assertDoesNotThrow(() -> dependencyLogger.logDependency("name", "data", "target", 1000, 200, true));
+        when(queryRequest.getQuery()).thenReturn("data");
+        when(queryRequest.getKind()).thenReturn("target");
+        Assertions.assertDoesNotThrow(() -> searchDependencyLogger.log(queryRequest, 1000L, 200));
     }
 }

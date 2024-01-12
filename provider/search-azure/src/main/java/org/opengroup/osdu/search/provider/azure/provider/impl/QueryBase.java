@@ -14,9 +14,6 @@
 
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
-import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.CURSOR_QUERY_DEPENDENCY_NAME;
-import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.QUERY_DEPENDENCY_NAME;
-
 import com.google.common.base.Strings;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -61,13 +58,11 @@ import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.AggregationResponse;
 import org.opengroup.osdu.core.common.model.search.Query;
-import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryUtils;
 import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
-import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
@@ -75,8 +70,8 @@ import org.opengroup.osdu.search.util.GeoQueryBuilder;
 import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
+import org.opengroup.osdu.search.util.ITracingLogger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 abstract class QueryBase {
 
@@ -99,8 +94,7 @@ abstract class QueryBase {
     @Autowired
     private ElasticLoggingConfig elasticLoggingConfig;
     @Autowired
-    @Qualifier("azureUtilsDependencyLogger")
-    private DependencyLogger dependencyLogger;
+    private ITracingLogger tracingLogger;
     @Autowired
     private GeoQueryBuilder geoQueryBuilder;
 
@@ -320,8 +314,7 @@ abstract class QueryBase {
                 String request = elasticSearchRequest != null ? elasticSearchRequest.source().toString() : searchRequest.toString();
                 this.log.debug(String.format("Elastic request-payload: %s", request));
             }
-            String dependencyName = searchRequest instanceof QueryRequest ? QUERY_DEPENDENCY_NAME : CURSOR_QUERY_DEPENDENCY_NAME;
-            dependencyLogger.logDependency(dependencyName, searchRequest.getQuery(), String.valueOf(searchRequest.getKind()), latency, statusCode, statusCode == HttpStatus.SC_OK);
+            this.tracingLogger.log(searchRequest, latency, statusCode);
             this.auditLog(searchRequest, searchResponse);
         }
     }

@@ -14,8 +14,18 @@
 
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
+import static org.elasticsearch.rest.RestStatus.NOT_FOUND;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Map;
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.DatatypeConverter;
 import org.apache.http.ContentTooLongException;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.ElasticsearchStatusException;
@@ -35,26 +45,13 @@ import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.search.logging.AuditLogger;
-import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
+import org.opengroup.osdu.search.util.ITracingLogger;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 import org.opengroup.osdu.search.util.SearchRequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.bind.DatatypeConverter;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.Map;
-
-import static org.elasticsearch.rest.RestStatus.NOT_FOUND;
-import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.CURSOR_QUERY_DEPENDENCY_NAME;
 
 @Service
 public class ScrollQueryServiceImpl extends QueryBase implements IScrollQueryService {
@@ -70,8 +67,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
     @Autowired
     private ResponseExceptionParser exceptionParser;
     @Autowired
-    @Qualifier("azureUtilsDependencyLogger")
-    private DependencyLogger dependencyLogger;
+    private ITracingLogger tracingLogger;
 
     private final MessageDigest digest;
 
@@ -142,7 +138,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
             this.querySuccessAuditLogger(searchRequest);
         }
         int statusCode = searchResponse.status().getStatus();
-        dependencyLogger.logDependency(CURSOR_QUERY_DEPENDENCY_NAME, String.format("cursor:%s", searchRequest.getCursor()), String.valueOf(searchRequest.getKind()), latency, statusCode, statusCode == HttpStatus.SC_OK);
+        tracingLogger.log(searchRequest, latency, statusCode);
     }
 
     private CursorQueryResponse initCursorQuery(CursorQueryRequest searchRequest, RestHighLevelClient client) {

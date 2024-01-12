@@ -25,7 +25,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.QUERY_DEPENDENCY_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -87,7 +86,7 @@ import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
-import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
+import org.opengroup.osdu.search.provider.azure.utils.SearchDependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
@@ -181,7 +180,7 @@ public class QueryServiceImplTest {
     private ElasticLoggingConfig elasticLoggingConfig;
 
     @Mock
-    private DependencyLogger dependencyLogger;
+    private SearchDependencyLogger searchDependencyLogger;
 
     @Spy
     private GeoQueryBuilder geoQueryBuilder = new GeoQueryBuilder();
@@ -243,7 +242,7 @@ public class QueryServiceImplTest {
         assertEquals(queryResponse.getResults().get(0).get(name), text);
 
         verify(this.auditLogger, times(1)).queryIndexSuccess(Lists.newArrayList(searchRequest.toString()));
-        verify(this.dependencyLogger, times(1)).logDependency(QUERY_DEPENDENCY_NAME, searchRequest.getQuery(), String.valueOf(searchRequest.getKind()), 0, 200, true);
+        verify(this.searchDependencyLogger, times(1)).log(searchRequest, 0L, 200);
     }
 
     @Test

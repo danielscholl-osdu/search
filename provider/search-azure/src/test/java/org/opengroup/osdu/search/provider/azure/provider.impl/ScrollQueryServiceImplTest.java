@@ -14,8 +14,24 @@
 
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.Lists;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.http.ContentTooLongException;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchResponse;
@@ -45,29 +61,11 @@ import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
-import org.opengroup.osdu.search.provider.azure.utils.DependencyLogger;
+import org.opengroup.osdu.search.provider.azure.utils.SearchDependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.opengroup.osdu.search.provider.azure.utils.DependencyLogger.CURSOR_QUERY_DEPENDENCY_NAME;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScrollQueryServiceImplTest {
@@ -91,7 +89,7 @@ public class ScrollQueryServiceImplTest {
     private SearchHits searchHits;
 
     @Mock
-    private DependencyLogger dependencyLogger;
+    private SearchDependencyLogger searchDependencyLogger;
 
     @Mock
     private SearchHit searchHit;
@@ -176,7 +174,7 @@ public class ScrollQueryServiceImplTest {
         assertEquals(searchRequestCursor, cursor);
 
         verify(this.auditLogger, times(1)).queryIndexWithCursorSuccess(Lists.newArrayList(searchRequest.toString()));
-        verify(this.dependencyLogger, times(1)).logDependency(CURSOR_QUERY_DEPENDENCY_NAME, String.format("cursor:%s", searchRequest.getCursor()), String.valueOf(searchRequest.getKind()), 0, 200, true);
+        verify(this.searchDependencyLogger, times(1)).log(searchRequest, 0L, 200);
     }
 
     @Test
