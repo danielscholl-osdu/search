@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.opengroup.osdu.search.provider.azure.provider.impl;
+package org.opengroup.osdu.search.provider.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -83,10 +83,9 @@ import org.opengroup.osdu.core.common.model.search.QueryResponse;
 import org.opengroup.osdu.core.common.model.search.SortOrder;
 import org.opengroup.osdu.core.common.model.search.SortQuery;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
+import org.opengroup.osdu.search.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
-import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
-import org.opengroup.osdu.search.provider.azure.utils.SearchDependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
@@ -95,13 +94,14 @@ import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.GeoQueryBuilder;
 import org.opengroup.osdu.search.util.IAggregationParserUtil;
 import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
+import org.opengroup.osdu.search.util.IPerfLogger;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.QueryParserUtil;
 import org.opengroup.osdu.search.util.SortParserUtil;
 
 @RunWith(MockitoJUnitRunner.class)
-public class QueryServiceImplTest {
+public class CoreQueryServiceImplTest {
     private final String DATA_GROUPS = "X-Data-Groups";
     private final String DATA_GROUP_1 = "data.welldb.viewers@common.evd.cloud.slb-ds.com";
     private final String DATA_GROUP_2 = "data.npd.viewers@common.evd.cloud.slb-ds.com";
@@ -180,13 +180,13 @@ public class QueryServiceImplTest {
     private ElasticLoggingConfig elasticLoggingConfig;
 
     @Mock
-    private SearchDependencyLogger searchDependencyLogger;
+    private IPerfLogger searchDependencyLogger;
 
     @Spy
     private GeoQueryBuilder geoQueryBuilder = new GeoQueryBuilder();
 
     @InjectMocks
-    private QueryServiceImpl sut;
+    private CoreQueryServiceImpl sut;
 
     @Before
     public void init() throws IOException {

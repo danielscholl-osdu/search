@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.opengroup.osdu.search.provider.azure.provider.impl;
+package org.opengroup.osdu.search.provider.impl;
 
 import static org.elasticsearch.rest.RestStatus.NOT_FOUND;
 
@@ -47,14 +47,14 @@ import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.opengroup.osdu.search.util.ITracingLogger;
+import org.opengroup.osdu.search.util.IPerfLogger;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 import org.opengroup.osdu.search.util.SearchRequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ScrollQueryServiceImpl extends QueryBase implements IScrollQueryService {
+public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScrollQueryService {
 
     private final TimeValue SEARCH_SCROLL_TIMEOUT = TimeValue.timeValueSeconds(90L);
 
@@ -67,11 +67,11 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
     @Autowired
     private ResponseExceptionParser exceptionParser;
     @Autowired
-    private ITracingLogger tracingLogger;
+    private IPerfLogger tracingLogger;
 
     private final MessageDigest digest;
 
-    public ScrollQueryServiceImpl() throws NoSuchAlgorithmException {
+    public ScrollCoreQueryServiceImpl() throws NoSuchAlgorithmException {
         this.digest = MessageDigest.getInstance("MD5");
     }
 

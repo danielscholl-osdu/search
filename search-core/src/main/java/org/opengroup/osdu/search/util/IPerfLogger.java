@@ -19,7 +19,8 @@ package org.opengroup.osdu.search.util;
 
 import org.opengroup.osdu.core.common.model.search.Query;
 
-public interface ITracingLogger {
+
+public interface IPerfLogger {
 
   void log(Query searchRequest, Long latency, int statusCode);
 }

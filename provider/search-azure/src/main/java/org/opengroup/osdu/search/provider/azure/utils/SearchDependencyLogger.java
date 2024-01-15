@@ -21,11 +21,11 @@ import org.opengroup.osdu.azure.logging.DependencyPayload;
 import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
-import org.opengroup.osdu.search.util.ITracingLogger;
+import org.opengroup.osdu.search.util.IPerfLogger;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SearchDependencyLogger implements ITracingLogger {
+public class SearchDependencyLogger implements IPerfLogger {
 
     public static final String QUERY_DEPENDENCY_NAME = "QUERY_ELASTICSEARCH";
     public static final String CURSOR_QUERY_DEPENDENCY_NAME = "CURSOR_QUERY_ELASTICSEARCH";

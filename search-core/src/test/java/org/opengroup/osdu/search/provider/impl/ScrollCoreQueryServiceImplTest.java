@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.opengroup.osdu.search.provider.azure.provider.impl;
+package org.opengroup.osdu.search.provider.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -59,16 +59,16 @@ import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
 import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.search.cache.CursorCache;
+import org.opengroup.osdu.search.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.logging.AuditLogger;
-import org.opengroup.osdu.search.provider.azure.config.ElasticLoggingConfig;
-import org.opengroup.osdu.search.provider.azure.utils.SearchDependencyLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
+import org.opengroup.osdu.search.util.IPerfLogger;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ScrollQueryServiceImplTest {
+public class ScrollCoreQueryServiceImplTest {
 
     private static final String dataPartitionId = "data-partition-id";
     private static final String reason = "Internal Server";
@@ -89,7 +89,7 @@ public class ScrollQueryServiceImplTest {
     private SearchHits searchHits;
 
     @Mock
-    private SearchDependencyLogger searchDependencyLogger;
+    private IPerfLogger perfLogger;
 
     @Mock
     private SearchHit searchHit;
@@ -119,7 +119,7 @@ public class ScrollQueryServiceImplTest {
     @Mock
     private ResponseExceptionParser exceptionParser;
     @InjectMocks
-    private ScrollQueryServiceImpl sut;
+    private ScrollCoreQueryServiceImpl sut;
 
     @Before
     public void init() {
@@ -174,7 +174,7 @@ public class ScrollQueryServiceImplTest {
         assertEquals(searchRequestCursor, cursor);
 
         verify(this.auditLogger, times(1)).queryIndexWithCursorSuccess(Lists.newArrayList(searchRequest.toString()));
-        verify(this.searchDependencyLogger, times(1)).log(searchRequest, 0L, 200);
+        verify(this.perfLogger, times(1)).log(searchRequest, 0L, 200);
     }
 
     @Test

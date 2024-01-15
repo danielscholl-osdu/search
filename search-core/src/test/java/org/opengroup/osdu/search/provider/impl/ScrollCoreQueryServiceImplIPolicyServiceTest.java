@@ -12,8 +12,19 @@
 // // See the License for the specific language governing permissions and
 // // limitations under the License.
 
-package org.opengroup.osdu.search.provider.aws.provider.impl;
+package org.opengroup.osdu.search.provider.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -22,6 +33,15 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
@@ -29,6 +49,7 @@ import org.opengroup.osdu.core.common.model.search.Point;
 import org.opengroup.osdu.core.common.model.search.Polygon;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.cache.CursorCache;
+import org.opengroup.osdu.search.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
@@ -38,40 +59,23 @@ import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.GeoQueryBuilder;
 import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
+import org.opengroup.osdu.search.util.IPerfLogger;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-
 @RunWith(MockitoJUnitRunner.class)
-public class ScrollQueryServiceAwsImplIPolicyServiceTest {
+public class ScrollCoreQueryServiceImplIPolicyServiceTest {
 
-    private final String DATA_GROUPS = "X-Data-Groups";
+	private final String DATA_GROUPS = "X-Data-Groups";
 	private final String DATA_GROUP_1 = "data.welldb.viewers@common.evd.cloud.slb-ds.com";
 	private final String DATA_GROUP_2 = "data.npd.viewers@common.evd.cloud.slb-ds.com";
 	private final String PARTITION_ID = "opendes";
 
-    @InjectMocks
-	ScrollQueryServiceAwsImpl scrollQueryServiceAws;
+  @InjectMocks
+	ScrollCoreQueryServiceImpl scrollQueryServiceAws;
 
-    @Mock
+	@Mock
 	private ElasticClientHandler elasticClientHandler;
 
 	@Mock
@@ -104,8 +108,8 @@ public class ScrollQueryServiceAwsImplIPolicyServiceTest {
 	@Mock
 	private AuditLogger auditLogger;
 
-    @Mock
-    private CursorCache cursorCache;
+	@Mock
+	private CursorCache cursorCache;
 
 	@Mock 
 	private ResponseExceptionParser exceptionParser;
@@ -113,8 +117,14 @@ public class ScrollQueryServiceAwsImplIPolicyServiceTest {
 	@Mock 
 	private IPolicyService iPolicyService;
 
-    @Mock
-    private GeoQueryBuilder geoQueryBuilder;
+	@Mock
+	private GeoQueryBuilder geoQueryBuilder;
+
+	@Mock
+	private ElasticLoggingConfig elasticLoggingConfig;
+
+	@Mock
+	private IPerfLogger searchDependencyLogger;
 
 	@Before
 	public void setup() {
@@ -124,6 +134,9 @@ public class ScrollQueryServiceAwsImplIPolicyServiceTest {
 		HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
 		HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
 		HEADERS.put(DATA_GROUPS, String.format("%s,%s", DATA_GROUP_1, DATA_GROUP_2));
+
+		when(elasticLoggingConfig.getEnabled()).thenReturn(false);
+		when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
 	}
 
 
@@ -206,17 +219,12 @@ public class ScrollQueryServiceAwsImplIPolicyServiceTest {
 
 		Set<String> indexedTypes = new HashSet<>();
 		indexedTypes.add("geo_shape");
-		//when(fieldMappingTypeService.getFieldTypes(Mockito.eq(client), Mockito.anyString(), Mockito.eq(index)))
-		//		.thenReturn(indexedTypes);
 
 
 		Map<String, String> headers = new HashMap<>();
 		headers.put("groups", "[]");
 
-		when(dpsHeaders.getPartitionId()).thenReturn(PARTITION_ID);
-
-		//String expectedSource = "{\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"prefix\":{\"id\":{\"value\":\"opendes:\",\"boost\":1.0}}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"geo_shape\":{\"data.Wgs84Coordinates\":{\"shape\":{\"type\":\"GeometryCollection\",\"geometries\":[{\"type\":\"MultiPolygon\",\"coordinates\":[[[[-8.61,1.02],[-2.48,1.02],[-2.48,10.74],[-8.61,10.74],[-8.61,1.02]]]]}]},\"relation\":\"intersects\"},\"ignore_unmapped\":true,\"boost\":1.0}}],\"adjust_pure_negative\":true,\"boost\":1.0}},{\"wrapper\":{\"query\":\"UG9saWN5U3RyaW5n\"}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]}}";
-        String expectedSource = "{\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"prefix\":{\"id\":{\"value\":\"opendes:\",\"boost\":1.0}}},{\"wrapper\":{\"query\":\"UG9saWN5U3RyaW5n\"}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]},\"highlight\":{}}";
+		String expectedSource = "{\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"wrapper\":{\"query\":\"UG9saWN5U3RyaW5n\"}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]},\"sort\":[{\"_score\":{\"order\":\"desc\"}},{\"_doc\":{\"order\":\"asc\"}}],\"highlight\":{}}";
 
 		// act
 		scrollQueryServiceAws.queryIndex(queryRequest);
