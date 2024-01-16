@@ -24,8 +24,8 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@ConditionalOnProperty(name = "default.elastic.performance.logger", havingValue = "true", matchIfMissing = true)
-public class PerfLogger implements IPerfLogger {
+@ConditionalOnProperty(name = "disable.default.query.performance.logger", havingValue = "false", matchIfMissing = true)
+public class QueryPerformanceLogger implements IQueryPerformanceLogger {
 
 
   @Override

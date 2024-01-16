@@ -64,7 +64,7 @@ import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.opengroup.osdu.search.util.IPerfLogger;
+import org.opengroup.osdu.search.util.IQueryPerformanceLogger;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -89,7 +89,7 @@ public class ScrollCoreQueryServiceImplTest {
     private SearchHits searchHits;
 
     @Mock
-    private IPerfLogger perfLogger;
+    private IQueryPerformanceLogger perfLogger;
 
     @Mock
     private SearchHit searchHit;

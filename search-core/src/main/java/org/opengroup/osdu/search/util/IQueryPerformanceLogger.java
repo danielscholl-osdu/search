@@ -20,7 +20,7 @@ package org.opengroup.osdu.search.util;
 import org.opengroup.osdu.core.common.model.search.Query;
 
 
-public interface IPerfLogger {
+public interface IQueryPerformanceLogger {
 
   void log(Query searchRequest, Long latency, int statusCode);
 }

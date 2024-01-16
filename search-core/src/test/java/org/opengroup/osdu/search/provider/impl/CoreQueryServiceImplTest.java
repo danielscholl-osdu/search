@@ -94,7 +94,7 @@ import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.GeoQueryBuilder;
 import org.opengroup.osdu.search.util.IAggregationParserUtil;
 import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
-import org.opengroup.osdu.search.util.IPerfLogger;
+import org.opengroup.osdu.search.util.IQueryPerformanceLogger;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.QueryParserUtil;
@@ -180,7 +180,7 @@ public class CoreQueryServiceImplTest {
     private ElasticLoggingConfig elasticLoggingConfig;
 
     @Mock
-    private IPerfLogger searchDependencyLogger;
+    private IQueryPerformanceLogger searchDependencyLogger;
 
     @Spy
     private GeoQueryBuilder geoQueryBuilder = new GeoQueryBuilder();

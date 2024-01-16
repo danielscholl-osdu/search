@@ -70,7 +70,7 @@ import org.opengroup.osdu.search.util.GeoQueryBuilder;
 import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
-import org.opengroup.osdu.search.util.IPerfLogger;
+import org.opengroup.osdu.search.util.IQueryPerformanceLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 abstract class CoreQueryBase {
@@ -94,7 +94,7 @@ abstract class CoreQueryBase {
     @Autowired
     private ElasticLoggingConfig elasticLoggingConfig;
     @Autowired
-    private IPerfLogger tracingLogger;
+    private IQueryPerformanceLogger tracingLogger;
     @Autowired
     private GeoQueryBuilder geoQueryBuilder;
 

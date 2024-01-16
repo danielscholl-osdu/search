@@ -47,7 +47,7 @@ import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.opengroup.osdu.search.util.IPerfLogger;
+import org.opengroup.osdu.search.util.IQueryPerformanceLogger;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 import org.opengroup.osdu.search.util.SearchRequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +67,7 @@ public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScroll
     @Autowired
     private ResponseExceptionParser exceptionParser;
     @Autowired
-    private IPerfLogger tracingLogger;
+    private IQueryPerformanceLogger tracingLogger;
 
     private final MessageDigest digest;
 
