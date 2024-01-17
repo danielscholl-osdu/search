@@ -20,7 +20,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        features = "classpath:features/query/singlecluster/Query.feature",
+        features = "classpath:features/query/singlecluster/QueryAWS.feature",
         glue = {"classpath:org.opengroup.osdu.step_definitions/query/singlecluster"},
         plugin = {"pretty", "junit:target/cucumber-reports/TEST-query-sc.xml"})
 public class RunTest {
