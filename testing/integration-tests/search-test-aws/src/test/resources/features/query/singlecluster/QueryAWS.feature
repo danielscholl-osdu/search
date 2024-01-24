@@ -1,4 +1,3 @@
-# Duplicated from core files so the text queries are updated to take into account BagOfWords changes
 Feature: Search with different queries
   To allow a user to find his data quickly, search should offer multiple ways to search data.
 
