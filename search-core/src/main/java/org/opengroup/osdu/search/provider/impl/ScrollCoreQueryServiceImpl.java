@@ -12,21 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.opengroup.osdu.search.provider.gcp.provider.impl;
+package org.opengroup.osdu.search.provider.impl;
+
+import static org.elasticsearch.rest.RestStatus.NOT_FOUND;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Map;
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.DatatypeConverter;
+import org.apache.http.ContentTooLongException;
 import org.apache.http.HttpStatus;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.opengroup.osdu.core.common.model.http.AppException;
-import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.opengroup.osdu.search.cache.CursorCache;
-import org.opengroup.osdu.search.logging.AuditLogger;
-import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
-import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
-import org.opengroup.osdu.core.common.model.search.CursorSettings;
-import org.opengroup.osdu.core.common.model.search.Query;
-import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -36,26 +37,26 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
+import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
+import org.opengroup.osdu.core.common.model.search.CursorSettings;
+import org.opengroup.osdu.core.common.model.search.Query;
+import org.opengroup.osdu.search.cache.CursorCache;
+import org.opengroup.osdu.search.logging.AuditLogger;
+import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
+import org.opengroup.osdu.search.util.ElasticClientHandler;
+import org.opengroup.osdu.search.util.IQueryPerformanceLogger;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 import org.opengroup.osdu.search.util.SearchRequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.bind.DatatypeConverter;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.Map;
-
-import static org.elasticsearch.rest.RestStatus.NOT_FOUND;
-
 @Service
-public class ScrollQueryServiceImpl extends QueryBase implements IScrollQueryService {
+public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScrollQueryService {
 
-    private final TimeValue searchScrollTimeout = TimeValue.timeValueSeconds(90L);
+    private final TimeValue SEARCH_SCROLL_TIMEOUT = TimeValue.timeValueSeconds(90L);
 
     @Inject
     private ElasticClientHandler elasticClientHandler;
@@ -65,10 +66,12 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
     private AuditLogger auditLogger;
     @Autowired
     private ResponseExceptionParser exceptionParser;
+    @Autowired
+    private IQueryPerformanceLogger tracingLogger;
 
     private final MessageDigest digest;
 
-    ScrollQueryServiceImpl() throws NoSuchAlgorithmException {
+    public ScrollCoreQueryServiceImpl() throws NoSuchAlgorithmException {
         this.digest = MessageDigest.getInstance("MD5");
     }
 
@@ -95,18 +98,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                             throw new AppException(HttpServletResponse.SC_FORBIDDEN, "cursor issuer doesn't match the cursor consumer", "cursor sharing is forbidden");
                         }
 
-                        SearchScrollRequest scrollRequest = new SearchScrollRequest(cursorSettings.getCursor());
-                        scrollRequest.scroll(searchScrollTimeout);
-                        SearchResponse searchScrollResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
-
-                        List<Map<String, Object>> results = getHitsFromSearchResponse(searchScrollResponse);
-                        queryResponse.setTotalCount(searchScrollResponse.getHits().getTotalHits().value);
-                        if (results != null) {
-                            queryResponse.setResults(results);
-                            queryResponse.setCursor(this.refreshCursorCache(searchScrollResponse.getScrollId(), dpsHeaders.getUserEmail()));
-
-                            this.querySuccessAuditLogger(searchRequest);
-                        }
+                        executeCursorPaginationQuery(searchRequest, queryResponse, client, cursorSettings);
                     } else {
                         throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired");
                     }
@@ -118,6 +110,11 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
                             && (e.getMessage().startsWith(invalidScrollMessage)) || this.exceptionParser.parseException(e).stream().anyMatch(r -> r.contains(invalidScrollMessage)))
                         throw new AppException(HttpStatus.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired", e);
                     throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
+                } catch (IOException e) {
+                    if (e.getCause() instanceof ContentTooLongException) {
+                        throw new AppException(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Response is too long", "Elasticsearch response is too long, max is 100Mb", e);
+                    }
+                    throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
                 } catch (Exception e) {
                     throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
                 }
@@ -126,12 +123,29 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
         }
     }
 
-    private CursorQueryResponse initCursorQuery(CursorQueryRequest searchRequest, RestHighLevelClient client) {
-        CursorQueryResponse queryResponse = this.executeCursorQuery(searchRequest, client);
-        return queryResponse;
+    private void executeCursorPaginationQuery(CursorQueryRequest searchRequest, CursorQueryResponse queryResponse, RestHighLevelClient client, CursorSettings cursorSettings) throws IOException {
+        SearchScrollRequest scrollRequest = new SearchScrollRequest(cursorSettings.getCursor());
+        scrollRequest.scroll(SEARCH_SCROLL_TIMEOUT);
+        Long startTime = 0L;
+        SearchResponse searchResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
+        Long latency = System.currentTimeMillis() - startTime;
+
+        List<Map<String, Object>> results = getHitsFromSearchResponse(searchResponse);
+        queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
+        if (results != null) {
+            queryResponse.setResults(results);
+            queryResponse.setCursor(this.refreshCursorCache(searchResponse.getScrollId(), dpsHeaders.getUserEmail()));
+            this.querySuccessAuditLogger(searchRequest);
+        }
+        int statusCode = searchResponse.status().getStatus();
+        tracingLogger.log(searchRequest, latency, statusCode);
     }
 
-    private CursorQueryResponse executeCursorQuery(CursorQueryRequest searchRequest, RestHighLevelClient client) {
+    private CursorQueryResponse initCursorQuery(CursorQueryRequest searchRequest, RestHighLevelClient client) {
+        return this.executeCursorQuery(searchRequest, client);
+    }
+
+    private CursorQueryResponse executeCursorQuery(CursorQueryRequest searchRequest, RestHighLevelClient client) throws AppException {
 
         SearchResponse searchResponse = this.makeSearchRequest(searchRequest, client);
         List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
@@ -146,10 +160,10 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
     }
 
     @Override
-    SearchRequest createElasticRequest(Query request) throws IOException {
+    SearchRequest createElasticRequest(Query request, String index) throws AppException, IOException {
 
         // set the indexes to search against
-        SearchRequest elasticSearchRequest = SearchRequestUtil.createSearchRequest(this.getIndex(request));
+        SearchRequest elasticSearchRequest = SearchRequestUtil.createSearchRequest(index);
 
         // build query
         SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);
@@ -161,7 +175,7 @@ public class ScrollQueryServiceImpl extends QueryBase implements IScrollQuerySer
         }
 
         elasticSearchRequest.source(sourceBuilder);
-        elasticSearchRequest.scroll(new Scroll(searchScrollTimeout));
+        elasticSearchRequest.scroll(new Scroll(SEARCH_SCROLL_TIMEOUT));
 
         return elasticSearchRequest;
     }

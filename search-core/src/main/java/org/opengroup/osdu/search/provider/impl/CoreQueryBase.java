@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.opengroup.osdu.search.provider.gcp.provider.impl;
-
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
+package org.opengroup.osdu.search.provider.impl;
 
 import com.google.common.base.Strings;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,6 +28,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.http.ContentTooLongException;
+import org.apache.http.HttpStatus;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -40,6 +40,7 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.index.query.WrapperQueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
@@ -60,21 +61,20 @@ import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.core.common.model.search.QueryUtils;
 import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
+import org.opengroup.osdu.search.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
-import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.GeoQueryBuilder;
 import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
+import org.opengroup.osdu.search.util.IQueryPerformanceLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-abstract class QueryBase {
+abstract class CoreQueryBase {
 
-    public static final String SEARCH_ERROR_MSG = "Search error";
-    public static final String ERROR_PROCESSING_SEARCH_REQUEST_MSG = "Error processing search request";
     @Inject
     DpsHeaders dpsHeaders;
     @Inject
@@ -83,8 +83,6 @@ abstract class QueryBase {
     private IProviderHeaderService providerHeaderService;
     @Inject
     private CrossTenantUtils crossTenantUtils;
-    @Inject
-    private IFieldMappingTypeService fieldMappingTypeService;
     @Autowired(required = false)
     private IPolicyService iPolicyService;
     @Autowired
@@ -94,10 +92,11 @@ abstract class QueryBase {
     @Autowired
     private IDetailedBadRequestMessageUtil detailedBadRequestMessageUtil;
     @Autowired
+    private ElasticLoggingConfig elasticLoggingConfig;
+    @Autowired
+    private IQueryPerformanceLogger tracingLogger;
+    @Autowired
     private GeoQueryBuilder geoQueryBuilder;
-
-    private static final String GEO_SHAPE_INDEXED_TYPE = "geo_shape";
-    private static final int MINIMUM_POLYGON_POINTS_SIZE = 4;
 
     // if returnedField contains property matching from excludes than query result will NOT include that property
     private final Set<String> excludes = new HashSet<>(Arrays.asList(RecordMetaAttribute.X_ACL.getValue()));
@@ -105,10 +104,10 @@ abstract class QueryBase {
     // queryableExcludes properties can be returned by query results
     private final Set<String> queryableExcludes = new HashSet<>(Arrays.asList(RecordMetaAttribute.INDEX_STATUS.getValue()));
 
-    private final TimeValue requestTimeout = TimeValue.timeValueMinutes(1);
+    private final TimeValue REQUEST_TIMEOUT = TimeValue.timeValueMinutes(1);
 
+    QueryBuilder buildQuery(String simpleQuery, SpatialFilter spatialFilter, boolean asOwner) throws AppException, IOException {
 
-    QueryBuilder buildQuery(String simpleQuery, SpatialFilter spatialFilter, boolean asOwner) throws IOException {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
 
         if (!Strings.isNullOrEmpty(simpleQuery)) {
@@ -135,23 +134,20 @@ abstract class QueryBase {
         }
     }
 
-    private QueryBuilder getQueryBuilderWithAuthorization(QueryBuilder queryBuilder, boolean asOwner) {
+    private QueryBuilder getQueryBuilderWithAuthorization(BoolQueryBuilder queryBuilder, boolean asOwner) {
         if (userHasFullDataAccess()) {
             return queryBuilder;
         }
 
-        QueryBuilder authorizationQueryBuilder = null;
         String groups = dpsHeaders.getHeaders().get(providerHeaderService.getDataGroupsHeader());
         if (groups != null) {
             String[] groupArray = groups.trim().split("\\s*,\\s*");
+            List<QueryBuilder> authFilterClauses = queryBuilder.filter();
             if (asOwner) {
-                authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(AclRole.OWNERS.getPath(), groupArray));
+                authFilterClauses.add(new TermsQueryBuilder(AclRole.OWNERS.getPath(), Arrays.asList(groupArray)));
             } else {
-                authorizationQueryBuilder = boolQuery().minimumShouldMatch("1").should(termsQuery(RecordMetaAttribute.X_ACL.getValue(), groupArray));
+                authFilterClauses.add(new TermsQueryBuilder(RecordMetaAttribute.X_ACL.getValue(), Arrays.asList(groupArray)));
             }
-        }
-        if (authorizationQueryBuilder != null) {
-            queryBuilder = queryBuilder != null ? boolQuery().must(queryBuilder).must(authorizationQueryBuilder) : boolQuery().must(authorizationQueryBuilder);
         }
         return queryBuilder;
     }
@@ -193,9 +189,9 @@ abstract class QueryBase {
         if (searchResponse.getAggregations() != null) {
             Terms kindAgg = null;
             ParsedNested nested = searchResponse.getAggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
-            if(nested != null){
+            if (nested != null) {
                 kindAgg = (Terms) getTermsAggregationFromNested(nested);
-            }else {
+            } else {
                 kindAgg = searchResponse.getAggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME);
             }
             if (kindAgg.getBuckets() != null) {
@@ -209,11 +205,11 @@ abstract class QueryBase {
         return results;
     }
 
-    private Aggregation getTermsAggregationFromNested(ParsedNested parsedNested){
+    private Aggregation getTermsAggregationFromNested(ParsedNested parsedNested) {
         ParsedNested nested = parsedNested.getAggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
-        if(nested != null){
+        if (nested != null) {
             return getTermsAggregationFromNested(nested);
-        }else {
+        } else {
             return parsedNested.getAggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME);
         }
     }
@@ -225,7 +221,7 @@ abstract class QueryBase {
         QueryBuilder queryBuilder = buildQuery(request.getQuery(), request.getSpatialFilter(), request.isQueryAsOwner());
         sourceBuilder.size(QueryUtils.getResultSizeForQuery(request.getLimit()));
         sourceBuilder.query(queryBuilder);
-        sourceBuilder.timeout(requestTimeout);
+        sourceBuilder.timeout(REQUEST_TIMEOUT);
         if (request.isTrackTotalCount()) {
             sourceBuilder.trackTotalHits(request.isTrackTotalCount());
         }
@@ -262,9 +258,11 @@ abstract class QueryBase {
         Long startTime = 0L;
         SearchRequest elasticSearchRequest = null;
         SearchResponse searchResponse = null;
+        int statusCode = 0;
+
         try {
             String index = this.getIndex(searchRequest);
-            elasticSearchRequest = createElasticRequest(searchRequest);
+            elasticSearchRequest = createElasticRequest(searchRequest, index);
             if (searchRequest.getSort() != null) {
                 List<FieldSortBuilder> sortBuilders = this.sortParserUtil.getSortQuery(client, searchRequest.getSort(), index);
                 for (FieldSortBuilder fieldSortBuilder : sortBuilders) {
@@ -274,39 +272,61 @@ abstract class QueryBase {
 
             startTime = System.currentTimeMillis();
             searchResponse = client.search(elasticSearchRequest, RequestOptions.DEFAULT);
+            statusCode = getSearchResponseStatusCode(searchResponse);
             return searchResponse;
         } catch (ElasticsearchStatusException e) {
             switch (e.status()) {
                 case NOT_FOUND:
+                    statusCode = e.status().getStatus();
                     throw new AppException(HttpServletResponse.SC_NOT_FOUND, "Not Found", "Resource you are trying to find does not exists", e);
                 case BAD_REQUEST:
+                    statusCode = e.status().getStatus();
                     throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Bad Request", detailedBadRequestMessageUtil.getDetailedBadRequestMessage(elasticSearchRequest, e), e);
                 case SERVICE_UNAVAILABLE:
-                    throw new AppException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, SEARCH_ERROR_MSG, "Please re-try search after some time.", e);
+                    statusCode = e.status().getStatus();
+                    throw new AppException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Search error", "Please re-try search after some time.", e);
+                case TOO_MANY_REQUESTS:
+                    statusCode = e.status().getStatus();
+                    throw new AppException(429, "Too many requests", "Too many requests, please re-try after some time", e);
                 default:
-                    throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, SEARCH_ERROR_MSG, ERROR_PROCESSING_SEARCH_REQUEST_MSG, e);
+                    statusCode = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+                    throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
             }
-        } catch (AppException e){
+        } catch (AppException e) {
             throw e;
+        } catch (SocketTimeoutException e) {
+            if (e.getMessage().startsWith("60,000 milliseconds timeout on connection")) {
+                throw new AppException(HttpServletResponse.SC_GATEWAY_TIMEOUT, "Search error", String.format("Request timed out after waiting for %sm", REQUEST_TIMEOUT.getMinutes()), e);
+            }
+            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
         } catch (IOException e) {
             if (e.getMessage().startsWith("listener timeout after waiting for")) {
-                throw new AppException(HttpServletResponse.SC_GATEWAY_TIMEOUT, SEARCH_ERROR_MSG, String.format("Request timed out after waiting for %sm", requestTimeout.getMinutes()), e);
+                throw new AppException(HttpServletResponse.SC_GATEWAY_TIMEOUT, "Search error", String.format("Request timed out after waiting for %sm", REQUEST_TIMEOUT.getMinutes()), e);
+            } else if (e.getCause() instanceof ContentTooLongException) {
+                throw new AppException(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Response is too long", "Elasticsearch response is too long, max is 100Mb", e);
             }
-            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, SEARCH_ERROR_MSG, ERROR_PROCESSING_SEARCH_REQUEST_MSG, e);
+            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
         } catch (Exception e) {
-            if(e instanceof java.net.SocketTimeoutException){
-                throw new AppException(HttpServletResponse.SC_REQUEST_TIMEOUT, SEARCH_ERROR_MSG, String.format("Request timed out after waiting for %sm", requestTimeout.getMinutes()), e);
-            }
-            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, SEARCH_ERROR_MSG, ERROR_PROCESSING_SEARCH_REQUEST_MSG, e);
+            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
         } finally {
             Long latency = System.currentTimeMillis() - startTime;
-            String request = elasticSearchRequest != null ? elasticSearchRequest.source().toString() : searchRequest.toString();
-            this.log.info(String.format("elastic latency: %s | elastic request-payload: %s", latency, request));
+            if (elasticLoggingConfig.getEnabled() || latency > elasticLoggingConfig.getThreshold()) {
+                String request = elasticSearchRequest != null ? elasticSearchRequest.source().toString() : searchRequest.toString();
+                this.log.debug(String.format("Elastic request-payload: %s", request));
+            }
+            this.tracingLogger.log(searchRequest, latency, statusCode);
             this.auditLog(searchRequest, searchResponse);
         }
     }
 
-    abstract SearchRequest createElasticRequest(Query request) throws IOException;
+    private int getSearchResponseStatusCode(SearchResponse searchResponse) {
+        if (searchResponse == null || searchResponse.status() == null)
+            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search error", "Search returned null or empty response");
+        else
+            return searchResponse.status().getStatus();
+    }
+
+    abstract SearchRequest createElasticRequest(Query request, String index) throws AppException, IOException;
 
     abstract void querySuccessAuditLogger(Query request);
 

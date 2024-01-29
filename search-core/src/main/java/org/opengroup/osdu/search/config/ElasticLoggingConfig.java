@@ -1,4 +1,4 @@
-package org.opengroup.osdu.search.provider.azure.config;
+package org.opengroup.osdu.search.config;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +13,6 @@ import org.springframework.context.annotation.Configuration;
 @ToString
 public class ElasticLoggingConfig {
 
-    private Boolean enabled;
-    private Long threshold;
+    private Boolean enabled = false;
+    private Long threshold = 200L;
 }
