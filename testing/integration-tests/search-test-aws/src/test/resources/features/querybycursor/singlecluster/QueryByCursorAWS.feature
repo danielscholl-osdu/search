@@ -29,7 +29,7 @@ Feature: Search recursively on cursor with different queries
       | "tenant1" | "tenant1" | "tenant1:search<timestamp>:*:*" | None                      | None  | All             | 6           | 0           |
       | "tenant1" | "tenant1" | "tenant1:search<timestamp>:*:*" | "TX OR TEXAS OR FRANCE"   | 1     | All             | 1           | 1           |
       | "tenant1" | "tenant1" | "tenant1:search<timestamp>:*:*" | "XdQQ6GCSNSBLTESTFAIL"    | 1     | All             | 0           | 0           |
-      | "tenant1" | "tenant1" | "tenant1:search<timestamp>:*:*" | "\"OFFICE2\" \| OFFICE3 \| OFFICE5" | 1     | All             | 1           | 1           |
+      | "tenant1" | "tenant1" | "tenant1:search<timestamp>:*:*" | "\"OFFICEb\" \| OFFICEc \| OFFICEe" | 1     | All             | 1           | 1           |
 
   Scenario Outline: Search recursively page by page data across the kinds with invalid inputs
     When I send <query> with <kind>
@@ -70,7 +70,7 @@ Feature: Search recursively on cursor with different queries
     Examples:
       | q1_tenant | q2_tenant | kind                                       | query  | limit | field           | top_left_latitude | top_left_longitude | bottom_right_latitude | bottom_right_longitude | first_count | final_count |
       | "tenant1" | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None   | None  | "data.Location" | 45                | -100               | 0                     | 0                      | 2           | 0           |
-      | "tenant1" | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | 1     | "data.Location" | 45                | -110               | 0                     | 0                      | 1           | 0           |
+      | "tenant1" | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICEd" | 1     | "data.Location" | 45                | -110               | 0                     | 0                      | 1           | 0           |
 
 
   Scenario Outline: Search data and sort the results with the given sort fields and order
