@@ -33,7 +33,7 @@ public class VmConfig {
   }
 
   @Bean
-  public VmCache<String, CursorSettings> cursorCache(@Value("${elastic.cache.expiration}") final int expiration,
+  public VmCache<String, CursorSettings> cursorCache(@Value("${elastic.cursor.expiration}") final int expiration,
       @Value("${elastic.cache.maxSize}") final int maxSize) {
     return new VmCache<>(expiration * 60, maxSize);
   }
