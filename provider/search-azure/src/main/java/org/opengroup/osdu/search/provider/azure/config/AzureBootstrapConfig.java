@@ -28,7 +28,7 @@ import javax.inject.Named;
 @Configuration
 public class AzureBootstrapConfig {
 
-    @Value("${elastic.cursor.expiration}")
+    @Value("${elastic.cache.expiration}")
     private Integer elasticCacheExpiration;
 
     @Value("${elastic.cache.maxSize}")
