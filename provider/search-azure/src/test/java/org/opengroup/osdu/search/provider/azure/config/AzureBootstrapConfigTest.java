@@ -45,7 +45,7 @@ public class AzureBootstrapConfigTest {
 
     @Test
     public void should_return_setValue_when_getElasticCacheExpiration_isCalled() {
-        assertEquals(sut.getElasticCursorExpiration(), elasticCacheExpiration);
+        assertEquals(sut.getElasticCacheExpiration(), elasticCacheExpiration);
     }
 
     @Test
