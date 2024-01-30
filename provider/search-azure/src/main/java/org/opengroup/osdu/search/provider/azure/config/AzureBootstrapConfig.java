@@ -29,7 +29,7 @@ import javax.inject.Named;
 public class AzureBootstrapConfig {
 
     @Value("${elastic.cursor.expiration}")
-    private Integer elasticCursorExpiration;
+    private Integer elasticCacheExpiration;
 
     @Value("${elastic.cache.maxSize}")
     private Integer elasticCacheMaxSize;
@@ -51,8 +51,8 @@ public class AzureBootstrapConfig {
 
     @Bean
     @Named("ELASTIC_CACHE_EXPIRATION")
-    public Integer getElasticCursorExpiration() {
-        return elasticCursorExpiration;
+    public Integer getElasticCacheExpiration() {
+        return elasticCacheExpiration;
     }
 
     @Bean
