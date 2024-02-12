@@ -1,0 +1,185 @@
+
+.maven:
+  image: maven:3.9.3-eclipse-temurin-17
+  tags: ['osdu-medium']
+  variables:
+    MAVEN_REPO_PATH: "$CI_PROJECT_DIR/.m2/repository"
+    MAVEN_CLI_OPTS: "--batch-mode --settings=$CI_PROJECT_DIR/.mvn/community-maven.settings.xml"
+
+  cache:
+    paths:
+      - $MAVEN_REPO_PATH
+
+  artifacts:
+    paths:
+      - ./**/target/*.jar
+      - ./**/maven-*-output.txt
+    when: always
+    expire_in: 2 days
+
+  before_script:
+    - | # Check for the presence of a maven wrapper script
+      if [ -e "$CI_PROJECT_DIR/mvnw" ]; then
+        export MAVEN_BINARY="$CI_PROJECT_DIR/mvnw"
+        unset MAVEN_CONFIG
+        mkdir -pv .mvn/wrapper
+      else
+        export MAVEN_BINARY="mvn"
+      fi
+    - export MAVEN="$MAVEN_BINARY $MAVEN_CLI_OPTS -Dmaven.repo.local=$MAVEN_REPO_PATH"
+    - echo $MAVEN_BINARY
+    - echo $MAVEN_CLI_OPTS
+    - echo $MAVEN_REPO_PATH
+    - echo $MAVEN
+    - mkdir -pv $MAVEN_REPO_PATH
+
+    # --------------------------------------------------------------------------------
+    # Discovery of all Maven Parent Projects
+
+    - export ALL_MAVEN_BUILD_DIRS_Z=$(mktemp) # A file containing a null-terminated list of all root build directories -- directories that have parent pom files
+    - export ALL_MAVEN_POM_DIRS_Z=$(mktemp) # Intermediate file, containing a null-terminated list of all directories containing a pom.xml file
+    - export ALL_MAVEN_CHILD_MODULES_LF=$(mktemp) # Intermediate file, containing a linefeed-terminated list of all directories containing a known submodule
+
+    # This shell script is used to list out the maven submodules (of the current working directory) and append them to $ALL_MAVEN_CHILD_MODULES_LF
+    # As an optimization, it does not invoke maven on a directory that is already known to be a submodule
+    - export MAVEN_LIST_SUBMODULES=$(mktemp --tmpdir ls-submods-XXXXXX.sh)
+    - chmod 755 $MAVEN_LIST_SUBMODULES
+    - echo "#!/bin/bash" > $MAVEN_LIST_SUBMODULES
+    - |
+      cat >> $MAVEN_LIST_SUBMODULES <<EOF
+      if echo \$(pwd) | grep -qxvFf $ALL_MAVEN_CHILD_MODULES_LF; then
+        \$MAVEN help:evaluate -Dexpression=project.modules -q -DforceStdout \
+          | sed -n 's|^\s*<string>\(.*\)</string>$|'"\$(pwd)"'/\1|p' \
+          >> ${ALL_MAVEN_CHILD_MODULES_LF}
+      fi
+      EOF
+
+    # This find command does two things
+    # 1. Run the $MAVEN_LIST_SUBMODULES script in each directory containing a pom.xml file to populate the ALL_MAVEN_CHILD_MODULES_LF
+    #    Note that -execdir will run the script after changing the PWD to the directory containing the pom.xml file
+    # 2. Populate the ALL_MAVEN_POM_DIRS_Z file with a null-terminated list of every directory it finds
+    - find $CI_PROJECT_DIR -name pom.xml -execdir $MAVEN_LIST_SUBMODULES \; -fprintf $ALL_MAVEN_POM_DIRS_Z '%h\0'
+
+    # Logically, ALL_MAVEN_POM_DIRS - ALL_MAVEN_CHILD_MODULES_LF == ALL_MAVEN_BUILD_DIRS_Z
+    - grep -zxvFf $ALL_MAVEN_CHILD_MODULES_LF < $ALL_MAVEN_POM_DIRS_Z > $ALL_MAVEN_BUILD_DIRS_Z
+
+    # Print out the contents of ALL_MAVEN_POM_DIRS_Z, for debugging / verification
+    - xargs -0rn 1 echo < $ALL_MAVEN_BUILD_DIRS_Z
+
+    # --------------------------------------------------------------------------------
+    # Scripts to run maven with truncated output, storing full results in artifacts
+
+    # This creates a script for running maven in one location, capturing output to a file.
+    # - First argument is the directory to build from
+    # - Second argument is the name to use for the logfile
+    # - The remaining arguments are the maven command to run
+    - export MAVEN_BUILD=$(mktemp --tmpdir build-XXXXXX.sh)
+    - chmod 755 $MAVEN_BUILD
+    - echo "#!/bin/bash" > $MAVEN_BUILD
+    - |
+      cat >> $MAVEN_BUILD <<EOF
+      id=maven_build_\$(echo "\$@" | sha1sum | head -c 7)
+      cd "\$1"; shift
+      outputFile="\$1"; shift
+
+      echo "********************************************************************************"
+      echo -e "\e[0Ksection_start:\$(date +%s):\${id}\r\e[0K\e[1m\$(pwd)\e[0m"
+      echo -e "\e[32;1m\$MAVEN" "\$@" "\e[0m"
+
+      if \$MAVEN "\$@" > "\$outputFile" 2>&1; then
+          tail -n 25 "\$outputFile";
+          echo -e "\e[36m**** Showing the last 25 lines of the passed build (above). See Job artifacts for full log details *****\e[0m";
+          echo -e "\e[0Ksection_end:\$(date +%s):\${id}\r\e[0K"
+      else
+          tail -n 200 "\$outputFile";
+          echo -e "\e[31m**** Showing the last 200 lines of the failed build (above). See Job artifacts for full log details *****\e[0m";
+          echo -e "\e[0Ksection_end:\$(date +%s):\${id}\r\e[0K"
+          exit 255;
+      fi
+      EOF
+
+    # This creates a script for applying the $MAVEN_BUILD script to all build directories
+    - export MAVEN_FOREACH=$(mktemp --tmpdir fr-ec-XXXXXX.sh)
+    - chmod 755 $MAVEN_FOREACH
+    - echo "#!/bin/sh" > $MAVEN_FOREACH
+    - echo 'xargs -0rI {} $MAVEN_BUILD {} "$@" < $ALL_MAVEN_BUILD_DIRS_Z' >> $MAVEN_FOREACH
+
+# --------------------------------------------------------------------------------
+
+compile-and-unit-test:
+  extends:
+    - .maven
+    - .skipForTriggeringMergeRequests
+  stage: build
+  script:
+
+    # First, build and deploy all the independent POM projects that we find
+    - $MAVEN_FOREACH maven-build-output.txt deploy --update-snapshots -DskipTests=true
+
+    # Then, run the unit tests on the main project only
+    - $MAVEN_BUILD . maven-test-output.txt test
+
+    # Finally, gather dependency information
+    - $MAVEN_FOREACH maven-version-output.txt help:evaluate -Dexpression=project.version -q -DforceStdout
+    - $MAVEN_FOREACH maven-dependency-tree-output.txt dependency:tree
+
+  after_script:
+    - find . -path '*/target/*.jar' -o -name 'maven-*-output.txt' | xargs du -hsc
+
+analyze-maven-dependencies:
+  extends:
+    - .skipForTriggeringMergeRequests
+
+  image: $CI_REGISTRY/osdu/platform/deployment-and-operations/release-scripts/tasklemon:v2.3
+  tags: ['osdu-small']
+  needs: ['compile-and-unit-test']
+  stage: scan
+
+  artifacts:
+    paths:
+      - maven-dependencies.json
+
+  script:
+    - analyze-maven.js
+    - format-dependencies.js
+
+core_code_coverage:
+  stage: coverage
+  needs: ["compile-and-unit-test"]
+  retry: 1
+  extends:
+    - .maven
+  script:
+    - |
+      if [[ -z $CORE_BUILD_SUBDIR ]]; then
+        echo "code coverage needs to be implemented and CORE_BUILD_SUBDIR variable to be added to .gitlab-ci.yml file"
+        exit 0
+      fi
+    - $MAVEN clean test jacoco:report -f $CORE_BUILD_SUBDIR/pom.xml
+    - cat $CORE_BUILD_SUBDIR/target/site/jacoco/index.html | grep -o '<tfoot>.*</tfoot>'
+    - coverageText=$(cat $CORE_BUILD_SUBDIR/target/site/jacoco/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/')
+    - coverageValue=$(echo $coverageText | grep -o -E "[0-9]+")
+    - echo "CORE_COVERAGE=$coverageValue" >> core_code_coverage.env
+    - CORE_COVERAGE=$coverageValue
+    - echo "Code coverage obtained ${CORE_COVERAGE}"
+    - core_coverage_limit=0
+    - |
+      if [[ ! -z $CORE_COVERAGE_THRESHOLD ]]; then
+        core_coverage_limit=$CORE_COVERAGE_THRESHOLD
+        echo $CORE_COVERAGE_THRESHOLD
+      fi
+    - echo $core_coverage_limit
+    - |
+      
+      if [[ $CORE_COVERAGE -le $core_coverage_limit ]]; then 
+        echo "Core Code coverage threshold is not passing"
+        exit 1 
+      fi
+  artifacts:
+    reports:
+      dotenv: core_code_coverage.env
+    paths:
+      - $CORE_BUILD_SUBDIR/target/site/
+  only:
+    variables:
+      - $CORE_SKIP_COVERAGE != 'true'
