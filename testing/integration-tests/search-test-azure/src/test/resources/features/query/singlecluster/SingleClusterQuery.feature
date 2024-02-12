@@ -39,7 +39,7 @@ Feature: Search with different queries
       #####################################Text Query test cases###########################################################################
       | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "OSDU"                               | None  | None   | All             | 3     |
       | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | "data.OriginalOperator:OFFICE6"      | None  | None   | All             | 1     |
-      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | ""OFFICE2" \| OFFICE3"               | None  | None   | All             | 1     |
+      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | ""data.OriginalOperator:OFFICE2" \| data.OriginalOperator:OFFICE3"               | None  | None   | All             | 1     |
       | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | "data.Well\*:(Data Lake Cloud)"      | None  | None   | All             | 3     |
 
   Scenario Outline: Search data in a given kind with hundreds of copies
@@ -144,7 +144,7 @@ Feature: Search with different queries
       | "tenant1" | "tenant1:search<timestamp>:*:*" | ""SCHLUM OFFICE""                          | None  | None   | All             | 0     |
       | "tenant1" | "tenant1:search<timestamp>:*:*" | "data.Country:USA"                         | None  | None   | All             | 2     |
       | "tenant1" | "tenant1:search<timestamp>:*:*" | "TEXAS AND OFFICE3"                        | None  | None   | All             | 1     |
-      | "tenant1" | "tenant1:search<timestamp>:*:*" | "data.OriginalOperator:OFFICE5 OR OFFICE2" | None  | None   | All             | 2     |
+      | "tenant1" | "tenant1:search<timestamp>:*:*" | "data.OriginalOperator:OFFICE5 OR data.OriginalOperator:OFFICE2" | None  | None   | All             | 2     |
       | "tenant1" | "tenant1:search<timestamp>:*:*" | "data.OriginalOperator:STI OR HT"          | None  | None   | All             | 0     |
       | "tenant1" | "tenant1:search<timestamp>:*:*" | "_exists_:data.Basin"                      | None  | None   | All             | 4     |
       | "tenant1" | "tenant1:search<timestamp>:*:*" | "data.Well\*:"Data Lake Cloud""            | None  | None   | All             | 5     |
@@ -167,11 +167,11 @@ Feature: Search with different queries
     And I apply geographical query on field <field>
     Then I should get in response <count> records
     Examples:
-      | kind                                      | query     | field                   | points_list                                                                                                        | count |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None      | "data.Location"         | (26.12362;-112.226716)  , (26.595873;-68.457186) , (52.273184;-93.593904)                                          | 2     |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None      | "data.Location"         | (33.201112;-113.282863) , (33.456305;-98.269744) , (52.273184;-93.593904)                                          | 0     |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "OFFICE4" | "data.Location"         | (26.12362;-112.226716)  , (26.595873;-68.457186) , (52.273184;-93.593904)                                          | 1     |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None      | "data.Location"         | (14.29056;72.18936)     , (22.13762;72.18936)    , (22.13762;77.18936) , (14.29056;77.18936) , (14.29056;72.18936) | 1     |
+      | kind                                                     | query                           | field           | points_list                                                                                                        | count |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None                            | "data.Location" | (26.12362;-112.226716)  , (26.595873;-68.457186) , (52.273184;-93.593904)                                          | 2     |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None                            | "data.Location" | (33.201112;-113.282863) , (33.456305;-98.269744) , (52.273184;-93.593904)                                          | 0     |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | "data.Location" | (26.12362;-112.226716)  , (26.595873;-68.457186) , (52.273184;-93.593904)                                          | 1     |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None                            | "data.Location" | (14.29056;72.18936)     , (22.13762;72.18936)    , (22.13762;77.18936) , (14.29056;77.18936) , (14.29056;72.18936) | 1     |
 
   Scenario Outline: Search data across the kinds with invalid geo polygon inputs
     When I send <query> with <kind>
@@ -219,7 +219,7 @@ Feature: Search with different queries
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None      | false    | 3     |
       | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | None      | false    | 3     |
       | "tenant1:search<timestamp>:*:*"     | None      | false    | 6     |
-      | "tenant1:search<timestamp>:*:*"     | "OFFICE4" | true     | 1     |
+      | "tenant1:search<timestamp>:*:*"     | "data.OriginalOperator:OFFICE4" | true     | 1     |
       | "tenant1:search<timestamp>:*:*"     | None      | None     | 6     |
 
   Scenario Outline: Search data in a given kind with aggregateBy field
@@ -228,13 +228,13 @@ Feature: Search with different queries
     Then I should get <count> unique values
 
     Examples:
-      | kind                                            | query                                                          | aggregateBy                                              | count |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1"       | None                                                           | "namespace"                                              | 1     |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1"       | None                                                           | "type"                                                   | 1     |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1"       | "OFFICE4"                                                      | "data.Rank"                                              | 1     |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1"       | None                                                           | "data.Rank"                                              | 3     |
-      | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | None                                                           | "nested(data.VerticalMeasurements, VerticalMeasurement)" | 2     |
-      | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | nested(data.VerticalMeasurements, (VerticalMeasurement:(<15))) | "nested(data.VerticalMeasurements, VerticalMeasurement)" | 1     |
+      | kind                                                     | query                                                          | aggregateBy                                              | count |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None                                                           | "namespace"                                              | 1     |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None                                                           | "type"                                                   | 1     |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4"                                | "data.Rank"                                              | 1     |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None                                                           | "data.Rank"                                              | 3     |
+      | "tenant1:well<timestamp>:test-data3--Integration:1.0.3"  | None                                                           | "nested(data.VerticalMeasurements, VerticalMeasurement)" | 2     |
+      | "tenant1:well<timestamp>:test-data3--Integration:1.0.3"  | nested(data.VerticalMeasurements, (VerticalMeasurement:(<15))) | "nested(data.VerticalMeasurements, VerticalMeasurement)" | 1     |
 
   Scenario Outline: Search data in a given kind with nested queries
     When I send <query> with <kind>
