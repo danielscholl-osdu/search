@@ -56,6 +56,12 @@ go-swagger brings to the go community a complete suite of fully-featured, high-p
         swagger generate client -f 'search_openapi.json' -A search_openapi
         ``` 
 
+#### Server Url(full path vs relative path) configuration
+- `api.server.fullUrl.enabled=true` It will generate full server url in the OpenAPI swagger
+- `api.server.fullUrl.enabled=false` It will generate only the contextPath only
+- default value is false (Currently only in Azure it is enabled)
+[Reference]:(https://springdoc.org/faq.html#_how_is_server_url_generated) 
+
 ### Maintenance
 * Indexer:
   * Cleanup indexes - Indexer has a cron job running which hits following url:
