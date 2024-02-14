@@ -33,6 +33,7 @@
     - [Bounding box](#bounding-box)
     - [Geo polygon](#geo-polygon)
     - [Geo polygon intersection query](#geo-polygon-intersection)
+  - [Phrase completion](#autocomplete)
 - [Query with cursor API](#query-with-cursor)
 - [Cross `kind` queries](#cross-kind-queries)
 - [Common discovery within and across `kind` via `VirtualProperties`](#common-discovery-within-and-across-kind)
@@ -1345,13 +1346,13 @@ curl --request POST \
 
 [Back to table of contents](#TOC)
 
-## Phrase completion (autocomplete) preview <a name="autocomplete"></a>
+## Phrase completion <a name="autocomplete"></a>
 
 Feature available on OSDU deployments with autocomplete feature flag enabled and bagOfWords indexer feature enabled. 
 Users can retrieve phrase completions along with or instead of the results that may help them build more accurate queries.
 Suggestion behavior currently is based on completion suggester.
 
-```http
+```json
 POST /search/v2/query HTTP/1.1
 {
   "kind": "osdu:wks:master-data--WellPlanningWellbore:1.0.0",
@@ -1370,6 +1371,8 @@ Response:
 }
 
 ```
+
+[Back to table of contents](#TOC)
 
 ## Query with cursor <a name="query-with-cursor"></a>
 
