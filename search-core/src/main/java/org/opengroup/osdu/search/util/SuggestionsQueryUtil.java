@@ -28,7 +28,6 @@ public class SuggestionsQueryUtil {
         if (!autocompleteFeatureFlag.isFeatureEnabled(AUTOCOMPLETE_FEATURE_NAME) || suggestPhrase == null || suggestPhrase == "") {
             return null;
         }
-        boolean b = autocompleteFeatureFlag.isFeatureEnabled(AUTOCOMPLETE_FEATURE_NAME);
         SuggestionBuilder suggestionBuilder = SuggestBuilders.completionSuggestion(
             "bagOfWords.autocomplete"
             ).text(suggestPhrase).skipDuplicates(true);
