@@ -34,6 +34,9 @@ public class RedisConfig {
     @Value("${redis.expiration}")
     private int expiration;
 
+    @Value("${redis.cursor.ttl:60}")
+    private int cursorRedisTtl;
+
     @Value("${redis.group.ttl:30}")
     public int groupRedisTtl;
 
@@ -55,7 +58,7 @@ public class RedisConfig {
 
     @Bean
     public RedisAzureCache<String, CursorSettings> cursorCache() {
-        return new RedisAzureCache<>(String.class, CursorSettings.class, new RedisAzureConfiguration(database, expiration, port, timeout, commandTimeout));
+        return new RedisAzureCache<>(String.class, CursorSettings.class, new RedisAzureConfiguration(database, cursorRedisTtl, port, timeout, commandTimeout));
     }
 
     @Bean
