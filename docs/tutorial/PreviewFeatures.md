@@ -7,14 +7,8 @@ By adding the json element **suggestPhrase** to the search query,
 users can retrieve phrase completions along with or instead of the results that may
 help them build more accurate queries.
 
-The suggestion behavior currently is based on the completion suggester available in ElasticSearch.
-As described in the ElasticSearch documentation:
-
-> The completion suggester provides auto-complete/search-as-you-type functionality.
-> This is a navigational feature to guide users to relevant results as they are typing,
-> improving search precision.
-> It is not meant for spell correction or did-you-mean functionality like the term or phrase
-> suggesters.
+Because this feature returns exact matching phrases 
+it is not meant for spell correction or did-you-mean functionality.
 
 Example query:
 ```http
