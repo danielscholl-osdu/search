@@ -38,7 +38,7 @@ Feature: Search with different queries
       #####################################Text Query test cases###########################################################################
       | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "OSDU"                               | None  | None   | All             | 3     |
       | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | "data.OriginalOperator:OFFICE6"      | None  | None   | All             | 1     |
-      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | ""data.OriginalOperator:OFFICE2" \| data.OriginalOperator:OFFICEc" | None  | None   | All             | 1     |
+      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | ""data.OriginalOperator:OFFICE2" \| data.OriginalOperator:OFFICE3" | None  | None   | All             | 1     |
       | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | "data.Well\*:(Data Lake Cloud)"      | None  | None   | All             | 3     |
 
   Scenario Outline: Search data in a given singe kind or multi-kinds that index (indices) of one or more kinds do not exist

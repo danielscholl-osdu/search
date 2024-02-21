@@ -25,7 +25,7 @@ Feature: Search with different queries
 
     Examples:
       | tenant    | kind                                      | query                                | limit | offset | returned_fields | count |
-      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICEd"      | None  | None   | All             | 1     |
+      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4"      | None  | None   | All             | 1     |
       | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None                                 | 0     | None   | NULL            | 3     |
       | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | None                                 | 0     | None   | NULL            | 3     |
       | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1,tenant1:search<timestamp>:test-data2--Integration:1.0.2" | None | 0 | None | NULL          | 6     |
@@ -66,7 +66,7 @@ Feature: Search with different queries
 
     Examples:
       | tenant    | kind                                                      | number  | query                                | limit | offset | returned_fields | count |
-      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | 295     | "data.OriginalOperator:OFFICEd"      | None  | None   | All             | 1     |
+      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | 295     | "data.OriginalOperator:OFFICE4"      | None  | None   | All             | 1     |
       | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | 295     | None                                 | 0     | None   | NULL            | 3     |
       | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | 295     | None                                 | 0     | None   | NULL            | 3     |
 
@@ -97,8 +97,8 @@ Feature: Search with different queries
       | kind                                      | query                           | field                   | top_left_latitude | top_left_longitude | bottom_right_latitude | bottom_right_longitude | count |
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None                            | "data.Location"         | 45                | -100               | 0                     | 0                      | 2     |
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None                            | "data.Location"         | 45                | -80                | 0                     | 0                      | 0     |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICEd" | "data.Location"         | 45                | -100               | 0                     | 0                      | 1     |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICEd" | "data.Location"         | 10                | -100               | 0                     | 0                      | 0     |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | "data.Location"         | 45                | -100               | 0                     | 0                      | 1     |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | "data.Location"         | 10                | -100               | 0                     | 0                      | 0     |
 
   Scenario Outline: Search data across the kinds with invalid bounding box inputs
     When I send <query> with <kind>
@@ -108,12 +108,12 @@ Feature: Search with different queries
 
     Examples:
       | kind                                      | query                           | field           | top_left_latitude | top_left_longitude | bottom_right_latitude | bottom_right_longitude | response_code | reponse_type  | response_message                                  | errors                                                                   |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICEd" | "data.Location" | 0                 | 0                  | 0                     | 0                      | 400           | "Bad Request" | "Invalid parameters were given on search request" | "top latitude cannot be the same as bottom latitude: 0.0 == 0.0"         |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICEd" | "data.Location" | 0                 | -100               | -10                   | -100                   | 400           | "Bad Request" | "Invalid parameters were given on search request" | "left longitude cannot be the same as right longitude: -100.0 == -100.0" |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICEd" | "data.Location" | 10                | -100               | 10                    | 0                      | 400           | "Bad Request" | "Invalid parameters were given on search request" | "top latitude cannot be the same as bottom latitude: 10.0 == 10.0"       |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICEd" | "data.Location" | 45                | -100               | -95                   | 0                      | 400           | "Bad Request" | "Invalid parameters were given on search request" | "'latitude' value is out of the range [-90, 90]"                         |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICEd" | "data.Location" | 0                 | -100               | 10                    | 0                      | 400           | "Bad Request" | "Invalid parameters were given on search request" | "top corner is below bottom corner: 0.0 vs. 10.0"                        |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICEd" | "data.Location" | None              | None               | 0                     | 0                      | 400           | "Bad Request" | "Invalid parameters were given on search request" | "Invalid payload"                                                        |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | "data.Location" | 0                 | 0                  | 0                     | 0                      | 400           | "Bad Request" | "Invalid parameters were given on search request" | "top latitude cannot be the same as bottom latitude: 0.0 == 0.0"         |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | "data.Location" | 0                 | -100               | -10                   | -100                   | 400           | "Bad Request" | "Invalid parameters were given on search request" | "left longitude cannot be the same as right longitude: -100.0 == -100.0" |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | "data.Location" | 10                | -100               | 10                    | 0                      | 400           | "Bad Request" | "Invalid parameters were given on search request" | "top latitude cannot be the same as bottom latitude: 10.0 == 10.0"       |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | "data.Location" | 45                | -100               | -95                   | 0                      | 400           | "Bad Request" | "Invalid parameters were given on search request" | "'latitude' value is out of the range [-90, 90]"                         |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | "data.Location" | 0                 | -100               | 10                    | 0                      | 400           | "Bad Request" | "Invalid parameters were given on search request" | "top corner is below bottom corner: 0.0 vs. 10.0"                        |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | "data.Location" | None              | None               | 0                     | 0                      | 400           | "Bad Request" | "Invalid parameters were given on search request" | "Invalid payload"                                                        |
 
   Scenario Outline: Search data across the kinds with distance inputs
     When I send <query> with <kind>
@@ -233,7 +233,7 @@ Feature: Search with different queries
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None      | false    | 3     |
       | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | None      | false    | 3     |
       | "tenant1:search<timestamp>:*:*"     | None      | false    | 6     |
-      | "tenant1:search<timestamp>:*:*"     | "OFFICEd" | true     | 1     |
+      | "tenant1:search<timestamp>:*:*"     | "OFFICE4" | true     | 1     |
       | "tenant1:search<timestamp>:*:*"     | None      | None     | 6     |
 
   Scenario Outline: Search data in a given kind with aggregateBy field
