@@ -40,8 +40,8 @@ the details of in what field the phrase is present.
 The input can be a maximum of 50 characters in length.
 
 There are also limitations based on how we have enabled indexing of fields.
-For field attributes which have the indexing hint to be flattened, then only
-the most nested attributes are indexed.
+Field attributes which have the indexing hint to be flattened will not appear
+in auto-complete suggestions.
 
 Same thing for all the meta attributes (e.g. kind, id, acls, tags etc.) as well,
 completion suggester won't return.
