@@ -38,7 +38,7 @@ Feature: Search with different queries
       #####################################Text Query test cases###########################################################################
       | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "OSDU"                               | None  | None   | All             | 3     |
       | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | "data.OriginalOperator:OFFICE6"      | None  | None   | All             | 1     |
-      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | ""OFFICE2" \| OFFICE3"               | None  | None   | All             | 1     |
+      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | ""data.OriginalOperator:OFFICE2" \| data.OriginalOperator:OFFICE3" | None  | None   | All             | 1     |
       | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | "data.Well\*:(Data Lake Cloud)"      | None  | None   | All             | 3     |
 
   Scenario Outline: Search data in a given singe kind or multi-kinds that index (indices) of one or more kinds do not exist
@@ -157,7 +157,7 @@ Feature: Search with different queries
       | "tenant1" | "tenant1:search<timestamp>:*:*" | ""SCHLUM OFFICE""                          | None  | None   | All             | 0     |
       | "tenant1" | "tenant1:search<timestamp>:*:*" | "data.Country:USA"                         | None  | None   | All             | 2     |
       | "tenant1" | "tenant1:search<timestamp>:*:*" | "TEXAS AND OFFICE3"                        | None  | None   | All             | 1     |
-      | "tenant1" | "tenant1:search<timestamp>:*:*" | "data.OriginalOperator:OFFICE5 OR OFFICE2" | None  | None   | All             | 2     |
+      | "tenant1" | "tenant1:search<timestamp>:*:*" | "data.OriginalOperator:(OFFICE5 OR OFFICE2)" | None  | None   | All             | 2     |
       | "tenant1" | "tenant1:search<timestamp>:*:*" | "data.OriginalOperator:STI OR HT"          | None  | None   | All             | 0     |
       | "tenant1" | "tenant1:search<timestamp>:*:*" | "_exists_:data.Basin"                      | None  | None   | All             | 4     |
       | "tenant1" | "tenant1:search<timestamp>:*:*" | "data.Well\*:"Data Lake Cloud""            | None  | None   | All             | 5     |
@@ -183,7 +183,7 @@ Feature: Search with different queries
       | kind                                      | query     | field                   | points_list                                                                                                        | count |
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None      | "data.Location"         | (26.12362;-112.226716)  , (26.595873;-68.457186) , (52.273184;-93.593904)                                          | 2     |
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None      | "data.Location"         | (33.201112;-113.282863) , (33.456305;-98.269744) , (52.273184;-93.593904)                                          | 0     |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "OFFICE4" | "data.Location"         | (26.12362;-112.226716)  , (26.595873;-68.457186) , (52.273184;-93.593904)                                          | 1     |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | "data.Location"         | (26.12362;-112.226716)  , (26.595873;-68.457186) , (52.273184;-93.593904)                                          | 1     |
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None      | "data.Location"         | (14.29056;72.18936)     , (22.13762;72.18936)    , (22.13762;77.18936) , (14.29056;77.18936) , (14.29056;72.18936) | 1     |
 
   Scenario Outline: Search data across the kinds with invalid geo polygon inputs
@@ -245,7 +245,7 @@ Feature: Search with different queries
       | kind                                            | query                                                          | aggregateBy                                              | count |
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1"       | None                                                           | "namespace"                                              | 1     |
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1"       | None                                                           | "type"                                                   | 1     |
-      | "tenant1:search<timestamp>:test-data--Integration:1.0.1"       | "OFFICE4"                                                      | "data.Rank"                                              | 1     |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1"       | "data.OriginalOperator:OFFICE4"                                | "data.Rank"                                              | 1     |
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1"       | None                                                           | "data.Rank"                                              | 3     |
       | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | None                                                           | "nested(data.VerticalMeasurements, VerticalMeasurement)" | 2     |
       | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | nested(data.VerticalMeasurements, (VerticalMeasurement:(<15))) | "nested(data.VerticalMeasurements, VerticalMeasurement)" | 1     |
@@ -265,3 +265,18 @@ Feature: Search with different queries
       | "tenant1" | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | "nested(data.FacilityOperators, (TerminationDateTime:[2023 TO 2026] AND EffectiveDateTime:[* TO 2021])) NOT nested(data.VerticalMeasurements, (VerticalMeasurement:(>20000)))" | 1     |
       | "tenant1" | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | "nested(data.FacilityOperators, (TerminationDateTime:[2023 TO 2026])) OR nested(data.VerticalMeasurements, (VerticalMeasurement:(>15)))"                                       | 2     |
       | "tenant1" | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | "nested(data.VerticalMeasurements, (VerticalMeasurementID:"Other*" AND VerticalMeasurement:(<30)))"                                                                          | 1     |
+
+  @autocomplete
+  Scenario Outline: Autocomplete for given phrases is returned
+    When I send <query> with <kind>
+    And I limit the count of returned results to <limit>
+    And I set the offset of starting point as <offset>
+    And I set the fields I want in response as <returned_fields>
+    And I set autocomplete phrase to <autocomplete_phrase>
+    And I send request to tenant <tenant>
+    Then I should get in response <count> records with <returned_fields>
+    And I should get following autocomplete suggesstions <suggestions>
+
+    Examples:
+      | tenant    | kind                                                     | query                                | limit | offset | returned_fields | count | autocomplete_phrase | suggestions     |
+      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4"      | None  | None   | All             | 1     | data                | Data Lake Cloud |

@@ -34,6 +34,8 @@ import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.IAggregationParserUtil;
 import org.opengroup.osdu.search.util.SearchRequestUtil;
+import org.opengroup.osdu.search.util.SuggestionsQueryUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -45,6 +47,8 @@ public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService
     private AuditLogger auditLogger;
     @Inject
     private IAggregationParserUtil aggregationParserUtil;
+    @Autowired
+    private SuggestionsQueryUtil suggestionsQueryUtil;
 
     @Override
     public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
@@ -58,6 +62,7 @@ public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService
         SearchResponse searchResponse = this.makeSearchRequest(searchRequest, client);
         List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
         List<AggregationResponse> aggregations = getAggregationFromSearchResponse(searchResponse);
+        List<String> phraseSuggestions = suggestionsQueryUtil.getPhraseSuggestionsFromSearchResponse(searchResponse);
 
         QueryResponse queryResponse = QueryResponse.getEmptyResponse();
         if (searchResponse.getHits().getTotalHits() == null) {
@@ -68,6 +73,9 @@ public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService
         if (results != null) {
             queryResponse.setAggregations(aggregations);
             queryResponse.setResults(results);
+        }
+        if (phraseSuggestions != null) {
+            queryResponse.setPhraseSuggestions(phraseSuggestions);
         }
         return queryResponse;
     }

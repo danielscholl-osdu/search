@@ -63,6 +63,7 @@ import org.opengroup.osdu.search.util.IQueryPerformanceLogger;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
+import org.opengroup.osdu.search.util.SuggestionsQueryUtil;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScrollCoreQueryServiceImplIPolicyServiceTest {
@@ -125,6 +126,9 @@ public class ScrollCoreQueryServiceImplIPolicyServiceTest {
 
 	@Mock
 	private IQueryPerformanceLogger searchDependencyLogger;
+
+	@Mock
+	private SuggestionsQueryUtil suggestionsQueryUtil;
 
 	@Before
 	public void setup() {

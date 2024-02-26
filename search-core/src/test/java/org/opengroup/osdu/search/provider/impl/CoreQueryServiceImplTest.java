@@ -99,6 +99,8 @@ import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.QueryParserUtil;
 import org.opengroup.osdu.search.util.SortParserUtil;
+import org.opengroup.osdu.search.util.SuggestionsQueryUtil;
+import org.opengroup.osdu.core.common.feature.IFeatureFlag;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CoreQueryServiceImplTest {
@@ -166,6 +168,12 @@ public class CoreQueryServiceImplTest {
 
     @Spy
     private IQueryParserUtil parserService = new QueryParserUtil();
+
+    @Spy
+    private IFeatureFlag autocompleteFeatureFlag;
+    
+    @Spy
+    private SuggestionsQueryUtil suggestionsQueryUtil;
 
     @Spy
     private ISortParserUtil sortParserUtil = new SortParserUtil();

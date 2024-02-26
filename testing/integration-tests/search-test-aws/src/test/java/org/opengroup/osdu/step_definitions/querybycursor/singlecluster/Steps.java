@@ -95,6 +95,11 @@ public class Steps extends QueryByCursorSteps {
         super.i_send_request_to_tenant(tenant);
     }
 
+    @When("^I set autocomplete phrase to (.*?)$")
+    public void i_set_autocomplete_phrase(String autocompletePhrase) {
+        super.i_set_autocomplete_phrase(autocompletePhrase);
+    }
+
     @When("^I apply geographical query on field \"(.*?)\"$")
     public void i_apply_geographical_query_on_field(String field) {
         super.i_apply_geographical_query_on_field(field);
@@ -127,6 +132,11 @@ public class Steps extends QueryByCursorSteps {
     public void i_should_get_response_with_reason_message_and_errors(List<Integer> codes, String type, String msg,
                                                                      String error) {
         super.i_should_get_response_with_reason_message_and_errors(codes, type, msg, error);
+    }
+
+    @Then("^I should get following autocomplete suggesstions (.*)")
+    public void i_should_get_following_autocomplete_suggestions(String autocompleteOptions) {
+        super.i_should_get_following_autocomplete_suggestions(autocompleteOptions);
     }
 
     @Override

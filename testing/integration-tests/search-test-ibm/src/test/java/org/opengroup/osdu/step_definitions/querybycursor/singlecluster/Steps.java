@@ -67,6 +67,11 @@ public class Steps extends QueryByCursorSteps {
         super.i_set_the_fields_I_want_in_response_as(returnedFileds);
     }
 
+    @When("^I set autocomplete phrase to (.*?)$")
+    public void i_set_autocomplete_phrase(String autocompletePhrase) {
+        super.i_set_autocomplete_phrase(autocompletePhrase);
+    }
+
     @When("^I limit the count of returned results to None$$")
     public void offset_of_starting_point_as_None() {
         super.offset_of_starting_point_as_None();
@@ -108,6 +113,11 @@ public class Steps extends QueryByCursorSteps {
     @Then("^I should get records in right order first record id: \"(.*?)\", last record id: \"(.*?)\"$")
     public void i_should_get_records_in_right_order(String firstRecId, String lastRecId) {
         super.i_should_get_records_in_right_order(firstRecId, lastRecId);
+    }
+
+    @Then("^I should get following autocomplete suggesstions (.*)")
+    public void i_should_get_following_autocomplete_suggestions(String autocompleteOptions) {
+        super.i_should_get_following_autocomplete_suggestions(autocompleteOptions);
     }
 
     @Then("^I should get ([^\"]*) response with reason: \"(.*?)\", message: \"(.*?)\" and errors: \"(.*?)\"$")

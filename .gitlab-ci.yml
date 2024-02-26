@@ -27,14 +27,17 @@ variables:
   AZURE_SERVICE: search
   AZURE_BUILD_SUBDIR: provider/search-azure
   AZURE_TEST_SUBDIR: testing/integration-tests/search-test-azure
+
   SERVICE_JAVA_VERSION: "17"
- 
+  CORE_BUILD_SUBDIR: provider/search-aws
+
 include:
   - project: "osdu/platform/ci-cd-pipelines"
     file: "standard-setup.yml"
 
-  - project: "osdu/platform/ci-cd-pipelines"
-    file: "build/maven.yml"
+#  - project: "osdu/platform/ci-cd-pipelines"
+#    file: "build/maven.yml"
+  - local: "devops/ci-cd-pipelines/maven.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
     file: "scanners/fossa-maven.yml"

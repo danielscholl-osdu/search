@@ -13,4 +13,5 @@ public class ResponseMock extends ResponseBase {
     private List<Object> aggregations;
     private long totalCount;
     private String cursor;
+    private List<String> phraseSuggestions;
 }

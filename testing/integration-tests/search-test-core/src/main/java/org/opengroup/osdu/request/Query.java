@@ -16,6 +16,7 @@ public class Query {
     private SortQuery sort;
     private Boolean queryAsOwner;
     private String aggregateBy;
+    private String suggestPhrase;
     private List<String> returnedFields;
     private SpatialFilter spatialFilter;
 
