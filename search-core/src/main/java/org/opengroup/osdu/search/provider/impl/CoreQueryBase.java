@@ -52,6 +52,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.suggest.SuggestBuilder;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.entitlements.AclRole;
 import org.opengroup.osdu.core.common.model.http.AppException;
@@ -70,6 +71,7 @@ import org.opengroup.osdu.search.util.GeoQueryBuilder;
 import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
+import org.opengroup.osdu.search.util.SuggestionsQueryUtil;
 import org.opengroup.osdu.search.util.IQueryPerformanceLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -97,6 +99,8 @@ abstract class CoreQueryBase {
     private IQueryPerformanceLogger tracingLogger;
     @Autowired
     private GeoQueryBuilder geoQueryBuilder;
+    @Autowired
+    private SuggestionsQueryUtil suggestionsQueryUtil;
 
     // if returnedField contains property matching from excludes than query result will NOT include that property
     private final Set<String> excludes = new HashSet<>(Arrays.asList(RecordMetaAttribute.X_ACL.getValue()));
@@ -219,9 +223,17 @@ abstract class CoreQueryBase {
 
         // build query: set query options and query
         QueryBuilder queryBuilder = buildQuery(request.getQuery(), request.getSpatialFilter(), request.isQueryAsOwner());
+        SuggestBuilder suggestBuilder = suggestionsQueryUtil.getSuggestions(request.getSuggestPhrase());
+
         sourceBuilder.size(QueryUtils.getResultSizeForQuery(request.getLimit()));
         sourceBuilder.query(queryBuilder);
         sourceBuilder.timeout(REQUEST_TIMEOUT);
+        
+        // set suggester
+        if (!Objects.isNull(suggestBuilder)) {
+           sourceBuilder.suggest(suggestBuilder);
+        }
+
         if (request.isTrackTotalCount()) {
             sourceBuilder.trackTotalHits(request.isTrackTotalCount());
         }

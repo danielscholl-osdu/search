@@ -265,3 +265,18 @@ Feature: Search with different queries
       | "tenant1" | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | "nested(data.FacilityOperators, (TerminationDateTime:[2023 TO 2026] AND EffectiveDateTime:[* TO 2021])) NOT nested(data.VerticalMeasurements, (VerticalMeasurement:(>20000)))" | 1     |
       | "tenant1" | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | "nested(data.FacilityOperators, (TerminationDateTime:[2023 TO 2026])) OR nested(data.VerticalMeasurements, (VerticalMeasurement:(>15)))"                                       | 2     |
       | "tenant1" | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | "nested(data.VerticalMeasurements, (VerticalMeasurementID:"Other*" AND VerticalMeasurement:(<30)))"                                                                          | 1     |
+
+  @autocomplete
+  Scenario Outline: Autocomplete for given phrases is returned
+    When I send <query> with <kind>
+    And I limit the count of returned results to <limit>
+    And I set the offset of starting point as <offset>
+    And I set the fields I want in response as <returned_fields>
+    And I set autocomplete phrase to <autocomplete_phrase>
+    And I send request to tenant <tenant>
+    Then I should get in response <count> records with <returned_fields>
+    And I should get following autocomplete suggesstions <suggestions>
+
+    Examples:
+      | tenant    | kind                                                     | query                                | limit | offset | returned_fields | count | autocomplete_phrase | suggestions       |
+      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4"      | None  | None   | All             | 1     | data                | Data Lake Cloud   |
