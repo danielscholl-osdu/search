@@ -3,6 +3,10 @@ variables:
   GC_VENDOR: gc
   GC_TESTING_DIR: "testing/integration-tests"
 
+gc-test:
+  variables:
+    CUCUMBER_OPTIONS: "--tags @autocomplete,~@ignore"
+
 gc-baremetal-test:
   variables:
     GC_VENDOR: baremetal
