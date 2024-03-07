@@ -35,7 +35,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
         <springboot.version>2.1.7.RELEASE</springboot.version>
-        <osdu.corelibazure.version>0.25.0</osdu.corelibazure.version>
+        <osdu.corelibazure.version>0.26.0-rc5</osdu.corelibazure.version>
         <osdu.search-core.version>0.26.0-SNAPSHOT</osdu.search-core.version>
         <spatial4j.version>0.7</spatial4j.version>
         <reactor-netty.version>1.1.14</reactor-netty.version>
