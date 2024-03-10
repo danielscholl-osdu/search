@@ -52,7 +52,7 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
 
 
     @PostConstruct
-    private void postConstruct() throws IllegalArgumentException, NumberFormatException, K8sParameterNotFoundException, JsonProcessingException {
+    protected void postConstruct() throws IllegalArgumentException, NumberFormatException, K8sParameterNotFoundException, JsonProcessingException {
         K8sLocalParameterProvider provider = new K8sLocalParameterProvider();
         host = provider.getParameterAsStringOrDefault("elasticsearch_host", host);
         port = Integer.parseInt(provider.getParameterAsStringOrDefault("elasticsearch_port", String.valueOf(port)));

@@ -225,6 +225,7 @@ The following software have components provided under the terms of this license:
 - Okio (from https://github.com/square/okio/, https://repo1.maven.org/maven2/com/squareup/okio/okio)
 - OpenCensus (from https://github.com/census-instrumentation/opencensus-java, https://github.com/census-instrumentation/opencensus-proto)
 - PWDB :: Database (from https://repo1.maven.org/maven2/org/linguafranca/pwdb/database)
+- PowerMock (from http://www.powermock.org, https://repo1.maven.org/maven2/org/powermock/powermock-api-mockito)
 - Prometheus Java Simpleclient (from <https://repo1.maven.org/maven2/io/prometheus/simpleclient>, https://repo1.maven.org/maven2/io/prometheus/simpleclient)
 - Prometheus Java Simpleclient Common (from <https://repo1.maven.org/maven2/io/prometheus/simpleclient_common>, https://repo1.maven.org/maven2/io/prometheus/simpleclient_common)
 - Prometheus Java Span Context Supplier - Common (from <https://repo1.maven.org/maven2/io/prometheus/simpleclient_tracer_common>, https://repo1.maven.org/maven2/io/prometheus/simpleclient_tracer_common)

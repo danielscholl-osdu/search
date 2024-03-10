@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. */
 
-package entitlements;
+package org.opengroup.osdu.search.provider.aws.entitlements;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,6 +44,7 @@ public class AWSAuthorizationServiceImplTest {
     private static final String MEMBER_EMAIL = "tester@gmail.com";
     private static final String HEADER_ACCOUNT_ID = "anyTenant";
     private static final String HEADER_AUTHORIZATION = "anyCrazyToken";
+    private static Groups groups = new Groups();
 
     @Mock
     private IEntitlementsFactory entitlementFactory;
@@ -72,11 +73,9 @@ public class AWSAuthorizationServiceImplTest {
 
     @Before
     public void setup() {
-
         setDefaultHeaders();
-
+        createGroups();
         this.headers = DpsHeaders.createFromMap(headerMap);
-
         when(this.entitlementFactory.create(this.headers)).thenReturn(this.entitlementService);
     }
 
@@ -87,50 +86,15 @@ public class AWSAuthorizationServiceImplTest {
 
     @Test
     public void should_returnMemberEmail_when_authorizationIsSuccessful() throws Exception {
-
-        GroupInfo g1 = new GroupInfo();
-        g1.setEmail("role1@gmail.com");
-        g1.setName("role1");
-
-        GroupInfo g2 = new GroupInfo();
-        g2.setEmail("role2@gmail.com");
-        g2.setName("role2");
-
-        List<GroupInfo> groupsInfo = new ArrayList<>();
-        groupsInfo.add(g1);
-        groupsInfo.add(g2);
-
-        Groups groups = new Groups();
-        groups.setGroups(groupsInfo);
-        groups.setMemberEmail(MEMBER_EMAIL);
-        groups.setDesId(MEMBER_EMAIL);
-
         when(this.entitlementService.getGroups()).thenReturn(groups);
 
         AuthorizationResponse response = AuthorizationResponse.builder().groups(groups).user(MEMBER_EMAIL).build();
 
         assertEquals(response, this.sut.authorizeAny(this.headers, "role2"));
     }
+    
     @Test
     public void should_throw_AppException_when_EntitlementsException() throws Exception {
-
-        GroupInfo g1 = new GroupInfo();
-        g1.setEmail("role1@gmail.com");
-        g1.setName("role1");
-
-        GroupInfo g2 = new GroupInfo();
-        g2.setEmail("role2@gmail.com");
-        g2.setName("role2");
-
-        List<GroupInfo> groupsInfo = new ArrayList<>();
-        groupsInfo.add(g1);
-        groupsInfo.add(g2);
-
-        Groups groups = new Groups();
-        groups.setGroups(groupsInfo);
-        groups.setMemberEmail(MEMBER_EMAIL);
-        groups.setDesId(MEMBER_EMAIL);
-
         when(this.entitlementService.getGroups()).thenThrow(new EntitlementsException("String", new HttpResponse()));
         try {
             AuthorizationResponse response = AuthorizationResponse.builder().groups(groups).user(MEMBER_EMAIL).build();
@@ -142,23 +106,6 @@ public class AWSAuthorizationServiceImplTest {
 
     @Test
     public void should_throw_RedisException_when_Cache_return_NULL() throws Exception {
-
-        GroupInfo g1 = new GroupInfo();
-        g1.setEmail("role1@gmail.com");
-        g1.setName("role1");
-
-        GroupInfo g2 = new GroupInfo();
-        g2.setEmail("role2@gmail.com");
-        g2.setName("role2");
-
-        List<GroupInfo> groupsInfo = new ArrayList<>();
-        groupsInfo.add(g1);
-        groupsInfo.add(g2);
-
-        Groups groups = new Groups();
-        groups.setGroups(groupsInfo);
-        groups.setMemberEmail(MEMBER_EMAIL);
-        groups.setDesId(MEMBER_EMAIL);
         when(this.cache.get(anyString())).thenReturn(null);
         try {
             AuthorizationResponse response = AuthorizationResponse.builder().groups(groups).user(MEMBER_EMAIL).build();
@@ -170,24 +117,8 @@ public class AWSAuthorizationServiceImplTest {
 
     @Test
     public void should_throw_AppException_when_Entitlement_error() throws Exception {
-
-        GroupInfo g1 = new GroupInfo();
-        g1.setEmail("role1@gmail.com");
-        g1.setName("role1");
-
-        GroupInfo g2 = new GroupInfo();
-        g2.setEmail("role2@gmail.com");
-        g2.setName("role2");
-
-        List<GroupInfo> groupsInfo = new ArrayList<>();
-        groupsInfo.add(g1);
-        groupsInfo.add(g2);
-
-        Groups groups = new Groups();
-        groups.setGroups(groupsInfo);
-        groups.setMemberEmail(MEMBER_EMAIL);
-        groups.setDesId(MEMBER_EMAIL);
         AWSAuthorizationServiceImpl awsAuthorizationServiceImpl = new AWSAuthorizationServiceImpl();
+        
         try {
             AuthorizationResponse response = AuthorizationResponse.builder().groups(groups).user(MEMBER_EMAIL).build();
             assertEquals(response, awsAuthorizationServiceImpl.authorizeAny(this.headers, "role2"));
@@ -217,5 +148,29 @@ public class AWSAuthorizationServiceImplTest {
         } catch (AppException ex) {
             ex.printStackTrace();
         }
+    }
+    
+    @Test (expected = AppException.class)
+    public void authorizeAnyThrowsAppExceptionWhenNotAuthorized() throws EntitlementsException {
+        when(this.entitlementService.getGroups()).thenReturn(groups);
+        this.sut.authorizeAny("tenantName", this.headers, "role2");
+    }
+    
+    private void createGroups() {
+        GroupInfo g1 = new GroupInfo();
+        g1.setEmail("role1@gmail.com");
+        g1.setName("role1");
+
+        GroupInfo g2 = new GroupInfo();
+        g2.setEmail("role2@gmail.com");
+        g2.setName("role2");
+
+        List<GroupInfo> groupsInfo = new ArrayList<>();
+        groupsInfo.add(g1);
+        groupsInfo.add(g2);
+
+        groups.setGroups(groupsInfo);
+        groups.setMemberEmail(MEMBER_EMAIL);
+        groups.setDesId(MEMBER_EMAIL);
     }
 }
