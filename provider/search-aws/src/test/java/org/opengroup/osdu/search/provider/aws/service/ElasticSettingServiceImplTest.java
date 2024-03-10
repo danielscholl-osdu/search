@@ -14,29 +14,58 @@
 
 package org.opengroup.osdu.search.provider.aws.service;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.MockedConstruction;
-import org.mockito.Mockito;
-import org.opengroup.osdu.core.aws.ssm.K8sLocalParameterProvider;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.MockedConstruction;
+import org.mockito.Mockito;
+import org.opengroup.osdu.core.aws.ssm.K8sLocalParameterProvider;
+import org.powermock.reflect.Whitebox;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ElasticSettingServiceImplTest {
+    
+    @InjectMocks
+    private ElasticSettingServiceImpl elasticSettingServiceImpl;
 
     private final String username = "username";
     private final String password = "password";
     private final String host = "host";
     private final String port = "6369";
 
+    @Test
+    public void postConstruct_InitalizesProperly() throws Exception {
+        Whitebox.setInternalState(elasticSettingServiceImpl, host, host);
+        Whitebox.setInternalState(elasticSettingServiceImpl, "port", Integer.parseInt(port));
+        Whitebox.setInternalState(elasticSettingServiceImpl, username, username);
+        Whitebox.setInternalState(elasticSettingServiceImpl, password, password);  
+        
+        Map<String, String> userNamePasswordMap = new HashMap<>() {
+            {
+                put(username, username);
+                put(password, password);
+            }
+        };
+
+        try (MockedConstruction<K8sLocalParameterProvider> mockedConstruction =
+                        Mockito.mockConstruction(K8sLocalParameterProvider.class, (mock, context) -> {
+                            when(mock.getParameterAsStringOrDefault("elasticsearch_host", host)).thenReturn(host);
+                            when(mock.getParameterAsStringOrDefault("elasticsearch_port", port)).thenReturn(port);
+                            when(mock.getCredentialsAsMap("elasticsearch_credentials")).thenReturn(userNamePasswordMap);
+                        })) {
+
+            elasticSettingServiceImpl.postConstruct();
+            Assert.assertEquals(username + ":" + password, elasticSettingServiceImpl.usernameAndPassword);
+        }
+    }
 
     @Test
     public void getElasticClusterSettings_Null_User_Test() {
