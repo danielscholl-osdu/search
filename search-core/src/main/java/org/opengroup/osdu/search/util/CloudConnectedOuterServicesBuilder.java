@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.opengroup.osdu.core.common.cache.RedisCache;
@@ -84,7 +85,7 @@ public class CloudConnectedOuterServicesBuilder implements ConnectedOuterService
           .name(NAME_PREFIX + partitionId)
           .version(NOT_AVAILABLE)
           .build();
-    } catch (IOException e) {
+    } catch (IOException | ElasticsearchException e) {
       log.error("Can't fetch elastic info.", e);
       return ConnectedOuterService.builder()
           .name(NAME_PREFIX + partitionId)
