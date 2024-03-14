@@ -16,6 +16,10 @@ analyze:
       type: mvn
       target: search-core/pom.xml
       path: .
+    - name: search-core-plus
+      type: mvn
+      target: search-core-plus/pom.xml
+      path: .
     - name: search-byoc
       type: mvn
       target: provider/search-byoc/pom.xml
