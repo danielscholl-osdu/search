@@ -56,6 +56,7 @@
 
     <modules>
         <module>search-core</module>
+        <module>search-core-plus</module>
         <module>provider/search-byoc</module>
         <module>provider/search-gc</module>
         <module>provider/search-aws</module>
