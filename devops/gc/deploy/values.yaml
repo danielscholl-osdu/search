@@ -5,7 +5,6 @@ global:
 
 data:
   # Configmaps
-  springProfilesActive: "gcp"
   logLevel: "ERROR"
   entitlementsHost: "http://entitlements"
   partitionHost: "http://partition"

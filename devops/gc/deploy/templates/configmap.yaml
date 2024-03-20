@@ -6,7 +6,11 @@ metadata:
   name: {{ printf "%s-config" .Values.conf.appName | quote }}
   namespace: {{ .Release.Namespace | quote }}
 data:
-  SPRING_PROFILES_ACTIVE: {{ .Values.data.springProfilesActive | quote }}
+  {{- if .Values.global.onPremEnabled }}
+  SPRING_PROFILES_ACTIVE: "anthos"
+  {{- else }}
+  SPRING_PROFILES_ACTIVE: "gcp"
+  {{- end }}
   LOG_LEVEL: {{ .Values.data.logLevel | quote }}
   {{- if .Values.data.redisSearchHost }}
   REDIS_GROUP_HOST: {{ .Values.data.redisSearchHost | quote }}
