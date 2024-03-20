@@ -39,7 +39,6 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
 **data.logLevel** | logging level | string | `ERROR` | yes
-**data.springProfilesActive** | active spring profile | string | `gcp` | yes
 **data.entitlementsHost** | Entitlements service host | string | `http://entitlements` | yes
 **data.indexerHost** | Indexer service host | string | `http://indexer` | yes
 **data.policyHost** | Policy service host | string | `http://policy` | yes
