@@ -1,39 +1,13 @@
-## Searching by an array of objects
+# Searching by an Array of Objects
 
-### Table of contents <a name="TOC"></a>
-- [Introduction](#introduction)
-- [Schemas](#schemas)
-    * [Indexing hints](#indexing-hints)
-      + [Default](#default-hint)
-      + [Flattened](#flattened-hint)
-      + [Nested](#nested-hint)
-- [Query](#query)
-    * [Default](#default-query)
-    * [Flattened](#flattened-query)
-    * [Nested](#nested-query)
-      + [Examples](#nested-query-examples)
-        - [Range query](#range-query-examples)
-        - [Text query](#text-query-examples)
-        - [Combination with non-nested queries](#combination-query-examples)
-        - [Multilevel-Nested query](#multilevel-query-examples)
-- [Sort](#sort)
-    * [Default](#default-sort)
-    * [Flattened](#flattened-sort)
-    * [Nested](#nested-sort)
-- [Aggregation](#aggregation)
-    * [Default](#default-aggregation)
-    * [Flattened](#flattened-aggregation)
-    * [Nested](#nested-aggregation)
-- [Make an array of objects searchable ](#update-schema)
-
-## Introduction <a name="introduction"></a>
+## Introduction
 Since 0.9.0 version the Search API provides a mechanism to search data structured in an array of objects. Search capabilities directly related to schema definitions,
 this tutorial describes how you can define an array of objects in schemas and how search should be performed for each definition. 
 
-## Schemas <a name="schemas"></a>
+## Schemas
 Since 0.8.0 version The indexer service supports special indexing hints in schemas that allow you to define different elasticsearch mapping types for an array of objects.
 
-### Indexing hints <a name="indexing-hints"></a> 
+### Indexing hints
 In this section, we will take a closer look at each type of array, how it can be defined in the schema, and how it will be represented in elasticsearch. 
 Special property `x-osdu-indexing` with values `nested` or ` flattened` used to define an array of objects representation in elasticsearch:
 ```json
@@ -183,7 +157,7 @@ curl --location --request GET 'https://<SCHEMA-API>/api/schema-service/v1/schema
 }
 ```
 
-#### Default <a name="default-hint"></a>
+#### Default
 By default, if there are no hints in the schema, such an array will show up as an `object` type in elasticsearch without any analysis.
 More about request options [Default query](#default-query)
 ```json
@@ -228,7 +202,7 @@ In elasticsearch this will look like:
                 },
 ```
 
-#### Flattened <a name="flattened-hint"></a>
+#### Flattened
 
 If the default behavior doesn't suit your needs, and you need to do searches, but you don't want to overcomplicate, `flattened` hint in schema may help.
 As you can see in this schema `FlattenedTest` array have `x-osdu-indexing` hint with `"type": "flattened"`.
@@ -281,7 +255,7 @@ In elasticsearch this will look like:
                 },
 ```
 
-#### Nested <a name="nested-hint"></a>
+#### Nested
 If you need maximum search capabilities a `nested` can suit your needs, this allows not only searching by properties of objects, but also taking advantage of their types.  
 Since the `nested` type treats all objects in the array as separate objects, it provides capabilities such as: 
 1. Search the array for a specific object that fully matches the search query.
@@ -387,9 +361,9 @@ In elasticsearch this will look like :
                 },
 ```
 
-## Queries <a name="query"></a>
+## Queries
 
-### Default <a name="default-query"></a>
+### Default
 Search queries for properties of `ObjectTest` cannot be executed, but it will return in response to other requests:
 
 ```
@@ -429,7 +403,7 @@ Response will be:
 }
 ```
 
-### Flattened queries <a name="flattened-query"></a>
+### Flattened queries
 Flattened type has its pros and cons, is easy to use for the end user, and the query syntax remains the same, but all properties in this type are "flattened", which means they are not treated as separate objects.
 Each property becomes a "leaf" of its parent index, and their types are ignored, properties treated as [keywords](https://www.elastic.co/guide/en/elasticsearch/reference/current/keyword.html).
 In short, this means that the benefits of the type cannot be used:
@@ -463,11 +437,11 @@ Query like:
 ```
 Will return such records, although `NumberTest` and `StringTest` doesn't relate to 1 specific object.
 
-### Nested queries <a name="nested-query"></a>
+### Nested queries
 Nested with advantages brings complexity, it has a serious impact on performance and produce separate documents e.g. 100 WellLog records with 100 Curves each will produce 100x100 documents under Elastic index.
 The nested query require the user to know the properties types, path, etc. due to their syntax.
 
-#### Nested query examples <a name="nested-query-examples"></a>
+#### Nested query examples
 
 The nested query has a special syntax, it must start with the key `nested`, then the `path` and the search property must be specified: 
 ```json
@@ -475,7 +449,7 @@ nested(<path>, (<property>:<value>))
 ```
 Brackets, commas, spaces are required. 
 
-##### Range query <a name="range-query-examples"></a>
+##### Range query
 ```json
 {
     "query":"nested(data.NestedTest, (NumberTest:(>1)))"
@@ -491,7 +465,7 @@ Brackets, commas, spaces are required.
     "query":"nested(data.NestedTest, (DateTimeTest:(>2019)))"
 }
 ```
-##### Text query <a name="text-query-examples"></a>
+##### Text query
 ```json
 {
     "query":"nested(data.NestedTest, (StringTest:(test*)))"
@@ -502,7 +476,7 @@ Brackets, commas, spaces are required.
     "query":"nested(data.NestedTest, (StringTest:\"test*\"))"
 }
 ```
-##### Combination with non-nested queries <a name="combination-query-examples"></a>
+##### Combination with non-nested queries
 Such combination will find record with specific objects in the array:
 ```json
 {
@@ -530,7 +504,7 @@ Nested can be combined with non-nested values in any order with operators `AND` 
    "query": <nested> AND <not-nested> OR <nested> NOT <not-nested>....etc
 }
 ```
-##### Multilevel-Nested query <a name="multilevel-query-examples"></a>
+##### Multilevel-Nested query
 In example [schema](#indexing-hints) you may see that `NestedTest` contains another nested array of objects, those inner objects also can be found via search query:
 ```json
 {
@@ -543,12 +517,12 @@ nested(<root-path>, nested(<inner-path>, (<inner-property>:<value>)))
 ```
 Such query can also be combined with non-nested queries, other nested queries, etc. 
 
-### Sort <a name="sort"></a>
+### Sort
 
-#### Default <a name="default-sort"></a>
+#### Default
 Sorting by default array type is not possible, because elasticsearch is unaware about inner objects values.
 
-#### Flattened <a name="flattened-sort"></a>
+#### Flattened
 Flattened type can be used for sorting, since the elasticsearch `keyword` type is suitable for it, the syntax remains the same as for non-array properties :
 ```json
 {
@@ -565,7 +539,7 @@ Flattened type can be used for sorting, since the elasticsearch `keyword` type i
 ```
 More info at [fielddata](https://www.elastic.co/guide/en/elasticsearch/reference/7.8/fielddata.html)
 
-#### Nested <a name="nested-sort"></a>
+#### Nested
 Sorting by nested type is possible, but special syntax is required, similar to the syntax of nested queries:<br/>
 ```nested(path, field, mode)```<br/>
 It start with the keyword `nested` followed by `path` and `field`, `mode` attribute used to select which value of the nested field elasticsearch should sort by, possible values are:<br/>
@@ -633,12 +607,12 @@ Examples:
 ```
 More info at [nested-sorting](https://www.elastic.co/guide/en/elasticsearch/reference/7.8/sort-search-results.html#nested-sorting)
 
-### Aggregation <a name="aggregation"></a>
+### Aggregation
 
-#### Default <a name="default-aggregation"></a>
+#### Default
 Aggregation by default array type is not possible, because elasticsearch is unaware about inner objects values.
 
-#### Flattened <a name="flattened-aggregation"></a>
+#### Flattened
 Flattened type can be used for aggregation, the syntax remains the same:
 ```json
 {
@@ -662,7 +636,7 @@ Result:
     ],
 ```
 
-#### Nested <a name="nested-aggregation"></a>
+#### Nested
 Aggregation by nested array type possible, but a special syntax is required:
 ```
 nested(path, field)
@@ -695,7 +669,7 @@ Multilevel nested aggregation is also supported:
     "aggregateBy": "nested(data.NestedTest, nested(data.NestedTest.NestedInnerTest, NumberInnerTest))"
 }
 ```
-### Make an array of objects searchable  <a name="update-schema"></a>
+### Make an array of objects searchable
 
 It is possible that after defining the schema and loading the records, you realize that some array of object properties was introduced without the necessary hints in the schemas. 
 If they should be searchable but are currently not, this can be fixed in a few steps:
