@@ -1,7 +1,8 @@
+# Preview Features
 ## Phrase completion
 
 This feature is available on OSDU deployments with the autocomplete feature flag enabled
-and the bagOfWords feature enabled on the indexer service.
+and the `bagOfWords` feature enabled on the indexer service.
 
 By adding the json element **suggestPhrase** to the search query,
 users can retrieve phrase completions along with or instead of the results that may
