@@ -24,7 +24,7 @@ data:
   # redis connection. Change it if you want to use external redis
   redisSearchHost: ""
   redisSearchPort: 6379
-  redisImage: "docker.io/library/redis:7"
+  redisImage: "docker.io/library/redis:7.2-alpine"
 
 conf:
   appName: "search"
