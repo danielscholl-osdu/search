@@ -168,7 +168,7 @@ download_plugins:
   stage: build
   variables:
     APD_PACKAGE_REGISTRY_URL: "https://community.opengroup.org/api/v4/projects/1445/packages/maven"
-    APD_VERSION: "0.26.0-rc2"
+    APD_VERSION: "0.26.0"
 
   artifacts:
     paths:
