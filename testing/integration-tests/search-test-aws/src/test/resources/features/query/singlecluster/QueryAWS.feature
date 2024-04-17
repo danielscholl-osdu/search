@@ -134,9 +134,9 @@ Feature: Search with different queries
 
     Examples:
       | kind                               | query          | field           | latitude | longitude | distance | response_code | reponse_type  | response_message                                  | errors                                              |
-      | "tenant1:search<timestamp>:*:*" | "OFFICE - 2"   | "data.Location" | -45      | -200      | 1000     | 400           | "Bad Request" | "Invalid parameters were given on search request" | "'longitude' value is out of the range [-180, 180]" |
+      | "tenant1:search<timestamp>:*:*" | "OFFICE - 2"   | "data.Location" | -45      | -400      | 1000     | 400           | "Bad Request" | "Invalid parameters were given on search request" | "'longitude' value is out of the range [-180, 180]" |
       | "tenant1:search<timestamp>:*:*" | "TEXAS OR USA" | "data.Location" | -95      | -100      | 1000     | 400           | "Bad Request" | "Invalid parameters were given on search request" | "'latitude' value is out of the range [-90, 90]"    |
-      | "tenant1:search<timestamp>:*:*" | "Harris"       | "ZipCode"       | -45      | -200      | 1000     | 400           | "Bad Request" | "Invalid parameters were given on search request" | "'longitude' value is out of the range [-180, 180]" |
+      | "tenant1:search<timestamp>:*:*" | "Harris"       | "ZipCode"       | -45      | -400      | 1000     | 400           | "Bad Request" | "Invalid parameters were given on search request" | "'longitude' value is out of the range [-180, 180]" |
       | "tenant1:search<timestamp>:*:*" | "Harris"       | "ZipCode"       | 4        | 2         | 0        | 400           | "Bad Request" | "Invalid parameters were given on search request" | "'distance' must be greater than 0" |
 
   Scenario Outline: Search data across the kinds
