@@ -150,7 +150,7 @@ You should see in the logs that pop up what url and port it runs on. By default 
 * Prior to running tests, scripts must be executed locally to generate pipeline env vars
 
 ```bash
-testing/search-test-aws/build-aws/prepare-dist.sh
+testing/integration-tests/search-test-aws/build-aws/prepare-dist.sh
 
 #Set Neccessary ENV Vars here as defined in run-tests.sh
 
