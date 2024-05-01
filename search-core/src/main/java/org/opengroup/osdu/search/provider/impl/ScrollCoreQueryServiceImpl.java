@@ -126,7 +126,7 @@ public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScroll
     private void executeCursorPaginationQuery(CursorQueryRequest searchRequest, CursorQueryResponse queryResponse, RestHighLevelClient client, CursorSettings cursorSettings) throws IOException {
         SearchScrollRequest scrollRequest = new SearchScrollRequest(cursorSettings.getCursor());
         scrollRequest.scroll(SEARCH_SCROLL_TIMEOUT);
-        Long startTime = System.currentTimeMillis();;
+        Long startTime = System.currentTimeMillis();
         SearchResponse searchResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
         Long latency = System.currentTimeMillis() - startTime;
 
