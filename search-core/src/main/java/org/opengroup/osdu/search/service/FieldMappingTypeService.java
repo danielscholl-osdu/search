@@ -15,6 +15,7 @@
 package org.opengroup.osdu.search.service;
 
 import com.google.common.base.Strings;
+import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.GetFieldMappingsRequest;
@@ -72,6 +73,11 @@ public class FieldMappingTypeService implements IFieldMappingTypeService {
         GetFieldMappingsRequest request = new GetFieldMappingsRequest();
         request.fields(fieldName);
         if (!Strings.isNullOrEmpty(indexPattern)) request.indices(indexPattern);
+
+        IndicesOptions options = request.indicesOptions();
+        options = IndicesOptions.fromOptions(true, options.allowNoIndices(), options.expandWildcardsOpen(), options.expandWildcardsClosed(), options);
+        request.indicesOptions(options);
+
         return restClient.indices().getFieldMapping(request, RequestOptions.DEFAULT);
     }
 
