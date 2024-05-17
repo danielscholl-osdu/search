@@ -24,8 +24,11 @@ public class SearchRequestUtil {
         // It is possible that the indices of some kinds in the kind list may not exist in ElasticSearch
         // Setting indicesOption ignore_unavailable to true let ElasticSearch ignore the unavailable indices in the SearchRequest
         SearchRequest searchRequest = new SearchRequest(indices);
-        IndicesOptions option = searchRequest.indicesOptions();
-        option = IndicesOptions.fromOptions(true, option.allowNoIndices(), option.expandWildcardsOpen(), option.expandWildcardsClosed(), option);
+        IndicesOptions option = addIgnoreUnavailable(searchRequest.indicesOptions());
         return searchRequest.indicesOptions(option);
+    }
+
+    public static IndicesOptions addIgnoreUnavailable(IndicesOptions options) {
+        return IndicesOptions.fromOptions(true, options.allowNoIndices(), options.expandWildcardsOpen(), options.expandWildcardsClosed(), options);
     }
 }

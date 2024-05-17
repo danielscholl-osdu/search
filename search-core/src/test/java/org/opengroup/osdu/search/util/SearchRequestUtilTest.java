@@ -15,6 +15,7 @@
 package org.opengroup.osdu.search.util;
 
 import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.support.IndicesOptions;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,5 +25,12 @@ public class SearchRequestUtilTest {
     public void createSearchRequest_with_ignoreUnavailable_set_to_true() {
         SearchRequest searchRequest = SearchRequestUtil.createSearchRequest("index1");
         Assert.assertTrue(searchRequest.indicesOptions().ignoreUnavailable());
+    }
+
+    @Test
+    public void should_addIgnoreUnavailable() {
+        IndicesOptions options = IndicesOptions.fromOptions(false, false, false, false);
+        options = SearchRequestUtil.addIgnoreUnavailable(options);
+        Assert.assertTrue(options.ignoreUnavailable());
     }
 }

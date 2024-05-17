@@ -15,6 +15,7 @@
 package org.opengroup.osdu.search.service;
 
 import com.google.common.base.Strings;
+import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.GetFieldMappingsRequest;
@@ -22,6 +23,7 @@ import org.elasticsearch.client.indices.GetFieldMappingsResponse;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.search.Preconditions;
 import org.opengroup.osdu.search.cache.IFieldTypeMappingCache;
+import org.opengroup.osdu.search.util.SearchRequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
@@ -72,6 +74,10 @@ public class FieldMappingTypeService implements IFieldMappingTypeService {
         GetFieldMappingsRequest request = new GetFieldMappingsRequest();
         request.fields(fieldName);
         if (!Strings.isNullOrEmpty(indexPattern)) request.indices(indexPattern);
+
+        IndicesOptions options = SearchRequestUtil.addIgnoreUnavailable(request.indicesOptions());
+        request.indicesOptions(options);
+
         return restClient.indices().getFieldMapping(request, RequestOptions.DEFAULT);
     }
 
