@@ -12,6 +12,6 @@ gc-baremetal-test:
     GC_VENDOR: baremetal
     DEFAULT_DATA_PARTITION_ID_TENANT2: non-exist
 
-gc-dev2-test::
+gc-dev2-test:
   variables:
     CUCUMBER_OPTIONS: "--tags @autocomplete,~@ignore"
