@@ -62,10 +62,7 @@ import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.search.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
-import org.opengroup.osdu.search.util.CrossTenantUtils;
-import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.opengroup.osdu.search.util.IQueryPerformanceLogger;
-import org.opengroup.osdu.search.util.ResponseExceptionParser;
+import org.opengroup.osdu.search.util.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScrollCoreQueryServiceImplTest {
@@ -114,6 +111,8 @@ public class ScrollCoreQueryServiceImplTest {
 
     @Mock
     private CrossTenantUtils crossTenantUtils;
+    @Mock
+    private SuggestionsQueryUtil suggestionsQueryUtil;
     @Mock
     private ElasticLoggingConfig elasticLoggingConfig;
     @Mock

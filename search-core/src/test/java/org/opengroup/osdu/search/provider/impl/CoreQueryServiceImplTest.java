@@ -172,7 +172,7 @@ public class CoreQueryServiceImplTest {
     @Spy
     private IFeatureFlag autocompleteFeatureFlag;
     
-    @Spy
+    @Mock
     private SuggestionsQueryUtil suggestionsQueryUtil;
 
     @Spy
