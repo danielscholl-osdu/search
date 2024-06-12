@@ -88,7 +88,7 @@ The following software have components provided under the terms of this license:
 - Byte Buddy (without dependencies) (from https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy)
 - Byte Buddy Java agent (from https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy-agent)
 - ClassMate (from http://github.com/cowtowncoder/java-classmate)
-- Cloud Key Management Service (KMS) API v1-rev20240219-2.0.0 (from https://repo1.maven.org/maven2/com/google/apis/google-api-services-cloudkms)
+- Cloud Key Management Service (KMS) API v1-rev20240502-2.0.0 (from https://repo1.maven.org/maven2/com/google/apis/google-api-services-cloudkms)
 - Collections (from https://repo1.maven.org/maven2/commons-collections/commons-collections)
 - Commons Digester (from http://commons.apache.org/digester/)
 - Converter: Jackson (from https://github.com/square/retrofit, https://repo1.maven.org/maven2/com/squareup/retrofit2/converter-jackson)
@@ -820,6 +820,7 @@ The following software have components provided under the terms of this license:
 - Bouncy Castle Provider (from http://www.bouncycastle.org/java.html, https://www.bouncycastle.org/java.html)
 - Checker Qual (from https://checkerframework.org)
 - ClassGraph (from https://github.com/classgraph/classgraph)
+- Extensions on Apache Proton-J library (from https://github.com/Azure/qpid-proton-j-extensions)
 - JOpt Simple (from http://jopt-simple.github.io/jopt-simple, http://pholser.github.io/jopt-simple)
 - JUL to SLF4J bridge (from http://www.slf4j.org)
 - Jackson-core (from http://wiki.fasterxml.com/JacksonHome, https://github.com/FasterXML/jackson-core)
@@ -889,7 +890,6 @@ The following software have components provided under the terms of this license:
 - mockito-junit-jupiter (from https://github.com/mockito/mockito)
 - msal4j (from https://github.com/AzureAD/microsoft-authentication-library-for-java)
 - msal4j-persistence-extension (from https://github.com/AzureAD/microsoft-authentication-extensions-for-java, https://github.com/AzureAD/microsoft-authentication-library-for-java)
-- qpid-proton-j-extensions (from https://github.com/Azure/qpid-proton-j-extensions)
 - webjars-locator-core (from <http://webjars.org>, http://webjars.org)
 
 ========================================================================
