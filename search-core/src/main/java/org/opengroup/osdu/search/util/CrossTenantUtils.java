@@ -22,6 +22,7 @@ import org.opengroup.osdu.search.service.IndexAliasService;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ public class CrossTenantUtils {
     private static final int MAX_INDEX_NAME_LENGTH = 3840;
     // The last '-' in "-system-meta-data-*" is converted from kind delimiter ":" between authority and source
     private static final String[] excludedIndices = {"-.*", "-system-meta-data-*"};
+    private static final String KINDS_START_WITH_WILDCARD = "*";
 
     @Inject
     private ElasticIndexNameResolver elasticIndexNameResolver;
@@ -52,20 +54,37 @@ public class CrossTenantUtils {
     }
 
     private String getIndexName(List<String> kinds, Map<String, String> aliases) {
-        StringBuilder builder = new StringBuilder();
+        List<String> indicesStartWithWildcard = new ArrayList<>();
+        List<String> normalIndices = new ArrayList<>();
         for(String kind : kinds) {
-            if(aliases.containsKey(kind) && !Strings.isNullOrEmpty(aliases.get(kind))) {
-                String alias = aliases.get(kind);
-                builder.append(alias);
+            String index;
+            if (aliases.containsKey(kind) && !Strings.isNullOrEmpty(aliases.get(kind))) {
+                index = aliases.get(kind);
+            } else {
+                index = this.elasticIndexNameResolver.getIndexNameFromKind(kind);
+            }
+            if(kind.startsWith(KINDS_START_WITH_WILDCARD)) {
+                indicesStartWithWildcard.add(index);
             }
             else {
-                String index = this.elasticIndexNameResolver.getIndexNameFromKind(kind);
-                builder.append(index);
+                normalIndices.add(index);
             }
-            builder.append(",");
         }
+
+        StringBuilder builder = new StringBuilder();
         // Exclude Lucene/ElasticSearch internal indices and system/metadata indices in searches with wildcard kind
-        builder.append(String.join(",", excludedIndices));
+        if(!indicesStartWithWildcard.isEmpty()) {
+            builder.append(String.join(",", indicesStartWithWildcard));
+            builder.append(",");
+            builder.append(String.join(",", excludedIndices));
+        }
+        if(!normalIndices.isEmpty()) {
+            if(!builder.isEmpty()) {
+                builder.append(",");
+            }
+            builder.append(String.join(",", normalIndices));
+        }
+
         return builder.toString();
     }
 }

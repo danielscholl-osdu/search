@@ -1,19 +1,20 @@
 package org.opengroup.osdu.common;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import com.google.gson.Gson;
-import java.util.List;
-import java.util.Map;
-import java.util.Arrays;
 import org.opengroup.osdu.core.common.model.search.SortQuery;
 import org.opengroup.osdu.request.Query;
 import org.opengroup.osdu.response.ErrorResponseMock;
 import org.opengroup.osdu.response.ResponseMock;
 import org.opengroup.osdu.util.Config;
 import org.opengroup.osdu.util.HTTPClient;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.*;
 
 public class QueryBase extends TestsBase {
 
@@ -156,5 +157,18 @@ public class QueryBase extends TestsBase {
         assertEquals(200, response.getResponseCode());
         assertEquals(uniqueValueCount, response.getAggregations().size());
         assertEquals(0, response.getAggregations().stream().filter(x -> x == null).count());
+    }
+
+    public void i_should_get_included_kinds_and_should_not_get_excluded_kinds_from_aggregation(String includedKinds, String excludedKinds) {
+        String payload = requestQuery.toString();
+        ResponseMock response = executeQuery(payload, headers, httpClient.getAccessToken(), ResponseMock.class);
+        assertEquals(200, response.getResponseCode());
+        Set<String> kinds = response.getAggregations().stream().map(agg -> agg.getKey()).collect(Collectors.toSet());
+        for(String kind:  generateActualName(includedKinds, timeStamp).split(",")) {
+            assertTrue(kinds.contains(kind));
+        }
+        for(String kind:  generateActualName(excludedKinds, timeStamp).split(",")) {
+            assertFalse(kinds.contains(kind));
+        }
     }
 }

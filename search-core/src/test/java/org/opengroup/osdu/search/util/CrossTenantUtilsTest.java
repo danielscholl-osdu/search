@@ -38,7 +38,6 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class CrossTenantUtilsTest {
     private static final int MAX_INDEX_NAME_LENGTH = 3840;
-    private static final String excludedIndices = "-.*,-system-meta-data-*";
 
     @Mock
     private QueryRequest queryRequest;
@@ -51,11 +50,11 @@ public class CrossTenantUtilsTest {
 
     @Test
     public void should_returnIndexAsIs_when_searchedCrossKind_given_multipleAccountId() {
-        String kind = "*:ihs:well:1.0.0";
+        String kind = "opendes:ihs:well:1.0.0";
         when(queryRequest.getKind()).thenReturn(kind);
-        when(this.elasticIndexNameResolver.getIndexNameFromKind(kind)).thenReturn("*-ihs-well-1.0.0");
+        when(this.elasticIndexNameResolver.getIndexNameFromKind(kind)).thenReturn("opendes-ihs-well-1.0.0");
 
-        assertEquals("*-ihs-well-1.0.0" + "," + excludedIndices, this.sut.getIndexName(queryRequest));
+        assertEquals("opendes-ihs-well-1.0.0", this.sut.getIndexName(queryRequest));
     }
 
     @Test
@@ -65,7 +64,7 @@ public class CrossTenantUtilsTest {
         kind.add("opendes:osdudemo:wellbore:1.0.0");
         kind.add("opendes:wks:polylineSet:1.0.0");
         kind.add("slb:wks:log:1.0.5");
-        String indices = "opendes-welldb-wellbore2-1.0.0,opendes-osdudemo-wellbore-1.0.0,opendes-wks-polylineSet-1.0.0,slb-wks-log-1.0.5" + "," +  excludedIndices;
+        String indices = "opendes-welldb-wellbore2-1.0.0,opendes-osdudemo-wellbore-1.0.0,opendes-wks-polylineSet-1.0.0,slb-wks-log-1.0.5";
         when(queryRequest.getKind()).thenReturn(kind);
         mock_getIndexNameFromKind();
         assertEquals(indices, this.sut.getIndexName(queryRequest));
@@ -74,7 +73,7 @@ public class CrossTenantUtilsTest {
     @Test
     public void should_returnMultiIndicesAsIs_when_searchedCrossKind_separatedByComma_given_multipleAccountId() {
         String kind = "opendes:welldb:wellbore2:1.0.0,opendes:osdudemo:wellbore:1.0.0,opendes:wks:polylineSet:1.0.0,slb:wks:log:1.0.5";
-        String indices = "opendes-welldb-wellbore2-1.0.0,opendes-osdudemo-wellbore-1.0.0,opendes-wks-polylineSet-1.0.0,slb-wks-log-1.0.5" + "," + excludedIndices;
+        String indices = "opendes-welldb-wellbore2-1.0.0,opendes-osdudemo-wellbore-1.0.0,opendes-wks-polylineSet-1.0.0,slb-wks-log-1.0.5";
         when(queryRequest.getKind()).thenReturn(kind);
         mock_getIndexNameFromKind();
         assertEquals(indices, this.sut.getIndexName(queryRequest));
@@ -115,8 +114,7 @@ public class CrossTenantUtilsTest {
     @Test
     public void should_return_IndexNameWithHyphen_when_KindNameHasHyphen() {
         String kind = "opendes-1:*:*:*";
-        String index = kind.replace(":", "-");
-        String indexName = String.format("%s,%s", index, excludedIndices);
+        String indexName = kind.replace(":", "-");
 
         mock_getIndexNameFromKind();
         when(queryRequest.getKind()).thenReturn(kind);
@@ -256,6 +254,35 @@ public class CrossTenantUtilsTest {
         assertEquals(indexName, this.sut.getIndexName(queryRequest));
     }
 
+    @Test
+    public void should_return_index_with_excluded_hidden_indices_when_search_wildcard_kind() {
+        String kind = "*:*:*:*";
+        String index = kind.replace(":", "-");
+        when(queryRequest.getKind()).thenReturn(kind);
+        when(this.elasticIndexNameResolver.getIndexNameFromKind(kind)).thenReturn(index);
+
+        assertEquals("*-*-*-*,-.*,-system-meta-data-*", this.sut.getIndexName(queryRequest));
+    }
+
+    @Test
+    public void should_return_index_with_excluded_hidden_indices_when_search_kind_starts_with_wildcard() {
+        String kind = "*a:b:c:1.0.0";
+        String index = kind.replace(":", "-");
+        when(queryRequest.getKind()).thenReturn(kind);
+        when(this.elasticIndexNameResolver.getIndexNameFromKind(kind)).thenReturn(index);
+
+        assertEquals("*a-b-c-1.0.0,-.*,-system-meta-data-*", this.sut.getIndexName(queryRequest));
+    }
+
+    @Test
+    public void should_return_index_with_excluded_hidden_indices_when_search_kind_starts_with_wildcard_given_multipleAccountId() {
+        String kind = "opendes:welldb:wellbore2:1.0.0,*a1:b1:c1:1.0.0,*a2:b2:c2:1.0.0,opendes:osdudemo:wellbore:1.0.0";
+        when(queryRequest.getKind()).thenReturn(kind);
+        mock_getIndexNameFromKind();
+
+        assertEquals("*a1-b1-c1-1.0.0,*a2-b2-c2-1.0.0,-.*,-system-meta-data-*,opendes-welldb-wellbore2-1.0.0,opendes-osdudemo-wellbore-1.0.0", this.sut.getIndexName(queryRequest));
+    }
+
     private void mock_getIndexNameFromKind() {
         when(this.elasticIndexNameResolver.getIndexNameFromKind(anyString())).thenAnswer(invocation ->
         {
@@ -269,7 +296,7 @@ public class CrossTenantUtilsTest {
         String kind = "osdu:wks:master-data-wellbore:1.0.0";
         ArrayList kinds = new ArrayList();
         int lengthPerKind = kind.length() + 1; // 1 is comma
-        int totalLength = excludedIndices.length();
+        int totalLength = 0;
         int n = 0;
         while (totalLength + lengthPerKind<= length) {
             kinds.add(kind);
@@ -282,22 +309,24 @@ public class CrossTenantUtilsTest {
         StringBuilder builder = new StringBuilder();
         int n = 0;
         while(n < numberOfAlias) {
+            if(!builder.isEmpty()) {
+                builder.append(",");
+            }
             builder.append(alias);
-            builder.append(",");
             n++;
         }
-        builder.append(excludedIndices);
         return builder.toString();
     }
 
     private String getIndexName(List<String> kinds) {
         StringBuilder builder = new StringBuilder();
         for(String kind : kinds) {
+            if(!builder.isEmpty()) {
+                builder.append(",");
+            }
             String index = kind.replace(":", "-");
             builder.append(index);
-            builder.append(",");
         }
-        builder.append(excludedIndices);
         return builder.toString();
     }
 
@@ -316,15 +345,15 @@ public class CrossTenantUtilsTest {
     private String getHundredsIndexNameFromAlias(Integer kindCount, String alias) {
         List<String> aliases = Collections.nCopies(kindCount, alias);
         StringBuilder aliasBuilder = new StringBuilder();
-        aliases.forEach((item) -> aliasBuilder.append(item + ","));
-        return String.format("%s%s", aliasBuilder, excludedIndices);
+        aliases.forEach((item) -> { if(!aliasBuilder.isEmpty()) aliasBuilder.append(","); aliasBuilder.append(item); });
+        return aliasBuilder.toString();
     }
 
     private String getHundredsIndexNameFromIndex(Integer kindCount, String index) {
         List<String> indexes = Collections.nCopies(kindCount, index);
         StringBuilder indexBuilder = new StringBuilder();
-        indexes.forEach((item) -> indexBuilder.append(item + ","));
-        return String.format("%s%s", indexBuilder, excludedIndices);
+        indexes.forEach((item) -> { if(!indexBuilder.isEmpty()) indexBuilder.append(","); indexBuilder.append(item); });
+        return indexBuilder.toString();
     }
 
 }
