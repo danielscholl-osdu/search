@@ -1,6 +1,5 @@
 package org.opengroup.osdu.search.provider.azure.utils;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,9 +12,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class ServiceAccountJwtClientImplTest {
 
-    private static final String authToken="bearerToken";
-    private static final String idToken="opendes";
-    private static final String expectedToken = "Bearer bearerToken";
+    private static final String authorizationToken ="bearerToken";
+    private static final String partitionId ="opendes";
+    private static final String expectedToken = "Bearer "+authorizationToken;
 
     @Mock
     public AzureServicePrincipleTokenService tokenService;
@@ -25,8 +24,11 @@ public class ServiceAccountJwtClientImplTest {
 
     @Test
     public void should_prefix_Bearer_toSetToken_when_getIdToken_isCalled() {
-        when(tokenService.getAuthorizationToken()).thenReturn(authToken);
-        String val = sut.getIdToken(idToken);
-        assertEquals(val, expectedToken);
+        when(tokenService.getAuthorizationToken()).thenReturn(authorizationToken);
+
+        String idToken = sut.getIdToken(partitionId);
+
+        assertEquals(expectedToken, idToken);
     }
 }
+

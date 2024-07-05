@@ -14,22 +14,25 @@
 
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.commons.lang3.NotImplementedException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.opengroup.osdu.core.common.model.entitlements.AuthorizationResponse;
 import org.opengroup.osdu.core.common.model.entitlements.Groups;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.search.service.IEntitlementsExtensionService;
 
-import javax.ws.rs.NotSupportedException;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AzureAuthorizationServiceTest {
 
     @Mock
@@ -41,17 +44,32 @@ public class AzureAuthorizationServiceTest {
     @InjectMocks
     private AzureAuthorizationService sut;
 
-    @Test(expected = AppException.class)
+    @Test
     public void should_throwAppException_when_givenGroupDoesNotExistForUser() {
         when(groups.any(any())).thenReturn(false);
         when(entitlementsService.getGroups(any())).thenReturn(groups);
-        sut.authorizeAny(new DpsHeaders(), "a", "b");
+        DpsHeaders dpsHeaders = new DpsHeaders();
+
+        assertThrows(AppException.class, () -> sut.authorizeAny(dpsHeaders, "a", "b"));
     }
 
     @Test
     public void should_returnGroupsWithUserEmail_when_givenGroupExistsForUser() {
         when(groups.any(any())).thenReturn(true);
         when(entitlementsService.getGroups(any())).thenReturn(groups);
-        sut.authorizeAny(new DpsHeaders(), "a", "b");
+
+        AuthorizationResponse authorizationResponse = sut.authorizeAny(new DpsHeaders(), "a", "b");
+
+        assertNotNull(authorizationResponse);
+    }
+
+    @Test
+    public void should_throwNotImplementedException_when_authorizeAnyForPartition() {
+        DpsHeaders dpsHeaders = new DpsHeaders();
+        String expectedMessage = "authorizeAny not implemented for azure";
+        NotImplementedException notImplementedException = assertThrows(NotImplementedException.class,
+                () -> sut.authorizeAny("test-partition1", dpsHeaders, "a", "b"));
+
+        assertEquals(expectedMessage, notImplementedException.getMessage());
     }
 }

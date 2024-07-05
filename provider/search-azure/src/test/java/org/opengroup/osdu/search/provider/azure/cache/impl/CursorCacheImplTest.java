@@ -1,7 +1,5 @@
 package org.opengroup.osdu.search.provider.azure.cache.impl;
 
-import com.vividsolutions.jts.util.Assert;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,9 +8,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;
+
 import javax.annotation.Resource;
 import java.util.concurrent.atomic.AtomicReference;
-import static org.mockito.Mockito.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doAnswer;
 
 @ExtendWith(MockitoExtension.class)
 public class CursorCacheImplTest {
@@ -42,7 +44,7 @@ public class CursorCacheImplTest {
 
         sut.put(key, cursorSettings);
 
-        Assert.isTrue(methodCalled.get());
+        assertTrue(methodCalled.get());
     }
 
     @Test
@@ -58,8 +60,8 @@ public class CursorCacheImplTest {
 
         CursorSettings cursorSettings = sut.get(key);
 
-        Assert.equals(cursorSettings.getCursor(), cursor);
-        Assert.isTrue(methodCalled.get());
+        assertEquals(cursor,cursorSettings.getCursor());
+        assertTrue(methodCalled.get());
     }
 
     @Test
@@ -75,7 +77,7 @@ public class CursorCacheImplTest {
 
         sut.delete(key);
 
-        Assert.isTrue(methodCalled.get());
+        assertTrue(methodCalled.get());
     }
 
     @Test
@@ -89,6 +91,6 @@ public class CursorCacheImplTest {
 
         sut.clearAll();
 
-        Assert.isTrue(methodCalled.get());
+        assertTrue(methodCalled.get());
     }
 }
