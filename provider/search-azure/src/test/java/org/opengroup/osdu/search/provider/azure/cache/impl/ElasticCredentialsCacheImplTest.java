@@ -1,8 +1,6 @@
 package org.opengroup.osdu.search.provider.azure.cache.impl;
 
 import com.lambdaworks.redis.RedisException;
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,10 +11,16 @@ import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import javax.annotation.Resource;
 import java.util.concurrent.atomic.AtomicReference;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 
 @ExtendWith(MockitoExtension.class)
 public class ElasticCredentialsCacheImplTest {
@@ -59,6 +63,7 @@ public class ElasticCredentialsCacheImplTest {
     public void put_withRedisException() {
         ClusterSettings clusterSettings = ClusterSettings.builder().build();
         doThrow(RedisException.class).when(cache).put(key, clusterSettings);
+
         try {
             sut.put(key, clusterSettings);
         } catch (RedisException e) {
@@ -79,9 +84,9 @@ public class ElasticCredentialsCacheImplTest {
 
         ClusterSettings clusterSettings = sut.get(key);
 
-        assertEquals(clusterSettings.getHost(), host);
-        assertEquals(clusterSettings.getPort(), port);
-        assertEquals(clusterSettings.getUserNameAndPassword(), userNameandPassword);
+        assertEquals(host, clusterSettings.getHost());
+        assertEquals(port, clusterSettings.getPort());
+        assertEquals(userNameandPassword, clusterSettings.getUserNameAndPassword());
         assertTrue(methodCalled.get());
     }
 

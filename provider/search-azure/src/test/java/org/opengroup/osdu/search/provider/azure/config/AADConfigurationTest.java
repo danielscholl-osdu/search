@@ -7,16 +7,17 @@ import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 class AADConfigurationTest {
 
-    private static final String authority="authority";
-    private static final String clientId="clientId";
-    private static final String secretKey="secretKey";
-    private static final String oboApiField="oboApi";
-    private static final String oboApi="OboApi";
+    private static final String authority = "authority";
+    private static final String clientId = "clientId";
+    private static final String secretKey = "secretKey";
+    private static final String oboApiField = "oboApi";
+    private static final String oboApi = "OboApi";
 
     @InjectMocks
     AADConfiguration sut;
@@ -32,7 +33,13 @@ class AADConfigurationTest {
 
     @Test
     void should_return_setValue_when_getAuthority_isCalled() {
-        assertEquals(authority+"/", sut.getAuthority());
+        assertEquals(authority + "/", sut.getAuthority());
+    }
+
+    @Test
+    void should_return_setValue_when_getAuthority_withoutSlashSuffix_isCalled() {
+        ReflectionTestUtils.setField(sut, authority, authority + "/");
+        assertEquals(authority + "/", sut.getAuthority());
     }
 
     @Test
@@ -47,6 +54,6 @@ class AADConfigurationTest {
 
     @Test
     void should_return_setValue_when_getOboApi_isCalled() {
-        assertEquals(oboApi,sut.getOboApi());
+        assertEquals(oboApi, sut.getOboApi());
     }
 }

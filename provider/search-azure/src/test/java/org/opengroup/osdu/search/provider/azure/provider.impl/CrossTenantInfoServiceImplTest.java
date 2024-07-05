@@ -14,30 +14,32 @@
 
 package org.opengroup.osdu.search.provider.azure.provider.impl;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.model.http.AppError;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.core.common.provider.interfaces.ITenantFactory;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CrossTenantInfoServiceImplTest {
 
     private static final String dataPartitionId = "data-partition-id";
@@ -55,33 +57,29 @@ public class CrossTenantInfoServiceImplTest {
     @InjectMocks
     CrossTenantInfoServiceImpl sut;
 
-    @Before
+    @BeforeEach
     public void init() {
         lenient().doReturn(dataPartitionId).when(dpsHeaders).getPartitionId();
         lenient().doReturn(partitionIdWithFallbackToAccountId).when(dpsHeaders).getPartitionIdWithFallbackToAccountId();
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testGetTenantInfo_whenTenantInfoIsNull_throwsException() {
-        try {
-            sut.getTenantInfo();
-        } catch (AppException e) {
-            int errorCode = 401;
-            String errorMessage = "not authorized to perform this action";
-            AppError error = e.getError();
+        int errorCode = 401;
+        String errorMessage = "not authorized to perform this action";
 
-            assertEquals(error.getCode(), errorCode);
-            assertThat(error.getMessage(), containsString(errorMessage));
+        AppException appException = assertThrows(AppException.class, () -> sut.getTenantInfo());
 
-            throw(e);
-        }
+        AppError appError = appException.getError();
+        assertEquals(appError.getCode(), errorCode);
+        assertThat(appError.getMessage(), containsString(errorMessage));
     }
 
     @Test()
     public void testGetTenantInfo_whenTenantInfoIsProvided_thenReturnsTenantInfo() {
         TenantInfo tenantInfo = getTenantInfo(1L, "name", "projectId");
 
-        doReturn(tenantInfo).when(tenantFactory).getTenantInfo(eq(partitionIdWithFallbackToAccountId));
+        doReturn(tenantInfo).when(tenantFactory).getTenantInfo(partitionIdWithFallbackToAccountId);
 
         TenantInfo obtainedTenantInfo = sut.getTenantInfo();
 
@@ -98,7 +96,9 @@ public class CrossTenantInfoServiceImplTest {
     @Test()
     public void testGetAllTenantsFromPartitionId_whenGetTenantInfoReturnsNull() {
         doReturn(partitionIdWithFallbackToAccountIdMultipleAccounts).when(dpsHeaders).getPartitionId();
+
         List<TenantInfo> tenantInfos = sut.getAllTenantsFromPartitionId();
+
         assertNull(tenantInfos.get(0));
         assertNull(tenantInfos.get(1));
     }
@@ -110,14 +110,25 @@ public class CrossTenantInfoServiceImplTest {
         TenantInfo tenant1 = getTenantInfo(1L, "tenant1", "project-id1");
         TenantInfo tenant2 = getTenantInfo(2L, "tenant2", "project-id2");
 
-        doReturn(tenant1).when(tenantFactory).getTenantInfo(eq(accounts[0]));
-        doReturn(tenant2).when(tenantFactory).getTenantInfo(eq(accounts[1]));
+        doReturn(tenant1).when(tenantFactory).getTenantInfo(accounts[0]);
+        doReturn(tenant2).when(tenantFactory).getTenantInfo(accounts[1]);
         doReturn(partitionIdWithFallbackToAccountIdMultipleAccounts).when(dpsHeaders).getPartitionId();
 
         List<TenantInfo> tenantInfos = sut.getAllTenantsFromPartitionId();
 
         assertEquals(tenantInfos.get(0), tenant1);
         assertEquals(tenantInfos.get(1), tenant2);
+    }
+
+    @Test
+    public void shouldGetAllTenantInfos() {
+        TenantInfo tenant1 = getTenantInfo(1L, "tenant1", "project-id1");
+        TenantInfo tenant2 = getTenantInfo(2L, "tenant2", "project-id2");
+        when(tenantFactory.listTenantInfo()).thenReturn(Arrays.asList(tenant1,tenant2));
+
+        List<TenantInfo> tenantInfoList = sut.getAllTenantInfos();
+        assertEquals(tenantInfoList.get(0), tenant1);
+        assertEquals(tenantInfoList.get(1), tenant2);
     }
 
     private TenantInfo getTenantInfo(Long id, String name, String projectId) {
