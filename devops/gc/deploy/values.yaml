@@ -14,7 +14,7 @@ data:
   securityHttpsCertificateTrust: "true"
   servicePolicyEnabled: false
   # Deployments
-  requestsCpu: "15m"
+  requestsCpu: "35m"
   requestsMemory: "400Mi"
   limitsCpu: "1"
   limitsMemory: "1G"
