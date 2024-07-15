@@ -23,7 +23,6 @@ trigger:
       - .gitignore
       - /docs
       - /indexer/search-aws
-      - /indexer/search-byoc
       - /indexer/search-gc
       - /indexer/search-ibm
 

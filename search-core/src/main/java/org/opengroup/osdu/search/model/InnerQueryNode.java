@@ -1,6 +1,6 @@
 package org.opengroup.osdu.search.model;
 
-import io.micrometer.core.lang.Nullable;
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;

@@ -36,9 +36,9 @@
         <project.main.basedir>${project.basedir}</project.main.basedir>
         <nimbus-jose-jwt.version>9.1.2</nimbus-jose-jwt.version>
         <elasticsearch.version>7.8.1</elasticsearch.version>
-        <netty.version>4.1.70.Final</netty.version>
-        <spring-security-web.version>5.8.2</spring-security-web.version>
-        <spring-webmvc.version>5.3.26</spring-webmvc.version>
+        <netty.version>4.1.109.Final</netty.version>
+        <spring-security-web.version>6.3.0</spring-security-web.version>
+        <spring-webmvc.version>6.1.6</spring-webmvc.version>
         <jts-io-common.version>1.15.0</jts-io-common.version>
     </properties>
 
@@ -68,7 +68,7 @@
       <dependencies>
           <dependency>
               <groupId>org.opengroup.osdu</groupId>
-              <artifactId>os-core-common</artifactId>
+              <artifactId>os-core-common-spring6</artifactId>
               <version>${osdu.oscorecommon.version}</version>
           </dependency>
           <dependency>
@@ -77,19 +77,16 @@
               <version>${jts-io-common.version}</version>
           </dependency>
           <dependency>
-              <groupId>javax.el</groupId>
-              <artifactId>javax.el-api</artifactId>
+              <groupId>jakarta.json</groupId>
+              <artifactId>jakarta.json-api</artifactId>
           </dependency>
           <dependency>
-              <groupId>org.glassfish</groupId>
-              <artifactId>javax.el</artifactId>
+              <groupId>jakarta.ws.rs</groupId>
+              <artifactId>jakarta.ws.rs-api</artifactId>
+              <version>4.0.0</version>
           </dependency>
           <dependency>
-              <groupId>org.glassfish</groupId>
-              <artifactId>javax.json</artifactId>
-          </dependency>
-          <dependency>
-              <groupId>com.sun.jersey</groupId>
+              <groupId>org.glassfish.jersey.core</groupId>
               <artifactId>jersey-client</artifactId>
           </dependency>
           <dependency>
@@ -97,7 +94,7 @@
               <artifactId>swagger-jaxrs</artifactId>
               <exclusions>
                   <exclusion>
-                      <groupId>javax.ws.rs</groupId>
+                      <groupId>jakarta.ws.rs</groupId>
                       <artifactId>jsr311-api</artifactId>
                   </exclusion>
                   <exclusion>
@@ -131,12 +128,6 @@
           <dependency>
               <groupId>org.springframework.boot</groupId>
               <artifactId>spring-boot-starter-security</artifactId>
-              <exclusions>
-                  <exclusion>
-                      <groupId>org.springframework.security</groupId>
-                      <artifactId>spring-security-web</artifactId>
-                  </exclusion>
-              </exclusions>
           </dependency>
           <dependency>
               <groupId>org.springframework.security</groupId>
@@ -149,10 +140,6 @@
               <version>${spring-webmvc.version}</version>
           </dependency>
           <dependency>
-              <groupId>javax.servlet</groupId>
-              <artifactId>javax.servlet-api</artifactId>
-          </dependency>
-          <dependency>
               <groupId>org.jboss.resteasy</groupId>
               <artifactId>resteasy-jackson2-provider</artifactId>
           </dependency>
@@ -161,21 +148,16 @@
               <artifactId>resteasy-jaxrs</artifactId>
               <exclusions>
                   <exclusion>
-                      <groupId>javax.validation</groupId>
+                      <groupId>jakarta.validation</groupId>
                       <artifactId>validation-api</artifactId>
                   </exclusion>
               </exclusions>
           </dependency>
           <dependency>
-              <groupId>javax.validation</groupId>
-              <artifactId>validation-api</artifactId>
-              <version>2.0.1.Final</version>
+              <groupId>jakarta.validation</groupId>
+              <artifactId>jakarta.validation-api</artifactId>
+              <version>3.1.0</version>
           </dependency>
-          <dependency>
-              <groupId>org.jboss.resteasy</groupId>
-              <artifactId>resteasy-validator-provider-11</artifactId>
-          </dependency>
-
           <dependency>
               <groupId>com.google.guava</groupId>
               <artifactId>guava</artifactId>
@@ -224,21 +206,6 @@
               <groupId>joda-time</groupId>
               <artifactId>joda-time</artifactId>
           </dependency>
-
-          <!--Logging-->
-          <dependency>
-              <groupId>org.apache.logging.log4j</groupId>
-              <artifactId>log4j-to-slf4j</artifactId>
-          </dependency>
-          <dependency>
-              <groupId>org.slf4j</groupId>
-              <artifactId>slf4j-api</artifactId>
-          </dependency>
-		  <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-          </dependency>
-
           <!--Elasticsearch-->
           <dependency>
               <groupId>org.elasticsearch</groupId>
@@ -261,8 +228,6 @@
               <artifactId>elasticsearch-rest-high-level-client</artifactId>
               <version>${elasticsearch.version}</version>
           </dependency>
-
-          <!--Test-->
           <dependency>
               <groupId>org.springframework.boot</groupId>
               <artifactId>spring-boot-starter-test</artifactId>
@@ -271,15 +236,33 @@
           <dependency>
               <groupId>com.github.stefanbirkner</groupId>
               <artifactId>system-rules</artifactId>
+              <version>1.19.0</version>
               <scope>test</scope>
           </dependency>
           <dependency>
               <groupId>org.springframework.boot</groupId>
               <artifactId>spring-boot-starter-actuator</artifactId>
+              <version>${spring-boot.version}</version>
           </dependency>
           <dependency>
               <groupId>org.springframework.boot</groupId>
               <artifactId>spring-boot-starter-jersey</artifactId>
+              <version>${spring-boot.version}</version>
+          </dependency>
+          <dependency>
+              <groupId>jakarta.xml.bind</groupId>
+              <artifactId>jakarta.xml.bind-api</artifactId>
+              <version>4.0.2</version>
+          </dependency>
+          <dependency>
+              <groupId>jakarta.annotation</groupId>
+              <artifactId>jakarta.annotation-api</artifactId>
+              <version>3.0.0</version>
+          </dependency>
+          <dependency>
+              <groupId>jakarta.inject</groupId>
+              <artifactId>jakarta.inject-api</artifactId>
+              <version>2.0.1</version>
           </dependency>
       </dependencies>
 

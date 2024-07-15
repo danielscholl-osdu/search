@@ -17,7 +17,7 @@ package org.opengroup.osdu.search.policy.cache;
 import org.opengroup.osdu.core.common.cache.VmCache;
 import org.opengroup.osdu.core.common.model.policy.PolicyStatus;
 import org.springframework.stereotype.Component;
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 @Component("policyCache")
 public class PolicyCache extends VmCache<String, PolicyStatus> {

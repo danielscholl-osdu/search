@@ -16,7 +16,7 @@ package org.opengroup.osdu.search.provider.aws.persistence;
 import org.opengroup.osdu.core.aws.ssm.K8sLocalParameterProvider;
 import org.opengroup.osdu.core.aws.ssm.K8sParameterNotFoundException;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticRepository;
 import org.springframework.beans.factory.annotation.Value;

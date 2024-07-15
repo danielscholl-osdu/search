@@ -21,7 +21,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import org.opengroup.osdu.core.common.model.search.validation.ValidMultiKind;
 import org.springframework.validation.annotation.Validated;
 

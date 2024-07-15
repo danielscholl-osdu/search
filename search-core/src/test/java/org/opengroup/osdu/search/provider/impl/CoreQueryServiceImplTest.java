@@ -101,6 +101,7 @@ import org.opengroup.osdu.search.util.QueryParserUtil;
 import org.opengroup.osdu.search.util.SortParserUtil;
 import org.opengroup.osdu.search.util.SuggestionsQueryUtil;
 import org.opengroup.osdu.core.common.feature.IFeatureFlag;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CoreQueryServiceImplTest {
@@ -217,6 +218,8 @@ public class CoreQueryServiceImplTest {
 
         when(providerHeaderService.getDataGroupsHeader()).thenReturn(DATA_GROUPS);
         when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
+
+        ReflectionTestUtils.setField(suggestionsQueryUtil, "autocompleteFeatureFlag", autocompleteFeatureFlag);
     }
 
     @Test

@@ -7,10 +7,14 @@ import org.mockito.MockedConstruction;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.cache.VmCache;
+import org.springframework.util.ReflectionUtils;
+
+import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.spy;
 
 @ExtendWith(MockitoExtension.class)
 public class FieldTypeMappingCacheImplTest {
@@ -22,11 +26,13 @@ public class FieldTypeMappingCacheImplTest {
 
     @Test
     public void when_FieldTypeMappingCache_isCreated_then_VMCacheConstructorIsCalled_and_objectReturnedIsNotNull() {
-        try (MockedConstruction<VmCache> vmCacheClass = mockConstruction(
-                VmCache.class)) {
-            FieldTypeMappingCacheImpl fieldTypeMappingCache = new FieldTypeMappingCacheImpl();
-            assertNotNull(fieldTypeMappingCache);
-            assertEquals(1, vmCacheClass.constructed().size());
-        }
+        FieldTypeMappingCacheImpl spyCache = spy(new FieldTypeMappingCacheImpl());
+        Field field = ReflectionUtils.findField(VmCache.class, "cache");
+        assertNotNull(field);
+
+        ReflectionUtils.makeAccessible(field);
+        Object cacheValue = ReflectionUtils.getField(field, spyCache);
+
+        assertNotNull(cacheValue);
     }
 }

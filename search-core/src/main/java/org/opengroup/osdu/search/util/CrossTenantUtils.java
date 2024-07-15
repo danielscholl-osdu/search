@@ -21,7 +21,8 @@ import org.opengroup.osdu.core.common.util.KindParser;
 import org.opengroup.osdu.search.service.IndexAliasService;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

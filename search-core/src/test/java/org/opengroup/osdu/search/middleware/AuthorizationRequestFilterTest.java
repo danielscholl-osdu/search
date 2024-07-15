@@ -26,12 +26,12 @@ import static org.opengroup.osdu.search.middleware.RequestHeadersTestUtil.setupR
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-import javax.annotation.security.RolesAllowed;
-import javax.servlet.FilterChain;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ResourceInfo;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ResourceInfo;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -21,8 +21,8 @@ import org.opengroup.osdu.search.smart.models.Kinds;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletResponse;
 
 public class SyncFilterValuesServiceImpl implements SyncFilterValuesService {
 

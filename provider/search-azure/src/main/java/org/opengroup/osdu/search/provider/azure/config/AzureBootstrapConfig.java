@@ -23,7 +23,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
+
+import java.time.Duration;
 
 @Configuration
 public class AzureBootstrapConfig {
@@ -71,5 +73,10 @@ public class AzureBootstrapConfig {
                 .rootUrl(entitlementsAPIEndpoint)
                 .build();
         return new EntitlementsFactory(apiConfig, httpResponseBodyMapper);
+    }
+
+    @Bean
+    public Duration slowIndicatorLoggingThreshold() {
+        return Duration.ofSeconds(5);
     }
 }

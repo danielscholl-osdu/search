@@ -2,7 +2,7 @@ package org.opengroup.osdu.search.model;
 
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;

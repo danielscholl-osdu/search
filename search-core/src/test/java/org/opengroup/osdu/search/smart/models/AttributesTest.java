@@ -30,6 +30,7 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -52,6 +53,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -72,7 +74,7 @@ public class AttributesTest {
 	@Mock
 	private DpsHeaders dpsHeaders;
 	@Mock
-	private IAttributesCache cache;
+	private IAttributesCache<String, Set<String>> cache;
 	@Mock
 	private HttpResponse response;
 	@Mock

@@ -3,7 +3,7 @@
 
 package org.opengroup.osdu.search.provider.ibm.di;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.opengroup.osdu.core.common.entitlements.EntitlementsAPIConfig;
 import org.opengroup.osdu.core.common.entitlements.EntitlementsFactory;
 import org.opengroup.osdu.core.common.entitlements.IEntitlementsFactory;

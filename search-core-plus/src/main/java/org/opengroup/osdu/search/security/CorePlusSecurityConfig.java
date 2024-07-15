@@ -17,19 +17,23 @@
 
 package org.opengroup.osdu.search.security;
 
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.SecurityFilterChain;
 
+@Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-public class CorePlusSecurityConfig extends WebSecurityConfigurerAdapter {
-
-  @Override
-  protected void configure(HttpSecurity httpSecurity) throws Exception {
-    httpSecurity
-        .httpBasic().disable()
-        .csrf().disable();  //disable default authN. AuthN handled by endpoints proxy
+@EnableMethodSecurity
+public class CorePlusSecurityConfig {
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    return http
+            .csrf(AbstractHttpConfigurer::disable)
+            .httpBasic(httpBasic->httpBasic.disable())
+            .build();
   }
 }

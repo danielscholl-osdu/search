@@ -15,13 +15,13 @@ import org.opengroup.osdu.core.common.multitenancy.ITenantInfoService;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @Service
 public class ElasticSettingServiceImpl implements IElasticSettingService {
 
     @Inject
-    private javax.inject.Provider<ITenantInfoService> tenantInfoServiceProvider;
+    private jakarta.inject.Provider<ITenantInfoService> tenantInfoServiceProvider;
 
     @Inject
     private IElasticRepository elasticRepository;

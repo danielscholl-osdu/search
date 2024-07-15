@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
 public class TypeFilterTest {
 
     @Mock
-    javax.inject.Provider<ICrossTenantInfoService> tenantInfoServiceProvide;
+    jakarta.inject.Provider<ICrossTenantInfoService> tenantInfoServiceProvide;
 
     @Mock
     private Kinds kindRetriever;
