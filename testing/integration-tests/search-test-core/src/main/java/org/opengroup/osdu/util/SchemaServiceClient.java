@@ -54,7 +54,7 @@ public class SchemaServiceClient {
 
     public boolean exists(SchemaIdentity identity) {
         String uri = buildSchemaUri(identity.getId());
-        LOGGER.log(Level.INFO, "Checking whether the schema exists having identity={0}", identity);
+        LOGGER.log(Level.INFO, "Checking whether the schema exists with url={0}", uri);
         ResponseEntity<?> response = template.exchange(uri, HttpMethod.GET, null, Object.class);
         LOGGER.log(Level.INFO, "Finished checking whether the schema exists having identity={0}, response={1}", new Object[]{identity, response});
         return response.getStatusCode() == HttpStatus.OK;
@@ -66,8 +66,8 @@ public class SchemaServiceClient {
         HttpHeaders headers = new HttpHeaders();
         headers.put(HttpHeaders.CONTENT_TYPE, singletonList(MediaType.APPLICATION_JSON_VALUE));
         HttpEntity<SchemaModel> httpEntity = new HttpEntity<>(schema, headers);
-        template.exchange(uri, HttpMethod.PUT, httpEntity, Object.class);
-        LOGGER.log(Level.INFO, "Finished creating the schema={0}", schema);
+        ResponseEntity<Object> responseEntity = template.exchange(uri, HttpMethod.PUT, httpEntity, Object.class);
+        LOGGER.log(Level.INFO, "Finished creating the schema, response={0}", responseEntity);
     }
 
     public void createIfNotExist(SchemaModel schema) {
@@ -84,7 +84,7 @@ public class SchemaServiceClient {
 
     private String buildSchemaUri() {
         return UriComponentsBuilder.fromHttpUrl(schemaBaseUrl)
-                .path("/schema/")
+                .path("/schema")
                 .build().toUriString();
     }
 

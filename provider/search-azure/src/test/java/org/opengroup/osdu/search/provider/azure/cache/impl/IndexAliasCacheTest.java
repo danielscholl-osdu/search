@@ -25,7 +25,7 @@ import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;

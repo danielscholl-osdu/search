@@ -24,7 +24,7 @@
 
 	<properties>
 		<tomcat.embed.core.version>9.0.69</tomcat.embed.core.version>
-		<os-core-lib-ibm.version>0.25.1</os-core-lib-ibm.version>
+		<os-core-lib-ibm.version>0.27.0-rc2</os-core-lib-ibm.version>
 		<start-class>org.opengroup.osdu.search.provider.ibm.app.SearchIBMApplication</start-class>
 		<spring-webmvc.version>5.3.22</spring-webmvc.version>
 		<jackson-databind.version>2.15.2</jackson-databind.version>
@@ -42,8 +42,8 @@
 					<artifactId>nimbus-jose-jwt</artifactId>
 				</exclusion>
 				<exclusion>
-            		<groupId>javax.servlet</groupId>
-            		<artifactId>javax.servlet-api</artifactId>
+            		<groupId>jakarta.servlet</groupId>
+            		<artifactId>jakarta.servlet-api</artifactId>
             	</exclusion>
             	<exclusion>
 					<groupId>org.apache.tomcat.embed</groupId>
@@ -83,7 +83,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.opengroup.osdu</groupId>
-			<artifactId>os-core-common</artifactId>
+			<artifactId>os-core-common-spring6</artifactId>
 			<version>${osdu.oscorecommon.version}</version>
 			<exclusions>
 				<exclusion>
@@ -245,7 +245,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>2.7.4</version>
+				<version>${spring-boot.version}</version>
 				<executions>
 					<execution>
 						<goals>
@@ -263,7 +263,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.5</version>
+				<version>3.3.0</version>
 				<configuration>
 					<useSystemClassLoader>false</useSystemClassLoader>
 					<threadCount>1</threadCount>

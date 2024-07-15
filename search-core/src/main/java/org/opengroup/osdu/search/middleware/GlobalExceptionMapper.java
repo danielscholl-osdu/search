@@ -30,6 +30,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -42,7 +43,7 @@ import org.springframework.web.context.annotation.RequestScope;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import javax.validation.ValidationException;
+import jakarta.validation.ValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +70,7 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
 
     // ResponseEntityExceptionHandler already has a default implementation for handling MethodArgumentNotValidException, so we are overriding it
     @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e, HttpHeaders headers, HttpStatus status, WebRequest request) {
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
         List<String> errors = new ArrayList<>();
         for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
             errors.add(fieldError.getDefaultMessage());
@@ -82,7 +83,7 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
     // Yes, if we are extending ResponseEntityExceptionHandler, this is being caught as HttpMessageNotReadableException type, and not as UnrecognizedPropertyException type
     // ResponseEntityExceptionHandler already has a default implementation for handling HttpMessageNotReadableException, so we are overriding it
     @Override
-    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException e, HttpHeaders headers, HttpStatus status, WebRequest request) {
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException e, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
         AppException appException = new AppException(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Invalid parameters were given on search request", e);
         this.jaxRsDpsLogger.warning(appException.getError().getMessage(), appException);
         HttpStatus httpStatus = HttpStatus.resolve(appException.getError().getCode());

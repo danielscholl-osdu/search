@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 
 import com.google.gson.reflect.TypeToken;
 import cucumber.api.DataTable;
-import lombok.extern.slf4j.Slf4j;
 import org.opengroup.osdu.core.common.model.entitlements.Acl;
 import org.opengroup.osdu.core.common.model.legal.Legal;
 import org.opengroup.osdu.core.common.model.search.Point;
@@ -18,6 +17,7 @@ import org.opengroup.osdu.util.HTTPClient;
 
 import com.sun.jersey.api.client.ClientResponse;
 import cucumber.api.Scenario;
+import org.opengroup.osdu.util.SchemaServiceClient;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
@@ -25,13 +25,15 @@ import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.opengroup.osdu.util.Config.*;
 import static org.opengroup.osdu.util.Utility.beautifyJsonString;
 
-@Slf4j
+
 public abstract class TestsBase {
     protected HTTPClient httpClient;
     protected Scenario scenario;
@@ -49,7 +51,7 @@ public abstract class TestsBase {
 
     protected static final String timeStamp = String.valueOf(System.currentTimeMillis()) ;
     private boolean dunit = false;
-
+    private static final Logger LOGGER = Logger.getLogger(SchemaServiceClient.class.getName());
     public TestsBase(HTTPClient httpClient) {
         this.httpClient = httpClient;
         headers = httpClient.getCommonHeader();
@@ -108,7 +110,7 @@ public abstract class TestsBase {
     protected String executeQuery(String api, String payLoad, Map<String, String> headers, String token) {
         ClientResponse clientResponse = httpClient.send(this.getHttpMethod(), api, payLoad, headers, token);
         logCorrelationIdWithFunctionName(clientResponse.getHeaders());
-        log.info(String.format("Response status: %s, type: %s", clientResponse.getStatus(), clientResponse.getType().toString()));
+        LOGGER.log( Level.INFO, String.format("Response status: %s, type: %s", clientResponse.getStatus(), clientResponse.getType().toString()));
         assertEquals(MediaType.APPLICATION_JSON, clientResponse.getType().toString());
         return clientResponse.getEntity(String.class);
     }
@@ -126,14 +128,14 @@ public abstract class TestsBase {
     }
 
     private <T extends ResponseBase> T getResponse(ClientResponse clientResponse, Class<T> typeParameterClass) {
-        if (clientResponse.getType() == null || log == null){
+        if (clientResponse.getType() == null || LOGGER == null){
             int i = 0;
         }
-        log.info(String.format("Response status: %s", clientResponse.getStatus()));
+        LOGGER.log( Level.INFO, String.format("Response status: %s", clientResponse.getStatus()));
         if(clientResponse.getType() != null){
-            log.info(String.format("Response type: %s", clientResponse.getType().toString()));
+            LOGGER.log( Level.INFO, String.format("Response type: %s", clientResponse.getType().toString()));
         }else {
-            log.info("Got response type: null");
+            LOGGER.log( Level.INFO,"Got response type: null");
         }
         assertTrue(clientResponse.getType().toString().contains(MediaType.APPLICATION_JSON));
         String responseEntity = clientResponse.getEntity(String.class);
@@ -141,7 +143,7 @@ public abstract class TestsBase {
         T response = new Gson().fromJson(responseEntity, typeParameterClass);
         response.setHeaders(clientResponse.getHeaders());
         response.setResponseCode(clientResponse.getStatus());
-        log.info(String.format("Response body: %s\nCorrelation id: %s\nResponse code: %s", beautifyJsonString(responseEntity), response.getHeaders().get("correlation-id"), response.getResponseCode()));
+        LOGGER.log( Level.INFO, String.format("Response body: %s\nCorrelation id: %s\nResponse code: %s", beautifyJsonString(responseEntity), response.getHeaders().get("correlation-id"), response.getResponseCode()));
         return response;
     }
 
@@ -152,14 +154,14 @@ public abstract class TestsBase {
     protected ClientResponse executeRequest(String method, String api, Map<String, String> headers, String token) {
         ClientResponse clientResponse = httpClient.send(method, api, null, headers, token);
         if (clientResponse.getType() != null) {
-            log.info(String.format("Response status: %s, type: %s", clientResponse.getStatus(), clientResponse.getType().toString()));
+            LOGGER.log( Level.INFO, String.format("Response status: %s, type: %s", clientResponse.getStatus(), clientResponse.getType().toString()));
         }
         logCorrelationIdWithFunctionName(clientResponse.getHeaders());
         return clientResponse;
     }
 
     private void logCorrelationIdWithFunctionName(MultivaluedMap<String, String> headers) {
-        log.info(String.format("Scenario Name: %s, Correlation-Id: %s", scenario.getId(), headers.get("correlation-id")));
+        LOGGER.log( Level.INFO, String.format("Scenario Name: %s, Correlation-Id: %s", scenario.getId(), headers.get("correlation-id")));
     }
 
     protected String getTenantMapping(String tenant) {
@@ -200,10 +202,10 @@ public abstract class TestsBase {
             List<String> recordIds = schemaRecords.get(kind);
             for (String id : recordIds) {
                 ClientResponse clientResponse = httpClient.send(HttpMethod.DELETE, getStorageBaseURL() + "records/" +id,payload,headers, httpClient.getAccessToken());
-                log.info(String.format("Deleted record with id: %s\nHttpMethod: %s\nStorage base URL: %s\nRequest body: %s\nCorrelation id: %s\nStatus code: %s",  id, HttpMethod.DELETE, getStorageBaseURL(), beautifyJsonString(payload), clientResponse.getHeaders().get("correlation-id"), clientResponse.getStatus()));
+                LOGGER.log( Level.INFO, String.format("Deleted record with id: %s\nHttpMethod: %s\nStorage base URL: %s\nRequest body: %s\nCorrelation id: %s\nStatus code: %s",  id, HttpMethod.DELETE, getStorageBaseURL(), beautifyJsonString(payload), clientResponse.getHeaders().get("correlation-id"), clientResponse.getStatus()));
             }
             ClientResponse clientResponse = httpClient.send(HttpMethod.DELETE, getIndexerBaseURL() + "index?kind=" +kind,payload,headers, httpClient.getAccessToken());
-            log.info(String.format("Deleted index with kind: %s\nHttpMethod: %s\nIndexer base URL: %s\nRequest body: %s\nCorrelation id: %s\nStatus code: %s",  kind, HttpMethod.DELETE, getIndexerBaseURL(), beautifyJsonString(payload), clientResponse.getHeaders().get("correlation-id"), clientResponse.getStatus()));
+            LOGGER.log( Level.INFO, String.format("Deleted index with kind: %s\nHttpMethod: %s\nIndexer base URL: %s\nRequest body: %s\nCorrelation id: %s\nStatus code: %s",  kind, HttpMethod.DELETE, getIndexerBaseURL(), beautifyJsonString(payload), clientResponse.getHeaders().get("correlation-id"), clientResponse.getStatus()));
         }
 
     }
@@ -250,9 +252,9 @@ public abstract class TestsBase {
             }
             schemaRecords.put(actualKind,recordsForKind);
             String payLoad = new Gson().toJson(records);
-            log.info( "Start ingesting records= %s", payLoad);
+            LOGGER.log( Level.INFO, String.format("Start ingesting records= %s", payLoad));
             ClientResponse clientResponse = httpClient.send(HttpMethod.PUT, getStorageBaseURL() + "records", payLoad, headers, httpClient.getAccessToken());
-            log.info(String.format("Response body: %s\n Correlation id: %s\nStatus code: %s",beautifyJsonString(clientResponse.getEntity(String.class)) , clientResponse.getHeaders().get("correlation-id"), clientResponse.getStatus()));
+            LOGGER.log( Level.INFO, String.format("Response body: %s\n Correlation id: %s\nStatus code: %s",beautifyJsonString(clientResponse.getEntity(String.class)) , clientResponse.getHeaders().get("correlation-id"), clientResponse.getStatus()));
             assertEquals(201, clientResponse.getStatus());
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 public void run() {

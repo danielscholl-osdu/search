@@ -4,31 +4,25 @@
 
 package org.opengroup.osdu.search.provider.ibm.security;
 
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
 
+@Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
-		http
-        .csrf().disable()
-        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER);
-        // .and()
-        // .authorizeRequests()
-        //     .antMatchers("/", "/index.html",
-        //             "/v2/api-docs",
-        //             "/health/**",
-        //             "/configuration/ui",
-        //             "/swagger-resources/**",
-        //             "/configuration/security",
-        //             "/swagger",
-        //             "/swagger-ui.html",
-        //             "/webjars/**").permitAll()
-        //     .anyRequest().authenticated().and().oauth2ResourceServer().jwt();
+@EnableMethodSecurity
+public class SecurityConfig {
+
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http)  throws Exception {
+		return http
+				.csrf(AbstractHttpConfigurer::disable)
+				.sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.NEVER))
+				.build();  //AuthN is disabled. AuthN is handled by sidecar proxy
 	}
 }

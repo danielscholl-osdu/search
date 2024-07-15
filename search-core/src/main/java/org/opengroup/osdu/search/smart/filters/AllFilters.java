@@ -18,8 +18,8 @@ import java.io.IOException;
 import java.util.*;
 
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 import org.opengroup.osdu.search.provider.interfaces.ICrossTenantInfoService;
 import org.opengroup.osdu.search.smart.attributes.AttributeLoader;

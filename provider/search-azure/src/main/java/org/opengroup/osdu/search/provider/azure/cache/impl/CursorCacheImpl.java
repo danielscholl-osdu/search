@@ -14,7 +14,7 @@
 
 package org.opengroup.osdu.search.provider.azure.cache.impl;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;

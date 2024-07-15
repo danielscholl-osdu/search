@@ -25,11 +25,11 @@ import org.springframework.context.annotation.PropertySource;
 		org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
 		org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration.class})
 @PropertySource("classpath:swagger.properties")
-public class SearchApplication {
+public class SearchAzureApplication {
 
 	public static void main(String[] args) {
 
-		SpringApplication.run(SearchApplication.class, args);
+		SpringApplication.run(SearchAzureApplication.class, args);
 
 	}
 

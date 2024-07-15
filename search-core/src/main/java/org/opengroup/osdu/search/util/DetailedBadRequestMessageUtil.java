@@ -51,7 +51,7 @@ public class DetailedBadRequestMessageUtil implements IDetailedBadRequestMessage
                 try {
                     InputStream content = entity.getContent();
                     JsonNode errorNode = objectMapper.readValue(content, JsonNode.class);
-                    JsonNode reasonNode = errorNode.findValue("reason");
+                    JsonNode reasonNode = errorNode.findValue("root_cause").findValue("reason");
                     String reasonMessage = reasonNode.textValue();
                     if (StringUtils.isNotEmpty(reasonMessage)) {
                         stringJoiner.add(reasonMessage);

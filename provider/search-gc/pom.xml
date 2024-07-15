@@ -36,7 +36,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
-        <spring-webmvc.version>5.3.22</spring-webmvc.version>
+        <spring-webmvc.version>6.3.0</spring-webmvc.version>
     </properties>
 
     <dependencyManagement>
@@ -50,17 +50,12 @@
                         <artifactId>spring-boot-starter-tomcat</artifactId>
                     </exclusion>
                 </exclusions>
-                <version>2.6.6</version>
+                <version>${spring-boot.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
-                <artifactId>spring-security-web</artifactId>
-                <version>5.7.11</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.security</groupId>
-                <artifactId>spring-security-core</artifactId>
-                <version>5.7.11</version>
+                <artifactId>spring-security-bom</artifactId>
+                <version>6.3.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -68,8 +63,8 @@
     <dependencies>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
-            <artifactId>core-lib-gc</artifactId>
-            <version>0.26.0</version>
+            <artifactId>core-lib-gc-spring6</artifactId>
+            <version>0.27.0-rc3</version>
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
@@ -84,7 +79,7 @@
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
-            <artifactId>os-core-common</artifactId>
+            <artifactId>os-core-common-spring6</artifactId>
             <version>${osdu.oscorecommon.version}</version>
             <exclusions>
                 <exclusion>
@@ -106,6 +101,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-inline</artifactId>
+            <version>5.2.0</version>
             <scope>test</scope>
         </dependency>
         <!--Elasticsearch-->
@@ -122,10 +118,10 @@
             <artifactId>elasticsearch-rest-high-level-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
             <scope>test</scope>
-            <version>2.0.1</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback.contrib</groupId>
@@ -140,7 +136,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-            <version>${spring-webmvc.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -157,7 +152,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.7.4</version>
+                <version>${spring-boot.version}</version>
                 <configuration>
                     <classifier>spring-boot</classifier>
                     <mainClass>

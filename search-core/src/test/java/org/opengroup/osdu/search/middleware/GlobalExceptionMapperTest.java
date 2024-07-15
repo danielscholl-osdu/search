@@ -30,7 +30,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 
 
-import javax.validation.ValidationException;
+import jakarta.validation.ValidationException;
 
 import java.io.IOException;
 

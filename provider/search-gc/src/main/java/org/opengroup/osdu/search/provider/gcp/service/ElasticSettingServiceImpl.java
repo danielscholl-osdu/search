@@ -38,7 +38,7 @@ import org.springframework.stereotype.Service;
 public class ElasticSettingServiceImpl implements IElasticSettingService {
 
   private final SearchConfigurationProperties searchConfigurationProperties;
-  private final javax.inject.Provider<ITenantInfoService> tenantInfoServiceProvider;
+  private final jakarta.inject.Provider<ITenantInfoService> tenantInfoServiceProvider;
   private final IElasticRepository elasticRepository;
   private final IElasticCredentialsCache<String, ClusterSettings> elasticCredentialCache;
   private final JaxRsDpsLog log;

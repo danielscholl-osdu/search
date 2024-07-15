@@ -16,9 +16,9 @@ package org.opengroup.osdu.search.middleware;
 
 import java.io.IOException;
 
-import javax.inject.Inject;
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.inject.Inject;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;

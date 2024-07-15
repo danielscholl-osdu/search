@@ -50,7 +50,6 @@ stages:
         provider/search-azure/pom.xml
         provider/search-azure/target/*-spring-boot.jar
       copyFileContentsToFlatten: |
-        provider/search-byoc/target/*-spring-boot.jar
         provider/search-gc/target/*-spring-boot.jar
         provider/search-gc/src/main/appengine/app.yaml
         provider/search-gc/src/main/resources/application.properties

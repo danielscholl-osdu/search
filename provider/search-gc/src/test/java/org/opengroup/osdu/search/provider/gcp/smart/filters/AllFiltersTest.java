@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 
 import com.google.common.collect.Ordering;
 import org.junit.After;

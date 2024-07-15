@@ -17,19 +17,25 @@
 
 package org.opengroup.osdu.search.provider.gcp.security;
 
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.SecurityFilterChain;
 
+@Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-public class GcpSecurityConfig extends WebSecurityConfigurerAdapter {
+@EnableMethodSecurity
+public class GcpSecurityConfig {
 
-  @Override
-  protected void configure(HttpSecurity httpSecurity) throws Exception {
-    httpSecurity
-        .httpBasic().disable()
-        .csrf().disable();  //disable default authN. AuthN handled by endpoints proxy
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http)  throws Exception {
+    return http
+            .csrf(AbstractHttpConfigurer::disable)
+            .httpBasic(Customizer.withDefaults())
+            .build();  //disable default authN. AuthN handled by endpoints proxy
   }
 }

@@ -16,7 +16,7 @@ package org.opengroup.osdu.search.smart.models;
 
 import lombok.Data;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 

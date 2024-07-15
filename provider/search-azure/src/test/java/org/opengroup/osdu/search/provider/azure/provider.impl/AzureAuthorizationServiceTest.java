@@ -46,7 +46,6 @@ public class AzureAuthorizationServiceTest {
 
     @Test
     public void should_throwAppException_when_givenGroupDoesNotExistForUser() {
-        when(groups.any(any())).thenReturn(false);
         when(entitlementsService.getGroups(any())).thenReturn(groups);
         DpsHeaders dpsHeaders = new DpsHeaders();
 
@@ -55,12 +54,10 @@ public class AzureAuthorizationServiceTest {
 
     @Test
     public void should_returnGroupsWithUserEmail_when_givenGroupExistsForUser() {
-        when(groups.any(any())).thenReturn(true);
+        String groupNames[]= {"a", "b"};
+        when(groups.any(groupNames)).thenReturn(true);
         when(entitlementsService.getGroups(any())).thenReturn(groups);
-
-        AuthorizationResponse authorizationResponse = sut.authorizeAny(new DpsHeaders(), "a", "b");
-
-        assertNotNull(authorizationResponse);
+        assertNotNull(sut.authorizeAny(new DpsHeaders(), groupNames));
     }
 
     @Test

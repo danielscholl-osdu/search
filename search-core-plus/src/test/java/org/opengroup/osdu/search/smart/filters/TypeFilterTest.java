@@ -41,7 +41,7 @@ import org.opengroup.osdu.search.smart.models.Kinds;
 public class TypeFilterTest {
 
   @Mock
-  javax.inject.Provider<ICrossTenantInfoService> tenantInfoServiceProvide;
+  jakarta.inject.Provider<ICrossTenantInfoService> tenantInfoServiceProvide;
 
   @Mock
   private Kinds kindRetriever;

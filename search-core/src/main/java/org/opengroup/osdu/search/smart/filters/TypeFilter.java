@@ -19,8 +19,8 @@ import org.opengroup.osdu.search.smart.models.Kinds;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;

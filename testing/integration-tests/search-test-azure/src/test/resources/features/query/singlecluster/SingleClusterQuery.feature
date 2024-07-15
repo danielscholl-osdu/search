@@ -51,10 +51,10 @@ Feature: Search with different queries
     Then I should get in response <count> records with <returned_fields>
 
     Examples:
-      | tenant    | kind                                                      | number  | query                                | limit | offset | returned_fields | count |
-      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | 300     | "data.OriginalOperator:OFFICE4"      | None  | None   | All             | 1     |
-      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | 300     | None                                 | 0     | None   | NULL            | 3     |
-      | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | 300     | None                                 | 0     | None   | NULL            | 3     |
+      | tenant    | kind                                                      | number | query                           | limit | offset | returned_fields | count |
+      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | 250    | "data.OriginalOperator:OFFICE4" | None  | None   | All             | 1     |
+      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | 250    | None                            | 0     | None   | NULL            | 3     |
+      | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | 250    | None                            | 0     | None   | NULL            | 3     |
 
 
   Scenario Outline: Search data in a given a kind with invalid inputs

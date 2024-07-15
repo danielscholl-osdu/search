@@ -27,6 +27,6 @@ public class ConfigModule {
 
   @Bean
   ResteasyHttpHeaders resteasyHttpHeaders() {
-    return new ResteasyHttpHeaders(new MultivaluedHashMap<>());
+    return new ResteasyHttpHeaders(new MultivaluedHashMap<String, String>() );
   }
 }

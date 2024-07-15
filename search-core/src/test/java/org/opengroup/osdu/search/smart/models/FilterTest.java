@@ -16,9 +16,9 @@ package org.opengroup.osdu.search.smart.models;
 
 import org.junit.Test;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import java.util.Set;
 
 import static junit.framework.TestCase.assertEquals;

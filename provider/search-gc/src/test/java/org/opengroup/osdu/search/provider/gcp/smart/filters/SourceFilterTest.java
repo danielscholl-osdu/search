@@ -38,7 +38,7 @@ public class SourceFilterTest {
     @Mock
     private Kinds kindRetriever;
     @Mock
-    javax.inject.Provider<ICrossTenantInfoService> tenantInfoServiceProvide;
+    jakarta.inject.Provider<ICrossTenantInfoService> tenantInfoServiceProvide;
     @InjectMocks
     private SourceFilter sut;
 

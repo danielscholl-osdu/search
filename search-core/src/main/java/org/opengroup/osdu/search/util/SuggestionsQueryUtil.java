@@ -16,7 +16,7 @@ import static org.opengroup.osdu.search.config.SearchConfigurationProperties.AUT
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @Component
 public class SuggestionsQueryUtil {

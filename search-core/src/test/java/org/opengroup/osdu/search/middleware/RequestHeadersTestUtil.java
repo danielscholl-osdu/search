@@ -9,7 +9,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class RequestHeadersTestUtil {
 	public static void setupRequestHeaderMock(Map<String, String> headers, HttpServletRequest request) {

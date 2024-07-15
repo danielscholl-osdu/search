@@ -23,7 +23,7 @@ import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.search.provider.interfaces.ICrossTenantInfoService;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.LinkedList;
 import java.util.List;
 
