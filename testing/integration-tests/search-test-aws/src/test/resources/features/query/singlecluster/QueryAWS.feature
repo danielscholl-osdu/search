@@ -3,11 +3,12 @@ Feature: Search with different queries
 
   Background:
     Given the schema is created with the following kind
-      | kind                                           | schemaFile |
-      | tenant1:search<timestamp>:test-data--Integration:1.0.1    | records_1  |
-      | tenant1:search<timestamp>:test-data2--Integration:1.0.2    | records_2  |
-      | tenant1:well<timestamp>:test-data3--Integration:1.0.3      | records_4  |
+      | kind                                                          | schemaFile |
+      | tenant1:search<timestamp>:test-data--Integration:1.0.1        | records_1  |
+      | tenant1:search<timestamp>:test-data2--Integration:1.0.2       | records_2  |
+      | tenant1:well<timestamp>:test-data3--Integration:1.0.3         | records_4  |
 
+  @default
   Scenario Outline: Ingest records for the given kind
     When I ingest records with the <recordFile> with <acl> for a given <kind>
     Examples:
@@ -15,6 +16,8 @@ Feature: Search with different queries
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "records_1" |  "data.default.viewers@tenant1"|
       | "tenant1:search<timestamp>:test-data2--Integration:1.0.2"  | "records_2" | "data.default.viewers@tenant1"|
       | "tenant1:well<timestamp>:test-data3--Integration:1.0.3"   | "records_4" | "data.default.viewers@tenant1"  |
+
+  @default
   Scenario Outline: Search data in a given kind
     When I send <query> with <kind>
     And I limit the count of returned results to <limit>
@@ -41,6 +44,7 @@ Feature: Search with different queries
       | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | ""data.OriginalOperator:OFFICE2" \| data.OriginalOperator:OFFICE3" | None  | None   | All             | 1     |
       | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | "data.Well\*:(Data Lake Cloud)"      | None  | None   | All             | 3     |
 
+  @default
   Scenario Outline: Search data in a given singe kind or multi-kinds that index (indices) of one or more kinds do not exist
     When I send <query> with <kind>
     And I limit the count of returned results to <limit>
@@ -55,7 +59,7 @@ Feature: Search with different queries
       | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"                          | None      | 0     | None   | NULL            | 3     |
       | "tenant1" | "tenant1:search<timestamp>:test-data--non-existing:1.0.1,tenant1:search<timestamp>:test-data--Integration:1.0.1" | None | 0 | None | NULL          | 3     |
 
-
+  @default
   Scenario Outline: Search data in a given kind with hundreds of copies
     When I send <query> with <number> copies of <kind>
     And I limit the count of returned results to <limit>
@@ -70,6 +74,7 @@ Feature: Search with different queries
       | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | 295     | None                                 | 0     | None   | NULL            | 3     |
       | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | 295     | None                                 | 0     | None   | NULL            | 3     |
 
+  @default
   Scenario Outline: Search data in a given a kind with invalid inputs
     When I send <query> with <kind>
     And I limit the count of returned results to <limit>
@@ -87,6 +92,7 @@ Feature: Search with different queries
       | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None  | 1     | -1     | 400           | "Bad Request"   | "Invalid parameters were given on search request"   | "'offset' must be equal or greater than 0" |
       | "tenant2" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None  | None  | None   | 401           | "Access denied" | "The user is not authorized to perform this action" | ""                                         |
 
+  @default
   Scenario Outline: Search data across the kinds with bounding box inputs
     When I send <query> with <kind>
     And I apply geographical query on field <field>
@@ -100,6 +106,7 @@ Feature: Search with different queries
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | "data.Location"         | 45                | -100               | 0                     | 0                      | 1     |
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | "data.Location"         | 10                | -100               | 0                     | 0                      | 0     |
 
+  @default
   Scenario Outline: Search data across the kinds with invalid bounding box inputs
     When I send <query> with <kind>
     And I apply geographical query on field <field>
@@ -115,6 +122,7 @@ Feature: Search with different queries
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | "data.Location" | 0                 | -100               | 10                    | 0                      | 400           | "Bad Request" | "Invalid parameters were given on search request" | "top corner is below bottom corner: 0.0 vs. 10.0"                        |
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | "data.Location" | None              | None               | 0                     | 0                      | 400           | "Bad Request" | "Invalid parameters were given on search request" | "Invalid payload"                                                        |
 
+  @default
   Scenario Outline: Search data across the kinds with distance inputs
     When I send <query> with <kind>
     And I apply geographical query on field <field>
@@ -126,6 +134,7 @@ Feature: Search with different queries
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "Under development" | "data.Location" | 0        | 0         | 20000000 | 3     |
       | "tenant1:search<timestamp>:*:*"        | "TEXAS OR TX"       | "data.Location" | 45       | -100      | 20000000 | 2     |
 
+  @default
   Scenario Outline: Search data across the kinds with invalid distance inputs
     When I send <query> with <kind>
     And I apply geographical query on field <field>
@@ -139,6 +148,7 @@ Feature: Search with different queries
       | "tenant1:search<timestamp>:*:*" | "Harris"       | "ZipCode"       | -45      | -400      | 1000     | 400           | "Bad Request" | "Invalid parameters were given on search request" | "'longitude' value is out of the range [-360, 360]" |
       | "tenant1:search<timestamp>:*:*" | "Harris"       | "ZipCode"       | 4        | 2         | 0        | 400           | "Bad Request" | "Invalid parameters were given on search request" | "'distance' must be greater than 0" |
 
+  @default
   Scenario Outline: Search data across the kinds
     When I send <query> with <kind>
     And I limit the count of returned results to <limit>
@@ -162,7 +172,7 @@ Feature: Search with different queries
       | "tenant1" | "tenant1:search<timestamp>:*:*" | "_exists_:data.Basin"                      | None  | None   | All             | 4     |
       | "tenant1" | "tenant1:search<timestamp>:*:*" | "data.Well\*:"Data Lake Cloud""            | None  | None   | All             | 5     |
 
-
+  @default
   Scenario Outline: Search data across the kinds with bounding box inputs
     When I send <query> with <kind>
     And I apply geographical query on field <field>
@@ -174,6 +184,7 @@ Feature: Search with different queries
       | "tenant1:search<timestamp>:*:*" | None  | "data.Location" | 45                | -100               | 0                     | 0                      | 3     |
       | "tenant1:search<timestamp>:*:*" | None  | "data.Location" | 10                | -100               | 0                     | 0                      | 0     |
 
+  @default
   Scenario Outline: Search data across the kinds with geo polygon inputs
     When I send <query> with <kind>
     And define geo polygon with following points <points_list>
@@ -186,6 +197,7 @@ Feature: Search with different queries
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | "data.Location"         | (26.12362;-112.226716)  , (26.595873;-68.457186) , (52.273184;-93.593904)                                          | 1     |
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None      | "data.Location"         | (14.29056;72.18936)     , (22.13762;72.18936)    , (22.13762;77.18936) , (14.29056;77.18936) , (14.29056;72.18936) | 1     |
 
+  @default
   Scenario Outline: Search data across the kinds with invalid geo polygon inputs
     When I send <query> with <kind>
     And define geo polygon with following points <points_list>
@@ -197,6 +209,7 @@ Feature: Search with different queries
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None  | "data.Location" | (26.595873;-68.457186)   , (52.273184;-93.593904)                          | 400           | "Bad Request" | "Invalid parameters were given on search request" | "too few points defined for geo polygon query"   |
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None  | "data.Location" | (516.595873;-68.457186)  , (52.273184;-94.593904) , (95.273184;-93.593904) | 400           | "Bad Request" | "Invalid parameters were given on search request" | "'latitude' value is out of the range [-90, 90]" |
 
+  @default
   Scenario Outline: Search data and sort the results with the given sort fields and order
     When I send <query> with <kind>
     And I want the results sorted by <sort>
@@ -210,6 +223,7 @@ Feature: Search with different queries
       | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | None  | {"field":["nested(data.FacilityOperators, TerminationDateTime, min)"],"order":["DESC"]}   | "tenant1:well<timestamp>:2" | "tenant1:well<timestamp>:1" |
       | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | None  | {"field":["nested(data.VerticalMeasurements, VerticalMeasurement, min)"],"order":["ASC"], "filter": ["nested(data.VerticalMeasurements, (VerticalMeasurement:(>30)))"]} | "tenant1:well<timestamp>:1" | "tenant1:well<timestamp>:2" |
 
+  @default
   Scenario Outline: Search data in a given kind with invalid sort field
     When I send <query> with <kind>
     And I want the results sorted by <sort>
@@ -222,6 +236,7 @@ Feature: Search with different queries
       | "tenant1:search<timestamp>:*:*" | None  | {"field":["id","data.Rank"],"order":["DESC"]} | 400           | "Bad Request" | "Invalid parameters were given on search request" | "'sort.field' and 'sort.order' size do not match"                 |
       | "tenant1:search<timestamp>:*:*" | None  | {"field":["id"],"order":[null]}               | 400           | "Bad Request" | "Invalid parameters were given on search request" | "Not a valid order option. It can only be either 'ASC' or 'DESC'" |
 
+  @default
   Scenario Outline: Search data in a given kind with different searchAs modes
     When I send <query> with <kind>
     And I want to search as owner <is_owner>
@@ -236,6 +251,7 @@ Feature: Search with different queries
       | "tenant1:search<timestamp>:*:*"     | "data.OriginalOperator:OFFICE4" | true     | 1     |
       | "tenant1:search<timestamp>:*:*"     | None      | None     | 6     |
 
+  @default
   Scenario Outline: Search data in a given kind with aggregateBy field
     When I send <query> with <kind>
     And I want to aggregate by <aggregateBy>
@@ -250,6 +266,7 @@ Feature: Search with different queries
       | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | None                                                           | "nested(data.VerticalMeasurements, VerticalMeasurement)" | 2     |
       | "tenant1:well<timestamp>:test-data3--Integration:1.0.3" | nested(data.VerticalMeasurements, (VerticalMeasurement:(<15))) | "nested(data.VerticalMeasurements, VerticalMeasurement)" | 1     |
 
+  @default
   Scenario Outline: Search data in a given kind with nested queries
     When I send <query> with <kind>
     And I send request to tenant <tenant>

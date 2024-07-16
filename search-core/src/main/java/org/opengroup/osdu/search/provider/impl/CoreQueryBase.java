@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.inject.Inject;
@@ -53,9 +54,12 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.suggest.SuggestBuilder;
+import org.opengroup.osdu.core.common.feature.IFeatureFlag;
+import org.opengroup.osdu.core.common.http.CollaborationContextFactory;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.entitlements.AclRole;
 import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.core.common.model.http.CollaborationContext;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.AggregationResponse;
 import org.opengroup.osdu.core.common.model.search.Query;
@@ -74,6 +78,9 @@ import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.SuggestionsQueryUtil;
 import org.opengroup.osdu.search.util.IQueryPerformanceLogger;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import static org.opengroup.osdu.core.common.Constants.COLLABORATIONS_FEATURE_NAME;
+import static org.opengroup.osdu.core.common.model.search.RecordMetaAttribute.COLLABORATION_ID;
 
 abstract class CoreQueryBase {
 
@@ -101,6 +108,10 @@ abstract class CoreQueryBase {
     private GeoQueryBuilder geoQueryBuilder;
     @Autowired
     private SuggestionsQueryUtil suggestionsQueryUtil;
+    @Autowired
+    public IFeatureFlag collaborationFeatureFlag;
+    @Autowired
+    private CollaborationContextFactory collaborationContextFactory;
 
     // if returnedField contains property matching from excludes than query result will NOT include that property
     private final Set<String> excludes = new HashSet<>(Arrays.asList(RecordMetaAttribute.X_ACL.getValue()));
@@ -126,6 +137,18 @@ abstract class CoreQueryBase {
             QueryBuilder spatialQueryBuilder = this.geoQueryBuilder.getGeoQuery(spatialFilter);
             if (spatialQueryBuilder != null) {
                 queryBuilder.filter().add(spatialQueryBuilder);
+            }
+        }
+
+        if (collaborationFeatureFlag.isFeatureEnabled(COLLABORATIONS_FEATURE_NAME)) {
+            Optional<CollaborationContext> collaborationContext = collaborationContextFactory.create(dpsHeaders.getCollaboration());
+            if (collaborationContext.isPresent()) {
+                QueryBuilder termQueryBuilder = QueryBuilders.termsQuery(COLLABORATION_ID.getValue(),
+                    collaborationContext.get().getId());
+                queryBuilder.must(termQueryBuilder);
+            } else {
+                QueryBuilder existsQueryBuilder = QueryBuilders.existsQuery(COLLABORATION_ID.getValue());
+                queryBuilder.mustNot(existsQueryBuilder);
             }
         }
 

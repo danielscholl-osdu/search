@@ -16,8 +16,6 @@ package org.opengroup.osdu.search.provider.interfaces;
 
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryResponse;
-import org.opengroup.osdu.core.common.model.search.ClusterSettings;
-
 public interface IQueryService {
 
     QueryResponse queryIndex(QueryRequest searchRequest) throws Exception;
