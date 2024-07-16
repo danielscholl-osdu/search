@@ -31,11 +31,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.apache.http.ContentTooLongException;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ElasticsearchStatusException;
@@ -72,9 +77,11 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.opengroup.osdu.core.common.http.CollaborationContextFactory;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppError;
 import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.core.common.model.http.CollaborationContext;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.Point;
 import org.opengroup.osdu.core.common.model.search.Polygon;
@@ -105,6 +112,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CoreQueryServiceImplTest {
+
+    private static final String COLLABORATIONS_FEATURE_NAME = "collaborations-enabled";
+    private static final String COLLABORATION_ID = "c3cc62d5-0ff6-4931-b4e8-51e5e72667fc";
+    private static final String COLLABORATION_APPLICATION = "pws";
     private final String DATA_GROUPS = "X-Data-Groups";
     private final String DATA_GROUP_1 = "data.welldb.viewers@common.evd.cloud.slb-ds.com";
     private final String DATA_GROUP_2 = "data.npd.viewers@common.evd.cloud.slb-ds.com";
@@ -193,6 +204,8 @@ public class CoreQueryServiceImplTest {
 
     @Spy
     private GeoQueryBuilder geoQueryBuilder = new GeoQueryBuilder();
+    @Mock
+    private CollaborationContextFactory collaborationContextFactory;
 
     @InjectMocks
     private CoreQueryServiceImpl sut;
@@ -690,6 +703,30 @@ public class CoreQueryServiceImplTest {
         Assert.assertEquals(expectedJson, actualJson);
     }
 
+    @Test
+    public void should_work_with_x_collaboration_when_feature_flag_enabled() throws IOException {
+        String xCollaboration = String.format("id=%s,application=%s", COLLABORATION_ID, COLLABORATION_APPLICATION);
+        CollaborationContext collaborationContext = new CollaborationContext(
+            UUID.fromString(COLLABORATION_ID), COLLABORATION_APPLICATION, Map.of());
+        Optional<CollaborationContext> optionalCollaborationContext = Optional.of(collaborationContext);
+        when(autocompleteFeatureFlag.isFeatureEnabled(COLLABORATIONS_FEATURE_NAME)).thenReturn(true);
+        when(dpsHeaders.getCollaboration()).thenReturn(xCollaboration);
+        when(collaborationContextFactory.create(xCollaboration)).thenReturn(optionalCollaborationContext);
+        String expected = getStringFromFile("src/test/resources/testqueries/expected/simple-query-with-x-collaboration.json");
+        QueryBuilder queryBuilder = this.sut.buildQuery(null, null, false);
+        String response = queryBuilder.toString();
+        assertEquals(expected, response);
+    }
+
+    @Test
+    public void should_work_without_x_collaboration_when_feature_flag_enabled() throws IOException {
+        when(autocompleteFeatureFlag.isFeatureEnabled(COLLABORATIONS_FEATURE_NAME)).thenReturn(true);
+        String expected = getStringFromFile("src/test/resources/testqueries/expected/simple-query-without-x-collaboration.json");
+        QueryBuilder queryBuilder = this.sut.buildQuery(null, null, false);
+        String response = queryBuilder.toString();
+        assertEquals(expected, response);
+    }
+
     private Map<String, HighlightField> getHighlightFields() {
         Text[] fragments = {new Text(text)};
         HighlightField highlightField = new HighlightField(name, fragments);
@@ -777,5 +814,9 @@ public class CoreQueryServiceImplTest {
         assertEquals(2, acls.size());
         assertTrue(acls.contains(DATA_GROUP_1));
         assertTrue(acls.contains(DATA_GROUP_2));
+    }
+
+    private String getStringFromFile(String path) throws IOException {
+        return new String(Files.readAllBytes(Paths.get(path))).replaceAll("\\r\\n|\\n|\\r", "\n").trim();
     }
 }

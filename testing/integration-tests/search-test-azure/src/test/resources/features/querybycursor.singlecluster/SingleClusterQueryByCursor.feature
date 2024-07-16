@@ -7,6 +7,7 @@ Feature: Search recursively on cursor with different queries
       | tenant1:search<timestamp>:test-data--Integration:1.0.1    | records_1  |
       | tenant1:search<timestamp>:test-data2--Integration:1.0.2    | records_2  |
 
+  @default
   Scenario Outline: Ingest records for the given kind
     When I ingest records with the <recordFile> with <acl> for a given <kind>
     Examples:
@@ -14,6 +15,7 @@ Feature: Search recursively on cursor with different queries
       | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "records_1" |  "data.default.viewers@tenant1" |
       | "tenant1:search<timestamp>:test-data2--Integration:1.0.2"  | "records_2" | "data.default.viewers@tenant1"  |
 
+  @default
   Scenario Outline: Search recursively page by page data across the kinds
     When I send <query> with <kind>
     And I limit the count of returned results to <limit>
@@ -31,6 +33,7 @@ Feature: Search recursively on cursor with different queries
       | "tenant1" | "tenant1" | "tenant1:search<timestamp>:*:*" | "XdQQ6GCSNSBLTESTFAIL"    | 1     | All             | 0           | 0           |
       | "tenant1" | "tenant1" | "tenant1:search<timestamp>:*:*" | "\"OFFICE2\" \| OFFICE3 \| OFFICE5" | 1     | All             | 1           | 1           |
 
+  @default
   Scenario Outline: Search recursively page by page data across the kinds with invalid inputs
     When I send <query> with <kind>
     And I limit the count of returned results to <limit>
@@ -44,6 +47,7 @@ Feature: Search recursively on cursor with different queries
       | "tenant1" | "*:*:*"                                    | None  | 0     | 400           | "Bad Request"                 | "Invalid parameters were given on search request" | "Not a valid record kind format. Found: *:*:*"   |
       | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None  | -1    | 400           | "Bad Request"                 | "Invalid parameters were given on search request" | "'limit' must be equal or greater than 0" |
 
+  @default
   Scenario Outline:  Search recursively page by page data across the kinds with invalid inputs and headers
     When I send <query> with <kind>
     And I limit the count of returned results to <limit>
@@ -57,6 +61,7 @@ Feature: Search recursively on cursor with different queries
       | q1_tenant | q2_tenant | kind                                       | query | limit | returned_fields | first_count | response_code | reponse_type    | response_message                                    | errors |
       | "tenant1" | "tenant2" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None  | 1     | All             | 1           | 401           | "Access denied" | "The user is not authorized to perform this action" | ""     |
 
+  @default
   Scenario Outline: Search data across the kinds with bounding box inputs
     When I send <query> with <kind>
     And I apply geographical query on field <field>
@@ -72,7 +77,7 @@ Feature: Search recursively on cursor with different queries
       | "tenant1" | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None   | None  | "data.Location" | 45                | -100               | 0                     | 0                      | 2           | 0           |
       | "tenant1" | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | "data.OriginalOperator:OFFICE4" | 1     | "data.Location" | 45                | -110               | 0                     | 0                      | 1           | 0           |
 
-
+  @default
   Scenario Outline: Search data and sort the results with the given sort fields and order
     When I send <query> with <kind>
     And I want the results sorted by <sort>

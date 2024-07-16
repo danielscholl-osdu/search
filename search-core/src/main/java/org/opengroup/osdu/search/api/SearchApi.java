@@ -46,7 +46,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
-
 @RestController
 @RequestScope
 @RequestMapping("/")
@@ -58,7 +57,6 @@ public class SearchApi {
     private IQueryService queryService;
     @Inject
     private IScrollQueryService scrollQueryService;
-
 
     @Operation(summary = "${searchApi.queryRecords.summary}", description = "${searchApi.queryRecords.description}",
             security = {@SecurityRequirement(name = "Authorization")}, tags = { "search-api" })
@@ -98,7 +96,8 @@ public class SearchApi {
             nickname = SwaggerDoc.QUERY_WITH_CURSOR_OPERATION_ID,
             code = HttpServletResponse.SC_ACCEPTED,
             notes = SwaggerDoc.QUERY_WITH_CURSOR_POST_NOTES)
-    public ResponseEntity<CursorQueryResponse> queryWithCursor(@NotNull(message = SwaggerDoc.REQUEST_VALIDATION_NOT_NULL_BODY) @RequestBody @Valid CursorQueryRequest queryRequest) throws Exception {
+    public ResponseEntity<CursorQueryResponse> queryWithCursor(
+        @NotNull(message = SwaggerDoc.REQUEST_VALIDATION_NOT_NULL_BODY) @RequestBody @Valid CursorQueryRequest queryRequest) throws Exception {
         CursorQueryResponse searchResponse = scrollQueryService.queryIndex(queryRequest);
         return new ResponseEntity<CursorQueryResponse>(searchResponse, HttpStatus.OK);
     }

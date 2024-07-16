@@ -91,4 +91,9 @@ public abstract class HTTPClient {
         currentHeaders.put("data-partition-id", value);
         return currentHeaders;
     }
+
+    public static Map<String, String> addHeader(Map<String, String> currentHeaders, String headerKey, String headerValue) {
+        currentHeaders.put(headerKey, headerValue);
+        return currentHeaders;
+    }
 }

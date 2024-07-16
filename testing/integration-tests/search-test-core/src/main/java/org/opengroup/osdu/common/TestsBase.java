@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 
 import com.google.gson.reflect.TypeToken;
 import cucumber.api.DataTable;
+import org.apache.logging.log4j.util.Strings;
 import org.opengroup.osdu.core.common.model.entitlements.Acl;
 import org.opengroup.osdu.core.common.model.legal.Legal;
 import org.opengroup.osdu.core.common.model.search.Point;
@@ -35,6 +36,7 @@ import static org.opengroup.osdu.util.Utility.beautifyJsonString;
 
 
 public abstract class TestsBase {
+    private static final String X_COLLABORATION_HEADER = "x-collaboration";
     protected HTTPClient httpClient;
     protected Scenario scenario;
     protected Map<String, String> tenantMap = new HashMap<>();
@@ -49,7 +51,7 @@ public abstract class TestsBase {
     protected SpatialFilter.ByIntersection byIntersection;
     protected SpatialFilter.ByWithinPolygon byWithinPolygon;
 
-    protected static final String timeStamp = String.valueOf(System.currentTimeMillis()) ;
+    protected static final String timeStamp = String.valueOf(System.currentTimeMillis());
     private boolean dunit = false;
     private static final Logger LOGGER = Logger.getLogger(SchemaServiceClient.class.getName());
     public TestsBase(HTTPClient httpClient) {
@@ -63,6 +65,12 @@ public abstract class TestsBase {
 
     public void i_send_request_to_tenant(String tenant) {
         headers = HTTPClient.overrideHeader(headers, getTenantMapping(tenant));
+    }
+
+    public void i_send_request_with_xcollab_header(String xCollaborationHeader) {
+        if (Strings.isNotEmpty(xCollaborationHeader)) {
+            headers = HTTPClient.addHeader(headers, X_COLLABORATION_HEADER, xCollaborationHeader);
+        }
     }
 
     public void i_send_request_to_tenant(String tenant1, String tenant2) {
@@ -226,6 +234,10 @@ public abstract class TestsBase {
     }
 
     public void i_ingest_records_with_the_for_a_given(String record, String dataGroup, String kind) {
+        i_ingest_records_with_the_for_a_given_with_header(record, dataGroup, kind, "");
+    }
+
+    public void i_ingest_records_with_the_for_a_given_with_header(String record, String dataGroup, String kind, String xCollaborationHeader) {
 
         String actualKind = generateActualName(kind, timeStamp);
         List<String> recordsForKind = new ArrayList<>();
@@ -239,20 +251,23 @@ public abstract class TestsBase {
                 testRecord.put("id", generateRecordId(testRecord));
                 recordsForKind.add(testRecord.get("id").toString());
                 testRecord.put("legal", generateLegalTag());
-                String[] x_acl = {generateActualName(dataGroup,timeStamp)+"."+getEntitlementsDomain()};
+                String[] x_acl = {generateActualName(dataGroup, timeStamp) + "." + getEntitlementsDomain()};
                 Acl acl = Acl.builder().viewers(x_acl).owners(x_acl).build();
                 testRecord.put("acl", acl);
                 String[] kindParts = kind.split(":");
                 String authority = tenantMap.get(kindParts[0]);
                 String source = kindParts[1];
                 testRecord.put("authority", authority);
-                testRecord.put("source", generateActualName(source,timeStamp));
+                testRecord.put("source", generateActualName(source, timeStamp));
                 testRecord.put("createUser", "TestUser");
                 testRecord.put("createTime", createTime);
             }
-            schemaRecords.put(actualKind,recordsForKind);
+            schemaRecords.put(actualKind, recordsForKind);
             String payLoad = new Gson().toJson(records);
             LOGGER.log( Level.INFO, String.format("Start ingesting records= %s", payLoad));
+            if (Strings.isNotEmpty(xCollaborationHeader)) {
+                headers.put(X_COLLABORATION_HEADER, xCollaborationHeader);
+            }
             ClientResponse clientResponse = httpClient.send(HttpMethod.PUT, getStorageBaseURL() + "records", payLoad, headers, httpClient.getAccessToken());
             LOGGER.log( Level.INFO, String.format("Response body: %s\n Correlation id: %s\nStatus code: %s",beautifyJsonString(clientResponse.getEntity(String.class)) , clientResponse.getHeaders().get("correlation-id"), clientResponse.getStatus()));
             assertEquals(201, clientResponse.getStatus());
