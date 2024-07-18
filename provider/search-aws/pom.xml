@@ -36,8 +36,6 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
         <nimbus-jose-jwt.version>9.18</nimbus-jose-jwt.version>
-        <spring-webmvc.version>6.1.9</spring-webmvc.version>
-        <tomcat-embed-core.version>10.1.24</tomcat-embed-core.version>
     </properties>
 
 
@@ -120,7 +118,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-            <version>${spring-webmvc.version}</version>
         </dependency>
 
         <!-- Testing packages -->

@@ -34,7 +34,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
-        <osdu.corelibazure.version>0.27.0-rc2</osdu.corelibazure.version>
+        <core-lib-azure-spring6.version>0.27.0-rc3</core-lib-azure-spring6.version>
         <osdu.search-core.version>0.27.0-SNAPSHOT</osdu.search-core.version>
         <spatial4j.version>0.7</spatial4j.version>
         <log4j.version>2.21.1</log4j.version>
@@ -42,7 +42,6 @@
         <azure.appservice.plan />
         <azure.appservice.appname />
         <azure.appservice.subscription />
-        <netty.version>4.1.109.Final</netty.version>
         <guava.version>32.1.2-jre</guava.version>
         <woodstox-core.version>6.4.0</woodstox-core.version>
         <nimbus-jose-jwt.version>9.30.2</nimbus-jose-jwt.version>
@@ -50,23 +49,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- netty-bom dependency to be declared before spring-boot-dependencies,
-            to pull all netty-transitive dependencies with same version -->
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-bom</artifactId>
-                <version>${netty.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <!-- Inherit managed dependencies from core-lib-azure -->
-            <dependency>
-                <groupId>org.opengroup.osdu</groupId>
-                <artifactId>core-lib-azure-spring6</artifactId>
-                <version>${osdu.corelibazure.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -74,23 +56,19 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- Inherit managed dependencies from core-lib-azure -->
+            <dependency>
+                <groupId>org.opengroup.osdu</groupId>
+                <artifactId>core-lib-azure-spring6</artifactId>
+                <version>${core-lib-azure-spring6.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-web</artifactId>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-starter-tomcat</artifactId>
-                    </exclusion>
-                </exclusions>
                 <version>${spring-boot.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.springframework.security</groupId>
-                <artifactId>spring-security-bom</artifactId>
-                <version>6.3.0</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-jul</artifactId>
@@ -132,7 +110,7 @@
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>core-lib-azure-spring6</artifactId>
-            <version>${osdu.corelibazure.version}</version>
+            <version>${core-lib-azure-spring6.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -154,10 +132,6 @@
             <artifactId>mockito-inline</artifactId>
             <version>${mockito-inline.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -182,11 +156,6 @@
         <!-- Azure dependencies -->
         <dependency>
             <groupId>com.azure.spring</groupId>
-            <artifactId>spring-cloud-azure-autoconfigure</artifactId>
-            <version>5.13.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.azure.spring</groupId>
             <artifactId>spring-cloud-azure-starter-active-directory</artifactId>
             <version>5.13.0</version>
         </dependency>
@@ -204,35 +173,6 @@
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
             <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.projectreactor.netty</groupId>
-            <artifactId>reactor-netty</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.projectreactor.netty</groupId>
-            <artifactId>reactor-netty-http</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-xml</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>
