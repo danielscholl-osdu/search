@@ -11,7 +11,7 @@ Feature: Search with different queries
       | system-meta-data:system<timestamp>:test-data--Integration:2.0.0       | metadata_test_records_5   |
       | system-meta-data:system<timestamp>:test-data--Integration:2.1.0       | metadata_test_records_6   |
 
-
+  @default
   Scenario Outline: Ingest records for the given kind
     When I ingest records with the <recordFile> with <acl> for a given <kind>
     Examples:
@@ -23,7 +23,7 @@ Feature: Search with different queries
       | "system-meta-data:system<timestamp>:test-data--Integration:2.0.0" | "metadata_test_records_5"     | "data.default.viewers@tenant1" |
       | "system-meta-data:system<timestamp>:test-data--Integration:2.1.0" | "metadata_test_records_6"     | "data.default.viewers@tenant1" |
 
-
+  @default
   Scenario Outline: Search data in a given kind with aggregateBy field
     When I send <query> with <kind>
     And I want to aggregate by <aggregateBy>
