@@ -14,21 +14,22 @@
 
 package org.opengroup.osdu.search.util;
 
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.support.IndicesOptions;
+import co.elastic.clients.elasticsearch._types.ExpandWildcard;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import java.util.Arrays;
 
 public class SearchRequestUtil {
 
-    public static SearchRequest createSearchRequest(String... indices) {
-        // IndicesOptions ignoreUnavailable is false by default.
-        // It is possible that the indices of some kinds in the kind list may not exist in ElasticSearch
-        // Setting indicesOption ignore_unavailable to true let ElasticSearch ignore the unavailable indices in the SearchRequest
-        SearchRequest searchRequest = new SearchRequest(indices);
-        IndicesOptions option = addIgnoreUnavailable(searchRequest.indicesOptions());
-        return searchRequest.indicesOptions(option);
-    }
-
-    public static IndicesOptions addIgnoreUnavailable(IndicesOptions options) {
-        return IndicesOptions.fromOptions(true, options.allowNoIndices(), options.expandWildcardsOpen(), options.expandWildcardsClosed(), options);
-    }
+  public static SearchRequest.Builder createSearchRequest(String... indices) {
+    // IndicesOptions ignoreUnavailable is false by default.
+    // It is possible that the indices of some kinds in the kind list may not exist in ElasticSearch
+    // Setting indicesOption ignore_unavailable to true let ElasticSearch ignore the unavailable
+    // indices in the SearchRequest
+    SearchRequest.Builder searchRequest =
+        new SearchRequest.Builder()
+            .index(Arrays.toString(indices))
+            .allowNoIndices(true)
+            .expandWildcards(ExpandWildcard.Open, ExpandWildcard.Closed);
+    return searchRequest;
+  }
 }

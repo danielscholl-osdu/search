@@ -2,6 +2,11 @@ package org.opengroup.osdu.search.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import co.elastic.clients.elasticsearch._types.aggregations.AggregationBase;
+import co.elastic.clients.elasticsearch._types.aggregations.NestedAggregate;
+import co.elastic.clients.elasticsearch._types.aggregations.NestedAggregation;
+import co.elastic.clients.elasticsearch._types.aggregations.TermsAggregation;
 import lombok.AllArgsConstructor;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
@@ -27,8 +32,8 @@ public class AggregationParserUtil implements IAggregationParserUtil {
     private final SearchConfigurationProperties configurationProperties;
 
     @Override
-    public AbstractAggregationBuilder parseAggregation(String aggregation) {
-        TermsAggregationBuilder termsAggregationBuilder = new TermsAggregationBuilder(TERM_AGGREGATION_NAME);
+    public AggregationBase.AbstractBuilder parseAggregation(String aggregation) {
+        TermsAggregation.Builder termsAggregationBuilder = new TermsAggregation.Builder().name(TERM_AGGREGATION_NAME);
         if (aggregation.contains("nested(") || aggregation.contains("nested (")) {
             Matcher nestedMatcher = nestedAggregationPattern.matcher(aggregation);
             if (nestedMatcher.find()) {
@@ -44,7 +49,7 @@ public class AggregationParserUtil implements IAggregationParserUtil {
         }
     }
 
-    private AbstractAggregationBuilder parseNestedInDepth(String aggregation, TermsAggregationBuilder termsAggregationBuilder) {
+    private AggregationBase.AbstractBuilder parseNestedInDepth(String aggregation, TermsAggregation.Builder termsAggregationBuilder) {
         Matcher nestedMatcher = nestedAggregationPattern.matcher(aggregation);
         String pathGroup = null;
         String fieldGroup = null;
@@ -53,6 +58,7 @@ public class AggregationParserUtil implements IAggregationParserUtil {
             fieldGroup = nestedMatcher.group(FIELD_GROUP);
             nestedMatcher.reset(fieldGroup);
             if (nestedMatcher.find()) {
+                NestedAggregation.of(na -> na.name(NESTED_AGGREGATION_NAME).path(pathGroup).)
                 return new NestedAggregationBuilder(NESTED_AGGREGATION_NAME, pathGroup).subAggregation(parseNestedInDepth(fieldGroup, termsAggregationBuilder));
             } else {
                 NestedAggregationBuilder nestedAggregationBuilder = new NestedAggregationBuilder(NESTED_AGGREGATION_NAME, pathGroup);

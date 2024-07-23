@@ -1,5 +1,6 @@
 package org.opengroup.osdu.search.util;
 
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -9,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
-import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.springframework.stereotype.Component;
@@ -72,10 +72,10 @@ public class DetailedBadRequestMessageUtil implements IDetailedBadRequestMessage
         }
         if (msg.contains("Text fields are not optimised for operations that require per-document field data like aggregations and sorting")
             || msg.contains("can't sort on geo_shape field without using specific sorting feature, like geo_distance")) {
-            if (searchRequest.source().sorts() != null && !searchRequest.source().sorts().isEmpty()) {
+            if (searchRequest.sort() != null && !searchRequest.sort().isEmpty()) {
                 return "Sort is not supported for one or more of the requested fields";
             }
-            if (searchRequest.source().aggregations() != null && searchRequest.source().aggregations().count() > 0) {
+            if (searchRequest.aggregations()!= null && !searchRequest.aggregations().isEmpty()) {
                 return "Aggregations are not supported for one or more of the specified fields";
             }
         }

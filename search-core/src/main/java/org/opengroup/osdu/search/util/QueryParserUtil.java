@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryBase;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -92,24 +95,24 @@ public class QueryParserUtil implements IQueryParserUtil {
     private static Pattern innerNodePattern = Pattern.compile("(^\\(|^(?<operator>AND|OR|NOT)\\s*\\()(?<innernodes>.+?)\\)$");
 
     @Override
-    public QueryBuilder buildQueryBuilderFromQueryString(String query) {
+    public BoolQuery.Builder buildQueryBuilderFromQueryString(String query) {
         List<QueryNode> queryNodes = null;
         if (query.contains("nested(") || query.contains("nested (")) {
             queryNodes = parseQueryNodesFromQueryString(query);
         } else {
             queryNodes = Collections.singletonList(new QueryNode(query, null));
         }
-        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        BoolQuery.Builder boolQueryBuilder = new BoolQuery.Builder();
         for (QueryNode queryNode : queryNodes) {
             switch (queryNode.getOperator() != null ? queryNode.getOperator() : Operator.AND) {
                 case AND:
-                    boolQueryBuilder.must(queryNode.toQueryBuilder());
+                    boolQueryBuilder.must(queryNode.toQueryBuilder().build().query());
                     break;
                 case OR:
-                    boolQueryBuilder.should(queryNode.toQueryBuilder());
+                    boolQueryBuilder.should(queryNode.toQueryBuilder().build().query());
                     break;
                 case NOT:
-                    boolQueryBuilder.mustNot(queryNode.toQueryBuilder());
+                    boolQueryBuilder.mustNot(queryNode.toQueryBuilder().build().query());
                     break;
             }
         }

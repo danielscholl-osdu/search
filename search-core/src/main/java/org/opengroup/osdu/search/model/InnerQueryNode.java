@@ -1,5 +1,6 @@
 package org.opengroup.osdu.search.model;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.NestedQuery;
 import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -19,7 +20,7 @@ public class InnerQueryNode extends QueryNode {
     }
 
     @Override
-    public QueryBuilder toQueryBuilder() {
+    public NestedQuery.Builder toQueryBuilder() {
         QueryBuilder queryBuilder;
         if (Objects.nonNull(innerNodes) && !innerNodes.isEmpty()) {
             queryBuilder = new BoolQueryBuilder();

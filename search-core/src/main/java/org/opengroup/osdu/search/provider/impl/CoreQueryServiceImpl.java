@@ -14,16 +14,15 @@
 
 package org.opengroup.osdu.search.provider.impl;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import jakarta.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import jakarta.inject.Inject;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.search.AggregationResponse;
 import org.opengroup.osdu.core.common.model.search.Query;
@@ -52,31 +51,32 @@ public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService
 
     @Override
     public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
-        try (RestHighLevelClient client = this.elasticClientHandler.createRestClient()) {
+        try (ElasticsearchClient client = this.elasticClientHandler.createRestClient()) {
             QueryResponse queryResponse = this.executeQuery(searchRequest, client);
             return queryResponse;
         }
     }
 
-    private QueryResponse executeQuery(QueryRequest searchRequest, RestHighLevelClient client) throws AppException {
-        SearchResponse searchResponse = this.makeSearchRequest(searchRequest, client);
+    private QueryResponse executeQuery(QueryRequest searchRequest, ElasticsearchClient client) throws AppException {
+        SearchResponse<Void> searchResponse = this.makeSearchRequest(searchRequest, client);
         List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
         List<AggregationResponse> aggregations = getAggregationFromSearchResponse(searchResponse);
-        List<String> phraseSuggestions = suggestionsQueryUtil.getPhraseSuggestionsFromSearchResponse(searchResponse);
+        //List<String> phraseSuggestions = suggestionsQueryUtil.getPhraseSuggestionsFromSearchResponse(searchResponse);
 
+//        QueryResponse queryResponse = QueryResponse.getEmptyResponse();
+//        if (searchResponse.getHits().getTotalHits() == null) {
+//            queryResponse.setTotalCount(0);
+//        } else {
+//            queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
+//        }
+//        if (results != null) {
+//            queryResponse.setAggregations(aggregations);
+//            queryResponse.setResults(results);
+//        }
+//        if (phraseSuggestions != null) {
+//            queryResponse.setPhraseSuggestions(phraseSuggestions);
+//        }
         QueryResponse queryResponse = QueryResponse.getEmptyResponse();
-        if (searchResponse.getHits().getTotalHits() == null) {
-            queryResponse.setTotalCount(0);
-        } else {
-            queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
-        }
-        if (results != null) {
-            queryResponse.setAggregations(aggregations);
-            queryResponse.setResults(results);
-        }
-        if (phraseSuggestions != null) {
-            queryResponse.setPhraseSuggestions(phraseSuggestions);
-        }
         return queryResponse;
     }
 

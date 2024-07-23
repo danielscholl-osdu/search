@@ -14,26 +14,7 @@
 
 package org.opengroup.osdu.search.util;
 
-import static org.elasticsearch.index.query.QueryBuilders.geoIntersectionQuery;
-import static org.elasticsearch.index.query.QueryBuilders.geoWithinQuery;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import jakarta.servlet.http.HttpServletResponse;
-import org.elasticsearch.common.geo.builders.CircleBuilder;
-import org.elasticsearch.common.geo.builders.CoordinatesBuilder;
-import org.elasticsearch.common.geo.builders.EnvelopeBuilder;
-import org.elasticsearch.common.geo.builders.GeometryCollectionBuilder;
-import org.elasticsearch.common.geo.builders.MultiPolygonBuilder;
-import org.elasticsearch.common.geo.builders.PolygonBuilder;
-import org.elasticsearch.common.unit.DistanceUnit;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.locationtech.jts.geom.Coordinate;
-import org.opengroup.osdu.core.common.model.http.AppException;
-import org.opengroup.osdu.core.common.model.search.Point;
-import org.opengroup.osdu.core.common.model.search.Polygon;
-import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -41,7 +22,7 @@ public final class GeoQueryBuilder {
 
     private static final int MINIMUM_POLYGON_POINTS_SIZE = 4;
 
-    public QueryBuilder getGeoQuery(SpatialFilter spatialFilter) throws IOException {
+    /*public QueryBuilder getGeoQuery(SpatialFilter spatialFilter) throws IOException {
         if (spatialFilter.getByBoundingBox() != null) {
             return getBoundingBoxQuery(spatialFilter);
         } else if (spatialFilter.getByDistance() != null) {
@@ -113,5 +94,5 @@ public final class GeoQueryBuilder {
                             "Polygons must have at least %s points and the first point must match the last point",
                             MINIMUM_POLYGON_POINTS_SIZE));
         }
-    }
+    }*/
 }

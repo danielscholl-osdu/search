@@ -1,6 +1,11 @@
 package org.opengroup.osdu.search.util;
 
-import joptsimple.internal.Strings;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.NestedSortValue;
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.mapping.FieldType;
+import co.elastic.clients.elasticsearch._types.query_dsl.NestedQuery;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.NestedQueryBuilder;
@@ -48,22 +53,22 @@ public class SortParserUtil implements ISortParserUtil {
     private IQueryParserUtil queryParserUtil;
 
     @Override
-    public FieldSortBuilder parseSort(String sortString, String sortOrder, String sortFilter) {
+    public SortOptions parseSort(String sortString, String sortOrder, String sortFilter) {
         if (sortString.contains("nested(") || sortString.contains("nested (")) {
             return parseNestedSort(sortString, sortOrder, sortFilter);
         } else {
             if (sortString.equalsIgnoreCase(SCORE_FIELD)) {
-                return new FieldSortBuilder(sortString)
-                        .order(SortOrder.fromString(sortOrder));
+                return new SortOptions.Builder().field(f -> f.field(sortString)
+                        .order(SortOrder.valueOf(sortOrder))).build();
             }
-            return new FieldSortBuilder(sortString)
-                    .order(SortOrder.fromString(sortOrder))
+            return new SortOptions.Builder().field(f->f.field(sortString)
+                    .order(SortOrder.valueOf(sortOrder))
                     .missing("_last")
-                    .unmappedType("keyword");
+                    .unmappedType(FieldType.valueOf("keyword"))).build();
         }
     }
 
-    public List<FieldSortBuilder> getSortQuery(RestHighLevelClient restClient, SortQuery sortQuery, String indexPattern) throws IOException {
+    public List<FieldSortBuilder> getSortQuery(ElasticsearchClient restClient, SortQuery sortQuery, String indexPattern) throws IOException {
         List<String> dataFields = new ArrayList<>();
         for (String field : sortQuery.getField()) {
             if (field.startsWith("data.")) dataFields.add(field + ".keyword");
@@ -73,7 +78,7 @@ public class SortParserUtil implements ISortParserUtil {
             return getSortQuery(sortQuery);
         }
 
-        Map<String, String> sortableFieldTypes = this.fieldMappingTypeService.getSortableTextFields(restClient, Strings.join(dataFields, ","), indexPattern);
+        Map<String, String> sortableFieldTypes = this.fieldMappingTypeService.getSortableTextFields(restClient, String.join(",", dataFields), indexPattern);
         List<String> sortableFields = new LinkedList<>();
         sortQuery.getField().forEach(field -> {
             if (sortableFieldTypes.containsKey(field)) {
@@ -89,8 +94,8 @@ public class SortParserUtil implements ISortParserUtil {
     // sort: text is not suitable for sorting or aggregation, refer to: this: https://github.com/elastic/elasticsearch/issues/28638,
     // so keyword is recommended for unmappedType in general because it can handle both string and number.
     // It will ignore the characters longer than the threshold when sorting.
-    private List<FieldSortBuilder> getSortQuery(SortQuery sortQuery) {
-        List<FieldSortBuilder> out = new ArrayList<>();
+    private List<SortOptions> getSortQuery(SortQuery sortQuery) {
+        List<SortOptions> out = new ArrayList<>();
 
         for (int idx = 0; idx < sortQuery.getField().size(); idx++) {
             out.add(this.parseSort(sortQuery.getFieldByIndex(idx), sortQuery.getOrderByIndex(idx).name(), sortQuery.getFilterByIndex(idx)));
@@ -98,20 +103,22 @@ public class SortParserUtil implements ISortParserUtil {
         return out;
     }
 
-    private QueryBuilder buildQueryBuilderFromQueryString(String sortNestedFilter) {
+    private NestedQuery.Builder buildQueryBuilderFromQueryString(String sortNestedFilter) {
         List<QueryNode> nodes = queryParserUtil.parseQueryNodesFromQueryString(sortNestedFilter);
         if (nodes.size() != 1 || !(nodes.get(0) instanceof NestedQueryNode)) {
             throw new AppException(HttpStatus.SC_BAD_REQUEST, String.format("Top level sort filter must be in nested context : %s", sortNestedFilter), BAD_SORT_MESSAGE);
         }
         NestedQueryNode topNode = (NestedQueryNode) nodes.get(0);
-        return ((NestedQueryBuilder) topNode.toQueryBuilder()).query();
+
+        return topNode.toQueryBuilder();
     }
 
-    private FieldSortBuilder parseNestedSort(String sortString, String sortOrder, String sortNestedFilter) {
+    private SortOptions parseNestedSort(String sortString, String sortOrder, String sortNestedFilter) {
         Matcher multilevelNestedMatcher = multilevelNestedPattern.matcher(sortString);
         String oneLevelSortString = sortString;
-        NestedSortBuilder nestedSortBuilder = null;
+        NestedSortValue nestedSortBuilder = null;
         QueryBuilder filterSortQuery = Objects.isNull(sortNestedFilter) ? null : buildQueryBuilderFromQueryString(sortNestedFilter);
+
 
         if (multilevelNestedMatcher.find()) {
             nestedSortBuilder = parseNestedSortInDepth(sortString);
@@ -145,17 +152,17 @@ public class SortParserUtil implements ISortParserUtil {
         throw new AppException(HttpStatus.SC_BAD_REQUEST, String.format("Malformed nested sort : %s", sortString), BAD_SORT_MESSAGE);
     }
 
-    private NestedSortBuilder parseNestedSortInDepth(String group) {
+    private NestedSortValue parseNestedSortInDepth(String group) {
         Matcher multilevelNestedMatcher = multilevelNestedPattern.matcher(group);
         if (multilevelNestedMatcher.find()) {
             String path = multilevelNestedMatcher.group(PARENT_PATH);
             String innerGroup = multilevelNestedMatcher.group(INNER_GROUP);
-            return new NestedSortBuilder(path).setNestedSort(parseNestedSortInDepth(innerGroup));
+            return new NestedSortValue.Builder().path(path).nested(parseNestedSortInDepth(innerGroup)).build();
         }
         Matcher oneLevelMatcher = oneLevelNestedSort.matcher(group);
         if (oneLevelMatcher.find()) {
             String path = oneLevelMatcher.group(PATH_GROUP);
-            return new NestedSortBuilder(path);
+            return new NestedSortValue.Builder().path(path).build();
         }
         throw new AppException(HttpStatus.SC_BAD_REQUEST, String.format("Malformed nested sort group : %s", group),
                 BAD_SORT_MESSAGE);

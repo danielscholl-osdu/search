@@ -14,8 +14,12 @@
 
 package org.opengroup.osdu.search.provider.impl;
 
-import static org.elasticsearch.rest.RestStatus.NOT_FOUND;
-
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import co.elastic.clients.elasticsearch._types.Time;
+import co.elastic.clients.elasticsearch.core.ScrollRequest;
+import co.elastic.clients.elasticsearch.core.ScrollResponse;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -28,16 +32,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.DatatypeConverter;
 import org.apache.http.ContentTooLongException;
 import org.apache.http.HttpStatus;
-import org.elasticsearch.ElasticsearchStatusException;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchScrollRequest;
+
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.search.Scroll;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
 import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
@@ -56,7 +52,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScrollQueryService {
 
-    private final TimeValue SEARCH_SCROLL_TIMEOUT = TimeValue.timeValueSeconds(90L);
+    private final Time SEARCH_SCROLL_TIMEOUT = Time.of(t -> t.time("90s"));
 
     @Inject
     private ElasticClientHandler elasticClientHandler;
@@ -80,7 +76,7 @@ public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScroll
 
         CursorQueryResponse queryResponse = CursorQueryResponse.getEmptyResponse();
 
-        try (RestHighLevelClient client = this.elasticClientHandler.createRestClient()) {
+        ElasticsearchClient client = this.elasticClientHandler.getOrCreateRestClient();
             if (Strings.isNullOrEmpty(searchRequest.getCursor())) {
                 try {
                     return this.initCursorQuery(searchRequest, client);
@@ -104,9 +100,9 @@ public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScroll
                     }
                 } catch (AppException e) {
                     throw e;
-                } catch (ElasticsearchStatusException e) {
+                } catch (ElasticsearchException e) {
                     String invalidScrollMessage = "No search context found for id";
-                    if (e.status() == NOT_FOUND
+                    if (e.status() == 404
                             && (e.getMessage().startsWith(invalidScrollMessage)) || this.exceptionParser.parseException(e).stream().anyMatch(r -> r.contains(invalidScrollMessage)))
                         throw new AppException(HttpStatus.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired", e);
                     throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
@@ -120,42 +116,40 @@ public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScroll
                 }
             }
             return queryResponse;
-        }
     }
 
-    private void executeCursorPaginationQuery(CursorQueryRequest searchRequest, CursorQueryResponse queryResponse, RestHighLevelClient client, CursorSettings cursorSettings) throws IOException {
-        SearchScrollRequest scrollRequest = new SearchScrollRequest(cursorSettings.getCursor());
-        scrollRequest.scroll(SEARCH_SCROLL_TIMEOUT);
+    private void executeCursorPaginationQuery(CursorQueryRequest searchRequest, CursorQueryResponse queryResponse, ElasticsearchClient client, CursorSettings cursorSettings) throws IOException {
+        ScrollRequest scrollRequest = ScrollRequest.of(sr -> sr.scrollId(searchRequest.getCursor()).scroll(SEARCH_SCROLL_TIMEOUT));
         Long startTime = System.currentTimeMillis();
-        SearchResponse searchResponse = client.scroll(scrollRequest, RequestOptions.DEFAULT);
+        ScrollResponse<Void> searchResponse = client.scroll(scrollRequest, Void.class);
         Long latency = System.currentTimeMillis() - startTime;
 
         List<Map<String, Object>> results = getHitsFromSearchResponse(searchResponse);
-        queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
+        queryResponse.setTotalCount(searchResponse.hits().total().value());
         if (results != null) {
             queryResponse.setResults(results);
-            queryResponse.setCursor(this.refreshCursorCache(searchResponse.getScrollId(), dpsHeaders.getUserEmail()));
+            queryResponse.setCursor(this.refreshCursorCache(searchResponse.scrollId(), dpsHeaders.getUserEmail()));
             this.querySuccessAuditLogger(searchRequest);
         }
-        int statusCode = searchResponse.status().getStatus();
-        tracingLogger.log(searchRequest, latency, statusCode);
+        //int statusCode = searchResponse.shards().failures();
+        tracingLogger.log(searchRequest, latency, 200);
     }
 
-    private CursorQueryResponse initCursorQuery(CursorQueryRequest searchRequest, RestHighLevelClient client) {
+    private CursorQueryResponse initCursorQuery(CursorQueryRequest searchRequest, ElasticsearchClient client) {
         return this.executeCursorQuery(searchRequest, client);
     }
 
-    private CursorQueryResponse executeCursorQuery(CursorQueryRequest searchRequest, RestHighLevelClient client) throws AppException {
+    private CursorQueryResponse executeCursorQuery(CursorQueryRequest searchRequest, ElasticsearchClient client) throws AppException {
 
-        SearchResponse searchResponse = this.makeSearchRequest(searchRequest, client);
-        List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
-        if (results != null) {
-            return CursorQueryResponse.builder()
-                    .cursor(refreshCursorCache(searchResponse.getScrollId(), dpsHeaders.getUserEmail()))
-                    .results(results)
-                    .totalCount(searchResponse.getHits().getTotalHits().value)
-                    .build();
-        }
+//        SearchResponse searchResponse = this.makeSearchRequest(searchRequest, client);
+//        //List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
+//        if (results != null) {
+//            return CursorQueryResponse.builder()
+//                    .cursor(refreshCursorCache(searchResponse.getScrollId(), dpsHeaders.getUserEmail()))
+//                    .results(results)
+//                    .totalCount(searchResponse.getHits().getTotalHits().value)
+//                    .build();
+//        }
         return CursorQueryResponse.getEmptyResponse();
     }
 
@@ -163,21 +157,21 @@ public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScroll
     SearchRequest createElasticRequest(Query request, String index) throws AppException, IOException {
 
         // set the indexes to search against
-        SearchRequest elasticSearchRequest = SearchRequestUtil.createSearchRequest(index);
+        SearchRequest.Builder elasticSearchRequest = SearchRequestUtil.createSearchRequest(index);
 
         // build query
-        SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);
+        var sourceBuilder = this.createSearchSourceBuilder(request);
 
         // Optimize Scroll request if users wants to iterate over all documents regardless of order
         if (request.getSort() == null) {
-            sourceBuilder.sort(SortBuilders.scoreSort());
-            sourceBuilder.sort(SortBuilders.fieldSort("_doc"));
+//            sourceBuilder.sort(s -> s.score()SortBuilders.scoreSort());
+//            sourceBuilder.sort(SortBuilders.fieldSort("_doc"));
         }
 
-        elasticSearchRequest.source(sourceBuilder);
-        elasticSearchRequest.scroll(new Scroll(SEARCH_SCROLL_TIMEOUT));
+       // elasticSearchRequest.source(sourceBuilder);
+        elasticSearchRequest.scroll(SEARCH_SCROLL_TIMEOUT);
 
-        return elasticSearchRequest;
+        return elasticSearchRequest.build();
     }
 
     String refreshCursorCache(String rawCursor, String userId) {

@@ -1,6 +1,7 @@
 package org.opengroup.osdu.search.util;
 
-import org.elasticsearch.action.search.SearchRequest;
+
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 
 public interface IDetailedBadRequestMessageUtil {
 
