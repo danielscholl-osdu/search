@@ -16,8 +16,8 @@ package org.opengroup.osdu.search.util;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.rest_client.RestClientHttpClient;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -126,6 +126,7 @@ public class ElasticClientHandler implements Closeable {
       int port,
       String protocolScheme,
       String tls) {
+
     RestClientBuilder builder = RestClient.builder(new HttpHost(host, port, protocolScheme));
     builder.setRequestConfigCallback(
         requestConfigBuilder ->
@@ -182,7 +183,5 @@ public class ElasticClientHandler implements Closeable {
   }
 
   @Override
-  public void close() throws IOException {
-
-  }
+  public void close() throws IOException {}
 }

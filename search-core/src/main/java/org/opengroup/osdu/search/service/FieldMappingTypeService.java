@@ -14,74 +14,107 @@
 
 package org.opengroup.osdu.search.service;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.ExpandWildcard;
+import co.elastic.clients.elasticsearch._types.mapping.FieldMapping;
+import co.elastic.clients.elasticsearch._types.mapping.Property;
+import co.elastic.clients.elasticsearch.indices.GetFieldMappingRequest;
+import co.elastic.clients.elasticsearch.indices.GetFieldMappingResponse;
+import co.elastic.clients.elasticsearch.indices.get_field_mapping.TypeFieldMappings;
 import com.google.common.base.Strings;
-import org.elasticsearch.action.support.IndicesOptions;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.indices.GetFieldMappingsRequest;
-import org.elasticsearch.client.indices.GetFieldMappingsResponse;
+import java.io.IOException;
+import java.util.*;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.search.Preconditions;
 import org.opengroup.osdu.search.cache.IFieldTypeMappingCache;
-import org.opengroup.osdu.search.util.SearchRequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
-
-import java.io.IOException;
-import java.util.*;
 
 @Component
 @RequestScope
 public class FieldMappingTypeService implements IFieldMappingTypeService {
 
-    @Autowired
-    private IFieldTypeMappingCache typeMappingCache;
-    @Autowired
-    private DpsHeaders headers;
+  @Autowired private IFieldTypeMappingCache typeMappingCache;
+  @Autowired private DpsHeaders headers;
 
-    public Map<String, String> getSortableTextFields(RestHighLevelClient restClient, String fieldName, String indexPattern) throws IOException {
-        String cacheKey = this.getSortableTextFieldCacheKey(fieldName, indexPattern);
-        Map<String, String> cachedTypes = this.typeMappingCache.get(cacheKey);
-        if (cachedTypes != null && !cachedTypes.isEmpty()) {
-            return cachedTypes;
+  public Map<String, String> getSortableTextFields(
+      ElasticsearchClient restClient, String fieldName, String indexPattern) throws IOException {
+    String cacheKey = this.getSortableTextFieldCacheKey(fieldName, indexPattern);
+    Map<String, String> cachedTypes = this.typeMappingCache.get(cacheKey);
+    if (cachedTypes != null && !cachedTypes.isEmpty()) {
+      return cachedTypes;
+    }
+
+    Map<String, String> fieldTypeMap = new HashMap<>();
+    GetFieldMappingResponse response = this.getFieldMappings(restClient, fieldName, indexPattern);
+
+    for (Map.Entry<String, TypeFieldMappings> typeFieldMapping : response.result().entrySet()) {
+      if (typeFieldMapping.getValue().mappings().isEmpty()) {
+        continue;
+      }
+
+      for (Map.Entry<String, FieldMapping> fieldMapping :
+          typeFieldMapping.getValue().mappings().entrySet()) {
+        if (fieldMapping.getValue().mapping().isEmpty()) {
+          continue;
         }
 
-        Map<String, String> fieldTypeMap = new HashMap<>();
-        GetFieldMappingsResponse response = this.getFieldMappings(restClient, fieldName, indexPattern);
-        Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> mappings = response.mappings();
+        for (Map.Entry<String, Property> property : fieldMapping.getValue().mapping().entrySet()) {
+          if (property.getValue() == null) continue;
+          String field = property.getKey();
+          String value = property.getValue().toString();
+          if (field.endsWith(".keyword")) {
+            fieldTypeMap.put(field.substring(0, field.lastIndexOf(".keyword")), value);
+          }
 
-        for (Map.Entry<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> indexMapping : mappings.entrySet()) {
-            if (indexMapping.getValue().isEmpty()) continue;
-            Map<String, GetFieldMappingsResponse.FieldMappingMetadata> typeMapping = indexMapping.getValue();
-            for (Map.Entry<String, GetFieldMappingsResponse.FieldMappingMetadata> fieldMappingMetadataEntry : typeMapping.entrySet()) {
-                if (fieldMappingMetadataEntry.getValue() == null) continue;
-                String field = fieldMappingMetadataEntry.getValue().fullName();
-                fieldTypeMap.put(field.substring(0, field.lastIndexOf(".keyword")), field);
-            }
+          this.typeMappingCache.put(cacheKey, fieldTypeMap);
         }
+      }
+    }
+    //    Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> mappings =
+    //        response.mappings();
+    //
+    //    for (Map.Entry<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>>
+    //        indexMapping : mappings.entrySet()) {
+    //      if (indexMapping.getValue().isEmpty()) continue;
+    //      Map<String, GetFieldMappingsResponse.FieldMappingMetadata> typeMapping =
+    //          indexMapping.getValue();
+    //      for (Map.Entry<String, GetFieldMappingsResponse.FieldMappingMetadata>
+    //          fieldMappingMetadataEntry : typeMapping.entrySet()) {
+    //        if (fieldMappingMetadataEntry.getValue() == null) continue;
+    //        String field = fieldMappingMetadataEntry.getValue().fullName();
+    //        fieldTypeMap.put(field.substring(0, field.lastIndexOf(".keyword")), field);
+    //      }
+    //    }
+    //
+    //    this.typeMappingCache.put(cacheKey, fieldTypeMap);
+    //
+    //    return fieldTypeMap;
+    return fieldTypeMap;
+  }
 
-        this.typeMappingCache.put(cacheKey, fieldTypeMap);
+  private GetFieldMappingResponse getFieldMappings(
+      ElasticsearchClient restClient, String fieldName, String indexPattern) throws IOException {
+    Preconditions.checkNotNull(restClient, "restClient cannot be null");
+    Preconditions.checkNotNullOrEmpty(fieldName, "fieldName cannot be null or empty");
+    Preconditions.checkNotNullOrEmpty(indexPattern, "indexPattern cannot be null or empty");
 
-        return fieldTypeMap;
+    GetFieldMappingRequest.Builder request = new GetFieldMappingRequest.Builder();
+    request.fields(fieldName);
+
+    if (!Strings.isNullOrEmpty(indexPattern)) {
+      request.index(indexPattern);
     }
 
-    private GetFieldMappingsResponse getFieldMappings(RestHighLevelClient restClient, String fieldName, String indexPattern) throws IOException {
-        Preconditions.checkNotNull(restClient, "restClient cannot be null");
-        Preconditions.checkNotNullOrEmpty(fieldName, "fieldName cannot be null or empty");
-        Preconditions.checkNotNullOrEmpty(indexPattern, "indexPattern cannot be null or empty");
+    request.allowNoIndices(true).expandWildcards(ExpandWildcard.Open, ExpandWildcard.Closed);
 
-        GetFieldMappingsRequest request = new GetFieldMappingsRequest();
-        request.fields(fieldName);
-        if (!Strings.isNullOrEmpty(indexPattern)) request.indices(indexPattern);
+    return restClient.indices().getFieldMapping(request.build());
+  }
 
-        IndicesOptions options = SearchRequestUtil.addIgnoreUnavailable(request.indicesOptions());
-        request.indicesOptions(options);
-
-        return restClient.indices().getFieldMapping(request, RequestOptions.DEFAULT);
-    }
-
-    private String getSortableTextFieldCacheKey(String fieldName, String indexPattern) {
-        return String.format("%s-sortable-text-%s-%s", this.headers.getPartitionIdWithFallbackToAccountId(), indexPattern, fieldName);
-    }
+  private String getSortableTextFieldCacheKey(String fieldName, String indexPattern) {
+    return String.format(
+        "%s-sortable-text-%s-%s",
+        this.headers.getPartitionIdWithFallbackToAccountId(), indexPattern, fieldName);
+  }
 }

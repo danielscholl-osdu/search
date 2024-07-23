@@ -38,6 +38,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.http.ContentTooLongException;
 // import org.elasticsearch.ElasticsearchStatusException;
 // import org.elasticsearch.action.search.SearchRequest;
@@ -162,20 +164,24 @@ abstract class CoreQueryBase {
     }
   }
 
-  private BoolQuery.Builder getQueryBuilderWithAuthorization(
-      BoolQuery.Builder queryBuilder, boolean asOwner) {
+  private BoolQuery.Builder getQueryBuilderWithAuthorization(BoolQuery.Builder queryBuilder, boolean asOwner) {
     if (userHasFullDataAccess()) {
       return queryBuilder;
     }
-
+    BoolQuery.Builder newQueryBuilder = new BoolQuery.Builder();
     String groups = dpsHeaders.getHeaders().get(providerHeaderService.getDataGroupsHeader());
     if (groups != null) {
       TermsQueryField groupArray =
           new TermsQueryField.Builder()
               .value(Arrays.stream(groups.trim().split("\\s*,\\s*")).map(FieldValue::of).toList())
               .build();
-      List<co.elastic.clients.elasticsearch._types.query_dsl.Query> authFilterClauses =
-          queryBuilder.build().filter();
+      List<co.elastic.clients.elasticsearch._types.query_dsl.Query> authFilterClauses;
+      if(queryBuilder.build().filter().isEmpty()){
+        authFilterClauses = new ArrayList<>();
+      }else {
+        authFilterClauses = queryBuilder.build().filter();
+      }
+
       if (asOwner) {
         authFilterClauses.add(
             new TermsQuery.Builder()
@@ -188,11 +194,14 @@ abstract class CoreQueryBase {
             new TermsQuery.Builder()
                 .field(RecordMetaAttribute.X_ACL.getValue())
                 .terms(groupArray)
-                .build()
-                ._toQuery());
+                .build()._toQuery());
+      }
+
+      for (co.elastic.clients.elasticsearch._types.query_dsl.Query filter : authFilterClauses) {
+        newQueryBuilder.filter(filter);
       }
     }
-    return queryBuilder;
+    return newQueryBuilder;
   }
 
   String getIndex(Query request) {
@@ -418,7 +427,7 @@ abstract class CoreQueryBase {
       if (elasticLoggingConfig.getEnabled() || latency > elasticLoggingConfig.getThreshold()) {
         String request =
             elasticSearchRequest != null
-                ? elasticSearchRequest.source().toString()
+                ? elasticSearchRequest.query().toString()
                 : searchRequest.toString();
         this.log.debug(String.format("Elastic request-payload: %s", request));
       }

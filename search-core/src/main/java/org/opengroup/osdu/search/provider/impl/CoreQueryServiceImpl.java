@@ -21,10 +21,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 import org.opengroup.osdu.core.common.model.http.AppException;
-import org.opengroup.osdu.core.common.model.search.AggregationResponse;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryResponse;
@@ -40,74 +37,72 @@ import org.springframework.stereotype.Service;
 @Service
 public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService {
 
-    @Inject
-    private ElasticClientHandler elasticClientHandler;
-    @Inject
-    private AuditLogger auditLogger;
-    @Inject
-    private IAggregationParserUtil aggregationParserUtil;
-    @Autowired
-    private SuggestionsQueryUtil suggestionsQueryUtil;
+  @Inject private ElasticClientHandler elasticClientHandler;
+  @Inject private AuditLogger auditLogger;
+  @Inject private IAggregationParserUtil aggregationParserUtil;
+  @Autowired private SuggestionsQueryUtil suggestionsQueryUtil;
 
-    @Override
-    public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
-        try (ElasticsearchClient client = this.elasticClientHandler.createRestClient()) {
-            QueryResponse queryResponse = this.executeQuery(searchRequest, client);
-            return queryResponse;
-        }
+  @Override
+  public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
+    ElasticsearchClient client = this.elasticClientHandler.getOrCreateRestClient();
+    QueryResponse queryResponse = this.executeQuery(searchRequest, client);
+    return queryResponse;
+  }
+
+  private QueryResponse executeQuery(QueryRequest searchRequest, ElasticsearchClient client)
+      throws AppException {
+    SearchResponse<Void> searchResponse = this.makeSearchRequest(searchRequest, client);
+    // List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
+    // List<AggregationResponse> aggregations = getAggregationFromSearchResponse(searchResponse);
+    // List<String> phraseSuggestions =
+    // suggestionsQueryUtil.getPhraseSuggestionsFromSearchResponse(searchResponse);
+
+    //        QueryResponse queryResponse = QueryResponse.getEmptyResponse();
+    //        if (searchResponse.getHits().getTotalHits() == null) {
+    //            queryResponse.setTotalCount(0);
+    //        } else {
+    //            queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
+    //        }
+    //        if (results != null) {
+    //            queryResponse.setAggregations(aggregations);
+    //            queryResponse.setResults(results);
+    //        }
+    //        if (phraseSuggestions != null) {
+    //            queryResponse.setPhraseSuggestions(phraseSuggestions);
+    //        }
+    QueryResponse queryResponse = QueryResponse.getEmptyResponse();
+    return queryResponse;
+  }
+
+  @Override
+  SearchRequest createElasticRequest(Query request, String index) throws AppException, IOException {
+    QueryRequest searchRequest = (QueryRequest) request;
+
+    // set the indexes to org.opengroup.osdu.search.search against
+    var elasticSearchRequest = SearchRequestUtil.createSearchRequest(index);
+
+    // build query
+    var sourceBuilder = this.createSearchSourceBuilder(request);
+    sourceBuilder.from(searchRequest.getFrom());
+
+    // aggregation
+    if (!Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
+      sourceBuilder
+          .build(); // (aggregationParserUtil.parseAggregation(searchRequest.getAggregateBy()));
     }
 
-    private QueryResponse executeQuery(QueryRequest searchRequest, ElasticsearchClient client) throws AppException {
-        SearchResponse<Void> searchResponse = this.makeSearchRequest(searchRequest, client);
-        List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
-        List<AggregationResponse> aggregations = getAggregationFromSearchResponse(searchResponse);
-        //List<String> phraseSuggestions = suggestionsQueryUtil.getPhraseSuggestionsFromSearchResponse(searchResponse);
+    elasticSearchRequest.query(sourceBuilder.build().query());
 
-//        QueryResponse queryResponse = QueryResponse.getEmptyResponse();
-//        if (searchResponse.getHits().getTotalHits() == null) {
-//            queryResponse.setTotalCount(0);
-//        } else {
-//            queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
-//        }
-//        if (results != null) {
-//            queryResponse.setAggregations(aggregations);
-//            queryResponse.setResults(results);
-//        }
-//        if (phraseSuggestions != null) {
-//            queryResponse.setPhraseSuggestions(phraseSuggestions);
-//        }
-        QueryResponse queryResponse = QueryResponse.getEmptyResponse();
-        return queryResponse;
-    }
+    return elasticSearchRequest.build();
+  }
 
-    @Override
-    SearchRequest createElasticRequest(Query request, String index) throws AppException, IOException {
-        QueryRequest searchRequest = (QueryRequest) request;
+  @Override
+  void querySuccessAuditLogger(Query request) {
+    this.auditLogger.queryIndexSuccess(Lists.newArrayList(request.toString()));
+  }
 
-        // set the indexes to org.opengroup.osdu.search.search against
-        SearchRequest elasticSearchRequest = SearchRequestUtil.createSearchRequest(index);
-
-        // build query
-        SearchSourceBuilder sourceBuilder = this.createSearchSourceBuilder(request);
-        sourceBuilder.from(searchRequest.getFrom());
-
-        // aggregation
-        if (!Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
-            sourceBuilder.aggregation(aggregationParserUtil.parseAggregation(searchRequest.getAggregateBy()));
-        }
-
-        elasticSearchRequest.source(sourceBuilder);
-
-        return elasticSearchRequest;
-    }
-
-    @Override
-    void querySuccessAuditLogger(Query request) {
-        this.auditLogger.queryIndexSuccess(Lists.newArrayList(request.toString()));
-    }
-
-    @Override
-    void queryFailedAuditLogger(Query request) {
-        this.auditLogger.queryIndexFailed(Lists.newArrayList(request.toString()));
-    }
+  @Override
+  void queryFailedAuditLogger(Query request) {
+    this.auditLogger.queryIndexFailed(Lists.newArrayList(request.toString()));
+  }
 }

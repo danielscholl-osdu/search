@@ -1,48 +1,48 @@
 package org.opengroup.osdu.search.model;
 
-import co.elastic.clients.elasticsearch._types.query_dsl.NestedQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import jakarta.annotation.Nullable;
-import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-
 import java.util.List;
 import java.util.Objects;
-
-import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
+import org.apache.commons.lang3.StringUtils;
 
 public class InnerQueryNode extends QueryNode {
-    private List<QueryNode> innerNodes;
+  private List<QueryNode> innerNodes;
 
-    public InnerQueryNode(@Nullable String operand, @Nullable List<QueryNode> innerNodes) {
-        super(null, operand);
-        this.innerNodes = innerNodes;
-    }
+  public InnerQueryNode(@Nullable String operand, @Nullable List<QueryNode> innerNodes) {
+    super(null, operand);
+    this.innerNodes = innerNodes;
+  }
 
-    @Override
-    public NestedQuery.Builder toQueryBuilder() {
-        QueryBuilder queryBuilder;
-        if (Objects.nonNull(innerNodes) && !innerNodes.isEmpty()) {
-            queryBuilder = new BoolQueryBuilder();
-            for (QueryNode queryNode : innerNodes) {
-                QueryBuilder innerBuilder = queryNode.toQueryBuilder();
-                switch (queryNode.operator != null ? queryNode.operator : Operator.AND) {
-                    case AND:
-                        ((BoolQueryBuilder) queryBuilder).must(innerBuilder);
-                        break;
-                    case OR:
-                        ((BoolQueryBuilder) queryBuilder).should(innerBuilder);
-                        break;
-                    case NOT:
-                        ((BoolQueryBuilder) queryBuilder).mustNot(innerBuilder);
-                        break;
-                }
-            }
-        } else {
-            String query = StringUtils.isNotBlank(queryString) ? queryString : "*";
-            queryBuilder = queryStringQuery(query).allowLeadingWildcard(false);
+  @Override
+  public Query.Builder toQueryBuilder() {
+    if (Objects.nonNull(innerNodes) && !innerNodes.isEmpty()) {
+      BoolQuery.Builder boolQueryBuilder = QueryBuilders.bool();
+      for (QueryNode queryNode : innerNodes) {
+        Query.Builder innerBuilder = queryNode.toQueryBuilder();
+
+        switch (queryNode.operator != null ? queryNode.operator : Operator.AND) {
+          case AND:
+            boolQueryBuilder.must(innerBuilder.build());
+            break;
+          case OR:
+            boolQueryBuilder.should(innerBuilder.build());
+            break;
+          case NOT:
+            boolQueryBuilder.mustNot(innerBuilder.build());
+            break;
         }
-
-        return queryBuilder;
+      }
+      return (Query.Builder)
+          new Query.Builder()
+              .bool(
+                  boolQueryBuilder
+                      .build()); // QueryBuilders.query().bool(boolQueryBuilder.build());
+    } else {
+      String query = StringUtils.isNotBlank(queryString) ? queryString : "*";
+      QueryStringQuery.Builder queryStringQueryBuilder =
+          QueryBuilders.queryString().query(query).allowLeadingWildcard(false);
+      return (Query.Builder) new Query.Builder().queryString(queryStringQueryBuilder.build());
     }
+  }
 }

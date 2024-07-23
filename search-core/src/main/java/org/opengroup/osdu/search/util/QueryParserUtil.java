@@ -1,16 +1,12 @@
 package org.opengroup.osdu.search.util;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.QueryBase;
 import org.apache.http.HttpStatus;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.search.model.InnerQueryNode;
 import org.opengroup.osdu.search.model.NestedQueryNode;
@@ -105,15 +101,15 @@ public class QueryParserUtil implements IQueryParserUtil {
         BoolQuery.Builder boolQueryBuilder = new BoolQuery.Builder();
         for (QueryNode queryNode : queryNodes) {
             switch (queryNode.getOperator() != null ? queryNode.getOperator() : Operator.AND) {
-                case AND:
-                    boolQueryBuilder.must(queryNode.toQueryBuilder().build().query());
-                    break;
-                case OR:
-                    boolQueryBuilder.should(queryNode.toQueryBuilder().build().query());
-                    break;
-                case NOT:
-                    boolQueryBuilder.mustNot(queryNode.toQueryBuilder().build().query());
-                    break;
+//                case AND:
+//                    boolQueryBuilder.must(queryNode.toQueryBuilder());
+//                    break;
+//                case OR:
+//                    boolQueryBuilder.should(queryNode.toQueryBuilder().build().query());
+//                    break;
+//                case NOT:
+//                    boolQueryBuilder.mustNot(queryNode.toQueryBuilder().build().query());
+//                    break;
             }
         }
         return boolQueryBuilder;
