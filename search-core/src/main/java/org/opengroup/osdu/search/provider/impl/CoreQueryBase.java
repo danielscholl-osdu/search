@@ -19,8 +19,8 @@ import static org.opengroup.osdu.core.common.model.search.RecordMetaAttribute.CO
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.*;
+import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
-import co.elastic.clients.elasticsearch.core.ScrollResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.*;
@@ -28,6 +28,7 @@ import com.google.common.base.Strings;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,13 +80,7 @@ import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
-import org.opengroup.osdu.search.util.CrossTenantUtils;
-import org.opengroup.osdu.search.util.GeoQueryBuilder;
-import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
-import org.opengroup.osdu.search.util.IQueryParserUtil;
-import org.opengroup.osdu.search.util.IQueryPerformanceLogger;
-import org.opengroup.osdu.search.util.ISortParserUtil;
-import org.opengroup.osdu.search.util.SuggestionsQueryUtil;
+import org.opengroup.osdu.search.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 abstract class CoreQueryBase {
@@ -94,6 +89,8 @@ abstract class CoreQueryBase {
   @Inject private JaxRsDpsLog log;
   @Inject private IProviderHeaderService providerHeaderService;
   @Inject private CrossTenantUtils crossTenantUtils;
+
+  private final Time REQUEST_TIMEOUT = Time.of(t -> t.time("1m"));
 
   @Autowired(required = false)
   private IPolicyService iPolicyService;
@@ -116,8 +113,6 @@ abstract class CoreQueryBase {
   // queryableExcludes properties can be returned by query results
   private final Set<String> queryableExcludes =
       new HashSet<>(Arrays.asList(RecordMetaAttribute.INDEX_STATUS.getValue()));
-
-  private final Time REQUEST_TIMEOUT = new Time.Builder().time("1").build();
 
   BoolQuery.Builder buildQuery(String simpleQuery, SpatialFilter spatialFilter, boolean asOwner)
       throws AppException, IOException {
@@ -164,113 +159,97 @@ abstract class CoreQueryBase {
     }
   }
 
-  private BoolQuery.Builder getQueryBuilderWithAuthorization(BoolQuery.Builder queryBuilder, boolean asOwner) {
+  private BoolQuery.Builder getQueryBuilderWithAuthorization(
+      BoolQuery.Builder queryBuilder, boolean asOwner) {
     if (userHasFullDataAccess()) {
       return queryBuilder;
     }
-    BoolQuery.Builder newQueryBuilder = new BoolQuery.Builder();
+
     String groups = dpsHeaders.getHeaders().get(providerHeaderService.getDataGroupsHeader());
     if (groups != null) {
       TermsQueryField groupArray =
           new TermsQueryField.Builder()
               .value(Arrays.stream(groups.trim().split("\\s*,\\s*")).map(FieldValue::of).toList())
               .build();
-      List<co.elastic.clients.elasticsearch._types.query_dsl.Query> authFilterClauses;
-      if(queryBuilder.build().filter().isEmpty()){
-        authFilterClauses = new ArrayList<>();
-      }else {
-        authFilterClauses = queryBuilder.build().filter();
-      }
 
       if (asOwner) {
-        authFilterClauses.add(
+        queryBuilder.filter(
             new TermsQuery.Builder()
                 .field(AclRole.OWNERS.getPath())
                 .terms(groupArray)
                 .build()
                 ._toQuery());
       } else {
-        authFilterClauses.add(
+        queryBuilder.filter(
             new TermsQuery.Builder()
                 .field(RecordMetaAttribute.X_ACL.getValue())
                 .terms(groupArray)
-                .build()._toQuery());
-      }
-
-      for (co.elastic.clients.elasticsearch._types.query_dsl.Query filter : authFilterClauses) {
-        newQueryBuilder.filter(filter);
+                .build()
+                ._toQuery());
       }
     }
-    return newQueryBuilder;
+    return queryBuilder;
   }
 
   String getIndex(Query request) {
     return this.crossTenantUtils.getIndexName(request);
   }
 
-  List<Map<String, Object>> getHitsFromSearchResponse(ScrollResponse<Void> searchResponse) {
+  List<Map<String, Object>> getHitsFromSearchResponse(ResponseBody<Map<String, Object>> searchResponse) {
     List<Map<String, Object>> results = new ArrayList<>();
-    HitsMetadata<Void> searchHits = searchResponse.hits();
-    //        if (!searchHits.hits().isEmpty()) {
-    //            for (Hit<Void> searchHitFields : searchHits.hits()) {
-    //                Map<String, Object> hitFields = searchHitFields.fields();
-    //                if (!searchHitFields.highlight().isEmpty()) {
-    //                    Map<String, List<String>> highlights = new HashMap<>();
-    //                    for (HighlightField hf : searchHitFields.highlight().values()) {
-    //                        if
-    // (!hf.getName().equalsIgnoreCase(RecordMetaAttribute.X_ACL.getValue())) {
-    //                            Text[] fragments = hf.getFragments();
-    //                            highlights.put(
-    //                                hf.getName(),
-    //                                Arrays.asList(fragments).stream().map(x ->
-    // x.toString()).collect(Collectors.toList())
-    //                            );
-    //                        }
-    //                    }
-    //                    hitFields.put("highlight", highlights);
-    //                }
-    //                results.add(hitFields);
-    //            }
-    //            return results;
-    //        }
+    HitsMetadata<Map<String, Object>> searchHits = searchResponse.hits();
 
-    return null;
-  }
-
-  List<AggregationResponse> getAggregationFromSearchResponse(SearchResponse searchResponse) {
-    List<AggregationResponse> results = null;
-    //        if (searchResponse.aggregations() != null) {
-    //            Terms kindAgg = null;
-    //            var o =
-    // searchResponse.aggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
-    //            if (nested != null) {
-    //                kindAgg = (Terms) getTermsAggregationFromNested(nested);
-    //            } else {
-    //                kindAgg =
-    // searchResponse.getAggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME);
-    //            }
-    //            if (kindAgg.getBuckets() != null) {
-    //                results = new ArrayList<>();
-    //                for (Terms.Bucket bucket : kindAgg.getBuckets()) {
-    //
-    // results.add(AggregationResponse.builder().key(bucket.getKeyAsString()).count(bucket.getDocCount()).build());
-    //                }
-    //            }
-    //        }
-
+    if (searchHits.hits() != null && !searchHits.hits().isEmpty()){
+      for(Hit<Map<String, Object>> hit: searchHits.hits()){
+        Map<String, Object> hitFields = hit.source();
+        if (hit.highlight() != null && !hit.highlight().isEmpty()) {
+          Map<String, List<String>> highlights = new HashMap<>();
+          for (Map.Entry<String, List<String>> entry : hit.highlight().entrySet()) {
+            String fieldName = entry.getKey();
+            if (!fieldName.equalsIgnoreCase(RecordMetaAttribute.X_ACL.getValue())) {
+              highlights.put(fieldName, entry.getValue().stream()
+                      .map(String::toString)
+                      .collect(Collectors.toList()));
+            }
+          }
+          hitFields.put("highlight", highlights);
+        }
+        results.add(hitFields);
+      }
+    }
     return results;
   }
 
-  //    private Aggregation getTermsAggregationFromNested(ParsedNested parsedNested) {
-  //        ParsedNested nested =
-  // parsedNested.getAggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
-  //        if (nested != null) {
-  //            return getTermsAggregationFromNested(nested);
-  //        } else {
-  //            return
-  // parsedNested.getAggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME);
-  //        }
-  //    }
+  List<AggregationResponse> getAggregationFromSearchResponse(SearchResponse<Map<String, Object>> searchResponse) {
+    List<AggregationResponse> results = null;
+    if (searchResponse.aggregations() != null) {
+      StringTermsAggregate kindAgg = null;
+      NestedAggregate nestedAggregate = searchResponse.aggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME).nested();
+
+      if(Objects.nonNull(nestedAggregate)){
+        kindAgg = getTermsAggregationFromNested(nestedAggregate);
+      }else {
+        kindAgg = searchResponse.aggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME).sterms();
+      }
+      if(Objects.nonNull(kindAgg.buckets()) && kindAgg.buckets().isArray()){
+        results = new ArrayList<>();
+
+        for (StringTermsBucket bucket : kindAgg.buckets().array()) {
+          results.add(AggregationResponse.builder().key(bucket.key().stringValue()).count(bucket.docCount()).build());
+        }
+      }
+    }
+    return results;
+  }
+
+    private StringTermsAggregate getTermsAggregationFromNested(NestedAggregate parsedNested) {
+    Aggregate nested = parsedNested.aggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
+    if (nested != null) {
+      return getTermsAggregationFromNested(nested.nested());
+    } else {
+      return parsedNested.aggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME).sterms();
+    }
+  }
 
   SearchRequest.Builder createSearchSourceBuilder(Query request) throws IOException {
     // SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
@@ -283,7 +262,7 @@ abstract class CoreQueryBase {
 
     sourceBuilder.size(QueryUtils.getResultSizeForQuery(request.getLimit()));
     sourceBuilder.query(queryBuilder.build()._toQuery());
-    sourceBuilder.timeout("1");
+    sourceBuilder.timeout(REQUEST_TIMEOUT.time());
 
     //        // set suggester
     //        if (!Objects.isNull(suggestBuilder)) {
@@ -331,10 +310,10 @@ abstract class CoreQueryBase {
     return sourceBuilder;
   }
 
-  SearchResponse<Void> makeSearchRequest(Query searchRequest, ElasticsearchClient client) {
+  SearchResponse<Map<String, Object>> makeSearchRequest(Query searchRequest, ElasticsearchClient client) {
     long startTime = 0L;
     SearchRequest elasticSearchRequest = null;
-    SearchResponse<Void> searchResponse = null;
+    SearchResponse<Map<String, Object>> searchResponse = null;
     int statusCode = 0;
 
     try {
@@ -349,7 +328,7 @@ abstract class CoreQueryBase {
       }
 
       startTime = System.currentTimeMillis();
-      searchResponse = client.search(elasticSearchRequest, Void.class);
+      searchResponse = client.search(elasticSearchRequest, (Type) Map.class);
       return searchResponse;
     } catch (ElasticsearchException e) {
       switch (e.status()) {

@@ -15,13 +15,17 @@
 package org.opengroup.osdu.search.provider.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.ExpandWildcard;
+import co.elastic.clients.elasticsearch._types.SearchType;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
 import java.io.IOException;
+import java.util.*;
 import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.core.common.model.search.AggregationResponse;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryResponse;
@@ -29,7 +33,6 @@ import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.IAggregationParserUtil;
-import org.opengroup.osdu.search.util.SearchRequestUtil;
 import org.opengroup.osdu.search.util.SuggestionsQueryUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,26 +54,28 @@ public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService
 
   private QueryResponse executeQuery(QueryRequest searchRequest, ElasticsearchClient client)
       throws AppException {
-    SearchResponse<Void> searchResponse = this.makeSearchRequest(searchRequest, client);
-    // List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
-    // List<AggregationResponse> aggregations = getAggregationFromSearchResponse(searchResponse);
+    SearchResponse<Map<String, Object>> searchResponse =
+        this.makeSearchRequest(searchRequest, client);
+    List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
+    List<AggregationResponse> aggregations = getAggregationFromSearchResponse(searchResponse);
+
     // List<String> phraseSuggestions =
     // suggestionsQueryUtil.getPhraseSuggestionsFromSearchResponse(searchResponse);
 
-    //        QueryResponse queryResponse = QueryResponse.getEmptyResponse();
-    //        if (searchResponse.getHits().getTotalHits() == null) {
-    //            queryResponse.setTotalCount(0);
-    //        } else {
-    //            queryResponse.setTotalCount(searchResponse.getHits().getTotalHits().value);
-    //        }
-    //        if (results != null) {
-    //            queryResponse.setAggregations(aggregations);
-    //            queryResponse.setResults(results);
-    //        }
-    //        if (phraseSuggestions != null) {
-    //            queryResponse.setPhraseSuggestions(phraseSuggestions);
-    //        }
     QueryResponse queryResponse = QueryResponse.getEmptyResponse();
+    if (Objects.isNull(searchResponse.hits().total())) {
+      queryResponse.setTotalCount(0);
+    } else {
+      queryResponse.setTotalCount(searchResponse.hits().total().value());
+    }
+
+    if (Objects.nonNull(results)) {
+      queryResponse.setAggregations(aggregations);
+      queryResponse.setResults(results);
+    }
+    //    if (phraseSuggestions != null) {
+    //      queryResponse.setPhraseSuggestions(phraseSuggestions);
+    //    }
     return queryResponse;
   }
 
@@ -78,22 +83,22 @@ public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService
   SearchRequest createElasticRequest(Query request, String index) throws AppException, IOException {
     QueryRequest searchRequest = (QueryRequest) request;
 
-    // set the indexes to org.opengroup.osdu.search.search against
-    var elasticSearchRequest = SearchRequestUtil.createSearchRequest(index);
-
     // build query
     var sourceBuilder = this.createSearchSourceBuilder(request);
     sourceBuilder.from(searchRequest.getFrom());
+    sourceBuilder
+        .index(index)
+        .allowNoIndices(true)
+        .expandWildcards(ExpandWildcard.Open, ExpandWildcard.Closed);
+    sourceBuilder.searchType(SearchType.QueryThenFetch);
 
     // aggregation
     if (!Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
-      sourceBuilder
-          .build(); // (aggregationParserUtil.parseAggregation(searchRequest.getAggregateBy()));
+      sourceBuilder.aggregations(
+          "nested", aggregationParserUtil.parseAggregation(searchRequest.getAggregateBy()));
     }
 
-    elasticSearchRequest.query(sourceBuilder.build().query());
-
-    return elasticSearchRequest.build();
+    return sourceBuilder.build();
   }
 
   @Override

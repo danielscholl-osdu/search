@@ -101,15 +101,15 @@ public class QueryParserUtil implements IQueryParserUtil {
         BoolQuery.Builder boolQueryBuilder = new BoolQuery.Builder();
         for (QueryNode queryNode : queryNodes) {
             switch (queryNode.getOperator() != null ? queryNode.getOperator() : Operator.AND) {
-//                case AND:
-//                    boolQueryBuilder.must(queryNode.toQueryBuilder());
-//                    break;
-//                case OR:
-//                    boolQueryBuilder.should(queryNode.toQueryBuilder().build().query());
-//                    break;
-//                case NOT:
-//                    boolQueryBuilder.mustNot(queryNode.toQueryBuilder().build().query());
-//                    break;
+                case AND:
+          boolQueryBuilder.must(queryNode.toQueryBuilder().build());
+                    break;
+                case OR:
+                    boolQueryBuilder.should(queryNode.toQueryBuilder().build());
+                    break;
+                case NOT:
+                    boolQueryBuilder.mustNot(queryNode.toQueryBuilder().build());
+                    break;
             }
         }
         return boolQueryBuilder;

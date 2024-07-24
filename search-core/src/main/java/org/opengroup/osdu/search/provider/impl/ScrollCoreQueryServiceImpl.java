@@ -18,22 +18,21 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.Time;
 import co.elastic.clients.elasticsearch.core.ScrollRequest;
-import co.elastic.clients.elasticsearch.core.ScrollResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.search.ResponseBody;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.xml.bind.DatatypeConverter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
-import jakarta.inject.Inject;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.xml.bind.DatatypeConverter;
 import org.apache.http.ContentTooLongException;
 import org.apache.http.HttpStatus;
-
-import org.elasticsearch.client.RequestOptions;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
 import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
@@ -121,7 +120,7 @@ public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScroll
     private void executeCursorPaginationQuery(CursorQueryRequest searchRequest, CursorQueryResponse queryResponse, ElasticsearchClient client, CursorSettings cursorSettings) throws IOException {
         ScrollRequest scrollRequest = ScrollRequest.of(sr -> sr.scrollId(searchRequest.getCursor()).scroll(SEARCH_SCROLL_TIMEOUT));
         Long startTime = System.currentTimeMillis();
-        ScrollResponse<Void> searchResponse = client.scroll(scrollRequest, Void.class);
+        ResponseBody<Map<String, Object>> searchResponse = client.scroll(scrollRequest, (Type)Map.class);
         Long latency = System.currentTimeMillis() - startTime;
 
         List<Map<String, Object>> results = getHitsFromSearchResponse(searchResponse);
