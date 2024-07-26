@@ -1,7 +1,8 @@
 package org.opengroup.osdu.search.util;
 
+import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.aggregations.*;
-import java.io.StringReader;
+import co.elastic.clients.util.NamedValue;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,25 +61,25 @@ public class AggregationParserUtil implements IAggregationParserUtil {
       fieldGroup = nestedMatcher.group(FIELD_GROUP);
 
       Aggregation nestedAggregation =
-          AggregationBuilders.nested()
-              .path(pathGroup)
-              .build()
-              ._toAggregation();
+          AggregationBuilders.nested().path(pathGroup).build()._toAggregation();
       builderStack.push(nestedAggregation);
 
       nestedMatcher.reset(fieldGroup);
       if (!nestedMatcher.find()) {
         Aggregation nestedAggregationLast =
-            AggregationBuilders.nested()
-                .path(pathGroup)
-                .build()
-                ._toAggregation();
+            AggregationBuilders.nested().path(pathGroup).build()._toAggregation();
         termsAggregationBuilder.field(pathGroup + "." + fieldGroup);
         termsAggregationBuilder.size(configurationProperties.getAggregationSize());
+        termsAggregationBuilder.minDocCount(1);
+        termsAggregationBuilder.showTermDocCountError(false);
+        termsAggregationBuilder.order(
+            List.of(NamedValue.of("_count", SortOrder.Desc), NamedValue.of("_key", SortOrder.Asc)));
+
         Aggregation resultAggregation =
             new Aggregation.Builder()
                 .nested(nestedAggregationLast.nested())
-                .aggregations(Map.of(TERM_AGGREGATION_NAME, termsAggregationBuilder.build()._toAggregation()))
+                .aggregations(
+                    Map.of(TERM_AGGREGATION_NAME, termsAggregationBuilder.build()._toAggregation()))
                 .build();
         builderStack.pop();
         builderStack.push(resultAggregation);

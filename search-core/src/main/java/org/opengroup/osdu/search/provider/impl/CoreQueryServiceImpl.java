@@ -48,8 +48,7 @@ public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService
   @Override
   public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
     ElasticsearchClient client = this.elasticClientHandler.getOrCreateRestClient();
-    QueryResponse queryResponse = this.executeQuery(searchRequest, client);
-    return queryResponse;
+    return this.executeQuery(searchRequest, client);
   }
 
   private QueryResponse executeQuery(QueryRequest searchRequest, ElasticsearchClient client)
@@ -59,8 +58,8 @@ public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService
     List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
     List<AggregationResponse> aggregations = getAggregationFromSearchResponse(searchResponse);
 
-    // List<String> phraseSuggestions =
-    // suggestionsQueryUtil.getPhraseSuggestionsFromSearchResponse(searchResponse);
+    List<String> phraseSuggestions =
+        suggestionsQueryUtil.getPhraseSuggestionsFromSearchResponse(searchResponse);
 
     QueryResponse queryResponse = QueryResponse.getEmptyResponse();
     if (Objects.isNull(searchResponse.hits().total())) {
@@ -73,9 +72,9 @@ public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService
       queryResponse.setAggregations(aggregations);
       queryResponse.setResults(results);
     }
-    //    if (phraseSuggestions != null) {
-    //      queryResponse.setPhraseSuggestions(phraseSuggestions);
-    //    }
+    if (phraseSuggestions != null) {
+      queryResponse.setPhraseSuggestions(phraseSuggestions);
+    }
     return queryResponse;
   }
 

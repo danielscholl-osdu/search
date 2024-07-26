@@ -1,16 +1,19 @@
-// Copyright 2017-2019, Schlumberger
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ *  Copyright 2020-2024 Google LLC
+ *  Copyright 2020-2024 EPAM Systems, Inc
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
 package org.opengroup.osdu.search.provider.impl;
 
@@ -30,41 +33,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import java.util.*;
 import org.apache.http.ContentTooLongException;
-// import org.elasticsearch.ElasticsearchStatusException;
-// import org.elasticsearch.action.search.SearchRequest;
-// import org.elasticsearch.action.search.SearchResponse;
-// import org.elasticsearch.client.RequestOptions;
-// import org.elasticsearch.client.RestHighLevelClient;
-// import org.elasticsearch.common.text.Text;
-// import org.elasticsearch.common.unit.TimeValue;
-// import org.elasticsearch.index.query.BoolQueryBuilder;
-// import org.elasticsearch.index.query.QueryBuilder;
-// import org.elasticsearch.index.query.QueryBuilders;
-// import org.elasticsearch.index.query.TermsQueryBuilder;
-// import org.elasticsearch.index.query.WrapperQueryBuilder;
-// import org.elasticsearch.rest.RestStatus;
-// import org.elasticsearch.search.SearchHit;
-// import org.elasticsearch.search.SearchHits;
-// import org.elasticsearch.search.aggregations.Aggregation;
-// import org.elasticsearch.search.aggregations.bucket.nested.ParsedNested;
-// import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-// import org.elasticsearch.search.builder.SearchSourceBuilder;
-// import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
-// import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
-// import org.elasticsearch.search.sort.FieldSortBuilder;
-// import org.elasticsearch.search.suggest.SuggestBuilder;
 import org.opengroup.osdu.core.common.feature.IFeatureFlag;
 import org.opengroup.osdu.core.common.http.CollaborationContextFactory;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
@@ -82,6 +52,7 @@ import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 
 abstract class CoreQueryBase {
 
@@ -108,11 +79,11 @@ abstract class CoreQueryBase {
   // if returnedField contains property matching from excludes than query result will NOT include
   // that property
   private final Set<String> excludes =
-      new HashSet<>(Arrays.asList(RecordMetaAttribute.X_ACL.getValue()));
+      new HashSet<>(Collections.singletonList(RecordMetaAttribute.X_ACL.getValue()));
 
   // queryableExcludes properties can be returned by query results
   private final Set<String> queryableExcludes =
-      new HashSet<>(Arrays.asList(RecordMetaAttribute.INDEX_STATUS.getValue()));
+      new HashSet<>(Collections.singletonList(RecordMetaAttribute.INDEX_STATUS.getValue()));
 
   BoolQuery.Builder buildQuery(String simpleQuery, SpatialFilter spatialFilter, boolean asOwner)
       throws AppException, IOException {
@@ -195,21 +166,20 @@ abstract class CoreQueryBase {
     return this.crossTenantUtils.getIndexName(request);
   }
 
-  List<Map<String, Object>> getHitsFromSearchResponse(ResponseBody<Map<String, Object>> searchResponse) {
+  List<Map<String, Object>> getHitsFromSearchResponse(
+      ResponseBody<Map<String, Object>> searchResponse) {
     List<Map<String, Object>> results = new ArrayList<>();
     HitsMetadata<Map<String, Object>> searchHits = searchResponse.hits();
 
-    if (searchHits.hits() != null && !searchHits.hits().isEmpty()){
-      for(Hit<Map<String, Object>> hit: searchHits.hits()){
+    if (searchHits.hits() != null && !searchHits.hits().isEmpty()) {
+      for (Hit<Map<String, Object>> hit : searchHits.hits()) {
         Map<String, Object> hitFields = hit.source();
         if (hit.highlight() != null && !hit.highlight().isEmpty()) {
           Map<String, List<String>> highlights = new HashMap<>();
           for (Map.Entry<String, List<String>> entry : hit.highlight().entrySet()) {
             String fieldName = entry.getKey();
             if (!fieldName.equalsIgnoreCase(RecordMetaAttribute.X_ACL.getValue())) {
-              highlights.put(fieldName, entry.getValue().stream()
-                      .map(String::toString)
-                      .collect(Collectors.toList()));
+              highlights.put(fieldName, entry.getValue().stream().map(String::toString).toList());
             }
           }
           hitFields.put("highlight", highlights);
@@ -220,31 +190,39 @@ abstract class CoreQueryBase {
     return results;
   }
 
-  List<AggregationResponse> getAggregationFromSearchResponse(SearchResponse<Map<String, Object>> searchResponse) {
+  List<AggregationResponse> getAggregationFromSearchResponse(
+      SearchResponse<Map<String, Object>> searchResponse) {
     List<AggregationResponse> results = null;
     if (searchResponse.aggregations() != null) {
       StringTermsAggregate kindAgg = null;
-      NestedAggregate nestedAggregate = searchResponse.aggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME).nested();
+      NestedAggregate nestedAggregate =
+          searchResponse.aggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME).nested();
 
-      if(Objects.nonNull(nestedAggregate)){
+      if (Objects.nonNull(nestedAggregate)) {
         kindAgg = getTermsAggregationFromNested(nestedAggregate);
-      }else {
-        kindAgg = searchResponse.aggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME).sterms();
+      } else {
+        kindAgg =
+            searchResponse.aggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME).sterms();
       }
-      if(Objects.nonNull(kindAgg.buckets()) && kindAgg.buckets().isArray()){
+      if (Objects.nonNull(kindAgg.buckets()) && kindAgg.buckets().isArray()) {
         results = new ArrayList<>();
 
         for (StringTermsBucket bucket : kindAgg.buckets().array()) {
-          results.add(AggregationResponse.builder().key(bucket.key().stringValue()).count(bucket.docCount()).build());
+          results.add(
+              AggregationResponse.builder()
+                  .key(bucket.key().stringValue())
+                  .count(bucket.docCount())
+                  .build());
         }
       }
     }
     return results;
   }
 
-    private StringTermsAggregate getTermsAggregationFromNested(NestedAggregate parsedNested) {
-    Aggregate nested = parsedNested.aggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
-    if (nested != null) {
+  private StringTermsAggregate getTermsAggregationFromNested(NestedAggregate parsedNested) {
+    Aggregate nested =
+        parsedNested.aggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
+    if (Objects.nonNull(nested)) {
       return getTermsAggregationFromNested(nested.nested());
     } else {
       return parsedNested.aggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME).sterms();
@@ -252,22 +230,22 @@ abstract class CoreQueryBase {
   }
 
   SearchRequest.Builder createSearchSourceBuilder(Query request) throws IOException {
-    // SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-    var sourceBuilder = new SearchRequest.Builder();
+    SearchRequest.Builder sourceBuilder = new SearchRequest.Builder();
+
     // build query: set query options and query
-    var queryBuilder =
+    BoolQuery.Builder queryBuilder =
         buildQuery(request.getQuery(), request.getSpatialFilter(), request.isQueryAsOwner());
-    //        SuggestBuilder suggestBuilder =
-    // suggestionsQueryUtil.getSuggestions(request.getSuggestPhrase());
+
+    Suggester suggestBuilder = suggestionsQueryUtil.getSuggestions(request.getSuggestPhrase());
 
     sourceBuilder.size(QueryUtils.getResultSizeForQuery(request.getLimit()));
     sourceBuilder.query(queryBuilder.build()._toQuery());
     sourceBuilder.timeout(REQUEST_TIMEOUT.time());
 
-    //        // set suggester
-    //        if (!Objects.isNull(suggestBuilder)) {
-    //           sourceBuilder.suggest(suggestBuilder);
-    //        }
+    // set suggester
+    if (!Objects.isNull(suggestBuilder)) {
+      sourceBuilder.suggest(suggestBuilder);
+    }
 
     if (request.isTrackTotalCount()) {
       sourceBuilder.trackTotalHits(tth -> tth.enabled(true));
@@ -310,7 +288,8 @@ abstract class CoreQueryBase {
     return sourceBuilder;
   }
 
-  SearchResponse<Map<String, Object>> makeSearchRequest(Query searchRequest, ElasticsearchClient client) {
+  SearchResponse<Map<String, Object>> makeSearchRequest(
+      Query searchRequest, ElasticsearchClient client) {
     long startTime = 0L;
     SearchRequest elasticSearchRequest = null;
     SearchResponse<Map<String, Object>> searchResponse = null;
@@ -332,7 +311,7 @@ abstract class CoreQueryBase {
       return searchResponse;
     } catch (ElasticsearchException e) {
       switch (e.status()) {
-        case 404:
+        case HttpStatus.NOT_FOUND.value():
           throw new AppException(
               HttpServletResponse.SC_NOT_FOUND,
               "Not Found",

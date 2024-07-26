@@ -15,11 +15,11 @@
 package org.opengroup.osdu.search.provider.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.ElasticsearchException;
-import co.elastic.clients.elasticsearch._types.Time;
+import co.elastic.clients.elasticsearch._types.*;
 import co.elastic.clients.elasticsearch.core.ScrollRequest;
+import co.elastic.clients.elasticsearch.core.ScrollResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch.core.search.ResponseBody;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
@@ -44,152 +44,198 @@ import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.IQueryPerformanceLogger;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
-import org.opengroup.osdu.search.util.SearchRequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScrollQueryService {
 
-    private final Time SEARCH_SCROLL_TIMEOUT = Time.of(t -> t.time("90s"));
+  private static final Time SEARCH_SCROLL_TIMEOUT = Time.of(t -> t.time("90s"));
 
-    @Inject
-    private ElasticClientHandler elasticClientHandler;
-    @Inject
-    private CursorCache cursorCache;
-    @Inject
-    private AuditLogger auditLogger;
-    @Autowired
-    private ResponseExceptionParser exceptionParser;
-    @Autowired
-    private IQueryPerformanceLogger tracingLogger;
+  @Inject private ElasticClientHandler elasticClientHandler;
+  @Inject private CursorCache cursorCache;
+  @Inject private AuditLogger auditLogger;
+  @Autowired private ResponseExceptionParser exceptionParser;
+  @Autowired private IQueryPerformanceLogger tracingLogger;
 
-    private final MessageDigest digest;
+  private final MessageDigest digest;
 
-    public ScrollCoreQueryServiceImpl() throws NoSuchAlgorithmException {
-        this.digest = MessageDigest.getInstance("MD5");
-    }
+  public ScrollCoreQueryServiceImpl() throws NoSuchAlgorithmException {
+    this.digest = MessageDigest.getInstance("MD5");
+  }
 
-    @Override
-    public CursorQueryResponse queryIndex(CursorQueryRequest searchRequest) throws Exception {
+  @Override
+  public CursorQueryResponse queryIndex(CursorQueryRequest searchRequest) throws Exception {
 
-        CursorQueryResponse queryResponse = CursorQueryResponse.getEmptyResponse();
-
-        ElasticsearchClient client = this.elasticClientHandler.getOrCreateRestClient();
-            if (Strings.isNullOrEmpty(searchRequest.getCursor())) {
-                try {
-                    return this.initCursorQuery(searchRequest, client);
-                } catch (AppException e) {
-                    if (this.exceptionParser.parseException(e).stream().anyMatch(r -> r.contains("Trying to create too many scroll contexts. Must be less than or equal to:"))) {
-                        throw new AppException(429, "Too many requests", "Too many cursor requests, please re-try after some time.", e);
-                    }
-                    throw e;
-                }
-            } else {
-                try {
-                    CursorSettings cursorSettings = this.cursorCache.get(searchRequest.getCursor());
-                    if (cursorSettings != null) {
-                        if (!this.dpsHeaders.getUserEmail().equals(cursorSettings.getUserId())) {
-                            throw new AppException(HttpServletResponse.SC_FORBIDDEN, "cursor issuer doesn't match the cursor consumer", "cursor sharing is forbidden");
-                        }
-
-                        executeCursorPaginationQuery(searchRequest, queryResponse, client, cursorSettings);
-                    } else {
-                        throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired");
-                    }
-                } catch (AppException e) {
-                    throw e;
-                } catch (ElasticsearchException e) {
-                    String invalidScrollMessage = "No search context found for id";
-                    if (e.status() == 404
-                            && (e.getMessage().startsWith(invalidScrollMessage)) || this.exceptionParser.parseException(e).stream().anyMatch(r -> r.contains(invalidScrollMessage)))
-                        throw new AppException(HttpStatus.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired", e);
-                    throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
-                } catch (IOException e) {
-                    if (e.getCause() instanceof ContentTooLongException) {
-                        throw new AppException(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Response is too long", "Elasticsearch response is too long, max is 100Mb", e);
-                    }
-                    throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
-                } catch (Exception e) {
-                    throw new AppException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Search error", "Error processing search request", e);
-                }
+    CursorQueryResponse queryResponse = CursorQueryResponse.getEmptyResponse();
+    try {
+      ElasticsearchClient client = this.elasticClientHandler.getOrCreateRestClient();
+      if (Strings.isNullOrEmpty(searchRequest.getCursor())) {
+        try {
+          return this.initCursorQuery(searchRequest, client);
+        } catch (AppException e) {
+          if (this.exceptionParser.parseException(e).stream()
+              .anyMatch(
+                  r ->
+                      r.contains(
+                          "Trying to create too many scroll contexts. Must be less than or equal to:"))) {
+            throw new AppException(
+                429,
+                "Too many requests",
+                "Too many cursor requests, please re-try after some time.",
+                e);
+          }
+          throw e;
+        }
+      } else {
+        try {
+          CursorSettings cursorSettings = this.cursorCache.get(searchRequest.getCursor());
+          if (cursorSettings != null) {
+            if (!this.dpsHeaders.getUserEmail().equals(cursorSettings.getUserId())) {
+              throw new AppException(
+                  HttpServletResponse.SC_FORBIDDEN,
+                  "cursor issuer doesn't match the cursor consumer",
+                  "cursor sharing is forbidden");
             }
-            return queryResponse;
-    }
 
-    private void executeCursorPaginationQuery(CursorQueryRequest searchRequest, CursorQueryResponse queryResponse, ElasticsearchClient client, CursorSettings cursorSettings) throws IOException {
-        ScrollRequest scrollRequest = ScrollRequest.of(sr -> sr.scrollId(searchRequest.getCursor()).scroll(SEARCH_SCROLL_TIMEOUT));
-        Long startTime = System.currentTimeMillis();
-        ResponseBody<Map<String, Object>> searchResponse = client.scroll(scrollRequest, (Type)Map.class);
-        Long latency = System.currentTimeMillis() - startTime;
-
-        List<Map<String, Object>> results = getHitsFromSearchResponse(searchResponse);
-        queryResponse.setTotalCount(searchResponse.hits().total().value());
-        if (results != null) {
-            queryResponse.setResults(results);
-            queryResponse.setCursor(this.refreshCursorCache(searchResponse.scrollId(), dpsHeaders.getUserEmail()));
-            this.querySuccessAuditLogger(searchRequest);
+            executeCursorPaginationQuery(searchRequest, queryResponse, client, cursorSettings);
+          } else {
+            throw new AppException(
+                HttpServletResponse.SC_BAD_REQUEST,
+                "Can't find the given cursor",
+                "The given cursor is invalid or expired");
+          }
+        } catch (AppException e) {
+          throw e;
+        } catch (ElasticsearchException e) {
+          String invalidScrollMessage = "No search context found for id";
+          if (e.status() == 404 && (e.getMessage().startsWith(invalidScrollMessage))
+              || this.exceptionParser.parseException(e).stream()
+                  .anyMatch(r -> r.contains(invalidScrollMessage)))
+            throw new AppException(
+                HttpStatus.SC_BAD_REQUEST,
+                "Can't find the given cursor",
+                "The given cursor is invalid or expired",
+                e);
+          throw new AppException(
+              HttpStatus.SC_INTERNAL_SERVER_ERROR,
+              "Search error",
+              "Error processing search request",
+              e);
+        } catch (IOException e) {
+          if (e.getCause() instanceof ContentTooLongException) {
+            throw new AppException(
+                HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE,
+                "Response is too long",
+                "Elasticsearch response is too long, max is 100Mb",
+                e);
+          }
+          throw new AppException(
+              HttpStatus.SC_INTERNAL_SERVER_ERROR,
+              "Search error",
+              "Error processing search request",
+              e);
+        } catch (Exception e) {
+          throw new AppException(
+              HttpStatus.SC_INTERNAL_SERVER_ERROR,
+              "Search error",
+              "Error processing search request",
+              e);
         }
-        //int statusCode = searchResponse.shards().failures();
-        tracingLogger.log(searchRequest, latency, 200);
+      }
+      return queryResponse;
+    } catch (AppException e) {
+      throw e;
+    }
+  }
+
+  private void executeCursorPaginationQuery(
+      CursorQueryRequest searchRequest,
+      CursorQueryResponse queryResponse,
+      ElasticsearchClient client,
+      CursorSettings cursorSettings)
+      throws IOException {
+
+    ScrollRequest scrollRequest =
+        ScrollRequest.of(
+            sr -> sr.scrollId(cursorSettings.getCursor()).scroll(SEARCH_SCROLL_TIMEOUT));
+
+    long startTime = System.currentTimeMillis();
+    ScrollResponse<Map<String, Object>> scrollResponse =
+        client.scroll(scrollRequest, (Type) Map.class);
+    Long latency = System.currentTimeMillis() - startTime;
+
+    List<Map<String, Object>> results = getHitsFromSearchResponse(scrollResponse);
+    queryResponse.setTotalCount(scrollResponse.hits().total().value());
+    if (results != null) {
+      queryResponse.setResults(results);
+      queryResponse.setCursor(
+          this.refreshCursorCache(scrollResponse.scrollId(), dpsHeaders.getUserEmail()));
+      this.querySuccessAuditLogger(searchRequest);
     }
 
-    private CursorQueryResponse initCursorQuery(CursorQueryRequest searchRequest, ElasticsearchClient client) {
-        return this.executeCursorQuery(searchRequest, client);
+    tracingLogger.log(searchRequest, latency, 200);
+  }
+
+  private CursorQueryResponse initCursorQuery(
+      CursorQueryRequest searchRequest, ElasticsearchClient client) {
+    return this.executeCursorQuery(searchRequest, client);
+  }
+
+  private CursorQueryResponse executeCursorQuery(
+      CursorQueryRequest searchRequest, ElasticsearchClient client) throws AppException {
+
+    SearchResponse<Map<String, Object>> searchResponse =
+        this.makeSearchRequest(searchRequest, client);
+    List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
+    if (results != null) {
+      return CursorQueryResponse.builder()
+          .cursor(refreshCursorCache(searchResponse.scrollId(), dpsHeaders.getUserEmail()))
+          .results(results)
+          .totalCount(searchResponse.hits().total().value())
+          .build();
     }
+    return CursorQueryResponse.getEmptyResponse();
+  }
 
-    private CursorQueryResponse executeCursorQuery(CursorQueryRequest searchRequest, ElasticsearchClient client) throws AppException {
+  @Override
+  SearchRequest createElasticRequest(Query request, String index) throws AppException, IOException {
+    // build query
+    SearchRequest.Builder searchSourceBuilder = this.createSearchSourceBuilder(request);
+    searchSourceBuilder
+        .index(index)
+        .allowNoIndices(true)
+        .expandWildcards(ExpandWildcard.Open, ExpandWildcard.Closed);
 
-//        SearchResponse searchResponse = this.makeSearchRequest(searchRequest, client);
-//        //List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
-//        if (results != null) {
-//            return CursorQueryResponse.builder()
-//                    .cursor(refreshCursorCache(searchResponse.getScrollId(), dpsHeaders.getUserEmail()))
-//                    .results(results)
-//                    .totalCount(searchResponse.getHits().getTotalHits().value)
-//                    .build();
-//        }
-        return CursorQueryResponse.getEmptyResponse();
+    // Optimize Scroll request if users wants to iterate over all documents regardless of order
+    if (request.getSort() == null) { // ScoreSort.of(s -> s.order(SortOrder.Desc))
+      searchSourceBuilder
+          .sort(SortOptions.of(so -> so.score(s -> s.order(SortOrder.Desc))))
+          .sort(SortOptions.of(so -> so.doc(d -> d.order(SortOrder.Asc))));
     }
+    searchSourceBuilder.scroll(SEARCH_SCROLL_TIMEOUT);
 
-    @Override
-    SearchRequest createElasticRequest(Query request, String index) throws AppException, IOException {
+    return searchSourceBuilder.build();
+  }
 
-        // set the indexes to search against
-        SearchRequest.Builder elasticSearchRequest = SearchRequestUtil.createSearchRequest(index);
-
-        // build query
-        var sourceBuilder = this.createSearchSourceBuilder(request);
-
-        // Optimize Scroll request if users wants to iterate over all documents regardless of order
-        if (request.getSort() == null) {
-//            sourceBuilder.sort(s -> s.score()SortBuilders.scoreSort());
-//            sourceBuilder.sort(SortBuilders.fieldSort("_doc"));
-        }
-
-       // elasticSearchRequest.source(sourceBuilder);
-        elasticSearchRequest.scroll(SEARCH_SCROLL_TIMEOUT);
-
-        return elasticSearchRequest.build();
+  String refreshCursorCache(String rawCursor, String userId) {
+    if (rawCursor != null) {
+      this.digest.update(rawCursor.getBytes());
+      String hashCursor = DatatypeConverter.printHexBinary(this.digest.digest()).toUpperCase();
+      this.cursorCache.put(
+          hashCursor, CursorSettings.builder().cursor(rawCursor).userId(userId).build());
+      return hashCursor;
     }
+    return null;
+  }
 
-    String refreshCursorCache(String rawCursor, String userId) {
-        if (rawCursor != null) {
-            this.digest.update(rawCursor.getBytes());
-            String hashCursor = DatatypeConverter.printHexBinary(this.digest.digest()).toUpperCase();
-            this.cursorCache.put(hashCursor, CursorSettings.builder().cursor(rawCursor).userId(userId).build());
-            return hashCursor;
-        }
-        return null;
-    }
+  @Override
+  void querySuccessAuditLogger(Query request) {
+    this.auditLogger.queryIndexWithCursorSuccess(Lists.newArrayList(request.toString()));
+  }
 
-    @Override
-    void querySuccessAuditLogger(Query request) {
-        this.auditLogger.queryIndexWithCursorSuccess(Lists.newArrayList(request.toString()));
-    }
-
-    @Override
-    void queryFailedAuditLogger(Query request) {
-        this.auditLogger.queryIndexWithCursorFailed(Lists.newArrayList(request.toString()));
-    }
+  @Override
+  void queryFailedAuditLogger(Query request) {
+    this.auditLogger.queryIndexWithCursorFailed(Lists.newArrayList(request.toString()));
+  }
 }

@@ -1,8 +1,9 @@
 package org.opengroup.osdu.search.model;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch._types.query_dsl.QueryBase.AbstractBuilder;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryStringQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,16 +22,30 @@ public class QueryNode {
     this.operator = Operator.fromValue(operator);
   }
 
-//  public AbstractBuilder toQueryBuilder() {
-//    String query = isNotBlank(queryString) ? queryString : "*";
-//    return new QueryStringQuery.Builder().query(query).allowLeadingWildcard(false);
-//  }
+  //  public AbstractBuilder toQueryBuilder() {
+  //    String query = isNotBlank(queryString) ? queryString : "*";
+  //    return new QueryStringQuery.Builder().query(query).allowLeadingWildcard(false);
+  //  }
 
   public Query.Builder toQueryBuilder() {
     String query = (queryString != null && !queryString.trim().isEmpty()) ? queryString : "*";
-    QueryStringQuery.Builder queryStringQuery = new QueryStringQuery.Builder()
+    QueryStringQuery.Builder queryStringQuery =
+        new QueryStringQuery.Builder()
             .query(query)
-            .allowLeadingWildcard(false);
+            .allowLeadingWildcard(false)
+            .type(TextQueryType.BestFields)
+            .defaultOperator(co.elastic.clients.elasticsearch._types.query_dsl.Operator.Or)
+            .maxDeterminizedStates(1000)
+            .allowLeadingWildcard(false)
+            .enablePositionIncrements(true)
+            .fuzziness("AUTO")
+            .fuzzyPrefixLength(0)
+            .fuzzyMaxExpansions(50)
+            .phraseSlop(0.0)
+            .escape(false)
+            .autoGenerateSynonymsPhraseQuery(true)
+            .fuzzyTranspositions(true)
+            .boost(1.0f);
 
     return (Query.Builder) new Query.Builder().queryString(queryStringQuery.build());
   }
