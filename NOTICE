@@ -82,7 +82,6 @@ The following software have components provided under the terms of this license:
 - Commons Digester (from http://commons.apache.org/digester/)
 - Converter: Jackson (from https://github.com/square/retrofit, https://repo1.maven.org/maven2/com/squareup/retrofit2/converter-jackson)
 - Core functionality for the Reactor Netty library (from https://github.com/reactor/reactor-netty)
-- Data Mapper for Jackson (from http://jackson.codehaus.org)
 - Elastic JNA Distribution (from https://github.com/java-native-access/jna)
 - FindBugs-jsr305 (from http://findbugs.sourceforge.net/)
 - GAX (Google Api eXtensions) for Java (Core) (from https://github.com/googleapis, https://github.com/googleapis/gax-java, https://repo1.maven.org/maven2/com/google/api/gax)
@@ -121,7 +120,6 @@ The following software have components provided under the terms of this license:
 - JSONassert (from http://github.com/skyscreamer/yoga, https://github.com/skyscreamer/JSONassert)
 - JSR 311 API (from https://jsr311.dev.java.net, https://jsr311.dev.java.net/)
 - JSR107 API and SPI (from https://github.com/jsr107/jsr107spec)
-- Jackson (from http://jackson.codehaus.org)
 - Jackson 2 extensions to the Google APIs Client Library for Java (from https://repo1.maven.org/maven2/com/google/api-client/google-api-client-jackson2)
 - Jackson Jakarta-RS: JSON (from https://repo1.maven.org/maven2/com/fasterxml/jackson/jakarta/rs/jackson-jakarta-rs-json-provider)
 - Jackson Jakarta-RS: base (from https://repo1.maven.org/maven2/com/fasterxml/jackson/jakarta/rs/jackson-jakarta-rs-base)
@@ -200,7 +198,6 @@ The following software have components provided under the terms of this license:
 - Nimbus LangTag (from https://bitbucket.org/connect2id/nimbus-language-tags)
 - Non-Blocking Reactive Foundation for the JVM (from https://github.com/reactor/reactor, https://github.com/reactor/reactor-core)
 - OAuth 2.0 SDK with OpenID Connect extensions (from https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions)
-- OAuth2 for Spring Security (from https://repo1.maven.org/maven2/org/springframework/security/oauth/spring-security-oauth2)
 - Objenesis (from https://repo1.maven.org/maven2/org/objenesis/objenesis)
 - OkHttp (from https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp, https://square.github.io/okhttp/)
 - OkHttp Logging Interceptor (from https://github.com/square/okhttp, https://repo1.maven.org/maven2/com/squareup/okhttp3/logging-interceptor, https://square.github.io/okhttp/)
@@ -677,13 +674,6 @@ The following software have components provided under the terms of this license:
 - Spring Security - Core (from http://spring.io/spring-security, https://repo1.maven.org/maven2/org/springframework/security/spring-security-core, https://spring.io/projects/spring-security, https://spring.io/spring-security)
 
 ========================================================================
-Info-ZIP
-========================================================================
-The following software have components provided under the terms of this license:
-
-- Apache Commons Compress (from http://commons.apache.org/compress/, http://commons.apache.org/proper/commons-compress/, https://commons.apache.org/proper/commons-compress/)
-
-========================================================================
 LGPL-2.0-or-later
 ========================================================================
 The following software have components provided under the terms of this license:
@@ -862,13 +852,6 @@ The following software have components provided under the terms of this license:
 - Lucene QueryParsers (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-queryparser)
 - Lucene Sandbox (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-sandbox)
 - Lucene Spatial 3D (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-spatial3d)
-
-========================================================================
-bzip2-1.0.6
-========================================================================
-The following software have components provided under the terms of this license:
-
-- Apache Commons Compress (from http://commons.apache.org/compress/, http://commons.apache.org/proper/commons-compress/, https://commons.apache.org/proper/commons-compress/)
 
 ========================================================================
 cc-pd
