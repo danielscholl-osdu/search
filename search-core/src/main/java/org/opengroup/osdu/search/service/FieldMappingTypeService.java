@@ -17,7 +17,6 @@ package org.opengroup.osdu.search.service;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ExpandWildcard;
 import co.elastic.clients.elasticsearch._types.mapping.FieldMapping;
-import co.elastic.clients.elasticsearch._types.mapping.Property;
 import co.elastic.clients.elasticsearch.indices.GetFieldMappingRequest;
 import co.elastic.clients.elasticsearch.indices.GetFieldMappingResponse;
 import co.elastic.clients.elasticsearch.indices.get_field_mapping.TypeFieldMappings;
@@ -60,16 +59,10 @@ public class FieldMappingTypeService implements IFieldMappingTypeService {
           continue;
         }
 
-        for (Map.Entry<String, Property> property : fieldMapping.getValue().mapping().entrySet()) {
-          if (property.getValue() == null) continue;
-          String field = property.getKey();
-          String value = property.getValue().toString();
-          if (field.endsWith(".keyword")) {
-            fieldTypeMap.put(field.substring(0, field.lastIndexOf(".keyword")), value);
-          }
+        String fullName = fieldMapping.getValue().fullName();
+        fieldTypeMap.put(fullName.substring(0, fullName.lastIndexOf(".keyword")), fullName);
 
-          this.typeMappingCache.put(cacheKey, fieldTypeMap);
-        }
+        this.typeMappingCache.put(cacheKey, fieldTypeMap);
       }
     }
     //    Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> mappings =

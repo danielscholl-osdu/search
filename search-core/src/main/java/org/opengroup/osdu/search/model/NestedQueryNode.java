@@ -44,9 +44,7 @@ public class NestedQueryNode extends QueryNode {
           new NestedQuery.Builder()
               .path(path)
               .query(new Query.Builder().bool(queryBuilder.build()).build())
-              .scoreMode(ChildScoreMode.Avg)
-              .ignoreUnmapped(true)
-              .build();
+              .ignoreUnmapped(true).build();
 
       return (Query.Builder) new Query.Builder().nested(nestedQuery);
 
@@ -58,7 +56,6 @@ public class NestedQueryNode extends QueryNode {
           new NestedQuery.Builder()
               .path(path)
               .query(queryBuilder.build()._toQuery())
-              .scoreMode(ChildScoreMode.Avg)
               .ignoreUnmapped(true)
               .build();
       return (Query.Builder) new Query.Builder().nested(nestedQuery);

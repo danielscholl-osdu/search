@@ -56,9 +56,12 @@ public class SortParserUtil implements ISortParserUtil {
           .field(
               f ->
                   f.field(sortString)
-                      .order(SortOrder.valueOf(sortOrder))
+                      .order(
+                          SortOrder.Asc.jsonValue().equalsIgnoreCase(sortOrder)
+                              ? SortOrder.Asc
+                              : SortOrder.Desc)
                       .missing("_last")
-                      .unmappedType(FieldType.valueOf("keyword")))
+                      .unmappedType(FieldType.valueOf("Keyword")))
           .build();
     }
   }
@@ -151,6 +154,7 @@ public class SortParserUtil implements ISortParserUtil {
       String mode = oneLevelNestedMatcher.group(MODE_GROUP);
       if (Objects.isNull(nestedSortBuilder)) {
         nestedSortBuilder = new NestedSortValue.Builder();
+        nestedSortBuilder.path(path);
       }
       if (!Objects.isNull(filterSortQuery)) {
         nestedSortBuilder.filter(filterSortQuery.build());
@@ -158,10 +162,10 @@ public class SortParserUtil implements ISortParserUtil {
       FieldSort.Builder fieldSort = new FieldSort.Builder();
       fieldSort.field(path + "." + field);
       fieldSort.nested(nestedSortBuilder.build());
-      fieldSort.mode(SortMode.valueOf(mode.toUpperCase()));
-      fieldSort.order(SortOrder.valueOf(sortOrder.toUpperCase()));
+      fieldSort.mode(SortMode.valueOf(capitalizeFirstLetter(mode)));
+      fieldSort.order(SortOrder.valueOf(capitalizeFirstLetter(sortOrder)));
       fieldSort.missing("_last");
-      fieldSort.unmappedType(FieldType.valueOf("keyword"));
+      fieldSort.unmappedType(FieldType.Keyword);
 
       return SortOptions.of(s -> s.field(fieldSort.build()));
     }
@@ -190,5 +194,12 @@ public class SortParserUtil implements ISortParserUtil {
         HttpStatus.SC_BAD_REQUEST,
         String.format("Malformed nested sort group : %s", group),
         BAD_SORT_MESSAGE);
+  }
+
+  private static String capitalizeFirstLetter(String str) {
+    if (str == null || str.isEmpty()) {
+      return str;
+    }
+    return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
   }
 }

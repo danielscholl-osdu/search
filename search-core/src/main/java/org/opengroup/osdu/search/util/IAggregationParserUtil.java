@@ -5,5 +5,5 @@ import java.util.Map;
 
 public interface IAggregationParserUtil {
 
-  Aggregation parseAggregation(String aggregation);
+  Map<String, Aggregation> parseAggregation(String aggregation);
 }

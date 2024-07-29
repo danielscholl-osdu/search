@@ -29,13 +29,14 @@ public class AggregationParserUtil implements IAggregationParserUtil {
   private final SearchConfigurationProperties configurationProperties;
 
   @Override
-  public Aggregation parseAggregation(String aggregation) {
+  public Map<String, Aggregation> parseAggregation(String aggregation) {
     TermsAggregation.Builder termsAggregationBuilder = new TermsAggregation.Builder();
-
+    Map<String, Aggregation> aggregationMap = new HashMap<>();
     if (aggregation.contains("nested(") || aggregation.contains("nested (")) {
       Matcher nestedMatcher = nestedAggregationPattern.matcher(aggregation);
       if (nestedMatcher.find()) {
-        return parseNestedInDepth(aggregation, termsAggregationBuilder);
+        aggregationMap.put(NESTED_AGGREGATION_NAME, parseNestedInDepth(aggregation, termsAggregationBuilder));
+        return aggregationMap;
       } else {
         throw new AppException(
             HttpStatus.SC_BAD_REQUEST,
@@ -45,7 +46,8 @@ public class AggregationParserUtil implements IAggregationParserUtil {
     } else {
       termsAggregationBuilder.field(aggregation);
       termsAggregationBuilder.size(configurationProperties.getAggregationSize());
-      return termsAggregationBuilder.build()._toAggregation();
+      aggregationMap.put(TERM_AGGREGATION_NAME, termsAggregationBuilder.build()._toAggregation());
+      return aggregationMap;
     }
   }
 

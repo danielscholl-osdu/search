@@ -199,7 +199,7 @@ public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScroll
   }
 
   @Override
-  SearchRequest createElasticRequest(Query request, String index) throws AppException, IOException {
+  SearchRequest.Builder createElasticRequest(Query request, String index) throws AppException, IOException {
     // build query
     SearchRequest.Builder searchSourceBuilder = this.createSearchSourceBuilder(request);
     searchSourceBuilder
@@ -215,7 +215,7 @@ public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScroll
     }
     searchSourceBuilder.scroll(SEARCH_SCROLL_TIMEOUT);
 
-    return searchSourceBuilder.build();
+    return searchSourceBuilder;
   }
 
   String refreshCursorCache(String rawCursor, String userId) {

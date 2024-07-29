@@ -17,6 +17,7 @@ package org.opengroup.osdu.search.provider.impl;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ExpandWildcard;
 import co.elastic.clients.elasticsearch._types.SearchType;
+import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.google.common.base.Strings;
@@ -33,6 +34,7 @@ import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.IAggregationParserUtil;
+import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.SuggestionsQueryUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,8 @@ public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService
   @Inject private AuditLogger auditLogger;
   @Inject private IAggregationParserUtil aggregationParserUtil;
   @Autowired private SuggestionsQueryUtil suggestionsQueryUtil;
+
+  @Autowired private ISortParserUtil sortParserUtil;
 
   @Override
   public QueryResponse queryIndex(QueryRequest searchRequest) throws IOException {
@@ -79,7 +83,7 @@ public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService
   }
 
   @Override
-  SearchRequest createElasticRequest(Query request, String index) throws AppException, IOException {
+  SearchRequest.Builder createElasticRequest(Query request, String index) throws AppException, IOException {
     QueryRequest searchRequest = (QueryRequest) request;
 
     // build query
@@ -88,16 +92,23 @@ public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService
     sourceBuilder
         .index(index)
         .allowNoIndices(true)
-        .expandWildcards(ExpandWildcard.Open, ExpandWildcard.Closed);
-    sourceBuilder.searchType(SearchType.QueryThenFetch);
+        .expandWildcards(ExpandWildcard.Open, ExpandWildcard.Closed)
+            .ignoreUnavailable(true)
+            .ignoreThrottled(true);
 
+
+            //ignore_unavailable=true, allow_no_indices=true, expand_wildcards_open=true, expand_wildcards_closed=false, expand_wildcards_hidden=false, allow_aliases_to_multiple_indices=true, forbid_closed_indices=true, ignore_aliases=false, ignore_throttled=true
+    sourceBuilder.searchType(SearchType.QueryThenFetch);
+    //types=[], routing='null', preference='null', requestCache=null, scroll=null, maxConcurrentShardRequests=0, batchedReduceSize=512, preFilterShardSize=null, allowPartialSearchResults=null, localClusterAlias=null, getOrCreateAbsoluteStartMillis=-1, ccsMinimizeRoundtrips=true
+    sourceBuilder.batchedReduceSize(Long.valueOf(512))
+            .ccsMinimizeRoundtrips(true);
     // aggregation
     if (!Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
       sourceBuilder.aggregations(
-          "nested", aggregationParserUtil.parseAggregation(searchRequest.getAggregateBy()));
+          aggregationParserUtil.parseAggregation(searchRequest.getAggregateBy()));
     }
 
-    return sourceBuilder.build();
+    return sourceBuilder;
   }
 
   @Override

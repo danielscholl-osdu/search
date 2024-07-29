@@ -52,7 +52,6 @@ import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 
 abstract class CoreQueryBase {
 
@@ -195,16 +194,23 @@ abstract class CoreQueryBase {
     List<AggregationResponse> results = null;
     if (searchResponse.aggregations() != null) {
       StringTermsAggregate kindAgg = null;
-      NestedAggregate nestedAggregate =
-          searchResponse.aggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME).nested();
-
-      if (Objects.nonNull(nestedAggregate)) {
-        kindAgg = getTermsAggregationFromNested(nestedAggregate);
+      Aggregate aggregate =
+          searchResponse.aggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
+      if (Objects.nonNull(aggregate)) {
+        kindAgg = getTermsAggregationFromNested(aggregate.nested());
       } else {
-        kindAgg =
-            searchResponse.aggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME).sterms();
+        aggregate = searchResponse.aggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME);
+        if (Objects.nonNull(aggregate)) {
+          kindAgg =
+              searchResponse
+                  .aggregations()
+                  .get(AggregationParserUtil.TERM_AGGREGATION_NAME)
+                  .sterms();
+        }
       }
-      if (Objects.nonNull(kindAgg.buckets()) && kindAgg.buckets().isArray()) {
+      if (Objects.nonNull(kindAgg)
+          && Objects.nonNull(kindAgg.buckets())
+          && kindAgg.buckets().isArray()) {
         results = new ArrayList<>();
 
         for (StringTermsBucket bucket : kindAgg.buckets().array()) {
@@ -292,26 +298,28 @@ abstract class CoreQueryBase {
       Query searchRequest, ElasticsearchClient client) {
     long startTime = 0L;
     SearchRequest elasticSearchRequest = null;
+
     SearchResponse<Map<String, Object>> searchResponse = null;
     int statusCode = 0;
 
     try {
       String index = this.getIndex(searchRequest);
-      elasticSearchRequest = createElasticRequest(searchRequest, index);
+      SearchRequest.Builder elasticSearchRequestBuilder =
+          createElasticRequest(searchRequest, index);
       if (searchRequest.getSort() != null) {
         List<SortOptions> sortBuilders =
             this.sortParserUtil.getSortQuery(client, searchRequest.getSort(), index);
-        for (SortOptions fieldSortBuilder : sortBuilders) {
-          elasticSearchRequest.sort().add(fieldSortBuilder);
-        }
+        elasticSearchRequestBuilder.sort(sortBuilders);
       }
+
+      elasticSearchRequest = elasticSearchRequestBuilder.build();
 
       startTime = System.currentTimeMillis();
       searchResponse = client.search(elasticSearchRequest, (Type) Map.class);
       return searchResponse;
     } catch (ElasticsearchException e) {
       switch (e.status()) {
-        case HttpStatus.NOT_FOUND.value():
+        case 404:
           throw new AppException(
               HttpServletResponse.SC_NOT_FOUND,
               "Not Found",
@@ -403,7 +411,7 @@ abstract class CoreQueryBase {
     return 200;
   }
 
-  abstract SearchRequest createElasticRequest(Query request, String index)
+  abstract SearchRequest.Builder createElasticRequest(Query request, String index)
       throws AppException, IOException;
 
   abstract void querySuccessAuditLogger(Query request);

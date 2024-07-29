@@ -1,9 +1,6 @@
 package org.opengroup.osdu.search.model;
 
-import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch._types.query_dsl.QueryStringQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;

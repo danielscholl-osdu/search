@@ -45,6 +45,9 @@ public class SuggestionsQueryUtil {
           List<String> phraseSuggestions = new ArrayList<>();
           List<Suggestion<Map<String, Object>>> suggestions = suggestBlock.get(SUGGESTION_NAME);
 
+          if(suggestions == null){
+              return new ArrayList<>();
+          }
           for(Suggestion<Map<String, Object>> suggestion : suggestions){
           }
 
