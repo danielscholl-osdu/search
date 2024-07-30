@@ -15,14 +15,34 @@
 package org.opengroup.osdu.search.util;
 
 
+import jakarta.servlet.http.HttpServletResponse;
+import org.elasticsearch.geometry.Circle;
+import org.elasticsearch.geometry.GeometryCollection;
+import org.elasticsearch.geometry.LinearRing;
+import org.elasticsearch.geometry.MultiPolygon;
+import org.elasticsearch.geometry.Rectangle;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.locationtech.jts.geom.Coordinate;
+import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.core.common.model.search.Point;
+import org.opengroup.osdu.core.common.model.search.Polygon;
+import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.elasticsearch.index.query.QueryBuilders.geoIntersectionQuery;
+import static org.elasticsearch.index.query.QueryBuilders.geoWithinQuery;
 
 @Component
 public final class GeoQueryBuilder {
 
     private static final int MINIMUM_POLYGON_POINTS_SIZE = 4;
 
-    /*public QueryBuilder getGeoQuery(SpatialFilter spatialFilter) throws IOException {
+    public QueryBuilder getGeoQuery(SpatialFilter spatialFilter) throws IOException {
         if (spatialFilter.getByBoundingBox() != null) {
             return getBoundingBoxQuery(spatialFilter);
         } else if (spatialFilter.getByDistance() != null) {
@@ -36,35 +56,39 @@ public final class GeoQueryBuilder {
     }
 
     private QueryBuilder getPolygonQuery(SpatialFilter spatialFilter) throws IOException {
-        List<Point> queryPolygon = spatialFilter.getByGeoPolygon().getPoints();
         List<Coordinate> points = new ArrayList<>();
-        if (!queryPolygon.get(0).equals(queryPolygon.get(queryPolygon.size() - 1))) {
-            List<Point> closedRing = new ArrayList<>();
-            closedRing.addAll(queryPolygon);
-            closedRing.add(queryPolygon.get(0));
-            spatialFilter.getByGeoPolygon().setPoints(closedRing);
-        }
         for (Point point : spatialFilter.getByGeoPolygon().getPoints()) {
             points.add(new Coordinate(point.getLongitude(), point.getLatitude()));
         }
-        CoordinatesBuilder cb = new CoordinatesBuilder().coordinates(points);
-        return geoWithinQuery(spatialFilter.getField(), new PolygonBuilder(cb)).ignoreUnmapped(true);
+        double[] x = points.stream().mapToDouble(pt -> pt.x).toArray();
+        double[] y = points.stream().mapToDouble(pt -> pt.y).toArray();
+        org.elasticsearch.geometry.Polygon polygon = new org.elasticsearch.geometry.Polygon(
+                new LinearRing(x, y)
+        );
+        return geoWithinQuery(spatialFilter.getField(), polygon).ignoreUnmapped(true);
     }
 
     private QueryBuilder getBoundingBoxQuery(SpatialFilter spatialFilter) throws IOException {
-        Coordinate topLeft = new Coordinate(spatialFilter.getByBoundingBox().getTopLeft().getLongitude(), spatialFilter.getByBoundingBox().getTopLeft().getLatitude());
-        Coordinate bottomRight = new Coordinate(spatialFilter.getByBoundingBox().getBottomRight().getLongitude(), spatialFilter.getByBoundingBox().getBottomRight().getLatitude());
-        return geoWithinQuery(spatialFilter.getField(), new EnvelopeBuilder(topLeft, bottomRight)).ignoreUnmapped(true);
+        Rectangle rectangle = new Rectangle(
+                spatialFilter.getByBoundingBox().getTopLeft().getLongitude(),
+                spatialFilter.getByBoundingBox().getBottomRight().getLongitude(),
+                spatialFilter.getByBoundingBox().getBottomRight().getLatitude(),
+                spatialFilter.getByBoundingBox().getTopLeft().getLatitude()
+        );
+        return geoWithinQuery(spatialFilter.getField(), rectangle).ignoreUnmapped(true);
     }
 
     private QueryBuilder getDistanceQuery(SpatialFilter spatialFilter) throws IOException {
-        Coordinate center = new Coordinate(spatialFilter.getByDistance().getPoint().getLongitude(), spatialFilter.getByDistance().getPoint().getLatitude());
-        CircleBuilder circleBuilder = new CircleBuilder().center(center).radius(spatialFilter.getByDistance().getDistance(), DistanceUnit.METERS);
-        return geoWithinQuery(spatialFilter.getField(), circleBuilder).ignoreUnmapped(true);
+        Circle circle = new Circle(
+                spatialFilter.getByDistance().getPoint().getLongitude(),
+                spatialFilter.getByDistance().getPoint().getLatitude(),
+                spatialFilter.getByDistance().getDistance()
+        );
+        return geoWithinQuery(spatialFilter.getField(), circle).ignoreUnmapped(true);
     }
 
     private QueryBuilder getIntersectionQuery(SpatialFilter spatialFilter) throws IOException {
-        MultiPolygonBuilder multiPolygonBuilder = new MultiPolygonBuilder();
+        List<org.elasticsearch.geometry.Polygon> polygons = new ArrayList<>();
         for (Polygon polygon : spatialFilter.getByIntersection().getPolygons()) {
             List<Coordinate> coordinates = new ArrayList<>();
             for (Point point : polygon.getPoints()) {
@@ -72,14 +96,17 @@ public final class GeoQueryBuilder {
             }
 
             checkPolygon(coordinates);
-
-            CoordinatesBuilder cb = new CoordinatesBuilder().coordinates(coordinates);
-            multiPolygonBuilder.polygon(new PolygonBuilder(cb));
+            double[] x = coordinates.stream().mapToDouble(coord -> coord.x).toArray();
+            double[] y = coordinates.stream().mapToDouble(coord -> coord.y).toArray();
+            polygons.add(new org.elasticsearch.geometry.Polygon(
+                    new LinearRing(x, y)
+            ));
         }
 
-        GeometryCollectionBuilder geometryCollection = new GeometryCollectionBuilder();
-        geometryCollection.shape(multiPolygonBuilder);
-        return geoIntersectionQuery(spatialFilter.getField(), geometryCollection.buildGeometry()).ignoreUnmapped(true);
+        MultiPolygon multiPolygon = new MultiPolygon(polygons);
+
+        GeometryCollection<MultiPolygon> geometryCollection = new GeometryCollection(Collections.singletonList(multiPolygon));
+        return geoIntersectionQuery(spatialFilter.getField(), geometryCollection).ignoreUnmapped(true);
     }
 
     private void checkPolygon(List<Coordinate> coordinates) {
@@ -94,5 +121,5 @@ public final class GeoQueryBuilder {
                             "Polygons must have at least %s points and the first point must match the last point",
                             MINIMUM_POLYGON_POINTS_SIZE));
         }
-    }*/
+    }
 }
