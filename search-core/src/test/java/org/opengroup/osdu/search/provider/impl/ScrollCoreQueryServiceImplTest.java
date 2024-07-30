@@ -51,6 +51,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.opengroup.osdu.core.common.feature.IFeatureFlag;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppError;
 import org.opengroup.osdu.core.common.model.http.AppException;
@@ -117,6 +118,8 @@ public class ScrollCoreQueryServiceImplTest {
     private ElasticLoggingConfig elasticLoggingConfig;
     @Mock
     private ResponseExceptionParser exceptionParser;
+    @Mock
+    public IFeatureFlag collaborationFeatureFlag;
     @InjectMocks
     private ScrollCoreQueryServiceImpl sut;
 

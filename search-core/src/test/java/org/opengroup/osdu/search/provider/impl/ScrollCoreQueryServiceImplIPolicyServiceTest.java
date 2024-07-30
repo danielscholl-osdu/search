@@ -42,6 +42,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.opengroup.osdu.core.common.feature.IFeatureFlag;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
@@ -64,6 +65,7 @@ import org.opengroup.osdu.search.util.IQueryParserUtil;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 import org.opengroup.osdu.search.util.SuggestionsQueryUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScrollCoreQueryServiceImplIPolicyServiceTest {
@@ -73,7 +75,7 @@ public class ScrollCoreQueryServiceImplIPolicyServiceTest {
 	private final String DATA_GROUP_2 = "data.npd.viewers@common.evd.cloud.slb-ds.com";
 	private final String PARTITION_ID = "opendes";
 
-  @InjectMocks
+  	@InjectMocks
 	ScrollCoreQueryServiceImpl scrollQueryServiceAws;
 
 	@Mock
@@ -129,6 +131,9 @@ public class ScrollCoreQueryServiceImplIPolicyServiceTest {
 
 	@Mock
 	private SuggestionsQueryUtil suggestionsQueryUtil;
+
+	@Mock
+	public IFeatureFlag collaborationFeatureFlag;
 
 	@Before
 	public void setup() {
