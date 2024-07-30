@@ -34,6 +34,8 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.SocketTimeoutException;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.ToLongFunction;
 import org.apache.http.ContentTooLongException;
 import org.opengroup.osdu.core.common.feature.IFeatureFlag;
 import org.opengroup.osdu.core.common.http.CollaborationContextFactory;
@@ -193,7 +195,7 @@ abstract class CoreQueryBase {
       SearchResponse<Map<String, Object>> searchResponse) {
     List<AggregationResponse> results = null;
     if (searchResponse.aggregations() != null) {
-      StringTermsAggregate kindAgg = null;
+      TermsAggregateBase kindAgg = null;
       Aggregate aggregate =
           searchResponse.aggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
       if (Objects.nonNull(aggregate)) {
@@ -202,10 +204,11 @@ abstract class CoreQueryBase {
         aggregate = searchResponse.aggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME);
         if (Objects.nonNull(aggregate)) {
           kindAgg =
-              searchResponse
-                  .aggregations()
-                  .get(AggregationParserUtil.TERM_AGGREGATION_NAME)
-                  .sterms();
+              (TermsAggregateBase)
+                  searchResponse
+                      .aggregations()
+                      .get(AggregationParserUtil.TERM_AGGREGATION_NAME)
+                      ._get();
         }
       }
       if (Objects.nonNull(kindAgg)
@@ -213,25 +216,62 @@ abstract class CoreQueryBase {
           && kindAgg.buckets().isArray()) {
         results = new ArrayList<>();
 
-        for (StringTermsBucket bucket : kindAgg.buckets().array()) {
-          results.add(
-              AggregationResponse.builder()
-                  .key(bucket.key().stringValue())
-                  .count(bucket.docCount())
-                  .build());
+        if (kindAgg instanceof LongTermsAggregate longTermsAggregate) {
+          processBuckets(
+              longTermsAggregate.buckets().array(),
+              results,
+              LongTermsBucket::keyAsString,
+              LongTermsBucket::docCount);
+        } else if (kindAgg instanceof StringTermsAggregate stringTermsAggregate) {
+          processBuckets(
+              stringTermsAggregate.buckets().array(),
+              results,
+              bucket -> bucket.key().stringValue(),
+              StringTermsBucket::docCount);
+        } else if (kindAgg instanceof DoubleTermsAggregate doubleTermsAggregate) {
+          processBuckets(
+              doubleTermsAggregate.buckets().array(),
+              results,
+              DoubleTermsBucket::keyAsString,
+              DoubleTermsBucket::docCount);
         }
+        //        if (kindAgg instanceof LongTermsAggregate longTermsAggregate) {
+        //          for (LongTermsBucket bucket : longTermsAggregate.buckets().array()) {
+        //            results.add(
+        //
+        // AggregationResponse.builder().key(bucket.key()).count(bucket.docCount()).build());
+        //          }
+        //        } else if (kindAgg instanceof StringTermsAggregate stringTermsAggregate) {
+        //          for (StringTermsBucket bucket : stringTermsAggregate.buckets().array()) {
+        //            results.add(
+        //                AggregationResponse.builder()
+        //                    .key(bucket.key().stringValue())
+        //                    .count(bucket.docCount())
+        //                    .build());
+        //          }
+        //        } else if (kindAgg instanceof DoubleTermsAggregate doubleTermsAggregate) {
+        //          for (DoubleTermsBucket bucket : doubleTermsAggregate.buckets().array()) {
+        //            results.add(
+        //                AggregationResponse.builder()
+        //                    .key(bucket.keyAsString())
+        //                    .count(bucket.docCount())
+        //                    .build());
+        //          }
+        //        }
+        //      }
       }
     }
     return results;
   }
 
-  private StringTermsAggregate getTermsAggregationFromNested(NestedAggregate parsedNested) {
+  private TermsAggregateBase getTermsAggregationFromNested(NestedAggregate parsedNested) {
     Aggregate nested =
         parsedNested.aggregations().get(AggregationParserUtil.NESTED_AGGREGATION_NAME);
     if (Objects.nonNull(nested)) {
       return getTermsAggregationFromNested(nested.nested());
     } else {
-      return parsedNested.aggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME).sterms();
+      return (TermsAggregateBase)
+          parsedNested.aggregations().get(AggregationParserUtil.TERM_AGGREGATION_NAME)._get();
     }
   }
 
@@ -432,5 +472,19 @@ abstract class CoreQueryBase {
             .getHeaders()
             .getOrDefault(providerHeaderService.getDataRootUserHeader(), "false");
     return Boolean.parseBoolean(dataRootUser);
+  }
+
+  <T> void processBuckets(
+      List<T> buckets,
+      List<AggregationResponse> results,
+      Function<T, String> keyExtractor,
+      ToLongFunction<T> docCountExtractor) {
+    for (T bucket : buckets) {
+      results.add(
+          AggregationResponse.builder()
+              .key(keyExtractor.apply(bucket))
+              .count(docCountExtractor.applyAsLong(bucket))
+              .build());
+    }
   }
 }
