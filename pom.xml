@@ -62,9 +62,9 @@
         <module>search-core</module>
         <module>search-core-plus</module>
         <module>provider/search-gc</module>
-<!--        <module>provider/search-aws</module>-->
-<!--        <module>provider/search-azure</module>-->
-<!--        <module>provider/search-ibm</module>-->
+        <module>provider/search-aws</module>
+        <module>provider/search-azure</module>
+        <module>provider/search-ibm</module>
     </modules>
     <dependencyManagement>
         <dependencies>
