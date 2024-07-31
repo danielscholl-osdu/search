@@ -27,6 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.opengroup.osdu.search.config.SearchConfigurationProperties.POLICY_FEATURE_NAME;
 
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -122,6 +123,9 @@ public class ScrollCoreQueryServiceImplTest {
     public IFeatureFlag collaborationFeatureFlag;
     @InjectMocks
     private ScrollCoreQueryServiceImpl sut;
+
+    @Mock
+    private IFeatureFlag featureFlag;
 
     @Before
     public void init() {
@@ -252,6 +256,7 @@ public class ScrollCoreQueryServiceImplTest {
         when(searchScrollResponse.status()).thenReturn(RestStatus.OK);
         doReturn(hits).when(searchHits).getHits();
         doReturn(searchScrollResponse).when(client).search(any(), any(RequestOptions.class));
+        when(featureFlag.isFeatureEnabled(POLICY_FEATURE_NAME)).thenReturn(false);
 
         CursorQueryResponse obtainedQueryResponse = sut.queryIndex(searchRequest);
 
