@@ -10,11 +10,10 @@ Search service combines the user query with the Elasticsearch Query DSL translat
 
 - Add and provide values for following runtime configuration in `application.properties`:
 ```
-  service.policy.enabled=true
+  featureFlag.policy.enabled=true
   service.policy.id=${policy_id}
   service.policy.endpoint=${policy_service_endpoint}
-  policy.cache.timeout=<timeout_in_minutes>
-  PARTITION_API=${partition_service_endpoint}
+  service.policy.cache.timeout=<timeout_in_minutes>
 ```
 The policy id can be an instance based id (ie, osdu.instance.search) or partition based id (ie, osdu.partiton["%s"].search).
 

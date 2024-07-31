@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 package org.opengroup.osdu.search.policy.service;
 
+import java.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.opengroup.osdu.core.common.http.HttpResponse;
@@ -26,41 +26,41 @@ import org.opengroup.osdu.core.common.policy.PolicyException;
 import org.opengroup.osdu.search.policy.di.PolicyServiceConfiguration;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-
 @Service
-@ConditionalOnProperty(value = "service.policy.enabled", havingValue = "true", matchIfMissing = false)
 public class PolicyServiceImpl implements IPolicyService {
 
-    @Autowired
-    private PolicyServiceConfiguration policyServiceConfiguration;
+  @Autowired
+  private PolicyServiceConfiguration policyServiceConfiguration;
 
-    @Autowired
-    private IPolicyFactory policyFactory;
+  @Autowired
+  private IPolicyFactory policyFactory;
 
-    @Autowired
-    private DpsHeaders headers;
+  @Autowired
+  private DpsHeaders headers;
 
-    @Override
-    public String getCompiledPolicy(IProviderHeaderService providerHeaderService) {
-        try {
-            String groups = this.headers.getHeaders().get(providerHeaderService.getDataGroupsHeader());
-            List<String> groupsList = groups != null ? new ArrayList<>(Arrays.asList(groups.trim().split("\\s*,\\s*"))) : new ArrayList<>();
-            Map<String, Object> input = new HashMap<>();
-            input.put("groups", groupsList);
-            input.put("operation", "view");
-            ArrayList<String> unknownsList = new ArrayList<>(Collections.singletonList("input.record"));
+  @Override
+  public String getCompiledPolicy(IProviderHeaderService providerHeaderService) {
+    try {
+      String groups = this.headers.getHeaders().get(providerHeaderService.getDataGroupsHeader());
+      List<String> groupsList =
+          groups != null
+              ? new ArrayList<>(Arrays.asList(groups.trim().split("\\s*,\\s*")))
+              : new ArrayList<>();
+      Map<String, Object> input = new HashMap<>();
+      input.put("groups", groupsList);
+      input.put("operation", "view");
+      ArrayList<String> unknownsList = new ArrayList<>(Collections.singletonList("input.record"));
 
-            // Handle instance/partition policy
-            String searchPolicyId = String.format(this.policyServiceConfiguration.getId(), this.headers.getPartitionId());
-            String searchPolicyRule = "data." + searchPolicyId + ".allow == true";
+      // Handle instance/partition policy
+      String searchPolicyId =
+          String.format(this.policyServiceConfiguration.getId(), this.headers.getPartitionId());
+      String searchPolicyRule = "data." + searchPolicyId + ".allow == true";
 
-            IPolicyProvider serviceClient = this.policyFactory.create(this.headers);
-            String esQuery = serviceClient.getCompiledPolicy(searchPolicyRule, unknownsList, input);
-            return esQuery.substring(9, esQuery.length() - 1);
+      IPolicyProvider serviceClient = this.policyFactory.create(this.headers);
+      String esQuery = serviceClient.getCompiledPolicy(searchPolicyRule, unknownsList, input);
+      return esQuery.substring(9, esQuery.length() - 1);
     } catch (PolicyException e) {
       HttpResponse httpResponse = e.getHttpResponse();
       String errorMessage =
@@ -70,7 +70,7 @@ public class PolicyServiceImpl implements IPolicyService {
       throw new AppException(
           httpResponse.getResponseCode(),
           errorMessage,
-           httpResponse.getBody(),
+          httpResponse.getBody(),
           "Error calling translate endpoint",
           e);
     } catch (Exception e) {

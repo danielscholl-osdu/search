@@ -56,6 +56,7 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.suggest.SuggestBuilder;
 import org.opengroup.osdu.core.common.feature.IFeatureFlag;
 import org.opengroup.osdu.core.common.http.CollaborationContextFactory;
+import org.opengroup.osdu.core.common.feature.IFeatureFlag;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.entitlements.AclRole;
 import org.opengroup.osdu.core.common.model.http.AppException;
@@ -81,6 +82,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.opengroup.osdu.core.common.Constants.COLLABORATIONS_FEATURE_NAME;
 import static org.opengroup.osdu.core.common.model.search.RecordMetaAttribute.COLLABORATION_ID;
+import static org.opengroup.osdu.search.config.SearchConfigurationProperties.POLICY_FEATURE_NAME;
 
 abstract class CoreQueryBase {
 
@@ -92,8 +94,10 @@ abstract class CoreQueryBase {
     private IProviderHeaderService providerHeaderService;
     @Inject
     private CrossTenantUtils crossTenantUtils;
-    @Autowired(required = false)
-    private IPolicyService iPolicyService;
+    @Autowired
+    private IFeatureFlag featureFlag;
+    @Autowired
+    private IPolicyService policyService;
     @Autowired
     private IQueryParserUtil queryParserUtil;
     @Autowired
@@ -108,8 +112,6 @@ abstract class CoreQueryBase {
     private GeoQueryBuilder geoQueryBuilder;
     @Autowired
     private SuggestionsQueryUtil suggestionsQueryUtil;
-    @Autowired
-    public IFeatureFlag collaborationFeatureFlag;
     @Autowired
     private CollaborationContextFactory collaborationContextFactory;
 
@@ -140,11 +142,11 @@ abstract class CoreQueryBase {
             }
         }
 
-        if (collaborationFeatureFlag.isFeatureEnabled(COLLABORATIONS_FEATURE_NAME)) {
+        if (featureFlag.isFeatureEnabled(COLLABORATIONS_FEATURE_NAME)) {
             Optional<CollaborationContext> collaborationContext = collaborationContextFactory.create(dpsHeaders.getCollaboration());
             if (collaborationContext.isPresent()) {
                 QueryBuilder termQueryBuilder = QueryBuilders.termsQuery(COLLABORATION_ID.getValue(),
-                    collaborationContext.get().getId());
+                        collaborationContext.get().getId());
                 queryBuilder.must(termQueryBuilder);
             } else {
                 QueryBuilder existsQueryBuilder = QueryBuilders.existsQuery(COLLABORATION_ID.getValue());
@@ -152,8 +154,8 @@ abstract class CoreQueryBase {
             }
         }
 
-        if (this.iPolicyService != null) {
-            String compiledESPolicy = this.iPolicyService.getCompiledPolicy(providerHeaderService);
+        if (featureFlag.isFeatureEnabled(POLICY_FEATURE_NAME)) {
+            String compiledESPolicy = policyService.getCompiledPolicy(providerHeaderService);
             WrapperQueryBuilder wrapperQueryBuilder = new WrapperQueryBuilder(compiledESPolicy);
             return queryBuilder.must(wrapperQueryBuilder);
         } else {

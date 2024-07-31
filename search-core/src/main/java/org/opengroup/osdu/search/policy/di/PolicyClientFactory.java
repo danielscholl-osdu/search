@@ -20,29 +20,26 @@ import org.opengroup.osdu.core.common.policy.PolicyAPIConfig;
 import org.opengroup.osdu.core.common.policy.PolicyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnProperty(value = "service.policy.enabled", havingValue = "true", matchIfMissing = false)
 public class PolicyClientFactory extends AbstractFactoryBean<IPolicyFactory> {
 
-    @Autowired
-    private PolicyServiceConfiguration serviceConfiguration;
+  @Autowired
+  private PolicyServiceConfiguration serviceConfiguration;
 
-    @Autowired
-    private HttpResponseBodyMapper httpResponseBodyMapper;
+  @Autowired
+  private HttpResponseBodyMapper httpResponseBodyMapper;
 
-    @Override
-    public Class<?> getObjectType() {
-        return IPolicyFactory.class;
-    }
+  @Override
+  public Class<?> getObjectType() {
+    return IPolicyFactory.class;
+  }
 
-    @Override
-    protected IPolicyFactory createInstance() throws Exception {
-        PolicyAPIConfig apiConfig = PolicyAPIConfig.builder()
-                .rootUrl(serviceConfiguration.getEndpoint())
-                .build();
-        return new PolicyFactory(apiConfig, httpResponseBodyMapper);
-    }
+  @Override
+  protected IPolicyFactory createInstance() throws Exception {
+    PolicyAPIConfig apiConfig =
+        PolicyAPIConfig.builder().rootUrl(serviceConfiguration.getEndpoint()).build();
+    return new PolicyFactory(apiConfig, httpResponseBodyMapper);
+  }
 }
