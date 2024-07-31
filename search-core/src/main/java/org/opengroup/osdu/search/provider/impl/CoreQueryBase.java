@@ -89,22 +89,21 @@ abstract class CoreQueryBase {
   BoolQuery.Builder buildQuery(String simpleQuery, SpatialFilter spatialFilter, boolean asOwner)
       throws AppException, IOException {
 
-    var queryBuilder = new BoolQuery.Builder();
+    BoolQuery.Builder queryBuilder = new BoolQuery.Builder();
     if (!Strings.isNullOrEmpty(simpleQuery)) {
-      var textQueryBuilder = queryParserUtil.buildQueryBuilderFromQueryString(simpleQuery);
+      BoolQuery.Builder textQueryBuilder = queryParserUtil.buildQueryBuilderFromQueryString(simpleQuery);
       if (textQueryBuilder != null) {
         queryBuilder.must(textQueryBuilder.build()._toQuery());
       }
     }
 
-    // use only one of the spatial request
-    //        if (spatialFilter != null) {
-    //            QueryBuilder spatialQueryBuilder =
-    // this.geoQueryBuilder.getGeoQuery(spatialFilter);
-    //            if (spatialQueryBuilder != null) {
-    //                queryBuilder.filter().add(spatialQueryBuilder);
-    //            }
-    //        }
+    //use only one of the spatial request
+    if (Objects.nonNull(spatialFilter)) {
+      var spatialQuery= this.geoQueryBuilder.getGeoQuery(spatialFilter);
+      if (spatialQuery != null) {
+        queryBuilder.filter(spatialQuery);
+      }
+    }
 
     if (collaborationFeatureFlag.isFeatureEnabled(COLLABORATIONS_FEATURE_NAME)) {
       Optional<CollaborationContext> collaborationContext =
