@@ -45,7 +45,6 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 **data.partitionHost** | Partition service host | string | `http://partition` | yes
 **data.policyId** | policy id from ex `${POLICY_HOST}/api/policy/v1/policies` | string | `search` | yes
 **data.securityHttpsCertificateTrust** | Elastic client connection uses TrustSelfSignedStrategy(), if it is `true` | bool | `true` | yes
-**data.servicePolicyEnabled** | Enables Search service integration with Policy service | bool | `false` | yes
 **data.redisSearchHost** | The host for redis instance. If empty (by default), helm installs an internal redis instance | string | - | yes
 **data.redisSearchPort** | The port for redis instance | digit | 6379 | yes
 
