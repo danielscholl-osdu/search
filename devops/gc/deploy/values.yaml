@@ -29,7 +29,7 @@ conf:
   appName: "search"
   elasticSecretName: "search-elastic-secret"
   searchRedisSecretName: "search-redis-secret"
-  replicas: 1
+  replicas: 2
 
 istio:
   proxyCPU: "5m"
