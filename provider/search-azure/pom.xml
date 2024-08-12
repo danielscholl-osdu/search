@@ -34,7 +34,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
-        <core-lib-azure-spring6.version>0.27.0-rc3</core-lib-azure-spring6.version>
+        <core-lib-azure-spring6.version>0.27.0-rc6</core-lib-azure-spring6.version>
         <osdu.search-core.version>0.28.0-SNAPSHOT</osdu.search-core.version>
         <spatial4j.version>0.7</spatial4j.version>
         <log4j.version>2.21.1</log4j.version>
