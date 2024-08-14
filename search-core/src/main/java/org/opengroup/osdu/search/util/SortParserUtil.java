@@ -1,3 +1,20 @@
+/*
+ *  Copyright 2020-2024 Google LLC
+ *  Copyright 2020-2024 EPAM Systems, Inc
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package org.opengroup.osdu.search.util;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -12,16 +29,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpStatus;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.search.SortQuery;
 import org.opengroup.osdu.search.model.NestedQueryNode;
 import org.opengroup.osdu.search.model.QueryNode;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class SortParserUtil implements ISortParserUtil {
 
   private static final String SCORE_FIELD = "_score";
@@ -38,9 +56,8 @@ public class SortParserUtil implements ISortParserUtil {
   private Pattern multilevelNestedPattern =
       Pattern.compile("(nested\\s?\\()(?<parentpath>.+?),\\s?(?<innergroup>nested\\s?\\(.+)");
 
-  @Autowired private IFieldMappingTypeService fieldMappingTypeService;
-
-  @Autowired private IQueryParserUtil queryParserUtil;
+  private final IFieldMappingTypeService fieldMappingTypeService;
+  private final IQueryParserUtil queryParserUtil;
 
   @Override
   public SortOptions parseSort(String sortString, String sortOrder, String sortFilter) {
@@ -61,7 +78,7 @@ public class SortParserUtil implements ISortParserUtil {
                               ? SortOrder.Asc
                               : SortOrder.Desc)
                       .missing("_last")
-                      .unmappedType(FieldType.valueOf("Keyword")))
+                      .unmappedType(FieldType.Keyword))
           .build();
     }
   }
@@ -128,15 +145,18 @@ public class SortParserUtil implements ISortParserUtil {
 
   private SortOptions parseNestedSort(
       String sortString, String sortOrder, String sortNestedFilter) {
+
     Matcher multilevelNestedMatcher = multilevelNestedPattern.matcher(sortString);
     String oneLevelSortString = sortString;
     NestedSortValue.Builder nestedSortBuilder = null;
+
     Query.Builder filterSortQuery =
         Objects.isNull(sortNestedFilter)
             ? null
             : buildQueryBuilderFromQueryString(sortNestedFilter);
 
     if (multilevelNestedMatcher.find()) {
+
       nestedSortBuilder = parseNestedSortInDepth(sortString);
       multilevelNestedMatcher.reset(sortString);
 
@@ -149,34 +169,41 @@ public class SortParserUtil implements ISortParserUtil {
 
     Matcher oneLevelNestedMatcher = oneLevelNestedSort.matcher(oneLevelSortString);
     if (oneLevelNestedMatcher.find()) {
+
       String path = oneLevelNestedMatcher.group(PATH_GROUP);
       String field = oneLevelNestedMatcher.group(FIELD_GROUP);
       String mode = oneLevelNestedMatcher.group(MODE_GROUP);
+
       if (Objects.isNull(nestedSortBuilder)) {
         nestedSortBuilder = new NestedSortValue.Builder();
         nestedSortBuilder.path(path);
       }
-      if (!Objects.isNull(filterSortQuery)) {
-        nestedSortBuilder.filter(filterSortQuery.build());
+
+      if (filterSortQuery != null) {
+        nestedSortBuilder.filter(filterSortQuery.build().nested().query());
       }
-      FieldSort.Builder fieldSort = new FieldSort.Builder();
-      fieldSort.field(path + "." + field);
-      fieldSort.nested(nestedSortBuilder.build());
-      fieldSort.mode(SortMode.valueOf(capitalizeFirstLetter(mode)));
-      fieldSort.order(SortOrder.valueOf(capitalizeFirstLetter(sortOrder)));
-      fieldSort.missing("_last");
-      fieldSort.unmappedType(FieldType.Keyword);
+
+      FieldSort.Builder fieldSort =
+          new FieldSort.Builder()
+              .field(path + "." + field)
+              .nested(nestedSortBuilder.build())
+              .mode(SortMode.valueOf(capitalizeFirstLetter(mode)))
+              .order(SortOrder.valueOf(capitalizeFirstLetter(sortOrder)))
+              .missing("_last")
+              .unmappedType(FieldType.Keyword);
 
       return SortOptions.of(s -> s.field(fieldSort.build()));
     }
+
     throw new AppException(
         HttpStatus.SC_BAD_REQUEST,
-        String.format("Malformed nested sort : %s", sortString),
+        "Malformed nested sort : %s".formatted(sortString),
         BAD_SORT_MESSAGE);
   }
 
   private NestedSortValue.Builder parseNestedSortInDepth(String group) {
     Matcher multilevelNestedMatcher = multilevelNestedPattern.matcher(group);
+
     if (multilevelNestedMatcher.find()) {
       String path = multilevelNestedMatcher.group(PARENT_PATH);
       String innerGroup = multilevelNestedMatcher.group(INNER_GROUP);
@@ -185,14 +212,16 @@ public class SortParserUtil implements ISortParserUtil {
           .path(path)
           .nested(parseNestedSortInDepth(innerGroup).build());
     }
+
     Matcher oneLevelMatcher = oneLevelNestedSort.matcher(group);
     if (oneLevelMatcher.find()) {
       String path = oneLevelMatcher.group(PATH_GROUP);
       return new NestedSortValue.Builder().path(path);
     }
+
     throw new AppException(
         HttpStatus.SC_BAD_REQUEST,
-        String.format("Malformed nested sort group : %s", group),
+        "Malformed nested sort group : %s".formatted(group),
         BAD_SORT_MESSAGE);
   }
 

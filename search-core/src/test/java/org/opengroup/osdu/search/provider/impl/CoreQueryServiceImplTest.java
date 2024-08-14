@@ -95,6 +95,7 @@ import org.opengroup.osdu.search.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
+import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.DetailedBadRequestMessageUtil;
@@ -190,8 +191,11 @@ public class CoreQueryServiceImplTest {
     @Mock
     private SuggestionsQueryUtil suggestionsQueryUtil;
 
+    @Mock
+    private IFieldMappingTypeService fieldMappingTypeService;
+
     @Spy
-    private ISortParserUtil sortParserUtil = new SortParserUtil();
+    private ISortParserUtil sortParserUtil = new SortParserUtil(fieldMappingTypeService, parserService);
 
     @Spy
     private IAggregationParserUtil aggregationParserUtil = new AggregationParserUtil(properties);

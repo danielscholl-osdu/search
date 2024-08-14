@@ -46,14 +46,14 @@ public class SortParserUtilTest {
     private final String noNestedBlockFilter = "simple string";
     private final String topLevelOperatorFilter = "nested(data.NestedTest, (InnerTestField:SomeValue)) OR nested(data.NestedTest, (InnerTestField2:SomeValue))";
 
-    private SortParserUtil sortParserUtil = new SortParserUtil();
-
     @Mock
     private IFieldMappingTypeService fieldMappingTypeService;
     @Mock
     private IQueryParserUtil queryParserUtil;
     @InjectMocks
     private SortParserUtil sut;
+
+    private SortParserUtil sortParserUtil = new SortParserUtil(fieldMappingTypeService, queryParserUtil);
 
     @Test
     public void testSimpleSortString() {

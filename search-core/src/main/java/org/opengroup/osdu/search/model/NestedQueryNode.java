@@ -1,3 +1,20 @@
+/*
+ *  Copyright 2020-2024 Google LLC
+ *  Copyright 2020-2024 EPAM Systems, Inc
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package org.opengroup.osdu.search.model;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
@@ -30,35 +47,32 @@ public class NestedQueryNode extends QueryNode {
         Query.Builder innerBuilder = queryNode.toQueryBuilder();
         switch (queryNode.operator != null ? queryNode.operator : Operator.AND) {
           case AND:
-            ((BoolQuery.Builder) queryBuilder).must(innerBuilder.build());
+            queryBuilder.must(innerBuilder.build());
             break;
           case OR:
-            ((BoolQuery.Builder) queryBuilder).should(innerBuilder.build());
+            queryBuilder.should(innerBuilder.build());
             break;
           case NOT:
-            ((BoolQuery.Builder) queryBuilder).mustNot(innerBuilder.build());
+            queryBuilder.mustNot(innerBuilder.build());
             break;
         }
       }
-      NestedQuery nestedQuery =
-          new NestedQuery.Builder()
-              .path(path)
-              .query(new Query.Builder().bool(queryBuilder.build()).build())
-              .ignoreUnmapped(true).build();
-
-      return (Query.Builder) new Query.Builder().nested(nestedQuery);
+      return (Query.Builder)
+          new Query.Builder()
+              .nested(
+                  n ->
+                      n.path(path)
+                          .query(new Query.Builder().bool(queryBuilder.build()).build())
+                          .ignoreUnmapped(true));
 
     } else {
       String query = StringUtils.isNotBlank(queryString) ? queryString : "*";
       QueryStringQuery.Builder queryBuilder =
           new QueryStringQuery.Builder().query(query).allowLeadingWildcard(false);
-      NestedQuery nestedQuery =
-          new NestedQuery.Builder()
-              .path(path)
-              .query(queryBuilder.build()._toQuery())
-              .ignoreUnmapped(true)
-              .build();
-      return (Query.Builder) new Query.Builder().nested(nestedQuery);
+      return (Query.Builder)
+          new Query.Builder()
+              .nested(
+                  n -> n.path(path).query(queryBuilder.build()._toQuery()).ignoreUnmapped(true));
     }
   }
 }
