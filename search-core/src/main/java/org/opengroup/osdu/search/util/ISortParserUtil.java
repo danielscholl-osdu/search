@@ -8,7 +8,8 @@ import org.opengroup.osdu.core.common.model.search.SortQuery;
 
 public interface ISortParserUtil {
 
-    SortOptions parseSort(String sortString, String sortOrder, String sortFilter);
+  SortOptions parseSort(String sortString, String sortOrder, String sortFilter);
 
-    List<SortOptions> getSortQuery(ElasticsearchClient restClient, SortQuery sortQuery, String indexPattern) throws IOException;
+  List<SortOptions> getSortQuery(
+      ElasticsearchClient restClient, SortQuery sortQuery, String indexPattern) throws IOException;
 }

@@ -91,15 +91,16 @@ abstract class CoreQueryBase {
 
     BoolQuery.Builder queryBuilder = new BoolQuery.Builder();
     if (!Strings.isNullOrEmpty(simpleQuery)) {
-      BoolQuery.Builder textQueryBuilder = queryParserUtil.buildQueryBuilderFromQueryString(simpleQuery);
+      BoolQuery.Builder textQueryBuilder =
+          queryParserUtil.buildQueryBuilderFromQueryString(simpleQuery);
       if (textQueryBuilder != null) {
         queryBuilder.must(textQueryBuilder.build()._toQuery());
       }
     }
 
-    //use only one of the spatial request
+    // use only one of the spatial request
     if (Objects.nonNull(spatialFilter)) {
-      var spatialQuery= this.geoQueryBuilder.getGeoQuery(spatialFilter);
+      var spatialQuery = this.geoQueryBuilder.getGeoQuery(spatialFilter);
       if (spatialQuery != null) {
         queryBuilder.filter(spatialQuery);
       }
@@ -234,30 +235,6 @@ abstract class CoreQueryBase {
               DoubleTermsBucket::keyAsString,
               DoubleTermsBucket::docCount);
         }
-        //        if (kindAgg instanceof LongTermsAggregate longTermsAggregate) {
-        //          for (LongTermsBucket bucket : longTermsAggregate.buckets().array()) {
-        //            results.add(
-        //
-        // AggregationResponse.builder().key(bucket.key()).count(bucket.docCount()).build());
-        //          }
-        //        } else if (kindAgg instanceof StringTermsAggregate stringTermsAggregate) {
-        //          for (StringTermsBucket bucket : stringTermsAggregate.buckets().array()) {
-        //            results.add(
-        //                AggregationResponse.builder()
-        //                    .key(bucket.key().stringValue())
-        //                    .count(bucket.docCount())
-        //                    .build());
-        //          }
-        //        } else if (kindAgg instanceof DoubleTermsAggregate doubleTermsAggregate) {
-        //          for (DoubleTermsBucket bucket : doubleTermsAggregate.buckets().array()) {
-        //            results.add(
-        //                AggregationResponse.builder()
-        //                    .key(bucket.keyAsString())
-        //                    .count(bucket.docCount())
-        //                    .build());
-        //          }
-        //        }
-        //      }
       }
     }
     return results;
@@ -314,14 +291,12 @@ abstract class CoreQueryBase {
       returnedFields = new ArrayList<>();
     }
     Set<String> returnedFieldsSet = new HashSet<>(returnedFields);
-    String[] includesArr = returnedFieldsSet.toArray(new String[returnedFieldsSet.size()]);
 
     // remove all matching returnedField and queryable from excludes
     Set<String> requestQueryableExcludes = new HashSet<>(queryableExcludes);
     Set<String> requestExcludes = new HashSet<>(excludes);
     requestQueryableExcludes.removeAll(returnedFields);
     requestExcludes.addAll(requestQueryableExcludes);
-    String[] excludesArr = requestExcludes.toArray(new String[requestExcludes.size()]);
     sourceBuilder.source(
         SourceConfig.of(
             sc ->
@@ -439,15 +414,6 @@ abstract class CoreQueryBase {
       this.tracingLogger.log(searchRequest, latency, statusCode);
       this.auditLog(searchRequest, searchResponse);
     }
-  }
-
-  private int getSearchResponseStatusCode(SearchResponse searchResponse) {
-    //        if (searchResponse == null)
-    //            throw new AppException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Search
-    // error", "Search returned null or empty response");
-    //        else
-    //            return searchResponse.
-    return 200;
   }
 
   abstract SearchRequest.Builder createElasticRequest(Query request, String index)

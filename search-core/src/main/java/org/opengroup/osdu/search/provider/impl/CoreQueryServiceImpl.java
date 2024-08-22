@@ -1,23 +1,25 @@
-// Copyright 2017-2019, Schlumberger
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ *  Copyright 2020-2024 Google LLC
+ *  Copyright 2020-2024 EPAM Systems, Inc
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
 package org.opengroup.osdu.search.provider.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ExpandWildcard;
 import co.elastic.clients.elasticsearch._types.SearchType;
-import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.google.common.base.Strings;
@@ -83,25 +85,24 @@ public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService
   }
 
   @Override
-  SearchRequest.Builder createElasticRequest(Query request, String index) throws AppException, IOException {
+  SearchRequest.Builder createElasticRequest(Query request, String index)
+      throws AppException, IOException {
     QueryRequest searchRequest = (QueryRequest) request;
 
     // build query
     var sourceBuilder = this.createSearchSourceBuilder(request);
     sourceBuilder.from(searchRequest.getFrom());
+
+    // the default set of values is the same as on the old Elasticsearch client
     sourceBuilder
         .index(index)
         .allowNoIndices(true)
         .expandWildcards(ExpandWildcard.Open, ExpandWildcard.Closed)
-            .ignoreUnavailable(true)
-            .ignoreThrottled(true);
-
-
-            //ignore_unavailable=true, allow_no_indices=true, expand_wildcards_open=true, expand_wildcards_closed=false, expand_wildcards_hidden=false, allow_aliases_to_multiple_indices=true, forbid_closed_indices=true, ignore_aliases=false, ignore_throttled=true
+        .ignoreUnavailable(true)
+        .ignoreThrottled(true);
     sourceBuilder.searchType(SearchType.QueryThenFetch);
-    //types=[], routing='null', preference='null', requestCache=null, scroll=null, maxConcurrentShardRequests=0, batchedReduceSize=512, preFilterShardSize=null, allowPartialSearchResults=null, localClusterAlias=null, getOrCreateAbsoluteStartMillis=-1, ccsMinimizeRoundtrips=true
-    sourceBuilder.batchedReduceSize(Long.valueOf(512))
-            .ccsMinimizeRoundtrips(true);
+    sourceBuilder.batchedReduceSize(Long.valueOf(512)).ccsMinimizeRoundtrips(true);
+
     // aggregation
     if (!Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {
       sourceBuilder.aggregations(

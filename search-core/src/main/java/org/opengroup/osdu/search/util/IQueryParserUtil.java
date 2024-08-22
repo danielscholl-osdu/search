@@ -6,8 +6,7 @@ import org.opengroup.osdu.search.model.QueryNode;
 
 public interface IQueryParserUtil {
 
-    BoolQuery.Builder buildQueryBuilderFromQueryString(String query);
+  BoolQuery.Builder buildQueryBuilderFromQueryString(String query);
 
-    List<QueryNode> parseQueryNodesFromQueryString(String queryString);
-
+  List<QueryNode> parseQueryNodesFromQueryString(String queryString);
 }
