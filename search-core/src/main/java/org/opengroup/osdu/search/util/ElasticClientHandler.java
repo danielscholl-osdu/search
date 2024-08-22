@@ -28,6 +28,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Objects;
 import javax.net.ssl.SSLContext;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
@@ -55,7 +57,6 @@ public class ElasticClientHandler implements Closeable {
   private static final int CLOUD_REST_CLIENT_PORT = 9243;
   private static final int REST_CLIENT_CONNECT_TIMEOUT = 60000;
   private static final int REST_CLIENT_SOCKET_TIMEOUT = 60000;
-  private static final int REST_CLIENT_RETRY_TIMEOUT = 60000;
 
   @Value("#{new Boolean('${security.https.certificate.trust:false}')}")
   private Boolean isSecurityHttpsCertificateTrust;

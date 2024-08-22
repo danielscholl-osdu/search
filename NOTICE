@@ -16,9 +16,6 @@ Apache-1.1
 The following software have components provided under the terms of this license:
 
 - AspectJ Weaver (from http://www.aspectj.org, https://www.eclipse.org/aspectj/)
-- Microsoft Application Insights Java Agent (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Java SDK Spring Boot starter (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Log4j 2 Appender (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Proton-J (from https://repo1.maven.org/maven2/org/apache/qpid/proton-j)
 
 ========================================================================
@@ -29,10 +26,7 @@ The following software have components provided under the terms of this license:
 - AMQP 1.0 JMS Spring Boot AutoConfiguration (from https://repo1.maven.org/maven2/org/amqphub/spring/amqp-10-jms-spring-boot-autoconfigure)
 - AMQP 1.0 JMS Spring Boot Starter (from https://repo1.maven.org/maven2/org/amqphub/spring/amqp-10-jms-spring-boot-starter)
 - API Common (from https://github.com/googleapis, https://github.com/googleapis/api-common-java, https://repo1.maven.org/maven2/com/google/api/api-common)
-- ASM Analysis (from http://asm.ow2.io/)
 - ASM Commons (from http://asm.ow2.io/, https://repo1.maven.org/maven2/org/ow2/asm/asm-commons)
-- ASM Tree (from http://asm.ow2.io/)
-- ASM Util (from http://asm.ow2.io/)
 - ASM based accessors helper used by json-smart (from https://urielch.github.io/)
 - AWS Java SDK for AWS KMS (from https://aws.amazon.com/sdkforjava)
 - AWS Java SDK for AWS STS (from https://aws.amazon.com/sdkforjava)
@@ -80,12 +74,11 @@ The following software have components provided under the terms of this license:
 - Byte Buddy (without dependencies) (from https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy)
 - Byte Buddy Java agent (from https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy-agent)
 - ClassMate (from http://github.com/cowtowncoder/java-classmate)
-- Cloud Key Management Service (KMS) API (from https://repo1.maven.org/maven2/com/google/apis/google-api-services-cloudkms)
+- Cloud Key Management Service (KMS) API v1-rev20240801-2.0.0 (from https://repo1.maven.org/maven2/com/google/apis/google-api-services-cloudkms)
 - Collections (from https://repo1.maven.org/maven2/commons-collections/commons-collections)
 - Commons Digester (from http://commons.apache.org/digester/)
 - Converter: Jackson (from https://github.com/square/retrofit, https://repo1.maven.org/maven2/com/squareup/retrofit2/converter-jackson)
 - Core functionality for the Reactor Netty library (from https://github.com/reactor/reactor-netty)
-- Data Mapper for Jackson (from http://jackson.codehaus.org)
 - Elastic JNA Distribution (from https://github.com/java-native-access/jna)
 - FindBugs-jsr305 (from http://findbugs.sourceforge.net/)
 - GAX (Google Api eXtensions) for Java (Core) (from https://github.com/googleapis, https://github.com/googleapis/gax-java, https://repo1.maven.org/maven2/com/google/api/gax)
@@ -105,12 +98,10 @@ The following software have components provided under the terms of this license:
 - Guava: Google Core Libraries for Java (from http://code.google.com/p/guava-libraries, https://github.com/google/guava, https://repo1.maven.org/maven2/com/google/guava/guava)
 - HTTP functionality for the Reactor Netty library (from https://github.com/reactor/reactor-netty)
 - HdrHistogram (from http://hdrhistogram.github.io/HdrHistogram/)
-- Hibernate Validator (from https://repo1.maven.org/maven2/org/hibernate/hibernate-validator, https://repo1.maven.org/maven2/org/hibernate/validator/hibernate-validator)
+- Hibernate Validator (from http://hibernate.org/validator, https://repo1.maven.org/maven2/org/hibernate/hibernate-validator, https://repo1.maven.org/maven2/org/hibernate/validator/hibernate-validator)
 - High Performance Primitive Collections (from https://github.com/carrotsearch/hppc)
 - J2ObjC Annotations (from https://github.com/google/j2objc/)
 - JBoss Logging 3 (from http://www.jboss.org)
-- JBoss Marshalling API (from https://repo1.maven.org/maven2/org/jboss/marshalling/jboss-marshalling)
-- JBoss Marshalling River (from https://repo1.maven.org/maven2/org/jboss/marshalling/jboss-marshalling-river)
 - JCIP Annotations under Apache License (from http://stephenc.github.com/jcip-annotations)
 - JJWT :: API (from https://repo1.maven.org/maven2/io/jsonwebtoken/jjwt-api)
 - JJWT :: Extensions :: Jackson (from https://repo1.maven.org/maven2/io/jsonwebtoken/jjwt-jackson)
@@ -124,7 +115,6 @@ The following software have components provided under the terms of this license:
 - JSONassert (from http://github.com/skyscreamer/yoga, https://github.com/skyscreamer/JSONassert)
 - JSR 311 API (from https://jsr311.dev.java.net, https://jsr311.dev.java.net/)
 - JSR107 API and SPI (from https://github.com/jsr107/jsr107spec)
-- Jackson (from http://jackson.codehaus.org)
 - Jackson 2 extensions to the Google APIs Client Library for Java (from https://repo1.maven.org/maven2/com/google/api-client/google-api-client-jackson2)
 - Jackson Jakarta-RS: JSON (from https://repo1.maven.org/maven2/com/fasterxml/jackson/jakarta/rs/jackson-jakarta-rs-json-provider)
 - Jackson Jakarta-RS: base (from https://repo1.maven.org/maven2/com/fasterxml/jackson/jakarta/rs/jackson-jakarta-rs-base)
@@ -157,7 +147,7 @@ The following software have components provided under the terms of this license:
 - Kotlin Stdlib Common (from https://kotlinlang.org/)
 - Kotlin Stdlib Jdk7 (from <https://kotlinlang.org/>, https://kotlinlang.org/)
 - Kotlin Stdlib Jdk8 (from <https://kotlinlang.org/>, https://kotlinlang.org/)
-- Lettuce (from http://github.com/lettuce-io/lettuce-core)
+- Lettuce (from http://github.com/lettuce-io/lettuce-core, http://github.com/mp911de/lettuce/wiki, https://github.com/lettuce-io/lettuce-core/wiki)
 - Lucene Common Analyzers (from <https://repo1.maven.org/maven2/org/apache/lucene/lucene-analyzers-common>, https://repo1.maven.org/maven2/org/apache/lucene/lucene-analyzers-common)
 - Lucene Core (from https://repo1.maven.org/maven2/org/apache/lucene/lucene-core)
 - Lucene Grouping (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-grouping)
@@ -169,9 +159,6 @@ The following software have components provided under the terms of this license:
 - Lucene Sandbox (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-sandbox)
 - Lucene Spatial 3D (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-spatial3d)
 - Metrics Core (from https://repo1.maven.org/maven2/io/dropwizard/metrics/metrics-core)
-- Microsoft Application Insights Java Agent (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Java SDK Spring Boot starter (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Log4j 2 Appender (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Microsoft Azure Java Core Library (from https://github.com/Azure/azure-sdk-for-java)
 - Microsoft Azure Netty HTTP Client Library (from https://github.com/Azure/azure-sdk-for-java)
 - Microsoft Azure SDK for SQL API of Azure Cosmos DB Service (from https://github.com/Azure/azure-sdk-for-java)
@@ -189,7 +176,6 @@ The following software have components provided under the terms of this license:
 - Netty/Common (from https://repo1.maven.org/maven2/io/netty/netty-common)
 - Netty/Handler (from https://repo1.maven.org/maven2/io/netty/netty-handler)
 - Netty/Handler/Proxy (from https://repo1.maven.org/maven2/io/netty/netty-handler-proxy)
-- Netty/Incubator/Codec/Classes/Quic (from <https://repo1.maven.org/maven2/io/netty/incubator/netty-incubator-codec-classes-quic>, https://repo1.maven.org/maven2/io/netty/incubator/netty-incubator-codec-classes-quic)
 - Netty/Resolver (from https://repo1.maven.org/maven2/io/netty/netty-resolver)
 - Netty/Resolver/DNS (from https://repo1.maven.org/maven2/io/netty/netty-resolver-dns)
 - Netty/Resolver/DNS/Classes/MacOS (from https://repo1.maven.org/maven2/io/netty/netty-resolver-dns-classes-macos)
@@ -204,7 +190,6 @@ The following software have components provided under the terms of this license:
 - Nimbus LangTag (from https://bitbucket.org/connect2id/nimbus-language-tags)
 - Non-Blocking Reactive Foundation for the JVM (from https://github.com/reactor/reactor, https://github.com/reactor/reactor-core)
 - OAuth 2.0 SDK with OpenID Connect extensions (from https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions)
-- OAuth2 for Spring Security (from https://repo1.maven.org/maven2/org/springframework/security/oauth/spring-security-oauth2)
 - Objenesis (from https://repo1.maven.org/maven2/org/objenesis/objenesis)
 - OkHttp (from https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp, https://square.github.io/okhttp/)
 - OkHttp Logging Interceptor (from https://github.com/square/okhttp, https://repo1.maven.org/maven2/com/squareup/okhttp3/logging-interceptor, https://square.github.io/okhttp/)
@@ -214,21 +199,20 @@ The following software have components provided under the terms of this license:
 - OpenTelemetry Java (from https://github.com/open-telemetry/opentelemetry-java)
 - OpenTelemetry Semantic Conventions Java (from https://github.com/open-telemetry/semantic-conventions-java)
 - PowerMock (from http://www.powermock.org, https://repo1.maven.org/maven2/org/powermock/powermock-api-mockito)
-- Prometheus Java Simpleclient (from <https://repo1.maven.org/maven2/io/prometheus/simpleclient>, https://repo1.maven.org/maven2/io/prometheus/simpleclient)
-- Prometheus Java Simpleclient Common (from <https://repo1.maven.org/maven2/io/prometheus/simpleclient_common>, https://repo1.maven.org/maven2/io/prometheus/simpleclient_common)
-- Prometheus Java Span Context Supplier - Common (from <https://repo1.maven.org/maven2/io/prometheus/simpleclient_tracer_common>, https://repo1.maven.org/maven2/io/prometheus/simpleclient_tracer_common)
-- Prometheus Java Span Context Supplier - OpenTelemetry (from <https://repo1.maven.org/maven2/io/prometheus/simpleclient_tracer_otel>, https://repo1.maven.org/maven2/io/prometheus/simpleclient_tracer_otel)
-- Prometheus Java Span Context Supplier - OpenTelemetry Agent (from <https://repo1.maven.org/maven2/io/prometheus/simpleclient_tracer_otel_agent>, https://repo1.maven.org/maven2/io/prometheus/simpleclient_tracer_otel_agent)
+- Prometheus Metrics Config (from https://repo1.maven.org/maven2/io/prometheus/prometheus-metrics-config)
+- Prometheus Metrics Core (from https://repo1.maven.org/maven2/io/prometheus/prometheus-metrics-core)
+- Prometheus Metrics Exposition Formats (from https://repo1.maven.org/maven2/io/prometheus/prometheus-metrics-exposition-formats)
+- Prometheus Metrics Model (from https://repo1.maven.org/maven2/io/prometheus/prometheus-metrics-model)
+- Prometheus Metrics Tracer Common (from https://repo1.maven.org/maven2/io/prometheus/prometheus-metrics-tracer-common)
 - Proton-J (from https://repo1.maven.org/maven2/org/apache/qpid/proton-j)
-- QUIC functionality for the Reactor Netty library (from https://github.com/reactor/reactor-netty)
 - QpidJMS Client (from https://repo1.maven.org/maven2/org/apache/qpid/qpid-jms-client)
 - RESTEasy JAX-RS Implementation (from https://repo1.maven.org/maven2/org/jboss/resteasy/resteasy-jaxrs)
 - RESTEasy JAX-RS services (from https://repo1.maven.org/maven2/org/jboss/resteasy/resteasy-jaxrs-services)
 - RESTEasy Jackson 2 Provider (from https://repo1.maven.org/maven2/org/jboss/resteasy/resteasy-jackson2-provider)
-- Reactive Streams Netty driver (from https://github.com/reactor/reactor-netty)
 - Redisson (from http://redisson.org)
 - Retrofit (from https://github.com/square/retrofit, https://repo1.maven.org/maven2/com/squareup/retrofit2/retrofit)
 - RxJava (from https://github.com/ReactiveX/RxJava)
+- Shaded Protobuf (from https://repo1.maven.org/maven2/io/prometheus/prometheus-metrics-shaded-protobuf)
 - SnakeYAML (from http://code.google.com/p/snakeyaml/, http://www.snakeyaml.org, https://bitbucket.org/snakeyaml/snakeyaml)
 - Spatial4J (from https://projects.eclipse.org/projects/locationtech.spatial4j)
 - Spring AOP (from http://www.springframework.org, https://github.com/spring-projects/spring-framework, https://repo1.maven.org/maven2/org/springframework/spring-aop)
@@ -323,7 +307,6 @@ The following software have components provided under the terms of this license:
 - json-patch (from https://github.com/fge/json-patch, https://github.com/java-json-tools/json-patch)
 - json-path (from http://code.google.com/p/json-path/, https://github.com/jayway/JsonPath)
 - lang-mustache (from https://github.com/elastic/elasticsearch, https://github.com/elastic/elasticsearch.git)
-- lettuce (from http://github.com/mp911de/lettuce/wiki, https://github.com/lettuce-io/lettuce-core/wiki)
 - mapper-extras (from https://github.com/elastic/elasticsearch, https://github.com/elastic/elasticsearch.git)
 - micrometer-commons (from https://github.com/micrometer-metrics/micrometer)
 - micrometer-core (from https://github.com/micrometer-metrics/micrometer)
@@ -377,8 +360,7 @@ The following software have components provided under the terms of this license:
 - Apache Lucene (module: suggest) (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-suggest)
 - Hamcrest (from http://hamcrest.org/JavaHamcrest/)
 - Hamcrest Core (from http://hamcrest.org/, http://hamcrest.org/JavaHamcrest/, https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core)
-- Jodd BeanUtil (from http://jodd.org)
-- Jodd Core (from http://jodd.org)
+- Jodd Util (from https://util.jodd.org)
 - LatencyUtils (from http://latencyutils.github.io/LatencyUtils/)
 - Lucene Common Analyzers (from <https://repo1.maven.org/maven2/org/apache/lucene/lucene-analyzers-common>, https://repo1.maven.org/maven2/org/apache/lucene/lucene-analyzers-common)
 - Lucene Grouping (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-grouping)
@@ -389,6 +371,8 @@ The following software have components provided under the terms of this license:
 - Lucene QueryParsers (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-queryparser)
 - Lucene Sandbox (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-sandbox)
 - Lucene Spatial 3D (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-spatial3d)
+- MinLog (from https://github.com/EsotericSoftware/minlog)
+- ReflectASM (from https://github.com/EsotericSoftware/reflectasm)
 - Stax2 API (from http://github.com/FasterXML/stax2-api)
 - jersey-container-servlet (from https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet)
 - jersey-container-servlet-core (from https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet-core)
@@ -407,11 +391,8 @@ BSD-3-Clause
 The following software have components provided under the terms of this license:
 
 - API Common (from https://github.com/googleapis, https://github.com/googleapis/api-common-java, https://repo1.maven.org/maven2/com/google/api/api-common)
-- ASM Analysis (from http://asm.ow2.io/)
 - ASM Commons (from http://asm.ow2.io/, https://repo1.maven.org/maven2/org/ow2/asm/asm-commons)
 - ASM Core (from http://asm.ow2.io/, http://asm.ow2.org/)
-- ASM Tree (from http://asm.ow2.io/)
-- ASM Util (from http://asm.ow2.io/)
 - Apache Lucene (module: memory) (from https://lucene.apache.org/)
 - Apache Lucene (module: misc) (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-misc)
 - Apache Lucene (module: spatial-extras) (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-spatial-extras)
@@ -429,12 +410,14 @@ The following software have components provided under the terms of this license:
 - HK2 core module (from https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-core)
 - Hamcrest (from http://hamcrest.org/JavaHamcrest/)
 - Hamcrest Core (from http://hamcrest.org/, http://hamcrest.org/JavaHamcrest/, https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core)
+- Jackson module: Afterburner (from http://wiki.fasterxml.com/JacksonHome, https://github.com/FasterXML/jackson-modules-base)
 - Jakarta Activation API (from https://github.com/eclipse-ee4j/jaf, https://github.com/jakartaee/jaf-api, https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api)
 - Jakarta Annotations API (from https://projects.eclipse.org/projects/ee4j.ca)
 - Jakarta JSON Processing API (from https://github.com/eclipse-ee4j/jsonp, https://javaee.github.io/jsonp)
 - Jakarta Messaging API (from https://projects.eclipse.org/projects/ee4j.jms)
 - Jakarta RESTful WS API (from https://github.com/eclipse-ee4j/jaxrs-api, https://repo1.maven.org/maven2/jakarta/ws/rs/jakarta.ws.rs-api)
 - Jakarta XML Binding API (from https://repo1.maven.org/maven2/jakarta/xml/bind/jakarta.xml.bind-api, https://repo1.maven.org/maven2/org/jboss/spec/javax/xml/bind/jboss-jaxb-api_2.3_spec)
+- Kryo (from https://repo1.maven.org/maven2/com/esotericsoftware/kryo)
 - Lucene Common Analyzers (from <https://repo1.maven.org/maven2/org/apache/lucene/lucene-analyzers-common>, https://repo1.maven.org/maven2/org/apache/lucene/lucene-analyzers-common)
 - Lucene Core (from https://repo1.maven.org/maven2/org/apache/lucene/lucene-core)
 - Lucene Grouping (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-grouping)
@@ -445,15 +428,15 @@ The following software have components provided under the terms of this license:
 - Lucene QueryParsers (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-queryparser)
 - Lucene Sandbox (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-sandbox)
 - Lucene Spatial 3D (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-spatial3d)
-- Microsoft Application Insights Java Agent (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Java SDK Spring Boot starter (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Log4j 2 Appender (from https://github.com/Microsoft/ApplicationInsights-Java)
+- MinLog (from https://github.com/EsotericSoftware/minlog)
 - Netty/Codec/HTTP (from https://repo1.maven.org/maven2/io/netty/netty-codec-http)
 - Protocol Buffer Java API (from http://code.google.com/p/protobuf, https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java)
 - Protocol Buffers [Util] (from https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java-util)
 - RE2/J (from http://github.com/google/re2j)
 - Redisson (from http://redisson.org)
+- ReflectASM (from https://github.com/EsotericSoftware/reflectasm)
 - ServiceLocator Default Implementation (from https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-locator)
+- Shaded Protobuf (from https://repo1.maven.org/maven2/io/prometheus/prometheus-metrics-shaded-protobuf)
 - Spring Core (from http://www.springframework.org, https://github.com/spring-projects/spring-framework, https://repo1.maven.org/maven2/org/springframework/spring-core)
 - Spring Data KeyValue (from https://repo1.maven.org/maven2/org/springframework/data/spring-data-keyvalue)
 - ThreeTen backport (from https://github.com/ThreeTen/threetenbp, https://www.threeten.org/threetenbp)
@@ -470,15 +453,6 @@ The following software have components provided under the terms of this license:
 - jersey-spring6 (from https://repo1.maven.org/maven2/org/glassfish/jersey/ext/jersey-spring6)
 - jts-core (from https://repo1.maven.org/maven2/org/locationtech/jts/jts-core)
 - org.locationtech.jts.io:jts-io-common (from https://repo1.maven.org/maven2/org/locationtech/jts/io/jts-io-common)
-
-========================================================================
-Beerware
-========================================================================
-The following software have components provided under the terms of this license:
-
-- Microsoft Application Insights Java Agent (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Java SDK Spring Boot starter (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Log4j 2 Appender (from https://github.com/Microsoft/ApplicationInsights-Java)
 
 ========================================================================
 BouncyCastle
@@ -499,25 +473,16 @@ The following software have components provided under the terms of this license:
 - MongoDB Java Driver (from http://mongodb.org/, http://www.mongodb.org, https://www.mongodb.com/)
 
 ========================================================================
-CC-BY-4.0
-========================================================================
-The following software have components provided under the terms of this license:
-
-- Microsoft Application Insights Java Agent (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Java SDK Spring Boot starter (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Log4j 2 Appender (from https://github.com/Microsoft/ApplicationInsights-Java)
-
-========================================================================
 CC0-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
 - Guava: Google Core Libraries for Java (from http://code.google.com/p/guava-libraries, https://github.com/google/guava, https://repo1.maven.org/maven2/com/google/guava/guava)
 - HdrHistogram (from http://hdrhistogram.github.io/HdrHistogram/)
-- Hibernate Validator (from https://repo1.maven.org/maven2/org/hibernate/hibernate-validator, https://repo1.maven.org/maven2/org/hibernate/validator/hibernate-validator)
+- Hibernate Validator (from http://hibernate.org/validator, https://repo1.maven.org/maven2/org/hibernate/hibernate-validator, https://repo1.maven.org/maven2/org/hibernate/validator/hibernate-validator)
 - LatencyUtils (from http://latencyutils.github.io/LatencyUtils/)
 - Netty/Common (from https://repo1.maven.org/maven2/io/netty/netty-common)
-- Prometheus Java Simpleclient (from <https://repo1.maven.org/maven2/io/prometheus/simpleclient>, https://repo1.maven.org/maven2/io/prometheus/simpleclient)
+- Redisson (from http://redisson.org)
 - jersey-container-servlet (from https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet)
 - jersey-container-servlet-core (from https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet-core)
 - jersey-core-client (from https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-client)
@@ -577,13 +542,11 @@ EPL-1.0
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- JUnit Vintage Engine (from http://junit.org/junit5/, https://junit.org/junit5/)
 - Logback Contrib :: JSON :: Classic (from https://repo1.maven.org/maven2/ch/qos/logback/contrib/logback-json-classic)
 - Logback Contrib :: JSON :: Core (from https://repo1.maven.org/maven2/ch/qos/logback/contrib/logback-json-core)
 - Logback Contrib :: Jackson (from https://repo1.maven.org/maven2/ch/qos/logback/contrib/logback-jackson)
 - Logback Core Module (from http://logback.qos.ch, https://repo1.maven.org/maven2/ch/qos/logback/logback-core)
-- Microsoft Application Insights Java Agent (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Java SDK Spring Boot starter (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Log4j 2 Appender (from https://github.com/Microsoft/ApplicationInsights-Java)
 - jts-core (from https://repo1.maven.org/maven2/org/locationtech/jts/jts-core)
 - org.locationtech.jts.io:jts-io-common (from https://repo1.maven.org/maven2/org/locationtech/jts/io/jts-io-common)
 
@@ -604,6 +567,7 @@ The following software have components provided under the terms of this license:
 - JUnit Jupiter Params (from http://junit.org/junit5/, https://junit.org/junit5/)
 - JUnit Platform Commons (from http://junit.org/junit5/, https://junit.org/junit5/)
 - JUnit Platform Engine API (from http://junit.org/junit5/, https://junit.org/junit5/)
+- JUnit Vintage Engine (from http://junit.org/junit5/, https://junit.org/junit5/)
 - Jakarta Activation API (from https://github.com/eclipse-ee4j/jaf, https://github.com/jakartaee/jaf-api, https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api)
 - Jakarta Annotations API (from https://projects.eclipse.org/projects/ee4j.ca)
 - Jakarta JSON Processing API (from https://github.com/eclipse-ee4j/jsonp, https://javaee.github.io/jsonp)
@@ -681,14 +645,8 @@ ISC
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- Java Native Access Platform (from https://github.com/java-native-access/jna)
 - Spring Security - Core (from http://spring.io/spring-security, https://repo1.maven.org/maven2/org/springframework/security/spring-security-core, https://spring.io/projects/spring-security, https://spring.io/spring-security)
-
-========================================================================
-Info-ZIP
-========================================================================
-The following software have components provided under the terms of this license:
-
-- Apache Commons Compress (from http://commons.apache.org/compress/, http://commons.apache.org/proper/commons-compress/, https://commons.apache.org/proper/commons-compress/)
 
 ========================================================================
 LGPL-2.0-or-later
@@ -702,15 +660,13 @@ LGPL-2.1-only
 ========================================================================
 The following software have components provided under the terms of this license:
 
+- Java Native Access Platform (from https://github.com/java-native-access/jna)
 - Javassist (from http://www.javassist.org/, https://www.javassist.org/)
 - Logback Classic Module (from http://logback.qos.ch, https://repo1.maven.org/maven2/ch/qos/logback/logback-classic)
 - Logback Contrib :: JSON :: Classic (from https://repo1.maven.org/maven2/ch/qos/logback/contrib/logback-json-classic)
 - Logback Contrib :: JSON :: Core (from https://repo1.maven.org/maven2/ch/qos/logback/contrib/logback-json-core)
 - Logback Contrib :: Jackson (from https://repo1.maven.org/maven2/ch/qos/logback/contrib/logback-jackson)
 - Logback Core Module (from http://logback.qos.ch, https://repo1.maven.org/maven2/ch/qos/logback/logback-core)
-- Microsoft Application Insights Java Agent (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Java SDK Spring Boot starter (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Log4j 2 Appender (from https://github.com/Microsoft/ApplicationInsights-Java)
 
 ========================================================================
 LGPL-2.1-or-later
@@ -719,7 +675,6 @@ The following software have components provided under the terms of this license:
 
 - Elastic JNA Distribution (from https://github.com/java-native-access/jna)
 - Java Native Access (from https://github.com/java-native-access/jna, https://github.com/twall/jna)
-- Java Native Access Platform (from https://github.com/java-native-access/jna)
 - Javassist (from http://www.javassist.org/, https://www.javassist.org/)
 
 ========================================================================
@@ -764,8 +719,6 @@ The following software have components provided under the terms of this license:
 - Lucene Sandbox (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-sandbox)
 - Lucene Spatial 3D (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-spatial3d)
 - Microsoft Application Insights Java Agent (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Java SDK Spring Boot starter (from https://github.com/Microsoft/ApplicationInsights-Java)
-- Microsoft Application Insights Log4j 2 Appender (from https://github.com/Microsoft/ApplicationInsights-Java)
 - Microsoft Azure Java Core AMQP Library (from https://github.com/Azure/azure-sdk-for-java)
 - Microsoft Azure Java Core Library (from https://github.com/Azure/azure-sdk-for-java)
 - Microsoft Azure Java JSON Library (from https://github.com/Azure/azure-sdk-for-java)
@@ -869,13 +822,6 @@ The following software have components provided under the terms of this license:
 - Lucene QueryParsers (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-queryparser)
 - Lucene Sandbox (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-sandbox)
 - Lucene Spatial 3D (from https://lucene.apache.org/, https://repo1.maven.org/maven2/org/apache/lucene/lucene-spatial3d)
-
-========================================================================
-bzip2-1.0.6
-========================================================================
-The following software have components provided under the terms of this license:
-
-- Apache Commons Compress (from http://commons.apache.org/compress/, http://commons.apache.org/proper/commons-compress/, https://commons.apache.org/proper/commons-compress/)
 
 ========================================================================
 cc-pd

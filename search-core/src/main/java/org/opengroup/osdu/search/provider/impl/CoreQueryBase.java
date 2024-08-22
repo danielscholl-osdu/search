@@ -19,6 +19,7 @@ package org.opengroup.osdu.search.provider.impl;
 
 import static org.opengroup.osdu.core.common.Constants.COLLABORATIONS_FEATURE_NAME;
 import static org.opengroup.osdu.core.common.model.search.RecordMetaAttribute.COLLABORATION_ID;
+import static org.opengroup.osdu.search.config.SearchConfigurationProperties.POLICY_FEATURE_NAME;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.*;
@@ -74,7 +75,7 @@ abstract class CoreQueryBase {
   @Autowired private IQueryPerformanceLogger tracingLogger;
   @Autowired private GeoQueryBuilder geoQueryBuilder;
   @Autowired private SuggestionsQueryUtil suggestionsQueryUtil;
-  @Autowired public IFeatureFlag collaborationFeatureFlag;
+  @Autowired public IFeatureFlag featureFlag;
   @Autowired private CollaborationContextFactory collaborationContextFactory;
 
   // if returnedField contains property matching from excludes than query result will NOT include
@@ -106,7 +107,7 @@ abstract class CoreQueryBase {
       }
     }
 
-    if (collaborationFeatureFlag.isFeatureEnabled(COLLABORATIONS_FEATURE_NAME)) {
+    if (featureFlag.isFeatureEnabled(COLLABORATIONS_FEATURE_NAME)) {
       Optional<CollaborationContext> collaborationContext =
           collaborationContextFactory.create(dpsHeaders.getCollaboration());
       if (collaborationContext.isPresent()) {
@@ -122,7 +123,7 @@ abstract class CoreQueryBase {
       }
     }
 
-    if (this.iPolicyService != null) {
+    if (featureFlag.isFeatureEnabled(POLICY_FEATURE_NAME)) {
       String compiledESPolicy = this.iPolicyService.getCompiledPolicy(providerHeaderService);
       WrapperQuery.Builder wrapperQueryBuilder = QueryBuilders.wrapper().query(compiledESPolicy);
       return queryBuilder.must(wrapperQueryBuilder.build()._toQuery());

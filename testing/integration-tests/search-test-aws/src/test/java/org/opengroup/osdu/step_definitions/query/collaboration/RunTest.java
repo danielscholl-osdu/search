@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.opengroup.osdu.step_definitions.query.singlecluster.collaboration;
+package org.opengroup.osdu.step_definitions.query.collaboration;
 
 import cucumber.api.CucumberOptions;
 import cucumber.api.junit.Cucumber;
@@ -22,8 +22,8 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        features = {"classpath:features/query/singlecluster/QueryCollaboration.feature"},
-        glue = {"classpath:org.opengroup.osdu.step_definitions/query/singlecluster/collaboration"},
+        features = {"classpath:features/query/collaboration/QueryCollaboration.feature"},
+        glue = {"classpath:org/opengroup/osdu/step_definitions/query/collaboration"},
         plugin = {"pretty", "junit:target/cucumber-reports/TEST-query-collaboration-sc.xml"})
 public class RunTest {
 }

@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.opengroup.osdu</groupId>
 		<artifactId>os-search</artifactId>
-		<version>0.27.0-SNAPSHOT</version>
+		<version>0.28.0-SNAPSHOT</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
@@ -23,11 +23,8 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<tomcat.embed.core.version>9.0.69</tomcat.embed.core.version>
 		<os-core-lib-ibm.version>0.27.0-rc2</os-core-lib-ibm.version>
 		<start-class>org.opengroup.osdu.search.provider.ibm.app.SearchIBMApplication</start-class>
-		<spring-webmvc.version>5.3.22</spring-webmvc.version>
-		<jackson-databind.version>2.15.2</jackson-databind.version>
 	</properties>
 
 	<dependencies>
@@ -35,11 +32,15 @@
 		<dependency>
 			<groupId>org.opengroup.osdu</groupId>
 			<artifactId>search-core</artifactId>
-			<version>0.27.0-SNAPSHOT</version>
+			<version>0.28.0-SNAPSHOT</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.nimbusds</groupId>
 					<artifactId>nimbus-jose-jwt</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
 				</exclusion>
 				<exclusion>
             		<groupId>jakarta.servlet</groupId>
@@ -54,17 +55,14 @@
 		<dependency>
 			<groupId>org.apache.tomcat.embed</groupId>
 			<artifactId>tomcat-embed-core</artifactId>
-			<version>${tomcat.embed.core.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
-			<version>${spring-webmvc.version}</version>
 		</dependency>
 		<dependency>
     		<groupId>com.fasterxml.jackson.core</groupId>
     		<artifactId>jackson-databind</artifactId>
-   		 	<version>${jackson-databind.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -87,6 +85,10 @@
 			<version>${osdu.oscorecommon.version}</version>
 			<exclusions>
 				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+				<exclusion>
 					<groupId>io.netty</groupId>
 					<artifactId>netty-codec</artifactId>
 				</exclusion>
@@ -104,7 +106,6 @@
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-codec</artifactId>
-			<version>4.1.86.Final</version>
 		</dependency>
 
 		<dependency>
@@ -130,11 +131,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security.oauth</groupId>
-			<artifactId>spring-security-oauth2</artifactId>
-			<version>2.3.6.RELEASE</version>
 		</dependency>
 
 		<dependency>
@@ -177,6 +173,12 @@
 			<artifactId>embedded-elasticsearch</artifactId>
 			<version>2.10.0</version>
 			<!-- <scope>test</scope> -->
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.commons</groupId>
+					<artifactId>commons-compress</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Test Dependencies -->
@@ -212,12 +214,11 @@
 		<dependency>
 		    <groupId>org.apache.commons</groupId>
 		    <artifactId>commons-compress</artifactId>
-		    <version>1.21</version>
+		    <version>1.26.1</version>
 		</dependency>
 		<dependency>
 		    <groupId>io.netty</groupId>
 		    <artifactId>netty-codec-http</artifactId>
-		    <version>4.1.77.Final</version>
 		</dependency>
 	</dependencies>
 

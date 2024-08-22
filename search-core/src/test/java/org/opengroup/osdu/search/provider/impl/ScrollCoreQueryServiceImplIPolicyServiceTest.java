@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.opengroup.osdu.search.config.SearchConfigurationProperties.POLICY_FEATURE_NAME;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.opengroup.osdu.core.common.feature.IFeatureFlag;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
@@ -53,15 +55,14 @@ import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.search.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
-import org.opengroup.osdu.search.policy.service.PartitionPolicyStatusService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.GeoQueryBuilder;
 import org.opengroup.osdu.search.util.IDetailedBadRequestMessageUtil;
-import org.opengroup.osdu.search.util.IQueryPerformanceLogger;
 import org.opengroup.osdu.search.util.IQueryParserUtil;
+import org.opengroup.osdu.search.util.IQueryPerformanceLogger;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 import org.opengroup.osdu.search.util.SuggestionsQueryUtil;
@@ -71,83 +72,63 @@ import org.opengroup.osdu.search.util.SuggestionsQueryUtil;
 //TODO:
 public class ScrollCoreQueryServiceImplIPolicyServiceTest {
 
-	private final String DATA_GROUPS = "X-Data-Groups";
-	private final String DATA_GROUP_1 = "data.welldb.viewers@common.evd.cloud.slb-ds.com";
-	private final String DATA_GROUP_2 = "data.npd.viewers@common.evd.cloud.slb-ds.com";
-	private final String PARTITION_ID = "opendes";
+  private final String DATA_GROUPS = "X-Data-Groups";
+  private final String DATA_GROUP_1 = "data.welldb.viewers@common.evd.cloud.slb-ds.com";
+  private final String DATA_GROUP_2 = "data.npd.viewers@common.evd.cloud.slb-ds.com";
+  private final String PARTITION_ID = "opendes";
 
-  @InjectMocks
-	ScrollCoreQueryServiceImpl scrollQueryServiceAws;
+  @InjectMocks ScrollCoreQueryServiceImpl scrollQueryServiceAws;
 
-	@Mock
-	private ElasticClientHandler elasticClientHandler;
+  @Mock private ElasticClientHandler elasticClientHandler;
 
-	@Mock
-	private JaxRsDpsLog log;
+  @Mock private JaxRsDpsLog log;
 
-	@Mock
-	private IProviderHeaderService providerHeaderService;
+  @Mock private IProviderHeaderService providerHeaderService;
 
-	@Mock
-	private CrossTenantUtils crossTenantUtils;
+  @Mock private CrossTenantUtils crossTenantUtils;
 
-	@Mock
-	private IFieldMappingTypeService fieldMappingTypeService;
+  @Mock private IFieldMappingTypeService fieldMappingTypeService;
 
-	@Mock
-	private PartitionPolicyStatusService statusService;
+  @Mock private IQueryParserUtil queryParserUtil;
 
-	@Mock
-	private IQueryParserUtil queryParserUtil;
+  @Mock private ISortParserUtil sortParserUtil;
 
-	@Mock
-	private ISortParserUtil sortParserUtil;
+  @Mock private IDetailedBadRequestMessageUtil detailedBadRequestMessageUtil;
 
-	@Mock
-	private IDetailedBadRequestMessageUtil detailedBadRequestMessageUtil;
+  @Mock private DpsHeaders dpsHeaders;
 
-	@Mock
-	private DpsHeaders dpsHeaders;
+  @Mock private AuditLogger auditLogger;
 
-	@Mock
-	private AuditLogger auditLogger;
+  @Mock private CursorCache cursorCache;
 
-	@Mock
-	private CursorCache cursorCache;
+  @Mock private ResponseExceptionParser exceptionParser;
 
-	@Mock 
-	private ResponseExceptionParser exceptionParser;
+  @Mock private IPolicyService iPolicyService;
 
-	@Mock 
-	private IPolicyService iPolicyService;
+  @Mock private GeoQueryBuilder geoQueryBuilder;
 
-	@Mock
-	private GeoQueryBuilder geoQueryBuilder;
+  @Mock private ElasticLoggingConfig elasticLoggingConfig;
 
-	@Mock
-	private ElasticLoggingConfig elasticLoggingConfig;
+  @Mock private IQueryPerformanceLogger searchDependencyLogger;
 
-	@Mock
-	private IQueryPerformanceLogger searchDependencyLogger;
+  @Mock private SuggestionsQueryUtil suggestionsQueryUtil;
 
-	@Mock
-	private SuggestionsQueryUtil suggestionsQueryUtil;
+  @Mock public IFeatureFlag iFeatureFlag;
 
-	@Before
-	public void setup() {
-		MockitoAnnotations.openMocks(this);
+  @Before
+  public void setup() {
+    MockitoAnnotations.openMocks(this);
 
-		Map<String, String> HEADERS = new HashMap<>();
-		HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
-		HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
-		HEADERS.put(DATA_GROUPS, String.format("%s,%s", DATA_GROUP_1, DATA_GROUP_2));
+    Map<String, String> HEADERS = new HashMap<>();
+    HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
+    HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
+    HEADERS.put(DATA_GROUPS, String.format("%s,%s", DATA_GROUP_1, DATA_GROUP_2));
 
-		when(elasticLoggingConfig.getEnabled()).thenReturn(false);
-		when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
-	}
+    when(elasticLoggingConfig.getEnabled()).thenReturn(false);
+    when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
+  }
 
-
-	////TODO: rewrite tests. ElasticSearch newClient
+    ////TODO: rewrite tests. ElasticSearch newClient
 //	@Test
 //	public void should_return_CorrectQueryResponse_NullResult_noCursorSet_QueryBuilder() throws Exception {
 //		// arrange

@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.opengroup.osdu</groupId>
         <artifactId>os-search</artifactId>
-        <version>0.27.0-SNAPSHOT</version>
+        <version>0.28.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -36,21 +36,11 @@
         <project.main.basedir>${project.basedir}</project.main.basedir>
         <nimbus-jose-jwt.version>9.1.2</nimbus-jose-jwt.version>
         <elasticsearch.version>7.8.1</elasticsearch.version>
-        <netty.version>4.1.109.Final</netty.version>
-        <spring-security-web.version>6.3.0</spring-security-web.version>
-        <spring-webmvc.version>6.1.6</spring-webmvc.version>
         <jts-io-common.version>1.15.0</jts-io-common.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-bom</artifactId>
-                <version>${netty.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-web</artifactId>
@@ -132,12 +122,11 @@
           <dependency>
               <groupId>org.springframework.security</groupId>
               <artifactId>spring-security-web</artifactId>
-              <version>${spring-security-web.version}</version>
+              <version>${spring-security.version}</version>
           </dependency>
           <dependency>
               <groupId>org.springframework</groupId>
               <artifactId>spring-webmvc</artifactId>
-              <version>${spring-webmvc.version}</version>
           </dependency>
           <dependency>
               <groupId>org.jboss.resteasy</groupId>
