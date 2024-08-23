@@ -15,7 +15,7 @@
 
 package org.opengroup.osdu.search.provider.aws.entitlements;
 
-import com.lambdaworks.redis.RedisException;
+import io.lettuce.core.RedisException;
 import org.opengroup.osdu.core.common.entitlements.IEntitlementsFactory;
 import org.opengroup.osdu.core.common.entitlements.IEntitlementsService;
 import org.opengroup.osdu.core.common.http.HeadersUtil;
