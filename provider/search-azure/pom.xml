@@ -34,7 +34,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
-        <core-lib-azure-spring6.version>0.27.0-rc6</core-lib-azure-spring6.version>
+        <core-lib-azure.version>1.0.0</core-lib-azure.version>
         <osdu.search-core.version>0.28.0-SNAPSHOT</osdu.search-core.version>
         <spatial4j.version>0.7</spatial4j.version>
         <log4j.version>2.21.1</log4j.version>
@@ -59,8 +59,8 @@
             <!-- Inherit managed dependencies from core-lib-azure -->
             <dependency>
                 <groupId>org.opengroup.osdu</groupId>
-                <artifactId>core-lib-azure-spring6</artifactId>
-                <version>${core-lib-azure-spring6.version}</version>
+                <artifactId>core-lib-azure</artifactId>
+                <version>${core-lib-azure.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -104,13 +104,13 @@
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
-            <artifactId>os-core-common-spring6</artifactId>
+            <artifactId>os-core-common</artifactId>
             <version>${osdu.oscorecommon.version}</version>
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
-            <artifactId>core-lib-azure-spring6</artifactId>
-            <version>${core-lib-azure-spring6.version}</version>
+            <artifactId>core-lib-azure</artifactId>
+            <version>${core-lib-azure.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.redisson</groupId>

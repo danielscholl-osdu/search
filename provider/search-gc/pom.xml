@@ -63,8 +63,8 @@
     <dependencies>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
-            <artifactId>core-lib-gc-spring6</artifactId>
-            <version>0.27.0-rc3</version>
+            <artifactId>core-lib-gc</artifactId>
+            <version>0.27.0-rc7</version>
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
@@ -79,7 +79,7 @@
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
-            <artifactId>os-core-common-spring6</artifactId>
+            <artifactId>os-core-common</artifactId>
             <version>${osdu.oscorecommon.version}</version>
             <exclusions>
                 <exclusion>
