@@ -17,7 +17,7 @@
 
 package org.opengroup.osdu.search.auth;
 
-import com.lambdaworks.redis.RedisException;
+import io.lettuce.core.RedisException;
 import lombok.RequiredArgsConstructor;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.entitlements.AuthorizationServiceImpl;

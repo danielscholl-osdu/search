@@ -14,7 +14,7 @@
 
 package org.opengroup.osdu.search.provider.azure.cache.impl;
 
-import com.lambdaworks.redis.RedisException;
+import io.lettuce.core.RedisException;
 import org.opengroup.osdu.azure.cache.ElasticCredentialsCache;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;

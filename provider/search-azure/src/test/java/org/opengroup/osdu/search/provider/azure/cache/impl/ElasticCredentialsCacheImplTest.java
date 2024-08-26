@@ -1,6 +1,6 @@
 package org.opengroup.osdu.search.provider.azure.cache.impl;
 
-import com.lambdaworks.redis.RedisException;
+import io.lettuce.core.RedisException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

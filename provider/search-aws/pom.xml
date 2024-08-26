@@ -60,7 +60,7 @@
         <dependency>
             <groupId>org.opengroup.osdu.core.aws</groupId>
             <artifactId>os-core-lib-aws</artifactId>
-            <version>0.26.0-spring6-rc2</version>
+            <version>2.0.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>software.amazon.ion</groupId>
@@ -70,7 +70,7 @@
         </dependency>
         <dependency>
             <groupId>org.opengroup.osdu</groupId>
-            <artifactId>os-core-common-spring6</artifactId>
+            <artifactId>os-core-common</artifactId>
             <version>${osdu.oscorecommon.version}</version>
         </dependency>
 
