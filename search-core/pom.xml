@@ -35,7 +35,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.basedir}</project.main.basedir>
         <nimbus-jose-jwt.version>9.1.2</nimbus-jose-jwt.version>
-        <elasticsearch.version>7.8.1</elasticsearch.version>
+        <elasticsearch.version>7.17.22</elasticsearch.version>
         <jts-io-common.version>1.15.0</jts-io-common.version>
     </properties>
 

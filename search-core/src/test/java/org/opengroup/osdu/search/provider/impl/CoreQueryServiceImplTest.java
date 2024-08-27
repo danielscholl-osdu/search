@@ -50,8 +50,6 @@ import org.elasticsearch.client.ElasticsearchClient;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.geo.GeoPoint;
-import org.elasticsearch.common.geo.builders.EnvelopeBuilder;
-import org.elasticsearch.common.geo.builders.PolygonBuilder;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.GeoBoundingBoxQueryBuilder;
@@ -303,34 +301,34 @@ public class CoreQueryServiceImplTest {
         assertEquals(queryResponse.getTotalCount(), 0);
     }
 
-    @Test
-    @Ignore
-    public void testQueryBase_useGeoShapeQueryIsTrue_getByBoundingBox() throws IOException {
-        SearchHit[] hits = {};
-        SpatialFilter.ByBoundingBox boundingBox = getValidBoundingBox();
-
-        doReturn(boundingBox).when(spatialFilter).getByBoundingBox();
-        doReturn(hits).when(searchHits).getHits();
-
-        QueryResponse queryResponse = sut.queryIndex(searchRequest);
-
-        ArgumentCaptor<SearchRequest> elasticSearchRequest = ArgumentCaptor.forClass(SearchRequest.class);
-
-        verify(client).search(elasticSearchRequest.capture(), eq(RequestOptions.DEFAULT));
-
-        QueryBuilder queryBuilder = ((BoolQueryBuilder) elasticSearchRequest.getValue().source().query()).must().get(0);
-        EnvelopeBuilder shape = (EnvelopeBuilder) ((GeoShapeQueryBuilder) queryBuilder).shape();
-        Coordinate topLeft = shape.topLeft();
-        Coordinate bottomRight = shape.bottomRight();
-
-        assertTrue(checkPointAndCoordinateCorrespondence(this.topLeft, topLeft));
-        assertTrue(checkPointAndCoordinateCorrespondence(this.bottomRight, bottomRight));
-        assertEquals(GEO_SHAPE, queryBuilder.getName());
-        assertEquals(fieldName, ((GeoShapeQueryBuilder) queryBuilder.queryName("fieldName")).fieldName());
-        assertEquals(queryResponse.getResults().size(), 0);
-        assertEquals(queryResponse.getAggregations().size(), 0);
-        assertEquals(queryResponse.getTotalCount(), 0);
-    }
+//    @Test
+//    @Ignore
+//    public void testQueryBase_useGeoShapeQueryIsTrue_getByBoundingBox() throws IOException {
+//        SearchHit[] hits = {};
+//        SpatialFilter.ByBoundingBox boundingBox = getValidBoundingBox();
+//
+//        doReturn(boundingBox).when(spatialFilter).getByBoundingBox();
+//        doReturn(hits).when(searchHits).getHits();
+//
+//        QueryResponse queryResponse = sut.queryIndex(searchRequest);
+//
+//        ArgumentCaptor<SearchRequest> elasticSearchRequest = ArgumentCaptor.forClass(SearchRequest.class);
+//
+//        verify(client).search(elasticSearchRequest.capture(), eq(RequestOptions.DEFAULT));
+//
+//        QueryBuilder queryBuilder = ((BoolQueryBuilder) elasticSearchRequest.getValue().source().query()).must().get(0);
+//        EnvelopeBuilder shape = (EnvelopeBuilder) ((GeoShapeQueryBuilder) queryBuilder).shape();
+//        Coordinate topLeft = shape.topLeft();
+//        Coordinate bottomRight = shape.bottomRight();
+//
+//        assertTrue(checkPointAndCoordinateCorrespondence(this.topLeft, topLeft));
+//        assertTrue(checkPointAndCoordinateCorrespondence(this.bottomRight, bottomRight));
+//        assertEquals(GEO_SHAPE, queryBuilder.getName());
+//        assertEquals(fieldName, ((GeoShapeQueryBuilder) queryBuilder.queryName("fieldName")).fieldName());
+//        assertEquals(queryResponse.getResults().size(), 0);
+//        assertEquals(queryResponse.getAggregations().size(), 0);
+//        assertEquals(queryResponse.getTotalCount(), 0);
+//    }
 
     @Test
     @Ignore
@@ -383,34 +381,34 @@ public class CoreQueryServiceImplTest {
         assertEquals(fieldName, ((GeoPolygonQueryBuilder) queryBuilder.queryName("fieldName")).fieldName());
     }
 
-    @Test
-    @Ignore
-    public void testQueryBase_useGeoShapeQueryIsTrue_getByGeoPolygon() throws IOException {
-        SearchHit[] hits = {};
-        SpatialFilter.ByGeoPolygon geoPolygon = getGeoPolygon(closedPolygonPoints);
-
-        doReturn(geoPolygon).when(spatialFilter).getByGeoPolygon();
-        doReturn(hits).when(searchHits).getHits();
-
-        QueryResponse queryResponse = sut.queryIndex(searchRequest);
-
-        ArgumentCaptor<SearchRequest> elasticSearchRequest = ArgumentCaptor.forClass(SearchRequest.class);
-
-        verify(client).search(elasticSearchRequest.capture(), eq(RequestOptions.DEFAULT));
-
-        QueryBuilder queryBuilder = ((BoolQueryBuilder) elasticSearchRequest.getValue().source().query()).must().get(0);
-        PolygonBuilder shape = (PolygonBuilder) ((GeoShapeQueryBuilder) queryBuilder).shape();
-        Coordinate[] coordinates = shape.coordinates()[0][0];
-
-        // coordinates obtained starts from 1st point instead of 0th point of closedPolygon
-        assertTrue(checkPointAndCoordinateCorrespondence(closedPolygonPoints.get(1), coordinates[0]));
-        assertTrue(checkPointAndCoordinateCorrespondence(closedPolygonPoints.get(2), coordinates[1]));
-        assertTrue(checkPointAndCoordinateCorrespondence(closedPolygonPoints.get(3), coordinates[2]));
-        assertTrue(checkPointAndCoordinateCorrespondence(closedPolygonPoints.get(0), coordinates[3]));
-        assertTrue(checkPointAndCoordinateCorrespondence(closedPolygonPoints.get(1), coordinates[4]));
-        assertEquals(GEO_SHAPE, queryBuilder.getName());
-        assertEquals(fieldName, ((GeoShapeQueryBuilder) queryBuilder.queryName("fieldName")).fieldName());
-    }
+//    @Test
+//    @Ignore
+//    public void testQueryBase_useGeoShapeQueryIsTrue_getByGeoPolygon() throws IOException {
+//        SearchHit[] hits = {};
+//        SpatialFilter.ByGeoPolygon geoPolygon = getGeoPolygon(closedPolygonPoints);
+//
+//        doReturn(geoPolygon).when(spatialFilter).getByGeoPolygon();
+//        doReturn(hits).when(searchHits).getHits();
+//
+//        QueryResponse queryResponse = sut.queryIndex(searchRequest);
+//
+//        ArgumentCaptor<SearchRequest> elasticSearchRequest = ArgumentCaptor.forClass(SearchRequest.class);
+//
+//        verify(client).search(elasticSearchRequest.capture(), eq(RequestOptions.DEFAULT));
+//
+//        QueryBuilder queryBuilder = ((BoolQueryBuilder) elasticSearchRequest.getValue().source().query()).must().get(0);
+//        PolygonBuilder shape = (PolygonBuilder) ((GeoShapeQueryBuilder) queryBuilder).shape();
+//        Coordinate[] coordinates = shape.coordinates()[0][0];
+//
+//        // coordinates obtained starts from 1st point instead of 0th point of closedPolygon
+//        assertTrue(checkPointAndCoordinateCorrespondence(closedPolygonPoints.get(1), coordinates[0]));
+//        assertTrue(checkPointAndCoordinateCorrespondence(closedPolygonPoints.get(2), coordinates[1]));
+//        assertTrue(checkPointAndCoordinateCorrespondence(closedPolygonPoints.get(3), coordinates[2]));
+//        assertTrue(checkPointAndCoordinateCorrespondence(closedPolygonPoints.get(0), coordinates[3]));
+//        assertTrue(checkPointAndCoordinateCorrespondence(closedPolygonPoints.get(1), coordinates[4]));
+//        assertEquals(GEO_SHAPE, queryBuilder.getName());
+//        assertEquals(fieldName, ((GeoShapeQueryBuilder) queryBuilder.queryName("fieldName")).fieldName());
+//    }
 
     @Test(expected = AppException.class)
     public void testQueryBase_whenClientSearchResultsInElasticsearchStatusException_statusNotFound_throwsException() throws IOException {
