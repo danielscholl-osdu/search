@@ -125,7 +125,9 @@ abstract class CoreQueryBase {
 
     if (featureFlag.isFeatureEnabled(POLICY_FEATURE_NAME)) {
       String compiledESPolicy = this.iPolicyService.getCompiledPolicy(providerHeaderService);
-      WrapperQuery.Builder wrapperQueryBuilder = QueryBuilders.wrapper().query(compiledESPolicy);
+      WrapperQuery.Builder wrapperQueryBuilder =
+          QueryBuilders.wrapper()
+              .query(Base64.getEncoder().encodeToString(compiledESPolicy.getBytes()));
       return queryBuilder.must(wrapperQueryBuilder.build()._toQuery());
     } else {
       return getQueryBuilderWithAuthorization(queryBuilder, asOwner);

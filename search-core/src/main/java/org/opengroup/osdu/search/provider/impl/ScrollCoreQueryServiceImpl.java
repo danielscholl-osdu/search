@@ -209,10 +209,11 @@ public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScroll
     searchSourceBuilder
         .index(index)
         .allowNoIndices(true)
-        .expandWildcards(ExpandWildcard.Open, ExpandWildcard.Closed);
+        .expandWildcards(ExpandWildcard.Open, ExpandWildcard.Closed)
+        .ignoreUnavailable(true);
 
     // Optimize Scroll request if users wants to iterate over all documents regardless of order
-    if (request.getSort() == null) { // ScoreSort.of(s -> s.order(SortOrder.Desc))
+    if (request.getSort() == null) { 
       searchSourceBuilder
           .sort(SortOptions.of(so -> so.score(s -> s.order(SortOrder.Desc))))
           .sort(SortOptions.of(so -> so.doc(d -> d.order(SortOrder.Asc))));

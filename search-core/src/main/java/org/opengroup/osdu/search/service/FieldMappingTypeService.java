@@ -68,25 +68,6 @@ public class FieldMappingTypeService implements IFieldMappingTypeService {
         this.typeMappingCache.put(cacheKey, fieldTypeMap);
       }
     }
-    //    Map<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>> mappings =
-    //        response.mappings();
-    //
-    //    for (Map.Entry<String, Map<String, GetFieldMappingsResponse.FieldMappingMetadata>>
-    //        indexMapping : mappings.entrySet()) {
-    //      if (indexMapping.getValue().isEmpty()) continue;
-    //      Map<String, GetFieldMappingsResponse.FieldMappingMetadata> typeMapping =
-    //          indexMapping.getValue();
-    //      for (Map.Entry<String, GetFieldMappingsResponse.FieldMappingMetadata>
-    //          fieldMappingMetadataEntry : typeMapping.entrySet()) {
-    //        if (fieldMappingMetadataEntry.getValue() == null) continue;
-    //        String field = fieldMappingMetadataEntry.getValue().fullName();
-    //        fieldTypeMap.put(field.substring(0, field.lastIndexOf(".keyword")), field);
-    //      }
-    //    }
-    //
-    //    this.typeMappingCache.put(cacheKey, fieldTypeMap);
-    //
-    //    return fieldTypeMap;
     return fieldTypeMap;
   }
 
@@ -103,7 +84,10 @@ public class FieldMappingTypeService implements IFieldMappingTypeService {
       request.index(indexPattern);
     }
 
-    request.allowNoIndices(true).expandWildcards(ExpandWildcard.Open, ExpandWildcard.Closed);
+    request
+        .allowNoIndices(true)
+        .expandWildcards(ExpandWildcard.Open, ExpandWildcard.Closed)
+        .ignoreUnavailable(true);
 
     return restClient.indices().getFieldMapping(request.build());
   }

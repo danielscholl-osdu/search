@@ -20,6 +20,7 @@ package org.opengroup.osdu.search.cache;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.cache.VmCache;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -27,8 +28,11 @@ public class ElasticsearchClientCache implements ICache<String, ElasticsearchCli
 
   private final VmCache<String, ElasticsearchClient> vmCache;
 
-  public ElasticsearchClientCache() {
-    this.vmCache = new VmCache<>(20, 20);
+  public ElasticsearchClientCache(SearchConfigurationProperties searchConfigurationProperties) {
+    this.vmCache =
+        new VmCache<>(
+            searchConfigurationProperties.getElasticCacheExpiration(),
+            searchConfigurationProperties.getMaximumCacheSize());
   }
 
   @Override
