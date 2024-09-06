@@ -39,10 +39,6 @@
 					<artifactId>nimbus-jose-jwt</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>com.google.guava</groupId>
-					<artifactId>guava</artifactId>
-				</exclusion>
-				<exclusion>
             		<groupId>jakarta.servlet</groupId>
             		<artifactId>jakarta.servlet-api</artifactId>
             	</exclusion>
