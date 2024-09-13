@@ -86,7 +86,9 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
 
         // All PIT search requests add an implicit sort tiebreaker field called _shard_doc
         if (request.getSort() == null) {
-            addSortOptions(searchSourceBuilder, getDefaultSortOptions());
+            for (SortOptions sortOption : getDefaultSortOptions()) {
+                searchSourceBuilder.sort(sortOption);
+            }
         }
 
         return searchSourceBuilder;
@@ -104,84 +106,67 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
 
     @Override
     public CursorQueryResponse queryIndex(CursorQueryRequest searchRequest) throws Exception {
-        CursorQueryResponse queryResponse = CursorQueryResponse.getEmptyResponse();
-
+        CursorQueryResponse queryResponse;
         try {
             ElasticsearchClient client = this.elasticClientHandler.getOrCreateRestClient();
-
             if (Strings.isNullOrEmpty(searchRequest.getCursor())) {
-                try {
-                    return this.initPaginationQueryQuery(searchRequest, client);
-                } catch (AppException e) {
-                    if (this.exceptionParser.parseException(e).stream()
-                            .anyMatch(r -> r.contains("Trying to create too many scroll contexts. Must be less than or equal to:"))) {
-                        throw new AppException(
-                                429,
-                                "Too many requests",
-                                "Too many cursor requests, please re-try after some time.",
-                                e);
-                    }
-                    throw e;
-                }
+                queryResponse = this.initPaginationQueryQuery(searchRequest, client);
             }
             else {
-                try {
-                    SearchAfterSettings cursorSettings = this.searchAfterSettingsCache.get(searchRequest.getCursor());
-                    if (cursorSettings != null) {
-                        checkAuthority(cursorSettings);
-                        if(!cursorSettings.isClosed()) {
-                            executeCursorPaginationQuery(searchRequest, queryResponse, client, cursorSettings);
-                        }
-                        else {
-                            queryResponse.setTotalCount(cursorSettings.getTotalCount());
-                            this.searchAfterSettingsCache.delete(searchRequest.getCursor());
-                        }
+                SearchAfterSettings cursorSettings = this.searchAfterSettingsCache.get(searchRequest.getCursor());
+                if (cursorSettings != null) {
+                    checkAuthority(cursorSettings);
+                    if (!cursorSettings.isClosed()) {
+                        queryResponse = executeCursorPaginationQuery(searchRequest, client, cursorSettings);
                     } else {
-                        throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired");
+                        queryResponse = CursorQueryResponse.getEmptyResponse();
+                        queryResponse.setTotalCount(cursorSettings.getTotalCount());
+                        this.searchAfterSettingsCache.delete(searchRequest.getCursor());
                     }
-                }
-                catch (AppException e) {
-                    throw e;
-                } catch (ElasticsearchException e) {
-                    String invalidScrollMessage = "No search context found for id";
-                    if (e.status() == 404 && (e.getMessage().startsWith(invalidScrollMessage))
-                            || this.exceptionParser.parseException(e).stream()
-                            .anyMatch(r -> r.contains(invalidScrollMessage)))
-                        throw new AppException(
-                                HttpStatus.SC_BAD_REQUEST,
-                                "Can't find the given cursor",
-                                "The given cursor is invalid or expired",
-                                e);
-                    throw new AppException(
-                            HttpStatus.SC_INTERNAL_SERVER_ERROR,
-                            "Search error",
-                            "Error processing search request",
-                            e);
-                } catch (IOException e) {
-                    if (e.getCause() instanceof ContentTooLongException) {
-                        throw new AppException(
-                                HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE,
-                                "Response is too long",
-                                "Elasticsearch response is too long, max is 100Mb",
-                                e);
-                    }
-                    throw new AppException(
-                            HttpStatus.SC_INTERNAL_SERVER_ERROR,
-                            "Search error",
-                            "Error processing search request",
-                            e);
-                } catch (Exception e) {
-                    throw new AppException(
-                            HttpStatus.SC_INTERNAL_SERVER_ERROR,
-                            "Search error",
-                            "Error processing search request",
-                            e);
+                } else {
+                    throw new AppException(HttpServletResponse.SC_BAD_REQUEST, "Can't find the given cursor", "The given cursor is invalid or expired");
                 }
             }
 
             return queryResponse;
         } catch (AppException e) {
             throw e;
+        } catch (ElasticsearchException e) {
+            String invalidScrollMessage = "No search context found for id";
+            if (e.status() == 404 && (e.getMessage().startsWith(invalidScrollMessage))
+                    || this.exceptionParser.parseException(e).stream()
+                    .anyMatch(r -> r.contains(invalidScrollMessage)))
+                throw new AppException(
+                        HttpStatus.SC_BAD_REQUEST,
+                        "Can't find the given cursor",
+                        "The given cursor is invalid or expired",
+                        e);
+            throw new AppException(
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    "Search error",
+                    "Error processing search request",
+                    e);
+        }
+        catch (IOException e) {
+            if (e.getCause() instanceof ContentTooLongException) {
+                throw new AppException(
+                        HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE,
+                        "Response is too long",
+                        "Elasticsearch response is too long, max is 100Mb",
+                        e);
+            }
+            throw new AppException(
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    "Search error",
+                    "Error processing search request",
+                    e);
+        }
+        catch (Exception e) {
+            throw new AppException(
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    "Search error",
+                    "Error processing search request",
+                    e);
         }
     }
 
@@ -198,13 +183,6 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
             closePointInTime(cursorSettings.getPitId(), client);
         }
     }
-
-    private void addSortOptions(SearchRequest.Builder  sourceBuilder, List<SortOptions> sortOptionsList) {
-        for (SortOptions sortOption : sortOptionsList) {
-            sourceBuilder.sort(sortOption);
-        }
-    }
-
     private List<SortOptions> getSortOptions(CursorQueryRequest searchRequest, ElasticsearchClient client) throws IOException {
         List<SortOptions> sortOptionsList;
         if (searchRequest.getSort() != null) {
@@ -248,33 +226,23 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         }
     }
 
-    private CursorQueryResponse initPaginationQueryQuery(CursorQueryRequest searchRequest, ElasticsearchClient client) throws AppException  {
+    private CursorQueryResponse initPaginationQueryQuery(CursorQueryRequest searchRequest, ElasticsearchClient client) throws IOException  {
+        Long startTime = System.currentTimeMillis();
+
+        // Set TrackTotalCount = true to get the total count in the first query
+        searchRequest.setTrackTotalCount(true);
         SearchResponse<Map<String, Object>> searchResponse = this.makeSearchRequest(searchRequest, client);
-        List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
-        boolean isCursorClosed = closePointInTimeIfNeeded(searchRequest, searchResponse, client);
-        if (results != null) {
-            this.querySuccessAuditLogger(searchRequest);
-            try {
-                List<SortOptions> sortOptionsList = this.getSortOptions(searchRequest, client);
-                String cursor = this.refreshCursorCache(searchResponse, sortOptionsList, isCursorClosed);
-                return CursorQueryResponse.builder()
-                        .cursor(cursor)
-                        .results(results)
-                        .totalCount(searchResponse.hits().total().value())
-                        .build();
-            }
-            catch (IOException ex) {
-                throw new AppException(
-                        HttpStatus.SC_INTERNAL_SERVER_ERROR,
-                        "Search error",
-                        "Error processing search request",
-                        ex);
-            }
-        }
-        return CursorQueryResponse.getEmptyResponse();
+        CursorQueryResponse response = processSearchResponse(searchResponse, searchRequest, client, null);
+
+        Long latency = System.currentTimeMillis() - startTime;
+        tracingLogger.log(searchRequest, latency, 200);
+
+        return response;
     }
 
-    private void executeCursorPaginationQuery(CursorQueryRequest searchRequest, CursorQueryResponse queryResponse, ElasticsearchClient client, SearchAfterSettings cursorSettings) throws IOException {
+    private CursorQueryResponse executeCursorPaginationQuery(CursorQueryRequest searchRequest, ElasticsearchClient client, SearchAfterSettings cursorSettings) throws IOException {
+        Long startTime = System.currentTimeMillis();
+
         // build query
         SearchRequest.Builder sourceBuilder = this.createSearchSourceBuilder(searchRequest);
         // The following 3 statements are required to support pagination with search_after
@@ -282,38 +250,55 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         sourceBuilder.sort(cursorSettings.getSortOptionsList());
         sourceBuilder.searchAfter(cursorSettings.getSearchAfterValues());
 
-        Long startTime = System.currentTimeMillis();
         SearchRequest elasticSearchRequest = sourceBuilder.build();
         SearchResponse<Map<String, Object>> searchResponse = client.search(elasticSearchRequest, (Type) Map.class);
-        Long latency = System.currentTimeMillis() - startTime;
 
-        List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
-        queryResponse.setTotalCount(searchResponse.hits().total().value());
+        CursorQueryResponse response = processSearchResponse(searchResponse, searchRequest, client, cursorSettings);
+
+        Long latency = System.currentTimeMillis() - startTime;
+        tracingLogger.log(searchRequest, latency, 200);
+
+        return response;
+    }
+
+    private CursorQueryResponse processSearchResponse(SearchResponse<Map<String, Object>> searchResponse, CursorQueryRequest searchRequest, ElasticsearchClient client, SearchAfterSettings cursorSettings) throws IOException {
+        CursorQueryResponse queryResponse = CursorQueryResponse.getEmptyResponse();
+
+        // We enforce trackTotalCount to be true in the first call only
+        long totalCount = (cursorSettings != null)
+                ? cursorSettings.getTotalCount()
+                : searchResponse.hits().total().value();
+        queryResponse.setTotalCount(totalCount);
+
         boolean isCursorClosed = closePointInTimeIfNeeded(searchRequest, searchResponse, client);
-        if (results != null) {
-            List<SortOptions> sortOptionsList = cursorSettings.getSortOptionsList();
-            String cursor = this.refreshCursorCache(searchResponse, sortOptionsList, isCursorClosed);
+        List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
+        if (results != null && !results.isEmpty()) {
+            this.querySuccessAuditLogger(searchRequest);
+            List<SortOptions> sortOptionsList = (cursorSettings != null)
+                    ? cursorSettings.getSortOptionsList()
+                    : this.getSortOptions(searchRequest, client);
+            String cursor = this.refreshCursorCache(searchResponse, sortOptionsList, isCursorClosed, cursorSettings);
             queryResponse.setCursor(cursor);
             queryResponse.setResults(results);
-            this.querySuccessAuditLogger(searchRequest);
         }
-        else {
+        else if(searchRequest.getCursor() != null) {
             this.searchAfterSettingsCache.delete(searchRequest.getCursor());
         }
-        tracingLogger.log(searchRequest, latency, 200);
+
+        return queryResponse;
     }
 
     private boolean closePointInTimeIfNeeded(CursorQueryRequest searchRequest, SearchResponse<Map<String, Object>>  searchResponse, ElasticsearchClient client) {
         String pitId = searchResponse.pitId();
         HitsMetadata<Map<String, Object>> searchHits = searchResponse.hits();
-        if (pitId != null && (searchHits.hits() == null || searchHits.hits().size() < searchRequest.getLimit())) {
+        if (pitId != null && (searchHits == null || searchHits.hits() == null || searchHits.hits().size() < searchRequest.getLimit())) {
             closePointInTime(pitId, client);
             return true;
         }
         return false;
     }
 
-    private String refreshCursorCache(SearchResponse<Map<String, Object>> searchResponse, List<SortOptions> sortOptionsList, boolean isCursorClosed) {
+    private String refreshCursorCache(SearchResponse<Map<String, Object>> searchResponse, List<SortOptions> sortOptionsList, boolean isCursorClosed, SearchAfterSettings cursorSettings) {
         String pitId = searchResponse.pitId();
         if (pitId != null) {
             this.digest.update(pitId.getBytes());
@@ -327,13 +312,16 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
             else {
                 searchAfterValues = new ArrayList<>();
             }
-            SearchAfterSettings settings = SearchAfterSettings.builder()
-                    .userId(dpsHeaders.getUserEmail())
-                    .pitId(pitId)
-                    .sortOptionsList(sortOptionsList)
-                    .searchAfterValues(searchAfterValues)
-                    .totalCount(searchResponse.hits().total().value())
-                    .closed(isCursorClosed).build();
+            SearchAfterSettings settings = (cursorSettings != null)
+                    ? cursorSettings
+                    : SearchAfterSettings
+                            .builder()
+                            .userId(dpsHeaders.getUserEmail())
+                            .totalCount(searchResponse.hits().total().value()).build();
+            settings.setPitId(pitId);
+            settings.setSortOptionsList(sortOptionsList);
+            settings.setSearchAfterValues(searchAfterValues);
+            settings.setClosed(isCursorClosed);
             this.searchAfterSettingsCache.put(hashCursor, settings);
             return hashCursor;
         }
