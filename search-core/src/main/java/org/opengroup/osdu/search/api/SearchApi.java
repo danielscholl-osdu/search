@@ -29,16 +29,15 @@ import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryResponse;
 import org.opengroup.osdu.core.common.model.search.SearchServiceRole;
+import org.opengroup.osdu.search.provider.interfaces.ISearchAfterQueryService;
 import org.opengroup.osdu.search.provider.interfaces.IQueryService;
 import org.opengroup.osdu.search.provider.interfaces.IScrollQueryService;
+import org.opengroup.osdu.search.util.SearchAfterFeatureManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.annotation.RequestScope;
 
 import jakarta.inject.Inject;
@@ -57,6 +56,12 @@ public class SearchApi {
     private IQueryService queryService;
     @Inject
     private IScrollQueryService scrollQueryService;
+
+    @Inject
+    private ISearchAfterQueryService searchAfterQueryService;
+
+    @Inject
+    private SearchAfterFeatureManager searchAfterFeatureManager;
 
     @Operation(summary = "${searchApi.queryRecords.summary}", description = "${searchApi.queryRecords.description}",
             security = {@SecurityRequirement(name = "Authorization")}, tags = { "search-api" })
@@ -98,7 +103,78 @@ public class SearchApi {
             notes = SwaggerDoc.QUERY_WITH_CURSOR_POST_NOTES)
     public ResponseEntity<CursorQueryResponse> queryWithCursor(
         @NotNull(message = SwaggerDoc.REQUEST_VALIDATION_NOT_NULL_BODY) @RequestBody @Valid CursorQueryRequest queryRequest) throws Exception {
-        CursorQueryResponse searchResponse = scrollQueryService.queryIndex(queryRequest);
+        CursorQueryResponse searchResponse;
+        if(searchAfterFeatureManager.isEnabled()) {
+            searchResponse = searchAfterQueryService.queryIndex(queryRequest);
+        }
+        else {
+            searchResponse = scrollQueryService.queryIndex(queryRequest);
+        }
         return new ResponseEntity<CursorQueryResponse>(searchResponse, HttpStatus.OK);
+    }
+
+    @Operation(summary = "${searchApi.closePaginationQueryWithCursor.summary}", description = "${searchApi.closePaginationQueryWithCursor.description}",
+            security = {@SecurityRequirement(name = "Authorization")}, tags = { "search-api" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success", content = { @Content(schema = @Schema(implementation = CursorQueryResponse.class)) }),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters were given on request",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "403", description = "User not authorized to perform the action",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "404", description = "Not Found",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "502", description = "Search service scale-up is taking longer than expected. Wait 10 seconds and retry.",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "503", description = "Service Unavailable",  content = {@Content(schema = @Schema(implementation = AppError.class))})
+    })
+    @DeleteMapping("/query_with_cursor/{cursor}")
+    @PreAuthorize("@authorizationFilter.hasPermission('" + SearchServiceRole.ADMIN + "', '" + SearchServiceRole.USER + "')")
+    @ResponseStatus(HttpStatus.OK)
+    public void closeCursor(@NotNull @PathVariable(value = "cursor") String cursor) throws Exception {
+        if(searchAfterFeatureManager.isEnabled()) {
+            searchAfterQueryService.close(cursor);
+        }
+    }
+
+
+    // THIS IS AN INTERNAL USE API ONLY
+    // THAT MEANS WE DON'T DOCUMENT IT IN SWAGGER, ACCESS IS LIMITED TO TEST ONLY AND COULD BE REMOVED IN FUTURE
+    @Operation(summary = "${searchApi.paginationQueryWithCursor.summary}", description = "${searchApi.paginationQueryWithCursor.description}",
+            security = {@SecurityRequirement(name = "Authorization")}, tags = { "search-api" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success", content = { @Content(schema = @Schema(implementation = CursorQueryResponse.class)) }),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters were given on request",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "403", description = "User not authorized to perform the action",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "404", description = "Not Found",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "502", description = "Search service scale-up is taking longer than expected. Wait 10 seconds and retry.",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "503", description = "Service Unavailable",  content = {@Content(schema = @Schema(implementation = AppError.class))})
+    })
+    @PostMapping("/query_with_cursor_v2")
+    @PreAuthorize("@authorizationFilter.hasPermission('" + SearchServiceRole.ADMIN + "', '" + SearchServiceRole.USER + "')")
+    public ResponseEntity<CursorQueryResponse> queryWithSearchAfter(@NotNull(message = SwaggerDoc.REQUEST_VALIDATION_NOT_NULL_BODY) @RequestBody @Valid CursorQueryRequest queryRequest) throws Exception {
+        CursorQueryResponse searchResponse = searchAfterQueryService.queryIndex(queryRequest);
+        return new ResponseEntity<CursorQueryResponse>(searchResponse, HttpStatus.OK);
+    }
+
+
+    // THIS IS AN INTERNAL USE API ONLY
+    // THAT MEANS WE DON'T DOCUMENT IT IN SWAGGER, ACCESS IS LIMITED TO TEST ONLY AND COULD BE REMOVED IN FUTURE
+    @Operation(summary = "${searchApi.closePaginationQueryWithCursor.summary}", description = "${searchApi.closePaginationQueryWithCursor.description}",
+            security = {@SecurityRequirement(name = "Authorization")}, tags = { "search-api" })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success", content = { @Content(schema = @Schema(implementation = CursorQueryResponse.class)) }),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters were given on request",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "403", description = "User not authorized to perform the action",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "404", description = "Not Found",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "502", description = "Search service scale-up is taking longer than expected. Wait 10 seconds and retry.",  content = {@Content(schema = @Schema(implementation = AppError.class))}),
+            @ApiResponse(responseCode = "503", description = "Service Unavailable",  content = {@Content(schema = @Schema(implementation = AppError.class))})
+    })
+    @DeleteMapping("/query_with_cursor_v2/{cursor}")
+    @PreAuthorize("@authorizationFilter.hasPermission('" + SearchServiceRole.ADMIN + "', '" + SearchServiceRole.USER + "')")
+    @ResponseStatus(HttpStatus.OK)
+    public void closeSearchAfterCursor(@NotNull @PathVariable(value = "cursor") String cursor) throws Exception {
+        searchAfterQueryService.close(cursor);
     }
 }

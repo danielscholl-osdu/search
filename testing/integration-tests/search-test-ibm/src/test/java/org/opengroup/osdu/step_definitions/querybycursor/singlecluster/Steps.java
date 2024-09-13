@@ -2,6 +2,7 @@ package org.opengroup.osdu.step_definitions.querybycursor.singlecluster;
 
 import java.util.List;
 
+import org.opengroup.osdu.common.TestConstants;
 import org.opengroup.osdu.common.querybycursor.singlecluster.QueryByCursorSteps;
 import org.opengroup.osdu.util.Config;
 import org.opengroup.osdu.util.IBMHTTPClient;
@@ -133,6 +134,7 @@ public class Steps extends QueryByCursorSteps {
 
     @Override
     protected String getApi() {
-        return Config.getSearchBaseURL() + "query_with_cursor";
+        String apiPath = System.getProperty(TestConstants.QUERY_WITH_CURSOR_PATH_PROP, TestConstants.SCROLL_CURSOR_PATH_VALUE);
+        return Config.getSearchBaseURL() + apiPath;
     }
 }
