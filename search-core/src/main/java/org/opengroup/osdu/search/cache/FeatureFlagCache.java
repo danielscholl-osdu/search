@@ -29,7 +29,7 @@ public class FeatureFlagCache implements ICache<String, Boolean> {
     private DpsHeaders dpsHeaders;
 
     public FeatureFlagCache() {
-        cache = new VmCache<>(300, 1000);
+        cache = new VmCache<>(600, 1000);
     }
 
     @Override
@@ -53,6 +53,6 @@ public class FeatureFlagCache implements ICache<String, Boolean> {
     }
 
     private String cacheKey(String s) {
-        return this.dpsHeaders.getPartitionId() + "-" + this.getClass().getSimpleName().toLowerCase() + "-" + s;
+        return this.dpsHeaders.getPartitionId() + "-" + s;
     }
 }

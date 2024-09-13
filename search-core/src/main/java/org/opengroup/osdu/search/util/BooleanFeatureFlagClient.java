@@ -43,16 +43,18 @@ public class BooleanFeatureFlagClient {
     private IServiceAccountJwtClient tokenService;
 
     public boolean isEnabled(String featureName, boolean defaultValue) {
-        String dataPartitionId = headers.getPartitionId();
-        if (cache != null && cache.get(featureName) != null)
-            return cache.get(featureName);
+        Boolean isEnabled = this.cache.get(featureName);
+        if (isEnabled != null)
+            return isEnabled;
 
-        boolean isEnabled = defaultValue;
+        String dataPartitionId = this.headers.getPartitionId();
         try {
             PartitionInfo partitionInfo = getPartitionInfo(dataPartitionId);
             isEnabled = getFeatureValue(partitionInfo, featureName, defaultValue);
+            this.logger.info(String.format("BooleanFeatureFlagClient: The feature flag '%s' in data partition '%s' is set to %s", featureName, dataPartitionId, isEnabled));
         } catch (Exception e) {
-            this.logger.error(String.format("PartitionService: Error getting %s for dataPartition with Id: %s. Turn on the feature flag by default.", featureName, dataPartitionId), e);
+            isEnabled = defaultValue;
+            this.logger.error(String.format("BooleanFeatureFlagClient: Error on getting the feature flag '%s' for data partition '%s'. Using default value %s.", featureName, dataPartitionId, isEnabled), e);
         }
         this.cache.put(featureName, isEnabled);
         return isEnabled;
@@ -60,7 +62,7 @@ public class BooleanFeatureFlagClient {
 
     private PartitionInfo getPartitionInfo(String dataPartitionId) throws PartitionException {
         try {
-            DpsHeaders partitionHeaders = DpsHeaders.createFromMap(headers.getHeaders());
+            DpsHeaders partitionHeaders = DpsHeaders.createFromMap(this.headers.getHeaders());
             partitionHeaders.put(DpsHeaders.AUTHORIZATION, this.tokenService.getIdToken(dataPartitionId));
 
             IPartitionProvider partitionProvider = this.factory.create(partitionHeaders);
@@ -68,9 +70,9 @@ public class BooleanFeatureFlagClient {
             return partitionInfo;
         } catch (PartitionException e) {
             if (e.getResponse() != null) {
-                logger.error(String.format("Error getting partition info for data-partition: %s. Message: %s. ResponseCode: %s.", dataPartitionId, e.getResponse().getBody(), e.getResponse().getResponseCode()), e);
+                this.logger.error(String.format("Error getting partition info for data-partition: %s. Message: %s. ResponseCode: %s.", dataPartitionId, e.getResponse().getBody(), e.getResponse().getResponseCode()), e);
             } else {
-                logger.error(String.format("Error getting partition info for data-partition: %s.", dataPartitionId), e);
+                this.logger.error(String.format("Error getting partition info for data-partition: %s.", dataPartitionId), e);
             }
             throw e;
         }
