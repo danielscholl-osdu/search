@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SearchAfterFeatureManager {
-    private static final String PROPERTY_NAME =  "search-after-search-enabled";
+    private static final String PROPERTY_NAME =  "query-with-search-after";
 
     @Autowired
     private BooleanFeatureFlagClient booleanFeatureFlagClient;
