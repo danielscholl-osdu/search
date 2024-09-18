@@ -30,6 +30,7 @@ public class SearchConfigurationProperties {
 	private Integer indexCacheExpiration = 60;
 	private Integer elasticCacheExpiration = 1440;
 	private Integer cursorCacheExpiration = 60;
+	private Integer maximumCacheSize = 20;
 
 	//Kinds Cache expiration 2*24*60
 	private Integer kindsCacheExpiration = 2880;
