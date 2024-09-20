@@ -19,6 +19,7 @@ package org.opengroup.osdu.search.model;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import jakarta.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +44,7 @@ public class NestedQueryNode extends QueryNode {
   public Query.Builder toQueryBuilder() {
     if (Objects.nonNull(innerNodes) && !innerNodes.isEmpty()) {
       BoolQuery.Builder queryBuilder = new BoolQuery.Builder();
+      queryBuilder.boost(1.0F);
       for (QueryNode queryNode : innerNodes) {
         Query.Builder innerBuilder = queryNode.toQueryBuilder();
         switch (queryNode.operator != null ? queryNode.operator : Operator.AND) {
@@ -62,17 +64,38 @@ public class NestedQueryNode extends QueryNode {
               .nested(
                   n ->
                       n.path(path)
-                          .query(new Query.Builder().bool(queryBuilder.build()).build())
+                          .query(new Query.Builder().bool(queryBuilder.build()).build()).boost(1.0F).scoreMode(ChildScoreMode.Avg)
                           .ignoreUnmapped(true));
 
     } else {
       String query = StringUtils.isNotBlank(queryString) ? queryString : "*";
       QueryStringQuery.Builder queryBuilder =
-          new QueryStringQuery.Builder().query(query).allowLeadingWildcard(false);
+          new QueryStringQuery.Builder()
+              .query(query)
+              .allowLeadingWildcard(false)
+              .fields(new ArrayList<>())
+              .type(TextQueryType.BestFields)
+              .defaultOperator(co.elastic.clients.elasticsearch._types.query_dsl.Operator.Or)
+              .maxDeterminizedStates(10000)
+              .allowLeadingWildcard(false)
+              .enablePositionIncrements(true)
+              .fuzziness("AUTO")
+              .fuzzyPrefixLength(0)
+              .fuzzyMaxExpansions(50)
+              .phraseSlop(0.0)
+              .escape(false)
+              .autoGenerateSynonymsPhraseQuery(true)
+              .fuzzyTranspositions(true)
+              .boost(1.0f);
       return (Query.Builder)
           new Query.Builder()
               .nested(
-                  n -> n.path(path).query(queryBuilder.build()._toQuery()).ignoreUnmapped(true));
+                  n ->
+                      n.path(path)
+                          .query(queryBuilder.build()._toQuery())
+                          .boost(1.0f)
+                          .ignoreUnmapped(true)
+                          .scoreMode(ChildScoreMode.Avg));
     }
   }
 }
