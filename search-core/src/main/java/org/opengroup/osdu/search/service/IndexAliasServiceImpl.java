@@ -21,6 +21,8 @@ package org.opengroup.osdu.search.service;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.indices.*;
 import co.elastic.clients.elasticsearch.indices.get_alias.IndexAliases;
+import co.elastic.clients.elasticsearch.indices.update_aliases.Action;
+import co.elastic.clients.elasticsearch.indices.update_aliases.AddAction;
 import com.google.api.client.util.Strings;
 import jakarta.inject.Inject;
 import java.io.IOException;
@@ -116,11 +118,18 @@ public class IndexAliasServiceImpl implements IndexAliasService {
       index = resolveConcreteIndexName(restClient, index);
     }
     if (!Strings.isNullOrEmpty(index)) {
-      PutAliasRequest.Builder putAliasRequest = new PutAliasRequest.Builder();
-      putAliasRequest.index(index);
-      putAliasRequest.name(alias);
-      PutAliasResponse putAliasResponse = restClient.indices().putAlias(putAliasRequest.build());
-      return putAliasResponse.acknowledged() ? alias : null;
+      AddAction.Builder addAction = new AddAction.Builder();
+      addAction.index(index);
+      addAction.alias(alias);
+
+      Action.Builder action = new Action.Builder();
+      action.add(addAction.build());
+
+      UpdateAliasesResponse updateAliasesResponse =
+          restClient
+              .indices()
+              .updateAliases(UpdateAliasesRequest.of(uar -> uar.actions(action.build())));
+      return updateAliasesResponse.acknowledged() ? alias : null;
     }
 
     return null;
