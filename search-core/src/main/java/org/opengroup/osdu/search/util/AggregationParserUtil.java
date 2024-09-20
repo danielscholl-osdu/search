@@ -64,6 +64,10 @@ public class AggregationParserUtil implements IAggregationParserUtil {
     } else {
       termsAggregationBuilder.field(aggregation);
       termsAggregationBuilder.size(configurationProperties.getAggregationSize());
+      termsAggregationBuilder.minDocCount(1);
+      termsAggregationBuilder.showTermDocCountError(false);
+      termsAggregationBuilder.order(
+              List.of(NamedValue.of("_count", SortOrder.Desc), NamedValue.of("_key", SortOrder.Asc)));
       aggregationMap.put(TERM_AGGREGATION_NAME, termsAggregationBuilder.build()._toAggregation());
       return aggregationMap;
     }

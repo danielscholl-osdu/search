@@ -35,6 +35,7 @@ public class InnerQueryNode extends QueryNode {
   public Query.Builder toQueryBuilder() {
     if (Objects.nonNull(innerNodes) && !innerNodes.isEmpty()) {
       BoolQuery.Builder boolQueryBuilder = QueryBuilders.bool();
+      boolQueryBuilder.boost(1.0F);
       for (QueryNode queryNode : innerNodes) {
         Query.Builder innerBuilder = queryNode.toQueryBuilder();
 

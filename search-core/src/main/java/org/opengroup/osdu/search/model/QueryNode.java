@@ -23,6 +23,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+
 @Getter
 @Setter
 public class QueryNode {
@@ -44,9 +46,10 @@ public class QueryNode {
         new QueryStringQuery.Builder()
             .query(query)
             .allowLeadingWildcard(false)
+            .fields(new ArrayList<>())
             .type(TextQueryType.BestFields)
             .defaultOperator(co.elastic.clients.elasticsearch._types.query_dsl.Operator.Or)
-            .maxDeterminizedStates(1000)
+            .maxDeterminizedStates(10000)
             .allowLeadingWildcard(false)
             .enablePositionIncrements(true)
             .fuzziness("AUTO")

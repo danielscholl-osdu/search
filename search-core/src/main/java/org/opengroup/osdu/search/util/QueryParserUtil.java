@@ -99,6 +99,7 @@ public class QueryParserUtil implements IQueryParserUtil {
             queryNodes = Collections.singletonList(new QueryNode(query, null));
         }
         BoolQuery.Builder boolQueryBuilder = new BoolQuery.Builder();
+        boolQueryBuilder.boost(1.0F);
         for (QueryNode queryNode : queryNodes) {
             switch (queryNode.getOperator() != null ? queryNode.getOperator() : Operator.AND) {
                 case AND:
@@ -224,6 +225,7 @@ public class QueryParserUtil implements IQueryParserUtil {
             stringQuery = stringQuery.replaceFirst(" " + incompletePath, " " + nestedPath + "." + incompletePath);
         }
         stringQuery = trimTrailingBrackets(stringQuery);
+
         return new NestedQueryNode(stringQuery, boolOperator, null, nestedPath);
     }
 
