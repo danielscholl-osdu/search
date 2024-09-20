@@ -1,4 +1,5 @@
 /*
+ *  Copyright © Schlumberger
  *  Copyright 2020-2024 Google LLC
  *  Copyright 2020-2024 EPAM Systems, Inc
  *

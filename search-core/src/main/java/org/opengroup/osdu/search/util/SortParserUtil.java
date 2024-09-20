@@ -66,7 +66,13 @@ public class SortParserUtil implements ISortParserUtil {
     } else {
       if (sortString.equalsIgnoreCase(SCORE_FIELD)) {
         return new SortOptions.Builder()
-            .field(f -> f.field(sortString).order(SortOrder.valueOf(sortOrder)))
+            .field(
+                f ->
+                    f.field(sortString)
+                        .order(
+                            SortOrder.Asc.jsonValue().equalsIgnoreCase(sortOrder)
+                                ? SortOrder.Asc
+                                : SortOrder.Desc))
             .build();
       }
       return new SortOptions.Builder()
@@ -225,7 +231,7 @@ public class SortParserUtil implements ISortParserUtil {
         BAD_SORT_MESSAGE);
   }
 
-  private static String capitalizeFirstLetter(String str) {
+  protected static String capitalizeFirstLetter(String str) {
     if (str == null || str.isEmpty()) {
       return str;
     }

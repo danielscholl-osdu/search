@@ -1,4 +1,5 @@
 /*
+ *  Copyright 2017-2019 © Schlumberger
  *  Copyright 2020-2024 Google LLC
  *  Copyright 2020-2024 EPAM Systems, Inc
  *
@@ -207,10 +208,13 @@ public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScroll
     // build query
     SearchRequest.Builder searchSourceBuilder = this.createSearchSourceBuilder(request);
     searchSourceBuilder
-        .index(index)
-        .allowNoIndices(true)
-        .expandWildcards(ExpandWildcard.Open, ExpandWildcard.Closed)
-        .ignoreUnavailable(true);
+            .index(index)
+            .allowNoIndices(true)
+            .expandWildcards(ExpandWildcard.Open, ExpandWildcard.Closed)
+            .ignoreUnavailable(true)
+            .ignoreThrottled(true);
+    searchSourceBuilder.searchType(SearchType.QueryThenFetch);
+    searchSourceBuilder.batchedReduceSize(512L).ccsMinimizeRoundtrips(true);
 
     // Optimize Scroll request if users wants to iterate over all documents regardless of order
     if (request.getSort() == null) { 
