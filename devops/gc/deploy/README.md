@@ -31,14 +31,15 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 | Name | Description | Type | Default |Required |
 |------|-------------|------|---------|---------|
 **global.domain** | your domain for the external endpoint, ex `example.com` | string | - | yes
-**global.onPremEnabled** | whether on-prem is enabled | boolean | false | yes
-**global.limitsEnabled** | whether CPU and memory limits are enabled | boolean | true | yes
+**global.onPremEnabled** | whether on-prem is enabled | boolean | `false` | yes
+**global.limitsEnabled** | whether CPU and memory limits are enabled | boolean | `true` | yes
+**global.logLevel** | severity of logging level | string | `ERROR` | yes
 
 ### Configmap variables
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|----------|
-**data.logLevel** | logging level | string | `ERROR` | yes
+| Name | Description | Type | Default |Required |
+|------|-------------|------|---------|---------|
+**data.logLevel** | logging severity level for this service only  | string | - | yes, only if differs from the `global.logLevel`
 **data.entitlementsHost** | Entitlements service host | string | `http://entitlements` | yes
 **data.indexerHost** | Indexer service host | string | `http://indexer` | yes
 **data.policyHost** | Policy service host | string | `http://policy` | yes
@@ -46,7 +47,7 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 **data.policyId** | policy id from ex `${POLICY_HOST}/api/policy/v1/policies` | string | `search` | yes
 **data.securityHttpsCertificateTrust** | Elastic client connection uses TrustSelfSignedStrategy(), if it is `true` | bool | `true` | yes
 **data.redisSearchHost** | The host for redis instance. If empty (by default), helm installs an internal redis instance | string | - | yes
-**data.redisSearchPort** | The port for redis instance | digit | 6379 | yes
+**data.redisSearchPort** | The port for redis instance | digit | `6379` | yes
 
 ### Deployment variables
 
@@ -73,10 +74,10 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 
 | Name | Description | Type | Default |Required |
 |------|-------------|------|---------|---------|
-**istio.proxyCPU** | CPU request for Envoy sidecars | string | 10m | yes
-**istio.proxyCPULimit** | CPU limit for Envoy sidecars | string | 200m | yes
-**istio.proxyMemory** | memory request for Envoy sidecars | string | 100Mi | yes
-**istio.proxyMemoryLimit** | memory limit for Envoy sidecars | string | 256Mi | yes
+**istio.proxyCPU** | CPU request for Envoy sidecars | string | `10m` | yes
+**istio.proxyCPULimit** | CPU limit for Envoy sidecars | string | `200m` | yes
+**istio.proxyMemory** | memory request for Envoy sidecars | string | `100Mi` | yes
+**istio.proxyMemoryLimit** | memory limit for Envoy sidecars | string | `256Mi` | yes
 
 ## Install the Helm chart
 
