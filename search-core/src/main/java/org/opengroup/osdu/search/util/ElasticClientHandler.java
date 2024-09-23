@@ -1,4 +1,5 @@
 /*
+ *  Copyright 2017-2019 © Schlumberger
  *  Copyright 2020-2024 Google LLC
  *  Copyright 2020-2024 EPAM Systems, Inc
  *
@@ -28,8 +29,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Objects;
 import javax.net.ssl.SSLContext;
-
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;

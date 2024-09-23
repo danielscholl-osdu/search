@@ -1,4 +1,5 @@
 /*
+ *  Copyright © Schlumberger
  *  Copyright 2020-2024 Google LLC
  *  Copyright 2020-2024 EPAM Systems, Inc
  *
@@ -101,7 +102,7 @@ public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService
         .ignoreUnavailable(true)
         .ignoreThrottled(true);
     sourceBuilder.searchType(SearchType.QueryThenFetch);
-    sourceBuilder.batchedReduceSize(Long.valueOf(512)).ccsMinimizeRoundtrips(true);
+    sourceBuilder.batchedReduceSize(512L).ccsMinimizeRoundtrips(true);
 
     // aggregation
     if (!Strings.isNullOrEmpty(searchRequest.getAggregateBy())) {

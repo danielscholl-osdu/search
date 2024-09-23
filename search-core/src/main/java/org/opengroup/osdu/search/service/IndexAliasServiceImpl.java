@@ -1,22 +1,28 @@
-// Copyright © Schlumberger
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ *  Copyright © Schlumberger
+ *  Copyright 2020-2024 Google LLC
+ *  Copyright 2020-2024 EPAM Systems, Inc
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
 package org.opengroup.osdu.search.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.indices.*;
 import co.elastic.clients.elasticsearch.indices.get_alias.IndexAliases;
+import co.elastic.clients.elasticsearch.indices.update_aliases.Action;
+import co.elastic.clients.elasticsearch.indices.update_aliases.AddAction;
 import com.google.api.client.util.Strings;
 import jakarta.inject.Inject;
 import java.io.IOException;
@@ -112,11 +118,18 @@ public class IndexAliasServiceImpl implements IndexAliasService {
       index = resolveConcreteIndexName(restClient, index);
     }
     if (!Strings.isNullOrEmpty(index)) {
-      PutAliasRequest.Builder putAliasRequest = new PutAliasRequest.Builder();
-      putAliasRequest.index(index);
-      putAliasRequest.name(alias);
-      PutAliasResponse putAliasResponse = restClient.indices().putAlias(putAliasRequest.build());
-      return putAliasResponse.acknowledged() ? alias : null;
+      AddAction.Builder addAction = new AddAction.Builder();
+      addAction.index(index);
+      addAction.alias(alias);
+
+      Action.Builder action = new Action.Builder();
+      action.add(addAction.build());
+
+      UpdateAliasesResponse updateAliasesResponse =
+          restClient
+              .indices()
+              .updateAliases(UpdateAliasesRequest.of(uar -> uar.actions(action.build())));
+      return updateAliasesResponse.acknowledged() ? alias : null;
     }
 
     return null;

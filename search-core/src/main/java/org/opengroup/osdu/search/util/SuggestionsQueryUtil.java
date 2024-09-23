@@ -52,7 +52,7 @@ public class SuggestionsQueryUtil {
   public List<String> getPhraseSuggestionsFromSearchResponse(
       SearchResponse<Map<String, Object>> searchResponse) {
     if (!autocompleteFeatureFlag.isFeatureEnabled(AUTOCOMPLETE_FEATURE_NAME)) {
-      return Collections.emptyList();
+      return null;
     }
 
     var suggestBlock = searchResponse.suggest();
