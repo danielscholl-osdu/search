@@ -373,7 +373,7 @@ abstract class CoreQueryBase {
         throw new AppException(
             HttpServletResponse.SC_GATEWAY_TIMEOUT,
             "Search error",
-            String.format("Request timed out after waiting for %sm", REQUEST_TIMEOUT.time()),
+            String.format("Request timed out after waiting for %s", REQUEST_TIMEOUT.time()),
             e);
       }
       throw new AppException(
@@ -386,7 +386,7 @@ abstract class CoreQueryBase {
         throw new AppException(
             HttpServletResponse.SC_GATEWAY_TIMEOUT,
             "Search error",
-            String.format("Request timed out after waiting for %sm", REQUEST_TIMEOUT.time()),
+            String.format("Request timed out after waiting for %s", REQUEST_TIMEOUT.time()),
             e);
       } else if (e.getCause() instanceof ContentTooLongException) {
         throw new AppException(

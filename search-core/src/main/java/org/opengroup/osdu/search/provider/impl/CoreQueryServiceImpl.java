@@ -76,8 +76,10 @@ public class CoreQueryServiceImpl extends CoreQueryBase implements IQueryService
     }
 
     if (Objects.nonNull(results)) {
-      queryResponse.setAggregations(aggregations);
       queryResponse.setResults(results);
+    }
+    if(aggregations != null) {
+      queryResponse.setAggregations(aggregations);
     }
     if (phraseSuggestions != null) {
       queryResponse.setPhraseSuggestions(phraseSuggestions);

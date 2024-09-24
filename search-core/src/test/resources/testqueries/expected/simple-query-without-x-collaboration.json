@@ -1,25 +1,14 @@
 {
-  "bool" : {
-    "filter" : [
-      {
-        "terms" : {
-          "x-acl" : [
-            "data.welldb.viewers@common.evd.cloud.slb-ds.com",
-            "data.npd.viewers@common.evd.cloud.slb-ds.com"
-          ],
-          "boost" : 1.0
-        }
-      }
-    ],
-    "must_not" : [
-      {
-        "exists" : {
-          "field" : "collaborationId",
-          "boost" : 1.0
-        }
-      }
-    ],
-    "adjust_pure_negative" : true,
-    "boost" : 1.0
+  "filter": [{
+    "terms": {
+      "x-acl": ["data.welldb.viewers@common.evd.cloud.slb-ds.com", "data.npd.viewers@common.evd.cloud.slb-ds.com"]
+    }
   }
+  ],
+  "must_not": [{
+    "exists": {
+      "field": "collaborationId"
+    }
+  }
+  ]
 }
