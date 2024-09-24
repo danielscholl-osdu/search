@@ -985,6 +985,7 @@ public class CoreQueryServiceImplTest {
                             ],
                             "must": [{
                                     "bool": {
+                                        "boost": 1.0,
                                         "must": [{
                                                 "query_string": {
                                                     "boost": 1.0,
@@ -993,11 +994,12 @@ public class CoreQueryServiceImplTest {
                                                     "default_operator": "or",
                                                     "enable_position_increments": true,
                                                     "escape": false,
+                                                    "fields": [],
                                                     "fuzziness": "AUTO",
                                                     "fuzzy_max_expansions": 50,
                                                     "fuzzy_prefix_length": 0,
                                                     "fuzzy_transpositions": true,
-                                                    "max_determinized_states": 1000,
+                                                    "max_determinized_states": 10000,
                                                     "phrase_slop": 0.0,
                                                     "query": "data.ID:\\"EPSG::1078\\"",
                                                     "type": "best_fields"
@@ -1011,7 +1013,7 @@ public class CoreQueryServiceImplTest {
                     },
                     "size": 10,
                     "timeout": "1m"
-                }             
+                }   
                 """;
     }
 }
