@@ -1,41 +1,38 @@
-// // Copyright © Amazon Web Services
-// //
-// // Licensed under the Apache License, Version 2.0 (the "License");
-// // you may not use this file except in compliance with the License.
-// // You may obtain a copy of the License at
-// //
-// //      http://www.apache.org/licenses/LICENSE-2.0
-// //
-// // Unless required by applicable law or agreed to in writing, software
-// // distributed under the License is distributed on an "AS IS" BASIS,
-// // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// // See the License for the specific language governing permissions and
-// // limitations under the License.
+/*
+ *  Copyright © Amazon Web Services
+ *  Copyright 2020-2024 Google LLC
+ *  Copyright 2020-2024 EPAM Systems, Inc
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
 package org.opengroup.osdu.search.provider.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.opengroup.osdu.search.config.SearchConfigurationProperties.POLICY_FEATURE_NAME;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.rest.RestStatus;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.TotalHitsRelation;
+import co.elastic.clients.json.JsonData;
+import java.io.StringReader;
+import java.lang.reflect.Type;
+import java.util.*;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -54,6 +51,7 @@ import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.search.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.logging.AuditLogger;
+import org.opengroup.osdu.search.model.QueryNode;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
@@ -68,161 +66,173 @@ import org.opengroup.osdu.search.util.ResponseExceptionParser;
 import org.opengroup.osdu.search.util.SuggestionsQueryUtil;
 
 @RunWith(MockitoJUnitRunner.class)
-@Ignore
-//TODO:
 public class ScrollCoreQueryServiceImplIPolicyServiceTest {
 
-  private final String DATA_GROUPS = "X-Data-Groups";
-  private final String DATA_GROUP_1 = "data.welldb.viewers@common.evd.cloud.slb-ds.com";
-  private final String DATA_GROUP_2 = "data.npd.viewers@common.evd.cloud.slb-ds.com";
-  private final String PARTITION_ID = "opendes";
+  @InjectMocks
+  private ScrollCoreQueryServiceImpl scrollQueryService;
 
-  @InjectMocks ScrollCoreQueryServiceImpl scrollQueryServiceAws;
+  @Mock
+  private ElasticClientHandler elasticClientHandler;
 
-  @Mock private ElasticClientHandler elasticClientHandler;
+  @Mock
+  private JaxRsDpsLog log;
 
-  @Mock private JaxRsDpsLog log;
+  @Mock
+  private IProviderHeaderService providerHeaderService;
 
-  @Mock private IProviderHeaderService providerHeaderService;
+  @Mock
+  private CrossTenantUtils crossTenantUtils;
 
-  @Mock private CrossTenantUtils crossTenantUtils;
+  @Mock
+  private IFieldMappingTypeService fieldMappingTypeService;
 
-  @Mock private IFieldMappingTypeService fieldMappingTypeService;
+  @Mock
+  private IQueryParserUtil queryParserUtil;
 
-  @Mock private IQueryParserUtil queryParserUtil;
+  @Mock
+  private ISortParserUtil sortParserUtil;
 
-  @Mock private ISortParserUtil sortParserUtil;
+  @Mock
+  private IDetailedBadRequestMessageUtil detailedBadRequestMessageUtil;
 
-  @Mock private IDetailedBadRequestMessageUtil detailedBadRequestMessageUtil;
+  @Mock
+  private DpsHeaders dpsHeaders;
 
-  @Mock private DpsHeaders dpsHeaders;
+  @Mock
+  private AuditLogger auditLogger;
 
-  @Mock private AuditLogger auditLogger;
+  @Mock
+  private CursorCache cursorCache;
 
-  @Mock private CursorCache cursorCache;
+  @Mock
+  private ResponseExceptionParser exceptionParser;
 
-  @Mock private ResponseExceptionParser exceptionParser;
+  @Mock
+  private IPolicyService iPolicyService;
 
-  @Mock private IPolicyService iPolicyService;
+  @Mock
+  private GeoQueryBuilder geoQueryBuilder;
 
-  @Mock private GeoQueryBuilder geoQueryBuilder;
+  @Mock
+  private ElasticLoggingConfig elasticLoggingConfig;
 
-  @Mock private ElasticLoggingConfig elasticLoggingConfig;
+  @Mock
+  private IQueryPerformanceLogger searchDependencyLogger;
 
-  @Mock private IQueryPerformanceLogger searchDependencyLogger;
+  @Mock
+  private SuggestionsQueryUtil suggestionsQueryUtil;
 
-  @Mock private SuggestionsQueryUtil suggestionsQueryUtil;
-
-  @Mock public IFeatureFlag iFeatureFlag;
+  @Mock
+  public IFeatureFlag iFeatureFlag;
 
   @Before
   public void setup() {
     MockitoAnnotations.openMocks(this);
 
-    Map<String, String> HEADERS = new HashMap<>();
-    HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
-    HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
-    HEADERS.put(DATA_GROUPS, String.format("%s,%s", DATA_GROUP_1, DATA_GROUP_2));
-
     when(elasticLoggingConfig.getEnabled()).thenReturn(false);
     when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
   }
 
-    ////TODO: rewrite tests. ElasticSearch newClient
-//	@Test
-//	public void should_return_CorrectQueryResponse_NullResult_noCursorSet_QueryBuilder() throws Exception {
-//		// arrange
-//		// create query request according to this example query:
-//		//	{
-//		//		"kind": "osdu:wks:reference-data--CoordinateTransformation:1.0.0",
-//		//			"query": "data.ID:\"EPSG::1078\"",
-//		//			"spatialFilter": {
-//		//			"field": "data.Wgs84Coordinates",
-//		//			"byIntersection": {
-//		//				"polygons": [
-//		//				{
-//		//					"points": [
-//		//					{
-//		//						"latitude": 10.75,
-//		//							"longitude": -8.61
-//		//					}
-//		//						]
-//		//				}
-//		//				]
-//		//			}
-//		//		}
-//		//	}
-//		CursorQueryRequest queryRequest = new CursorQueryRequest();
-//		queryRequest.setQuery("data.ID:\"EPSG::1078\"");
-//		SpatialFilter spatialFilter = new SpatialFilter();
-//		spatialFilter.setField("data.Wgs84Coordinates");
-//		SpatialFilter.ByIntersection byIntersection = new SpatialFilter.ByIntersection();
-//		Polygon polygon = new Polygon();
-//		Point point = new Point(1.02, -8.61);
-//		Point point1 = new Point(1.02, -2.48);
-//		Point point2 = new Point(10.74, -2.48);
-//		Point point3 = new Point(10.74, -8.61);
-//		Point point4 = new Point(1.02, -8.61);
-//		List<Point> points = new ArrayList<>();
-//		points.add(point);
-//		points.add(point1);
-//		points.add(point2);
-//		points.add(point3);
-//		points.add(point4);
-//		polygon.setPoints(points);
-//		List<Polygon> polygons = new ArrayList<>();
-//		polygons.add(polygon);
-//		byIntersection.setPolygons(polygons);
-//		spatialFilter.setByIntersection(byIntersection);
-//		queryRequest.setSpatialFilter(spatialFilter);
-//
-//		// mock out elastic client handler
-//		RestHighLevelClient client = Mockito.mock(RestHighLevelClient.class, Mockito.RETURNS_DEEP_STUBS);
-//		SearchResponse searchResponse = Mockito.mock(SearchResponse.class);
-//
-//		QueryBuilder textQueryBuilder = Mockito.mock(QueryBuilder.class);
-//
-//		when(iPolicyService.getCompiledPolicy(any())).thenReturn("PolicyString");
-//
-//		when(queryParserUtil.buildQueryBuilderFromQueryString(anyString())).thenReturn(textQueryBuilder);
-//
-//		when(searchResponse.status())
-//				.thenReturn(RestStatus.OK);
-//
-//		SearchHits searchHits = Mockito.mock(SearchHits.class);
-//		when(searchHits.getHits())
-//				.thenReturn(new SearchHit[]{});
-//		when(searchResponse.getHits())
-//				.thenReturn(searchHits);
-//
-//		when(client.search(Mockito.any(SearchRequest.class), Mockito.eq(RequestOptions.DEFAULT)))
-//				.thenReturn(searchResponse);
-//
-//
-//		when(elasticClientHandler.createRestClient())
-//				.thenReturn(client);
-//
-//		String index = "some-index";
-//		when(crossTenantUtils.getIndexName(Mockito.any()))
-//				.thenReturn(index);
-//
-//		Set<String> indexedTypes = new HashSet<>();
-//		indexedTypes.add("geo_shape");
-//
-//
-//		Map<String, String> headers = new HashMap<>();
-//		headers.put("groups", "[]");
-//
-//		String expectedSource = "{\"size\":10,\"timeout\":\"1m\",\"query\":{\"bool\":{\"must\":[{\"wrapper\":{\"query\":\"UG9saWN5U3RyaW5n\"}}],\"adjust_pure_negative\":true,\"boost\":1.0}},\"_source\":{\"includes\":[],\"excludes\":[\"x-acl\",\"index\"]},\"sort\":[{\"_score\":{\"order\":\"desc\"}},{\"_doc\":{\"order\":\"asc\"}}],\"highlight\":{}}";
-//
-//		// act
-//		scrollQueryServiceAws.queryIndex(queryRequest);
-//
-//		// assert
-//		ArgumentCaptor<SearchRequest> searchRequestArg = ArgumentCaptor.forClass(SearchRequest.class);
-//		Mockito.verify(client, Mockito.times(1)).search(searchRequestArg.capture(), Mockito.any());
-//		SearchRequest searchRequest = searchRequestArg.getValue();
-//		String actualSource = searchRequest.source().toString();
-//		assertEquals(expectedSource, actualSource);
-//	}
+	@Test
+	public void should_return_CorrectQueryResponse_NullResult_noCursorSet_QueryBuilder() throws Exception {
+		// arrange
+		// create query request according to this example query:
+		//	{
+		//		"kind": "osdu:wks:reference-data--CoordinateTransformation:1.0.0",
+		//			"query": "data.ID:\"EPSG::1078\"",
+		//			"spatialFilter": {
+		//			"field": "data.Wgs84Coordinates",
+		//			"byIntersection": {
+		//				"polygons": [
+		//				{
+		//					"points": [
+		//					{
+		//						"latitude": 10.75,
+		//							"longitude": -8.61
+		//					}
+		//						]
+		//				}
+		//				]
+		//			}
+		//		}
+		//	}
+		CursorQueryRequest queryRequest = new CursorQueryRequest();
+		queryRequest.setQuery("data.ID:\"EPSG::1078\"");
+		SpatialFilter spatialFilter = new SpatialFilter();
+		spatialFilter.setField("data.Wgs84Coordinates");
+		SpatialFilter.ByIntersection byIntersection = new SpatialFilter.ByIntersection();
+		Polygon polygon = new Polygon();
+		Point point = new Point(1.02, -8.61);
+		Point point1 = new Point(1.02, -2.48);
+		Point point2 = new Point(10.74, -2.48);
+		Point point3 = new Point(10.74, -8.61);
+		Point point4 = new Point(1.02, -8.61);
+		List<Point> points = new ArrayList<>();
+		points.add(point);
+		points.add(point1);
+		points.add(point2);
+		points.add(point3);
+		points.add(point4);
+		polygon.setPoints(points);
+		List<Polygon> polygons = new ArrayList<>();
+		polygons.add(polygon);
+		byIntersection.setPolygons(polygons);
+		spatialFilter.setByIntersection(byIntersection);
+		queryRequest.setSpatialFilter(spatialFilter);
+
+		// mock out elastic client handler
+        ElasticsearchClient client = Mockito.mock(ElasticsearchClient.class);
+		String index = "some-index";
+
+		SearchResponse<Object> searchResponse = SearchResponse.of(r -> r
+				.took(0)
+				.timedOut(false)
+				.hits(h -> h
+						.total(t -> t.value(1).relation(TotalHitsRelation.Eq))
+						.hits(hit -> hit
+								.id("1234")
+								.index(index)
+								.fields(Map.of("hostname", JsonData.of("H")
+				))))
+				.shards(s -> s
+						.total(1)
+						.failed(0)
+						.successful(1)
+				)
+		);
+
+		List<QueryNode> queryNodes = Collections.singletonList(new QueryNode(queryRequest.getQuery(), null));
+        BoolQuery.Builder textQueryBuilder = new BoolQuery.Builder();
+		textQueryBuilder.must(queryNodes.get(0).toQueryBuilder().build());
+
+		when(iPolicyService.getCompiledPolicy(any())).thenReturn("PolicyString");
+		when(iFeatureFlag.isFeatureEnabled(POLICY_FEATURE_NAME)).thenReturn(true);
+		when(queryParserUtil.buildQueryBuilderFromQueryString(anyString())).thenReturn(textQueryBuilder);
+		when(elasticClientHandler.getOrCreateRestClient())
+				.thenReturn(client);
+		when(client.search(any(SearchRequest.class), eq((Type)Map.class))).thenReturn(searchResponse);
+
+		when(crossTenantUtils.getIndexName(Mockito.any()))
+				.thenReturn(index);
+
+    String jsonString =
+        "{\"_source\":{\"excludes\":[\"x-acl\",\"index\"],\"includes\":[]},\"highlight\":{\"fields\":{}},\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"query_string\":{\"boost\":1.0,\"allow_leading_wildcard\":false,\"auto_generate_synonyms_phrase_query\":true,\"default_operator\":\"or\",\"enable_position_increments\":true,\"escape\":false,\"fields\":[],\"fuzziness\":\"AUTO\",\"fuzzy_max_expansions\":50,\"fuzzy_prefix_length\":0,\"fuzzy_transpositions\":true,\"max_determinized_states\":10000,\"phrase_slop\":0.0,\"query\":\"data.ID:\\\"EPSG::1078\\\"\",\"type\":\"best_fields\"}}]}},{\"wrapper\":{\"query\":\"UG9saWN5U3RyaW5n\"}}]}},\"size\":10,\"sort\":[{\"_score\":{\"order\":\"desc\"}},{\"_doc\":{\"order\":\"asc\"}}],\"timeout\":\"1m\"}";
+		SearchRequest searchRequest = SearchRequest.of(s -> s
+				.withJson(new StringReader(jsonString))
+		);
+
+		// act
+		scrollQueryService.queryIndex(queryRequest);
+
+		// assert
+		ArgumentCaptor<SearchRequest> searchRequestCaptor = ArgumentCaptor.forClass(SearchRequest.class);
+
+		verify(client, Mockito.times(1)).search(searchRequestCaptor.capture(), eq((Type)Map.class));
+		SearchRequest capturedRequest = searchRequestCaptor.getValue();
+
+        assert capturedRequest.query() != null;
+        String actualSource = capturedRequest.query().toString();
+        assert searchRequest.query() != null;
+        assertEquals(searchRequest.query().toString(), actualSource);
+	}
 }
