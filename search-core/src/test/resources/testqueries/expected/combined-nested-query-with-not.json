@@ -63,7 +63,6 @@
                                     }
                                 }
                             ],
-                            "adjust_pure_negative": true,
                             "boost": 1.0
                         }
                     },
@@ -74,7 +73,6 @@
                 }
             }
         ],
-        "adjust_pure_negative": true,
         "boost": 1.0
     }
 }
