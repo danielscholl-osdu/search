@@ -119,14 +119,23 @@ public final class GeoQueryBuilder {
 
   private static Map<String, Object> createPolygon(SpatialFilter spatialFilter) {
     List<Point> queryPolygon = spatialFilter.getByGeoPolygon().getPoints();
-    Map<String, Object> shapeMap = new HashMap<>();
-    shapeMap.put("type", "Polygon");
+    if(queryPolygon.size() > 0 && !queryPolygon.get(0).equals(queryPolygon.get(queryPolygon.size() -1))) {
+      queryPolygon.add(queryPolygon.get(0));
+    }
     List<List<Double>> coordinates = new ArrayList<>();
     for (Point point : queryPolygon) {
       coordinates.add(List.of(point.getLongitude(), point.getLatitude()));
     }
-    shapeMap.put("coordinates", coordinates);
+    if (coordinates.size() < MINIMUM_POLYGON_POINTS_SIZE) {
+      throw new AppException(
+              HttpServletResponse.SC_BAD_REQUEST,
+              "Bad Request",
+              String.format("Polygons must have at least %d points", MINIMUM_POLYGON_POINTS_SIZE));
+    }
 
+    Map<String, Object> shapeMap = new HashMap<>();
+    shapeMap.put("type", "Polygon");
+    shapeMap.put("coordinates", List.of(coordinates));
     return shapeMap;
   }
 

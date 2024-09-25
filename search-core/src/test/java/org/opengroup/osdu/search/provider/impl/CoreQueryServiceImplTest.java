@@ -15,6 +15,7 @@
 package org.opengroup.osdu.search.provider.impl;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -253,7 +254,7 @@ public class CoreQueryServiceImplTest {
         assertEquals(((Map<String, List<String>>)queryResponse.getResults().get(0).get("highlight")).get(name), List.of(text));
 
         verify(this.auditLogger, times(1)).queryIndexSuccess(Lists.newArrayList(searchRequest.toString()));
-        //verify(this.searchDependencyLogger, times(1)).log(searchRequest, 0L, 200);
+        verify(this.searchDependencyLogger, times(1)).log(eq(searchRequest), anyLong(), eq(200));
     }
 
     @Test
@@ -454,7 +455,7 @@ public class CoreQueryServiceImplTest {
                             "filter": [{
                                     "geo_shape": {
                                         "field": {
-                                            "shape": "{coordinates=[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]], type=Polygon}",
+                                            "shape": "{coordinates=[[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.0, 0.0]]], type=Polygon}",
                                             "relation": "within"
                                         },
                                         "boost": 1.0,
@@ -513,7 +514,7 @@ public class CoreQueryServiceImplTest {
                             "filter": [{
                                     "geo_shape": {
                                         "field": {
-                                            "shape": "{coordinates=[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.0, 0.0]], type=Polygon}",
+                                            "shape": "{coordinates=[[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.0, 0.0]]], type=Polygon}",
                                             "relation": "within"
                                         },
                                         "boost": 1.0,
