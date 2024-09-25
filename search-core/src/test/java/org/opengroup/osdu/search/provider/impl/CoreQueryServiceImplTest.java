@@ -454,7 +454,7 @@ public class CoreQueryServiceImplTest {
                             "filter": [{
                                     "geo_shape": {
                                         "field": {
-                                            "shape": "{coordinates=[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]], type=Polygon}",
+                                            "shape": "{coordinates=[[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.0, 0.0]]], type=Polygon}",
                                             "relation": "within"
                                         },
                                         "boost": 1.0,
@@ -513,7 +513,7 @@ public class CoreQueryServiceImplTest {
                             "filter": [{
                                     "geo_shape": {
                                         "field": {
-                                            "shape": "{coordinates=[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.0, 0.0]], type=Polygon}",
+                                            "shape": "{coordinates=[[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.0, 0.0]]], type=Polygon}",
                                             "relation": "within"
                                         },
                                         "boost": 1.0,
