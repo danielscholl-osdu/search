@@ -216,7 +216,7 @@ public class ScrollCoreQueryServiceImplIPolicyServiceTest {
 				.thenReturn(index);
 
     String jsonString =
-        "{\"_source\":{\"excludes\":[\"x-acl\",\"index\"],\"includes\":[]},\"highlight\":{\"fields\":{}},\"query\":{\"bool\":{\"must\":[{\"bool\":{\"must\":[{\"query_string\":{\"boost\":1.0,\"allow_leading_wildcard\":false,\"auto_generate_synonyms_phrase_query\":true,\"default_operator\":\"or\",\"enable_position_increments\":true,\"escape\":false,\"fields\":[],\"fuzziness\":\"AUTO\",\"fuzzy_max_expansions\":50,\"fuzzy_prefix_length\":0,\"fuzzy_transpositions\":true,\"max_determinized_states\":10000,\"phrase_slop\":0.0,\"query\":\"data.ID:\\\"EPSG::1078\\\"\",\"type\":\"best_fields\"}}]}},{\"wrapper\":{\"query\":\"UG9saWN5U3RyaW5n\"}}]}},\"size\":10,\"sort\":[{\"_score\":{\"order\":\"desc\"}},{\"_doc\":{\"order\":\"asc\"}}],\"timeout\":\"1m\"}";
+        "{\"_source\":{\"excludes\":[\"x-acl\",\"index\"],\"includes\":[]},\"highlight\":{\"fields\":{}},\"query\":{\"bool\":{\"boost\":1.0, \"must\":[{\"bool\":{\"must\":[{\"query_string\":{\"boost\":1.0,\"allow_leading_wildcard\":false,\"auto_generate_synonyms_phrase_query\":true,\"default_operator\":\"or\",\"enable_position_increments\":true,\"escape\":false,\"fields\":[],\"fuzziness\":\"AUTO\",\"fuzzy_max_expansions\":50,\"fuzzy_prefix_length\":0,\"fuzzy_transpositions\":true,\"max_determinized_states\":10000,\"phrase_slop\":0.0,\"query\":\"data.ID:\\\"EPSG::1078\\\"\",\"type\":\"best_fields\"}}]}},{\"wrapper\":{\"query\":\"UG9saWN5U3RyaW5n\"}}]}},\"size\":10,\"sort\":[{\"_score\":{\"order\":\"desc\"}},{\"_doc\":{\"order\":\"asc\"}}],\"timeout\":\"1m\"}";
 		SearchRequest searchRequest = SearchRequest.of(s -> s
 				.withJson(new StringReader(jsonString))
 		);

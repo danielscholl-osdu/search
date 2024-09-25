@@ -17,6 +17,9 @@
 
 package org.opengroup.osdu.search.util;
 
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import co.elastic.clients.elasticsearch._types.ErrorCause;
+import co.elastic.clients.elasticsearch._types.ErrorResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,10 +51,21 @@ public class DetailedBadRequestMessageUtil implements IDetailedBadRequestMessage
         return fullReasonMessage;
       }
     }
-    if (e.getCause() == null) {
-      return defaultErrorMessage;
+
+    String msg = null;
+    if(e instanceof ElasticsearchException) {
+      ErrorResponse errorResponse = ((ElasticsearchException)e).response();
+      if(errorResponse != null && errorResponse.error() != null && errorResponse.error().causedBy() != null) {
+        ErrorCause errorCause = errorResponse.error().causedBy();
+        msg = getKeywordFieldErrorMessage(searchRequest, errorCause.reason());
+      }
     }
-    String msg = getKeywordFieldErrorMessage(searchRequest, e.getCause().getMessage());
+    else {
+      if (e.getCause() != null) {
+        msg = getKeywordFieldErrorMessage(searchRequest, e.getCause().getMessage());
+      }
+    }
+
     if (msg != null) {
       return msg;
     }

@@ -115,12 +115,12 @@ abstract class CoreQueryBase {
         TermQuery.Builder termQueryBuilder =
             QueryBuilders.term()
                 .field(COLLABORATION_ID.getValue())
-                .value(collaborationContext.get().getId());
-        queryBuilder.must(termQueryBuilder.build()._toQuery());
+                .value(collaborationContext.get().getId()).boost(1.0F);
+        queryBuilder.must(termQueryBuilder.build()._toQuery()).boost(1.0F);
       } else {
         ExistsQuery.Builder existsQueryBuilder =
-            QueryBuilders.exists().field(COLLABORATION_ID.getValue());
-        queryBuilder.mustNot(existsQueryBuilder.build()._toQuery());
+            QueryBuilders.exists().field(COLLABORATION_ID.getValue()).boost(1.0F);
+        queryBuilder.mustNot(existsQueryBuilder.build()._toQuery()).boost(1.0F);
       }
     }
 
@@ -129,7 +129,7 @@ abstract class CoreQueryBase {
       WrapperQuery.Builder wrapperQueryBuilder =
           QueryBuilders.wrapper()
               .query(Base64.getEncoder().encodeToString(compiledESPolicy.getBytes()));
-      return queryBuilder.must(wrapperQueryBuilder.build()._toQuery());
+      return queryBuilder.must(wrapperQueryBuilder.build()._toQuery()).boost(1.0F);
     } else {
       return getQueryBuilderWithAuthorization(queryBuilder, asOwner);
     }
@@ -153,13 +153,14 @@ abstract class CoreQueryBase {
             new TermsQuery.Builder()
                 .field(AclRole.OWNERS.getPath())
                 .terms(groupArray)
+                    .boost(1.0F)
                 .build()
                 ._toQuery());
       } else {
         queryBuilder.filter(
             new TermsQuery.Builder()
                 .field(RecordMetaAttribute.X_ACL.getValue())
-                .terms(groupArray)
+                .terms(groupArray).boost(1.0F)
                 .build()
                 ._toQuery());
       }
@@ -373,7 +374,7 @@ abstract class CoreQueryBase {
         throw new AppException(
             HttpServletResponse.SC_GATEWAY_TIMEOUT,
             "Search error",
-            String.format("Request timed out after waiting for %sm", REQUEST_TIMEOUT.time()),
+            String.format("Request timed out after waiting for %s", REQUEST_TIMEOUT.time()),
             e);
       }
       throw new AppException(
@@ -386,7 +387,7 @@ abstract class CoreQueryBase {
         throw new AppException(
             HttpServletResponse.SC_GATEWAY_TIMEOUT,
             "Search error",
-            String.format("Request timed out after waiting for %sm", REQUEST_TIMEOUT.time()),
+            String.format("Request timed out after waiting for %s", REQUEST_TIMEOUT.time()),
             e);
       } else if (e.getCause() instanceof ContentTooLongException) {
         throw new AppException(
