@@ -2,10 +2,11 @@ global:
   domain: ""
   onPremEnabled: false
   limitsEnabled: true
+  logLevel: "ERROR"
 
 data:
   # Configmaps
-  logLevel: "ERROR"
+  logLevel: ""
   entitlementsHost: "http://entitlements"
   partitionHost: "http://partition"
   policyHost: "http://policy"
