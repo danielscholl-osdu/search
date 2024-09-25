@@ -11,7 +11,7 @@ data:
   {{- else }}
   SPRING_PROFILES_ACTIVE: "gcp"
   {{- end }}
-  LOG_LEVEL: {{ .Values.data.logLevel | quote }}
+  LOG_LEVEL: {{ .Values.data.logLevel | default .Values.global.logLevel | quote }}
   {{- if .Values.data.redisSearchHost }}
   REDIS_GROUP_HOST: {{ .Values.data.redisSearchHost | quote }}
   REDIS_SEARCH_HOST: {{ .Values.data.redisSearchHost | quote }}
