@@ -335,8 +335,10 @@ abstract class CoreQueryBase {
 
       startTime = System.currentTimeMillis();
       searchResponse = client.search(elasticSearchRequest, (Type) Map.class);
+      statusCode = 200;
       return searchResponse;
     } catch (ElasticsearchException e) {
+      statusCode = e.status();
       switch (e.status()) {
         case 404:
           throw new AppException(
