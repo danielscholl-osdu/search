@@ -1,14 +1,17 @@
 {
   "filter": [{
     "terms": {
-      "x-acl": ["data.welldb.viewers@common.evd.cloud.slb-ds.com", "data.npd.viewers@common.evd.cloud.slb-ds.com"]
+      "x-acl": ["data.welldb.viewers@common.evd.cloud.slb-ds.com", "data.npd.viewers@common.evd.cloud.slb-ds.com"],
+      "boost" : 1.0
     }
   }
   ],
   "must_not": [{
     "exists": {
+      "boost": 1.0,
       "field": "collaborationId"
     }
   }
-  ]
+  ],
+  "boost" : 1.0
 }

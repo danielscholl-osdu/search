@@ -288,7 +288,7 @@ public class CoreQueryServiceImplTest {
                                  }, {
                                      "terms": {
                                          "x-acl": ["data.welldb.viewers@common.evd.cloud.slb-ds.com", "data.npd.viewers@common.evd.cloud.slb-ds.com"]
-                                     }
+                                     ,"boost": 1.0}
                                  }
                              ]
                          }
@@ -346,7 +346,7 @@ public class CoreQueryServiceImplTest {
                                   }, {
                                       "terms": {
                                           "x-acl": ["data.welldb.viewers@common.evd.cloud.slb-ds.com", "data.npd.viewers@common.evd.cloud.slb-ds.com"]
-                                      }
+                                      ,"boost": 1.0}
                                   }
                               ]
                           }
@@ -403,7 +403,8 @@ public class CoreQueryServiceImplTest {
                                    }
                                }, {
                                    "terms": {
-                                       "x-acl": ["data.welldb.viewers@common.evd.cloud.slb-ds.com", "data.npd.viewers@common.evd.cloud.slb-ds.com"]
+                                       "x-acl": ["data.welldb.viewers@common.evd.cloud.slb-ds.com", "data.npd.viewers@common.evd.cloud.slb-ds.com"],
+                                       "boost" : 1.0
                                    }
                                }
                            ]
@@ -461,7 +462,8 @@ public class CoreQueryServiceImplTest {
                                     }
                                 }, {
                                     "terms": {
-                                        "x-acl": ["data.welldb.viewers@common.evd.cloud.slb-ds.com", "data.npd.viewers@common.evd.cloud.slb-ds.com"]
+                                        "x-acl": ["data.welldb.viewers@common.evd.cloud.slb-ds.com", "data.npd.viewers@common.evd.cloud.slb-ds.com"],
+                                        "boost": 1.0
                                     }
                                 }
                             ]
@@ -520,7 +522,7 @@ public class CoreQueryServiceImplTest {
                                 }, {
                                     "terms": {
                                         "x-acl": ["data.welldb.viewers@common.evd.cloud.slb-ds.com", "data.npd.viewers@common.evd.cloud.slb-ds.com"]
-                                    }
+                                    ,"boost": 1.0}
                                 }
                             ]
                         }
@@ -936,7 +938,7 @@ public class CoreQueryServiceImplTest {
                     {
                         "terms": {
                             "acl.owners": ["data.welldb.viewers@common.evd.cloud.slb-ds.com", "data.npd.viewers@common.evd.cloud.slb-ds.com"]
-                        }
+                        ,"boost": 1.0}
                     }
                     """;
         } else {
@@ -944,7 +946,7 @@ public class CoreQueryServiceImplTest {
                     {
                         "terms": {
                             "x-acl": ["data.welldb.viewers@common.evd.cloud.slb-ds.com", "data.npd.viewers@common.evd.cloud.slb-ds.com"]
-                        }
+                        ,"boost": 1.0}
                     }                
                     """;
         }
@@ -957,7 +959,7 @@ public class CoreQueryServiceImplTest {
     }
 
     private String getJsonOfSearchRequestWithIntersectionSpatialFilter() {
-        return """
+    return """
                 {
                     "_source": {
                         "excludes": ["x-acl", "index"],
@@ -980,7 +982,7 @@ public class CoreQueryServiceImplTest {
                                 }, {
                                     "terms": {
                                         "x-acl": ["[]"]
-                                    }
+                                    , "boost": 1.0}
                                 }
                             ],
                             "must": [{
@@ -1013,7 +1015,7 @@ public class CoreQueryServiceImplTest {
                     },
                     "size": 10,
                     "timeout": "1m"
-                }   
+                }
                 """;
     }
 }
