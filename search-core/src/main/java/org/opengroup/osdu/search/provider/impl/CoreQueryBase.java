@@ -115,7 +115,8 @@ abstract class CoreQueryBase {
         TermQuery.Builder termQueryBuilder =
             QueryBuilders.term()
                 .field(COLLABORATION_ID.getValue())
-                .value(collaborationContext.get().getId()).boost(1.0F);
+                .value(collaborationContext.get().getId())
+                .boost(1.0F);
         queryBuilder.must(termQueryBuilder.build()._toQuery()).boost(1.0F);
       } else {
         ExistsQuery.Builder existsQueryBuilder =
