@@ -54,6 +54,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.ContentTooLongException;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -974,9 +975,9 @@ public class CoreQueryServiceImplTest {
                         "bool": {
                             "filter": [{
                                     "geo_shape": {
-                                        "data.Wgs84Coordinates": {
-                                            "shape": "{geometries=[{coordinates=[[{lon=-8.61, lat=1.02}, {lon=-2.48, lat=1.02}, {lon=-2.48, lat=10.74}, {lon=-8.61, lat=10.74}, {lon=-8.61, lat=1.02}]], type=polygon}], type=geometrycollection}",
-                                            "relation": "intersects"
+                                        "data.Wgs84Coordinates":{
+                                            "shape":"{geometries=[{coordinates=[[[-8.61, 1.02], [-2.48, 1.02], [-2.48, 10.74], [-8.61, 10.74], [-8.61, 1.02]]], type=MultiPolygon}], type=GeometryCollection}",
+                                            "relation":"intersects"
                                         },
                                         "ignore_unmapped": true
                                     }

@@ -119,7 +119,8 @@ public final class GeoQueryBuilder {
 
   private static Map<String, Object> createPolygon(SpatialFilter spatialFilter) {
     List<Point> queryPolygon = spatialFilter.getByGeoPolygon().getPoints();
-    if(queryPolygon.size() > 0 && !queryPolygon.get(0).equals(queryPolygon.get(queryPolygon.size() -1))) {
+    if (queryPolygon.size() > 0
+        && !queryPolygon.get(0).equals(queryPolygon.get(queryPolygon.size() - 1))) {
       queryPolygon.add(queryPolygon.get(0));
     }
     List<List<Double>> coordinates = new ArrayList<>();
@@ -128,9 +129,9 @@ public final class GeoQueryBuilder {
     }
     if (coordinates.size() < MINIMUM_POLYGON_POINTS_SIZE) {
       throw new AppException(
-              HttpServletResponse.SC_BAD_REQUEST,
-              "Bad Request",
-              String.format("Polygons must have at least %d points", MINIMUM_POLYGON_POINTS_SIZE));
+          HttpServletResponse.SC_BAD_REQUEST,
+          "Bad Request",
+          String.format("Polygons must have at least %d points", MINIMUM_POLYGON_POINTS_SIZE));
     }
 
     Map<String, Object> shapeMap = new HashMap<>();
@@ -140,33 +141,36 @@ public final class GeoQueryBuilder {
   }
 
   private static Map<String, Object> createMultiPolygon(List<Polygon> polygons) {
-    Map<String, Object> shapeMap = new HashMap<>();
-    List<Map<String, Object>> polygonsList = new ArrayList<>();
+    Map<String, Object> geometryCollection = new HashMap<>();
+    geometryCollection.put("type", "GeometryCollection");
+
+    List<Map<String, Object>> geometriesList = new ArrayList<>();
 
     for (Polygon polygon : polygons) {
-      List<Map<String, Double>> coordinatesList = new ArrayList<>();
+      checkPolygon(polygon);
+      Map<String, Object> multiPolygon = new HashMap<>();
+      multiPolygon.put("type", "MultiPolygon");
+
+      List<List<List<Double>>> polygonCoordinates = new ArrayList<>();
+      List<List<Double>> coordinates = new ArrayList<>();
+
       for (Point point : polygon.getPoints()) {
-        Map<String, Double> coordMap = new HashMap<>();
-        coordMap.put("lat", point.getLatitude());
-        coordMap.put("lon", point.getLongitude());
-        coordinatesList.add(coordMap);
+        coordinates.add(Arrays.asList(point.getLongitude(), point.getLatitude()));
       }
 
-      checkPolygon(coordinatesList);
+      polygonCoordinates.add(coordinates);
 
-      Map<String, Object> polygonMap = new HashMap<>();
-      polygonMap.put("type", "polygon");
-      polygonMap.put("coordinates", Collections.singletonList(coordinatesList));
-      polygonsList.add(polygonMap);
+      multiPolygon.put("coordinates", polygonCoordinates);
+
+      geometriesList.add(multiPolygon);
     }
 
-    shapeMap.put("type", "geometrycollection");
-    shapeMap.put("geometries", polygonsList);
+    geometryCollection.put("geometries", geometriesList);
 
-    return shapeMap;
+    return geometryCollection;
   }
 
-  private Query getIntersectionQuery(SpatialFilter spatialFilter) throws IOException {
+  private Query getIntersectionQuery(SpatialFilter spatialFilter) {
     List<Polygon> polygons = spatialFilter.getByIntersection().getPolygons();
     Map<String, Object> geoShapeJson = createMultiPolygon(polygons);
 
@@ -180,21 +184,16 @@ public final class GeoQueryBuilder {
     return shapeQuery._toQuery();
   }
 
-  private static void checkPolygon(List<Map<String, Double>> coordinates) {
-    // Check if the polygon has enough points
-    if (coordinates.size() < MINIMUM_POLYGON_POINTS_SIZE) {
+  private static void checkPolygon(Polygon polygon) {
+    List<Point> points = polygon.getPoints();
+    if (points.size() < MINIMUM_POLYGON_POINTS_SIZE) {
       throw new AppException(
           HttpServletResponse.SC_BAD_REQUEST,
           "Bad Request",
           String.format("Polygons must have at least %d points", MINIMUM_POLYGON_POINTS_SIZE));
     }
 
-    // Check if the polygon is closed
-    Map<String, Double> firstPoint = coordinates.get(0);
-    Map<String, Double> lastPoint = coordinates.get(coordinates.size() - 1);
-
-    if (!firstPoint.get("lon").equals(lastPoint.get("lon"))
-        || !firstPoint.get("lat").equals(lastPoint.get("lat"))) {
+    if (!points.get(0).equals(points.get(points.size() - 1))) {
       throw new AppException(
           HttpServletResponse.SC_BAD_REQUEST,
           "Bad Request",
