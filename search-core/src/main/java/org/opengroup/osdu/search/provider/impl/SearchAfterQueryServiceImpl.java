@@ -83,6 +83,7 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         // Add PIT for SearchAfter Query. [indicesOptions] cannot be used with point in time
         String pitId = openPointInTime(index, this.elasticClientHandler.getOrCreateRestClient());
         searchSourceBuilder.pit(pit -> pit.id(pitId).keepAlive(SEARCH_AFTER_TIMEOUT));
+        searchSourceBuilder.searchType(SearchType.QueryThenFetch).batchedReduceSize(512L);
 
         // All PIT search requests add an implicit sort tiebreaker field called _shard_doc
         if (request.getSort() == null) {
@@ -247,8 +248,8 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         SearchRequest.Builder sourceBuilder = this.createSearchSourceBuilder(searchRequest);
         // The following 3 statements are required to support pagination with search_after
         sourceBuilder.pit(pit -> pit.id(cursorSettings.getPitId()).keepAlive(SEARCH_AFTER_TIMEOUT));
-        sourceBuilder.sort(cursorSettings.getSortOptionsList());
-        sourceBuilder.searchAfter(cursorSettings.getSearchAfterValues());
+        sourceBuilder.sort(cursorSettings.getSortOptionsList()).searchAfter(cursorSettings.getSearchAfterValues());
+        sourceBuilder.searchType(SearchType.QueryThenFetch).batchedReduceSize(512L);
 
         SearchRequest elasticSearchRequest = sourceBuilder.build();
         SearchResponse<Map<String, Object>> searchResponse = client.search(elasticSearchRequest, (Type) Map.class);
@@ -298,7 +299,7 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         return false;
     }
 
-    private String refreshCursorCache(SearchResponse<Map<String, Object>> searchResponse, List<SortOptions> sortOptionsList, boolean isCursorClosed, SearchAfterSettings cursorSettings) {
+    String refreshCursorCache(SearchResponse<Map<String, Object>> searchResponse, List<SortOptions> sortOptionsList, boolean isCursorClosed, SearchAfterSettings cursorSettings) {
         String pitId = searchResponse.pitId();
         if (pitId != null) {
             this.digest.update(pitId.getBytes());
