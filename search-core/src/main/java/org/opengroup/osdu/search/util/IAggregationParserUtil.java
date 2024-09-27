@@ -1,8 +1,9 @@
 package org.opengroup.osdu.search.util;
 
-import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
+import java.util.Map;
 
 public interface IAggregationParserUtil {
 
-    AbstractAggregationBuilder parseAggregation(String aggregation);
+  Map<String, Aggregation> parseAggregation(String aggregation);
 }

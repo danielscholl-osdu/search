@@ -1,0 +1,9 @@
+{
+  "geo_shape":{
+    "data.SpatialLocation.Wgs84Coordinates":{
+      "shape":"{geometries=[{coordinates=[[[-8.61, 1.02], [-2.48, 1.02], [-2.48, 10.74], [-8.61, 10.74], [-8.61, 1.02]]], type=MultiPolygon}], type=GeometryCollection}",
+      "relation":"intersects"
+    },
+    "ignore_unmapped":true
+  }
+}

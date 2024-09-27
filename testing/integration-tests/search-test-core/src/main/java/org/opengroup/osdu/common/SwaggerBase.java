@@ -1,6 +1,5 @@
 package org.opengroup.osdu.common;
 
-import joptsimple.internal.Strings;
 import org.opengroup.osdu.response.SwaggerResponseMock;
 import org.opengroup.osdu.util.Config;
 import org.opengroup.osdu.util.HTTPClient;
@@ -27,7 +26,7 @@ public class SwaggerBase extends TestsBase {
   }
 
   public void i_send_get_request_to_swagger_endpoint() {
-    response = executeQuery(Strings.EMPTY, headers, httpClient.getAccessToken(), SwaggerResponseMock.class);
+    response = executeQuery("", headers, httpClient.getAccessToken(), SwaggerResponseMock.class);
   }
 
   public void i_should_get_openapi_spec_in_response() {

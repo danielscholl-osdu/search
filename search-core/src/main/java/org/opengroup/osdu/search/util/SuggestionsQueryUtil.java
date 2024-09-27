@@ -1,57 +1,83 @@
-package org.opengroup.osdu.search.util;
+/*
+ *  Copyright 2020-2024 Google LLC
+ *  Copyright 2020-2024 EPAM Systems, Inc
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.search.suggest.Suggest;
-import org.elasticsearch.search.suggest.SuggestBuilder;
-import org.elasticsearch.search.suggest.SuggestBuilders;
-import org.elasticsearch.search.suggest.SuggestionBuilder;
-import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
-import org.opengroup.osdu.core.common.feature.IFeatureFlag;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.elasticsearch.search.suggest.completion.CompletionSuggestion.Entry;
+package org.opengroup.osdu.search.util;
 
 import static org.opengroup.osdu.search.config.SearchConfigurationProperties.AUTOCOMPLETE_FEATURE_NAME;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import jakarta.inject.Inject;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.CompletionSuggestOption;
+import co.elastic.clients.elasticsearch.core.search.Suggester;
+import co.elastic.clients.elasticsearch.core.search.Suggestion;
+import java.util.*;
+import org.opengroup.osdu.core.common.feature.IFeatureFlag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class SuggestionsQueryUtil {
-    @Autowired
-    private IFeatureFlag autocompleteFeatureFlag;
-    private final String SUGGESTION_NAME = "autocomplete";
 
-    public SuggestBuilder getSuggestions(String suggestPhrase) {
-        if (!autocompleteFeatureFlag.isFeatureEnabled(AUTOCOMPLETE_FEATURE_NAME) || suggestPhrase == null || suggestPhrase == "") {
-            return null;
-        }
-        SuggestionBuilder suggestionBuilder = SuggestBuilders.completionSuggestion(
-            "bagOfWords.autocomplete"
-            ).text(suggestPhrase).skipDuplicates(true);
-        SuggestBuilder suggestBuilder = new SuggestBuilder();
-        suggestBuilder.addSuggestion(SUGGESTION_NAME, suggestionBuilder);
-        return suggestBuilder;     
+  @Autowired private IFeatureFlag autocompleteFeatureFlag;
+  private final String SUGGESTION_NAME = "autocomplete";
+
+  public Suggester getSuggestions(String suggestPhrase) {
+    if (!autocompleteFeatureFlag.isFeatureEnabled(AUTOCOMPLETE_FEATURE_NAME)
+        || Objects.isNull(suggestPhrase)
+        || suggestPhrase.isEmpty()) {
+      return null;
+    }
+    return Suggester.of(
+        s ->
+            s.suggesters(
+                SUGGESTION_NAME,
+                fs ->
+                    fs.completion(c -> c.field("bagOfWords.autocomplete").skipDuplicates(true))
+                        .text(suggestPhrase)));
+  }
+
+  public List<String> getPhraseSuggestionsFromSearchResponse(
+      SearchResponse<Map<String, Object>> searchResponse) {
+    if (!autocompleteFeatureFlag.isFeatureEnabled(AUTOCOMPLETE_FEATURE_NAME)) {
+      return null;
     }
 
-    public List<String> getPhraseSuggestionsFromSearchResponse(SearchResponse searchResponse) {
-        if (!autocompleteFeatureFlag.isFeatureEnabled(AUTOCOMPLETE_FEATURE_NAME)) {
-            return null;
-        }
-
-        Suggest suggestBlock = searchResponse.getSuggest();
-        if (suggestBlock == null) {
-            return null;
-        }
-        List<String> phraseSuggestions = new ArrayList<>();
-        CompletionSuggestion suggestion = suggestBlock.getSuggestion(SUGGESTION_NAME);
-        for (Entry entry : suggestion.getEntries()) {
-            for (Entry.Option option : entry) {
-                phraseSuggestions.add(option.getText().toString());
-            }
-        }
-        return phraseSuggestions;
+    var suggestBlock = searchResponse.suggest();
+    if (suggestBlock == null) {
+      return null;
     }
+    List<String> phraseSuggestions = new ArrayList<>();
+    List<Suggestion<Map<String, Object>>> suggestions = suggestBlock.get(SUGGESTION_NAME);
+
+    if (suggestions == null) {
+      return new ArrayList<>();
+    }
+    for (Suggestion<Map<String, Object>> suggestion : suggestions) {
+      if (Objects.isNull(suggestion.completion()) && suggestion.completion().options().isEmpty()) {
+        continue;
+      }
+      for (CompletionSuggestOption<Map<String, Object>> completionSuggestOption :
+          suggestion.completion().options()) {
+        String text = completionSuggestOption.text();
+        if (Objects.isNull(text)) {
+          continue;
+        }
+        phraseSuggestions.add(text);
+      }
+    }
+    return phraseSuggestions;
+  }
 }

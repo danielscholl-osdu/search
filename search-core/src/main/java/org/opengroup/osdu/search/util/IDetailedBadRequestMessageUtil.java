@@ -1,8 +1,8 @@
 package org.opengroup.osdu.search.util;
 
-import org.elasticsearch.action.search.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 
 public interface IDetailedBadRequestMessageUtil {
 
-    String getDetailedBadRequestMessage(SearchRequest searchRequest, Exception e);
+  String getDetailedBadRequestMessage(SearchRequest searchRequest, Exception e);
 }

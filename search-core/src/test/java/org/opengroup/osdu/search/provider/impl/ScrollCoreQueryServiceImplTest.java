@@ -18,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -29,23 +30,26 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.opengroup.osdu.search.config.SearchConfigurationProperties.POLICY_FEATURE_NAME;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import co.elastic.clients.elasticsearch.core.ScrollRequest;
+import co.elastic.clients.elasticsearch.core.ScrollResponse;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
+import co.elastic.clients.elasticsearch.core.search.TotalHits;
 import com.google.common.collect.Lists;
 import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.ContentTooLongException;
-import org.elasticsearch.ElasticsearchStatusException;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchScrollRequest;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.text.Text;
-import org.elasticsearch.rest.RestStatus;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -82,16 +86,16 @@ public class ScrollCoreQueryServiceImplTest {
     private CursorSettings cursorSettings;
 
     @Mock
-    private RestHighLevelClient client;
+    private ElasticsearchClient client;
 
     @Mock
-    private SearchHits searchHits;
+    private HitsMetadata<Map<String, Object>> searchHits;
 
     @Mock
     private IQueryPerformanceLogger perfLogger;
 
     @Mock
-    private SearchHit searchHit;
+    private Hit<Map<String, Object>> searchHit;
 
     @Mock
     private DpsHeaders dpsHeaders;
@@ -132,19 +136,21 @@ public class ScrollCoreQueryServiceImplTest {
         doReturn(userId).when(dpsHeaders).getUserEmail();
         doReturn(indexName).when(crossTenantUtils).getIndexName(any());
         doReturn(cursorSettings).when(cursorCache).get(anyString());
-        doReturn(client).when(elasticClientHandler).createRestClient();
+        doReturn(client).when(elasticClientHandler).getOrCreateRestClient();
         when(elasticLoggingConfig.getEnabled()).thenReturn(false);
         when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
     }
 
     @Test
-    @Ignore
     public void testQueryIndex_whenSearchHitsIsNotEmpty() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
-        SearchResponse searchScrollResponse = mock(SearchResponse.class);
+        ScrollResponse searchScrollResponse = mock(ScrollResponse.class);
+        TotalHits totalHits = mock(TotalHits.class);
 
-        SearchHit[] hits = {searchHit};
-        Map<String, HighlightField> highlightFields = getHighlightFields();
+        List<Hit<Map<String, Object>>> hits = new ArrayList<>();
+        hits.add(searchHit);
+
+        Map<String, List<String>> highlightFields = getHighlightFields();
         Map<String, Object> hitFields = new HashMap<>();
         String cursor = "cursor";
         String scrollId = "scrollId";
@@ -154,42 +160,43 @@ public class ScrollCoreQueryServiceImplTest {
         doReturn(scrollId).when(cursorSettings).getCursor();
         doReturn(userId).when(cursorSettings).getUserId();
         doReturn(cursor).when(searchRequest).getCursor();
-        doReturn(searchScrollResponse).when(client).scroll(any(), any());
-        doReturn(searchHits).when(searchScrollResponse).getHits();
-        doReturn(scrollId).when(searchScrollResponse).getScrollId();
-        doReturn(hits).when(searchHits).getHits();
-        doReturn(totalHitsCount).when(searchHits).getTotalHits();
-        doReturn(highlightFields).when(searchHit).getHighlightFields();
-        doReturn(hitFields).when(searchHit).getSourceAsMap();
+        doReturn(searchScrollResponse).when(client).scroll(any(ScrollRequest.class), eq((Type)Map.class));
+        doReturn(searchHits).when(searchScrollResponse).hits();
+        doReturn(scrollId).when(searchScrollResponse).scrollId();
+        doReturn(totalHits).when(searchHits).total();
+        doReturn(totalHitsCount).when(totalHits).value();
+        doReturn(hits).when(searchHits).hits();
+        doReturn(highlightFields).when(searchHit).highlight();
+        doReturn(hitFields).when(searchHit).source();
 
         CursorQueryResponse obtainedQueryResponse = sut.queryIndex(searchRequest);
 
-        ArgumentCaptor<SearchScrollRequest> searchScrollRequestArgumentCaptor = ArgumentCaptor.forClass(SearchScrollRequest.class);
+        ArgumentCaptor<ScrollRequest> searchScrollRequestArgumentCaptor = ArgumentCaptor.forClass(ScrollRequest.class);
         ArgumentCaptor<String> cursorArgumentCaptor = ArgumentCaptor.forClass(String.class);
-        verify(client).scroll(searchScrollRequestArgumentCaptor.capture(), eq(RequestOptions.DEFAULT));
+        verify(client).scroll(searchScrollRequestArgumentCaptor.capture(), eq((Type)Map.class));
         verify(cursorCache).get(cursorArgumentCaptor.capture());
 
-        SearchScrollRequest scrollRequest = searchScrollRequestArgumentCaptor.getValue();
+        ScrollRequest scrollRequest = searchScrollRequestArgumentCaptor.getValue();
         String searchRequestCursor = cursorArgumentCaptor.getValue();
 
         assertEquals(obtainedQueryResponse.getResults().size(), 1);
-        assertTrue(obtainedQueryResponse.getResults().get(0).keySet().contains("name"));
-        assertEquals(obtainedQueryResponse.getResults().get(0).get("name"), "text");
+        assertTrue(obtainedQueryResponse.getResults().get(0).keySet().contains("highlight"));
+        assertEquals(((Map<String, List<String>>)obtainedQueryResponse.getResults().get(0).get("highlight")).get(name), List.of(text));
         assertEquals(obtainedQueryResponse.getTotalCount(), totalHitsCount);
         assertEquals(scrollRequest.scrollId(), scrollId);
         assertEquals(searchRequestCursor, cursor);
 
         verify(this.auditLogger, times(1)).queryIndexWithCursorSuccess(Lists.newArrayList(searchRequest.toString()));
-        verify(this.perfLogger, times(1)).log(searchRequest, 0L, 200);
+        verify(this.perfLogger, times(1)).log(eq(searchRequest), anyLong(), eq(200));
     }
 
     @Test
-    @Ignore
     public void testQueryIndex_whenSearchHitsIsEmpty() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
-        SearchResponse searchScrollResponse = mock(SearchResponse.class);
+        ScrollResponse searchScrollResponse = mock(ScrollResponse.class);
+        TotalHits totalHits = mock(TotalHits.class);
 
-        SearchHit[] hits = {};
+        List<Hit<Map<String, Object>>> hits = new ArrayList<>();
         String cursor = "cursor";
         String scrollId = "scrollId";
         long totalHitsCount = 0L;
@@ -198,19 +205,20 @@ public class ScrollCoreQueryServiceImplTest {
         doReturn(scrollId).when(cursorSettings).getCursor();
         doReturn(userId).when(cursorSettings).getUserId();
         doReturn(cursor).when(searchRequest).getCursor();
-        doReturn(searchScrollResponse).when(client).scroll(any(), any());
-        doReturn(searchHits).when(searchScrollResponse).getHits();
-        doReturn(hits).when(searchHits).getHits();
-        doReturn(totalHitsCount).when(searchHits).getTotalHits();
+        doReturn(searchScrollResponse).when(client).scroll(any(ScrollRequest.class), eq((Type)Map.class));
+        doReturn(searchHits).when(searchScrollResponse).hits();
+        doReturn(hits).when(searchHits).hits();
+        doReturn(totalHits).when(searchHits).total();
+        doReturn(totalHitsCount).when(totalHits).value();
 
         CursorQueryResponse obtainedQueryResponse = sut.queryIndex(searchRequest);
 
-        ArgumentCaptor<SearchScrollRequest> searchScrollRequestArgumentCaptor = ArgumentCaptor.forClass(SearchScrollRequest.class);
+        ArgumentCaptor<ScrollRequest> searchScrollRequestArgumentCaptor = ArgumentCaptor.forClass(ScrollRequest.class);
         ArgumentCaptor<String> cursorArgumentCaptor = ArgumentCaptor.forClass(String.class);
-        verify(client).scroll(searchScrollRequestArgumentCaptor.capture(), eq(RequestOptions.DEFAULT));
+        verify(client).scroll(searchScrollRequestArgumentCaptor.capture(), eq((Type)Map.class));
         verify(cursorCache).get(cursorArgumentCaptor.capture());
 
-        SearchScrollRequest scrollRequest = searchScrollRequestArgumentCaptor.getValue();
+        ScrollRequest scrollRequest = searchScrollRequestArgumentCaptor.getValue();
         String searchRequestCursor = cursorArgumentCaptor.getValue();
 
         assertEquals(obtainedQueryResponse.getResults().size(), 0);
@@ -220,26 +228,31 @@ public class ScrollCoreQueryServiceImplTest {
     }
 
     @Test
-    @Ignore
     public void testQueryIndex_whenNoCursorInSearchQuery() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
-        SearchResponse searchScrollResponse = mock(SearchResponse.class);
+        SearchResponse searchResponse = mock(SearchResponse.class);
+        TotalHits totalHits = mock(TotalHits.class);
 
-        SearchHit[] hits = {searchHit};
-        Map<String, HighlightField> highlightFields = getHighlightFields();
+        List<Hit<Map<String, Object>>> hits = new ArrayList<>();
+        hits.add(searchHit);
+
+        Map<String, List<String>> highlightFields = getHighlightFields();
+        Map<String, Object> hitFields = new HashMap<>();
         long totalHitsCount = 1L;
 
-        doReturn(searchHits).when(searchScrollResponse).getHits();
-        doReturn(hits).when(searchHits).getHits();
-        doReturn(highlightFields).when(searchHit).getHighlightFields();
-        doReturn(totalHitsCount).when(searchHits).getTotalHits();
-        doReturn(searchScrollResponse).when(client).search(any(), any(RequestOptions.class));
+        doReturn(searchHits).when(searchResponse).hits();
+        doReturn(hits).when(searchHits).hits();
+        doReturn(highlightFields).when(searchHit).highlight();
+        doReturn(hitFields).when(searchHit).source();
+        doReturn(totalHits).when(searchHits).total();
+        doReturn(totalHitsCount).when(totalHits).value();
+        doReturn(searchResponse).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
 
         CursorQueryResponse obtainedQueryResponse = sut.queryIndex(searchRequest);
 
         assertEquals(obtainedQueryResponse.getResults().size(), 1);
-        assertTrue(obtainedQueryResponse.getResults().get(0).keySet().contains("name"));
-        assertEquals(obtainedQueryResponse.getResults().get(0).get("name"), "text");
+        assertTrue(obtainedQueryResponse.getResults().get(0).keySet().contains("highlight"));
+        assertEquals(((Map<String, List<String>>)obtainedQueryResponse.getResults().get(0).get("highlight")).get(name), List.of(text));
         assertEquals(obtainedQueryResponse.getTotalCount(), totalHitsCount);
     }
 
@@ -247,15 +260,16 @@ public class ScrollCoreQueryServiceImplTest {
     public void testQueryIndex_whenNoCursorInSearchQueryAndSearchHitsIsEmpty() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
         SearchResponse searchScrollResponse = mock(SearchResponse.class);
+        TotalHits totalHits = mock(TotalHits.class);
 
-
-        SearchHit[] hits = {};
+        List<Hit<Map<String, Object>>> hits = new ArrayList<>();
         long totalHitsCount = 0L;
 
-        doReturn(searchHits).when(searchScrollResponse).getHits();
-        when(searchScrollResponse.status()).thenReturn(RestStatus.OK);
-        doReturn(hits).when(searchHits).getHits();
-        doReturn(searchScrollResponse).when(client).search(any(), any(RequestOptions.class));
+        doReturn(searchHits).when(searchScrollResponse).hits();
+        doReturn(hits).when(searchHits).hits();
+        doReturn(totalHits).when(searchHits).total();
+        doReturn(totalHitsCount).when(totalHits).value();
+        doReturn(searchScrollResponse).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
         when(featureFlag.isFeatureEnabled(POLICY_FEATURE_NAME)).thenReturn(false);
 
         CursorQueryResponse obtainedQueryResponse = sut.queryIndex(searchRequest);
@@ -273,7 +287,7 @@ public class ScrollCoreQueryServiceImplTest {
 
         doReturn(cursor).when(searchRequest).getCursor();
         doReturn(mismatchUserId).when(cursorSettings).getUserId();
-        doReturn(client).when(elasticClientHandler).createRestClient();
+        doReturn(client).when(elasticClientHandler).getOrCreateRestClient();
 
         try {
             sut.queryIndex(searchRequest);
@@ -313,12 +327,13 @@ public class ScrollCoreQueryServiceImplTest {
     public void testQueryIndex_whenCursorNotFound_thenThrowException() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
         doReturn("cursor").when(searchRequest).getCursor();
+        doReturn("cursor").when(cursorSettings).getCursor();
         doReturn(userId).when(cursorSettings).getUserId();
 
-        ElasticsearchStatusException exception = mock(ElasticsearchStatusException.class);
-        doReturn(RestStatus.NOT_FOUND).when(exception).status();
+        ElasticsearchException exception = mock(ElasticsearchException.class);
+        doReturn(HttpServletResponse.SC_NOT_FOUND).when(exception).status();
         doReturn("No search context found for id [47500324]").when(exception).getMessage();
-        doThrow(exception).when(client).scroll(any(), any(RequestOptions.class));
+        doThrow(exception).when(client).scroll(any(ScrollRequest.class), eq((Type)Map.class));
 
         try {
             sut.queryIndex(searchRequest);
@@ -335,11 +350,12 @@ public class ScrollCoreQueryServiceImplTest {
     public void testQueryIndex_whenResponseTooLong_thenThrowException() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
         doReturn("cursor").when(searchRequest).getCursor();
+        doReturn("cursor").when(cursorSettings).getCursor();
         doReturn(userId).when(cursorSettings).getUserId();
 
         IOException exception = mock(IOException.class);
         doReturn(new ContentTooLongException(null)).when(exception).getCause();
-        doThrow(exception).when(client).scroll(any(), any(RequestOptions.class));
+        doThrow(exception).when(client).scroll(any(ScrollRequest.class), eq((Type)Map.class));
 
         try {
             sut.queryIndex(searchRequest);
@@ -353,11 +369,9 @@ public class ScrollCoreQueryServiceImplTest {
         }
     }
 
-    private Map<String, HighlightField> getHighlightFields() {
-        Text[] fragments = {new Text(text)};
-        HighlightField highlightField = new HighlightField(name, fragments);
-        Map<String, HighlightField> highlightFields = new HashMap<>();
-        highlightFields.put("highlightField", highlightField);
+    private Map<String, List<String>> getHighlightFields() {
+        Map<String, List<String>> highlightFields = new HashMap<>();
+        highlightFields.put(name, List.of(text));
         return highlightFields;
     }
 
@@ -378,8 +392,8 @@ public class ScrollCoreQueryServiceImplTest {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
         doReturn(null).when(searchRequest).getCursor();
         AppException ex = new AppException(500, reason, message);
-        doReturn(client).when(elasticClientHandler).createRestClient();
-        doThrow(ex).when(client).search(any(), any(RequestOptions.class));
+        doReturn(client).when(elasticClientHandler).getOrCreateRestClient();
+        doThrow(ex).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
         try {
             sut.queryIndex(searchRequest);
         } catch (AppException e) {

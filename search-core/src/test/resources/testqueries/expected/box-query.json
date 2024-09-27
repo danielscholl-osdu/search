@@ -1,0 +1,10 @@
+{
+  "geo_shape":{
+    "data.SpatialLocation.Wgs84Coordinates":{
+      "shape":"{coordinates=[[-180.0, 90.0], [180.0, -90.0]], type=Envelope}",
+      "relation":"within"
+    },
+    "boost":1.0,
+    "ignore_unmapped":true
+  }
+}

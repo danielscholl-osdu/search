@@ -3,12 +3,12 @@ package org.opengroup.osdu.search.util;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import org.apache.http.HttpEntity;
 import org.elasticsearch.ElasticsearchStatusException;
-import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.junit.Before;
@@ -36,7 +36,7 @@ public class DetailedBadRequestMessageUtilTest {
     public void setUp() {
         badRequestMessageUtil = new DetailedBadRequestMessageUtil(objectMapper);
     }
-
+    
     @Test
     public void testSingleResponse() throws IOException {
         ResponseException responseExceptionMock = Mockito.mock(ResponseException.class);
@@ -54,7 +54,7 @@ public class DetailedBadRequestMessageUtilTest {
         String detailedBadRequestMessage = badRequestMessageUtil.getDetailedBadRequestMessage(searchRequest, elasticsearchStatusExceptionMock);
         assertEquals(NESTED_FAIL_REASON, detailedBadRequestMessage);
     }
-
+    
     @Test
     public void testMultipleResponse() throws IOException {
         ResponseException responseExceptionMock = Mockito.mock(ResponseException.class);
