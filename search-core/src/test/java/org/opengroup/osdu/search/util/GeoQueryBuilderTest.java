@@ -23,9 +23,14 @@ import static org.junit.Assert.assertNotNull;
 
 import co.elastic.clients.elasticsearch._types.GeoShapeRelation;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import java.io.IOException;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -37,6 +42,10 @@ import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 @RunWith(MockitoJUnitRunner.class)
 public class GeoQueryBuilderTest {
   private static final String GEO_FIELD = "data.SpatialLocation.Wgs84Coordinates";
+  private static final String INTERSECTION_QUERY = "intersection-query";
+  private static final String POLYGON_QUERY = "polygon-query";
+  private static final String BOX_QUERY = "box-query";
+  private static final String DISTANCE_QUERY = "distance-query";
 
   @InjectMocks
   private GeoQueryBuilder sut;
@@ -51,11 +60,18 @@ public class GeoQueryBuilderTest {
     circl.setPoint(center);
     spatialFilter.setByDistance(circl);
 
-    Query queryBuilder = this.sut.getGeoQuery(spatialFilter);
-    assertNotNull(queryBuilder);
-    assertEquals(GEO_FIELD, queryBuilder.geoShape().field());
-    assertEquals(true, queryBuilder.geoShape().ignoreUnmapped());
-    assertEquals(GeoShapeRelation.Within, queryBuilder.geoShape().shape().relation());
+    JsonObject queryJson = getExpectedQuery(DISTANCE_QUERY);
+    SearchRequest expectedResult =
+        SearchRequest.of(sr -> sr.query(q -> q.withJson(new StringReader(queryJson.toString()))));
+
+    Query actualResult = this.sut.getGeoQuery(spatialFilter);
+
+    assert expectedResult.query() != null;
+    assertNotNull(actualResult);
+    assertEquals(expectedResult.query().toString(), actualResult.toString());
+    assertEquals(GEO_FIELD, actualResult.geoShape().field());
+    assertEquals(true, actualResult.geoShape().ignoreUnmapped());
+    assertEquals(GeoShapeRelation.Within, actualResult.geoShape().shape().relation());
   }
 
   @Test
@@ -69,12 +85,18 @@ public class GeoQueryBuilderTest {
     boundingBox.setBottomRight(bottomRight);
     spatialFilter.setByBoundingBox(boundingBox);
 
-    Query queryBuilder = this.sut.getGeoQuery(spatialFilter);
+    JsonObject queryJson = getExpectedQuery(BOX_QUERY);
+    SearchRequest expectedResult =
+        SearchRequest.of(sr -> sr.query(q -> q.withJson(new StringReader(queryJson.toString()))));
 
-    assertNotNull(queryBuilder);
-    assertEquals(GEO_FIELD, queryBuilder.geoShape().field());
-    assertEquals(true, queryBuilder.geoShape().ignoreUnmapped());
-    assertEquals(GeoShapeRelation.Within, queryBuilder.geoShape().shape().relation());
+    Query actualResult = this.sut.getGeoQuery(spatialFilter);
+
+    assert expectedResult.query() != null;
+    assertNotNull(actualResult);
+    assertEquals(expectedResult.query().toString(), actualResult.toString());
+    assertEquals(GEO_FIELD, actualResult.geoShape().field());
+    assertEquals(true, actualResult.geoShape().ignoreUnmapped());
+    assertEquals(GeoShapeRelation.Within, actualResult.geoShape().shape().relation());
   }
 
   @Test
@@ -96,11 +118,17 @@ public class GeoQueryBuilderTest {
     geoPolygon.setPoints(points);
     spatialFilter.setByGeoPolygon(geoPolygon);
 
-    Query queryBuilder = this.sut.getGeoQuery(spatialFilter);
+    JsonObject queryJson = getExpectedQuery(POLYGON_QUERY);
+    SearchRequest expectedResult =
+        SearchRequest.of(sr -> sr.query(q -> q.withJson(new StringReader(queryJson.toString()))));
 
-    assertNotNull(queryBuilder);
-    assertEquals(GEO_FIELD, queryBuilder.geoShape().field());
-    assertEquals(GeoShapeRelation.Within, queryBuilder.geoShape().shape().relation());
+    Query actualResult = this.sut.getGeoQuery(spatialFilter);
+
+    assert expectedResult.query() != null;
+    assertNotNull(actualResult);
+    assertEquals(expectedResult.query().toString(), actualResult.toString());
+    assertEquals(GEO_FIELD, actualResult.geoShape().field());
+    assertEquals(GeoShapeRelation.Within, actualResult.geoShape().shape().relation());
   }
 
   @Test
@@ -126,10 +154,27 @@ public class GeoQueryBuilderTest {
     byIntersection.setPolygons(polygons);
     spatialFilter.setByIntersection(byIntersection);
 
-    Query queryBuilder = this.sut.getGeoQuery(spatialFilter);
+    JsonObject queryJson = getExpectedQuery(INTERSECTION_QUERY);
+    SearchRequest expectedResult =
+        SearchRequest.of(sr -> sr.query(q -> q.withJson(new StringReader(queryJson.toString()))));
 
-    assertNotNull(queryBuilder);
-    assertEquals(GEO_FIELD, queryBuilder.geoShape().field());
-    assertEquals(GeoShapeRelation.Intersects, queryBuilder.geoShape().shape().relation());
+    Query actualResult = this.sut.getGeoQuery(spatialFilter);
+
+    assert expectedResult.query() != null;
+    assertNotNull(actualResult);
+    assertEquals(expectedResult.query().toString(), actualResult.toString());
+    assertEquals(GEO_FIELD, actualResult.geoShape().field());
+    assertEquals(GeoShapeRelation.Intersects, actualResult.geoShape().shape().relation());
+  }
+
+  private JsonObject getExpectedQuery(String queryFile) throws IOException {
+    BufferedReader br;
+    try (InputStream inStream =
+        this.getClass().getResourceAsStream("/testqueries/expected/" + queryFile + ".json")) {
+      br = new BufferedReader(new InputStreamReader(Objects.requireNonNull(inStream)));
+      Gson gson = new Gson();
+      JsonReader reader = new JsonReader(br);
+      return gson.fromJson(reader, JsonObject.class);
+    }
   }
 }
