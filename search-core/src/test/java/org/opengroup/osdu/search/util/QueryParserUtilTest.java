@@ -2,18 +2,19 @@ package org.opengroup.osdu.search.util;
 
 import static org.junit.Assert.assertEquals;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.junit.Rule;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.FromDataPoints;
@@ -44,14 +45,17 @@ public class QueryParserUtilTest {
         InputStream inStream = QueryParserUtilTest.class.getResourceAsStream("/testqueries/not-valid-queries.json");
         return getPairsFromFile(inStream);
     }
-
     @Theory
     public void shouldReturnQueryBuilderForValidQueries(@FromDataPoints("VALID_QUERIES") ImmutablePair<String, String> pair) {
-        BoolQueryBuilder queryBuilder = (BoolQueryBuilder) queryParserUtil.buildQueryBuilderFromQueryString(pair.getValue());
+        BoolQuery.Builder queryBuilder =
+        queryParserUtil.buildQueryBuilderFromQueryString(pair.getValue());
+        BoolQuery actualResult = queryBuilder.build();
         JsonObject expectedQuery = getExpectedQuery(pair.getKey());
-        JsonParser jsonParser = new JsonParser();
-        JsonObject actualQuery = jsonParser.parse(queryBuilder.toString()).getAsJsonObject();
-        assertEquals(expectedQuery, actualQuery);
+        SearchRequest expectedResult =
+            SearchRequest.of(
+                sr -> sr.query(q -> q.withJson(new StringReader(expectedQuery.toString()))));
+
+        assertEquals(expectedResult.query().toString(), actualResult._toQuery().toString());
     }
 
     @Theory
