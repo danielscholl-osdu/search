@@ -1,6 +1,5 @@
 /*
  *  Copyright 2020-2023 Google LLC
- *  Copyright 2020-2023 EPAM Systems, Inc
  *  Copyright © Schlumberger
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
