@@ -36,7 +36,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.parent.basedir}</project.main.basedir>
-        <spring-webmvc.version>6.3.0</spring-webmvc.version>
     </properties>
 
     <dependencyManagement>
