@@ -125,9 +125,9 @@
               <version>${spring-security.version}</version>
           </dependency>
           <dependency>
-              <groupId>org.springframework</groupId>
-              <artifactId>spring-webmvc</artifactId>
-          </dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+        </dependency>
           <dependency>
               <groupId>org.jboss.resteasy</groupId>
               <artifactId>resteasy-jackson2-provider</artifactId>

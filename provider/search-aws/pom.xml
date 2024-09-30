@@ -60,7 +60,7 @@
         <dependency>
             <groupId>org.opengroup.osdu.core.aws</groupId>
             <artifactId>os-core-lib-aws</artifactId>
-            <version>2.0.0</version>
+            <version>3.0.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>software.amazon.ion</groupId>
