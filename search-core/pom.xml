@@ -35,7 +35,6 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.basedir}</project.main.basedir>
         <nimbus-jose-jwt.version>9.1.2</nimbus-jose-jwt.version>
-        <elasticsearch.version>7.17.22</elasticsearch.version>
         <jts-io-common.version>1.15.0</jts-io-common.version>
     </properties>
 
@@ -200,12 +199,6 @@
               <groupId>joda-time</groupId>
               <artifactId>joda-time</artifactId>
           </dependency>
-          <!--Elasticsearch-->
-          <dependency>
-              <groupId>org.elasticsearch.client</groupId>
-              <artifactId>elasticsearch-rest-high-level-client</artifactId>
-              <version>${elasticsearch.version}</version>
-          </dependency>
           <dependency>
               <groupId>org.springframework.boot</groupId>
               <artifactId>spring-boot-starter-test</artifactId>
@@ -242,22 +235,6 @@
               <artifactId>jakarta.inject-api</artifactId>
               <version>2.0.1</version>
           </dependency>
-                    <dependency>
-                        <groupId>org.elasticsearch</groupId>
-                        <artifactId>elasticsearch</artifactId>
-                        <version>${elasticsearch.version}</version>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                                <artifactId>jackson-dataformat-cbor</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.elasticsearch.client</groupId>
-                        <artifactId>elasticsearch-rest-client</artifactId>
-                        <version>${elasticsearch.version}</version>
-                    </dependency>
       </dependencies>
 
 </project>
