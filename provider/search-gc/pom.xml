@@ -103,18 +103,6 @@
             <version>5.2.0</version>
             <scope>test</scope>
         </dependency>
-        <!--Elasticsearch-->
-        <dependency>
-            <groupId>co.elastic.clients</groupId>
-            <artifactId>elasticsearch-java</artifactId>
-            <version>7.17.22</version>
-        </dependency>
-        <dependency>
-            <groupId>org.elasticsearch.client</groupId>
-            <artifactId>elasticsearch-rest-client</artifactId>
-            <version>7.17.22</version>
-        </dependency>
-
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>

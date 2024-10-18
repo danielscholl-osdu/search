@@ -3,12 +3,12 @@ package org.opengroup.osdu.search.util;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import org.apache.http.HttpEntity;
-import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.junit.Before;
@@ -42,7 +42,7 @@ public class DetailedBadRequestMessageUtilTest {
         ResponseException responseExceptionMock = Mockito.mock(ResponseException.class);
         Response responseMock = Mockito.mock(Response.class);
         HttpEntity httpEntityMock = Mockito.mock(HttpEntity.class);
-        ElasticsearchStatusException elasticsearchStatusExceptionMock = Mockito.mock(ElasticsearchStatusException.class);
+        ElasticsearchException elasticsearchStatusExceptionMock = Mockito.mock(ElasticsearchException.class);
 
         throwable = new Throwable[]{responseExceptionMock};
 
@@ -73,7 +73,7 @@ public class DetailedBadRequestMessageUtilTest {
         when(secondResponseMock.getEntity()).thenReturn(secondHttpEntityMock);
         when(secondHttpEntityMock.getContent()).thenReturn(getResponseContent("geofieldfail.json"));
 
-        ElasticsearchStatusException elasticsearchStatusExceptionMock = Mockito.mock(ElasticsearchStatusException.class);
+        ElasticsearchException elasticsearchStatusExceptionMock = Mockito.mock(ElasticsearchException.class);
 
         throwable = new Throwable[]{responseExceptionMock, secondResponseExceptionMock};
 
