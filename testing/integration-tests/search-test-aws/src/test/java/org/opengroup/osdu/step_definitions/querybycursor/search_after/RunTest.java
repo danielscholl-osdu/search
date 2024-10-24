@@ -1,4 +1,4 @@
-// Copyright © Microsoft Corporation
+// Copyright © Amazon Web Services
 // Copyright © Schlumberger
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.opengroup.osdu.step_definitions.querybycursor.singlecluster;
+package org.opengroup.osdu.step_definitions.querybycursor.search_after;
 
 import cucumber.api.CucumberOptions;
 import cucumber.api.junit.Cucumber;
@@ -24,10 +24,10 @@ import org.opengroup.osdu.common.TestConstants;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        features = "classpath:features/querybycursor/singlecluster/SingleClusterQueryByCursor.feature",
+        features = "classpath:features/querybycursor/singlecluster/QueryByCursorAWS.feature",
         glue = {"classpath:org.opengroup.osdu.step_definitions/querybycursor/singlecluster"},
         plugin = {"pretty", "junit:target/cucumber-reports/TEST-querybysearchafter-sc.xml"})
-public class RunSearchAfterTest {
+public class RunTest {
     @BeforeClass
     public static void setup(){
         System.setProperty(TestConstants.QUERY_WITH_CURSOR_PATH_PROP, TestConstants.SEARCH_AFTER_PATH_VALUE);
