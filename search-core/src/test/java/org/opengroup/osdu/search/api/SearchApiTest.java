@@ -153,7 +153,7 @@ public class SearchApiTest {
         when(this.searchAfterFeatureManager.isEnabled()).thenReturn(false);
         when(this.scrollQueryService.queryIndex(cursorQueryRequest)).thenReturn(this.cursorQueryResponse);
 
-        ResponseEntity<CursorQueryResponse> response = this.sut.queryWithCursor(this.cursorQueryRequest);
+        ResponseEntity<CursorQueryResponse> response = this.sut.queryWithCursor(this.cursorQueryRequest, false);
         verify(this.scrollQueryService, times(1)).queryIndex(any());
         verify(this.searchAfterQueryService, times(0)).queryIndex(any());
 
@@ -172,7 +172,7 @@ public class SearchApiTest {
         when(this.scrollQueryService.queryIndex(any())).thenThrow(exception);
 
         try {
-            this.sut.queryWithCursor(new CursorQueryRequest());
+            this.sut.queryWithCursor(new CursorQueryRequest(), false);
             fail("Should not succeed!");
         } catch (AppException e) {
             assertEquals(exception.getError().getCode(), e.getError().getCode());
@@ -188,7 +188,7 @@ public class SearchApiTest {
         when(this.searchAfterFeatureManager.isEnabled()).thenReturn(true);
         when(this.searchAfterQueryService.queryIndex(cursorQueryRequest)).thenReturn(this.cursorQueryResponse);
 
-        ResponseEntity<CursorQueryResponse> response = this.sut.queryWithCursor(this.cursorQueryRequest);
+        ResponseEntity<CursorQueryResponse> response = this.sut.queryWithCursor(this.cursorQueryRequest, false);
         verify(this.scrollQueryService, times(0)).queryIndex(any());
         verify(this.searchAfterQueryService, times(1)).queryIndex(any());
 
@@ -207,7 +207,7 @@ public class SearchApiTest {
         when(this.searchAfterQueryService.queryIndex(any())).thenThrow(exception);
 
         try {
-            this.sut.queryWithCursor(new CursorQueryRequest());
+            this.sut.queryWithCursor(new CursorQueryRequest(), false);
             fail("Should not succeed!");
         } catch (AppException e) {
             assertEquals(exception.getError().getCode(), e.getError().getCode());
@@ -222,7 +222,7 @@ public class SearchApiTest {
     public void should_returnRecords_whenSearchAfterQueried() throws Exception {
         when(this.searchAfterQueryService.queryIndex(cursorQueryRequest)).thenReturn(this.cursorQueryResponse);
 
-        ResponseEntity<CursorQueryResponse> response = this.sut.queryWithSearchAfter(this.cursorQueryRequest);
+        ResponseEntity<CursorQueryResponse> response = this.sut.queryWithCursor(this.cursorQueryRequest, true);
 
         CursorQueryResponse apiResponse = response.getBody();
         assertEquals(1, apiResponse.getTotalCount());
@@ -238,7 +238,7 @@ public class SearchApiTest {
         when(this.searchAfterQueryService.queryIndex(any())).thenThrow(exception);
 
         try {
-            this.sut.queryWithSearchAfter(new CursorQueryRequest());
+            this.sut.queryWithCursor(new CursorQueryRequest(), true);
             fail("Should not succeed!");
         } catch (AppException e) {
             assertEquals(exception.getError().getCode(), e.getError().getCode());
