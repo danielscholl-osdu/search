@@ -134,25 +134,37 @@ public class QueryParserUtil implements IQueryParserUtil {
         }
         StringBuilder token = new StringBuilder();
         List<String> tokens = new ArrayList<>();
-        for (char c : queryString.toCharArray()) {
+        boolean doubleQuoteStarted = false;
+        char[] queryChars = queryString.toCharArray();
+        for (char c : queryChars) {
             if (token.length() != 0 || c != ' ') {
                 token.append(c);
             }
-            if (c == '(') {
-                height++;
-            } else if (c == ')') {
-                if (height == 1 && token.length() > 0) {
+            if(c == '"') {
+                if(doubleQuoteStarted) {
+                    doubleQuoteStarted = false;
+                }
+                else if(hasMatchDoubleQuote(queryChars, position + 1)){
+                    doubleQuoteStarted = true;
+                }
+            }
+            if(!doubleQuoteStarted) {
+                if (c == '(') {
+                    height++;
+                } else if (c == ')') {
+                    if (height == 1 && token.length() > 0) {
+                        tokens.add(token.toString());
+                        token = new StringBuilder();
+                    }
+                    height--;
+                    if (height < 0) {
+                        throw new AppException(HttpStatus.SC_BAD_REQUEST, "Malformed query",
+                                String.format("Malformed closing parentheses in query part: \"%s\", at position: %d", queryString, position));
+                    }
+                } else if (height == 0 && token.length() > 0 && (andPositions.contains(position + 1) || orPositions.contains(position + 1))) {
                     tokens.add(token.toString());
                     token = new StringBuilder();
                 }
-                height--;
-                if (height < 0) {
-                    throw new AppException(HttpStatus.SC_BAD_REQUEST, "Malformed query",
-                        String.format("Malformed closing parentheses in query part: \"%s\", at position: %d", queryString, position));
-                }
-            } else if (height == 0 && token.length() > 0 && (andPositions.contains(position + 1) || orPositions.contains(position + 1))) {
-                tokens.add(token.toString());
-                token = new StringBuilder();
             }
             position++;
         }
@@ -167,6 +179,14 @@ public class QueryParserUtil implements IQueryParserUtil {
         }
 
         return transformStringTokensToQueryNode(tokens);
+    }
+
+    private boolean hasMatchDoubleQuote(char[] queryChars, int from) {
+        for(int i = from; i < queryChars.length; i++) {
+            if(queryChars[i] == '"')
+                return true;
+        }
+        return false;
     }
 
     private List<QueryNode> transformStringTokensToQueryNode(List<String> tokens) {
