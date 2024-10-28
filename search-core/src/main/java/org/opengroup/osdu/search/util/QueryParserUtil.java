@@ -140,7 +140,7 @@ public class QueryParserUtil implements IQueryParserUtil {
             if (token.length() != 0 || c != ' ') {
                 token.append(c);
             }
-            if(c == '"') {
+            if(isDoubleQuote(queryChars, position)) {
                 if(doubleQuoteStarted) {
                     doubleQuoteStarted = false;
                 }
@@ -181,9 +181,25 @@ public class QueryParserUtil implements IQueryParserUtil {
         return transformStringTokensToQueryNode(tokens);
     }
 
+    private boolean isDoubleQuote(char[] queryChars, int position) {
+        if(queryChars[position] != '"')
+            return false;
+
+        int lastEscapeCharacterPosition = -1;
+        for(int i = position -1; i >= 0; i--) {
+            if(queryChars[i] == '\\') {
+                lastEscapeCharacterPosition = i;
+            }
+            else {
+                break;
+            }
+        }
+        return (lastEscapeCharacterPosition == -1 || (position - lastEscapeCharacterPosition)%2 == 0);
+    }
+
     private boolean hasMatchDoubleQuote(char[] queryChars, int from) {
         for(int i = from; i < queryChars.length; i++) {
-            if(queryChars[i] == '"')
+            if(isDoubleQuote(queryChars, i))
                 return true;
         }
         return false;

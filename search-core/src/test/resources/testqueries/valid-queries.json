@@ -17,6 +17,7 @@
     "nested-query-with-space": "nested (data.NestedTest,(NumberTest:(12345.0 OR 0) AND StringTest:\"test string\"))",
     "multilevel-nested-query-with-space": "nested (data.FirstLevel, nested(data.FirstLevel.SecondLevel, nested(data.FirstLevel.SecondLevel.ThirdLevel,(ThirdLevelNumberTest:\"12345.0\"))))",
     "nested-query-with-AND-OR-keywords-inside-double-quotes": "\"test AND test2 OR test3\" OR nested(data.comments, (\"test AND test2 OR test3\"))",
-    "nested-query-with-parent-keywords-inside-double-quotes": "\"test(v1)\" OR nested(data.comments, (\"test(v1)\"))"
+    "nested-query-with-parent-keywords-inside-double-quotes": "\"test(v1)\" OR nested(data.comments, (\"test(v1)\"))",
+	"nested-query-with-escaped-quote-inside-double-quotes":"\"bala\\\"bala\" OR nested(data.comments, (\"bala\\\"bala\"))"
 }
 
