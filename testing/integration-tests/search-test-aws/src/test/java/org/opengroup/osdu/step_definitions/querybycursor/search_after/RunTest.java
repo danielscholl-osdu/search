@@ -20,7 +20,7 @@ import cucumber.api.junit.Cucumber;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
-import org.opengroup.osdu.common.TestConstants;
+import org.opengroup.osdu.util.Config;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
@@ -30,11 +30,11 @@ import org.opengroup.osdu.common.TestConstants;
 public class RunTest {
     @BeforeClass
     public static void setup(){
-        System.setProperty(TestConstants.QUERY_WITH_CURSOR_PATH_PROP, TestConstants.SEARCH_AFTER_PATH_VALUE);
+        Config.setApiPath(Config.SEARCH_AFTER_PATH_VALUE);
     }
 
     @AfterClass
     public static void teardown(){
-        System.clearProperty(TestConstants.QUERY_WITH_CURSOR_PATH_PROP);
+        Config.resetApiPath();
     }
 }

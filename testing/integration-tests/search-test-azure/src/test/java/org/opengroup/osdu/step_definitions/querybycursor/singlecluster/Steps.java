@@ -20,7 +20,6 @@ import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
-import org.opengroup.osdu.common.TestConstants;
 import org.opengroup.osdu.common.querybycursor.singlecluster.QueryByCursorSteps;
 import org.opengroup.osdu.util.AzureHTTPClient;
 import org.opengroup.osdu.util.Config;
@@ -148,7 +147,6 @@ public class Steps extends QueryByCursorSteps {
 
     @Override
     protected String getApi() {
-        String apiPath = System.getProperty(TestConstants.QUERY_WITH_CURSOR_PATH_PROP, TestConstants.SCROLL_CURSOR_PATH_VALUE);
-        return Config.getSearchBaseURL() + apiPath;
+        return Config.getSearchBaseURL() + Config.getApiPath();
     }
 }
