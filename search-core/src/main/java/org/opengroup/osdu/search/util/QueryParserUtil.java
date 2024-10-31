@@ -1,9 +1,8 @@
 package org.opengroup.osdu.search.util;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.http.HttpStatus;
@@ -132,6 +131,11 @@ public class QueryParserUtil implements IQueryParserUtil {
         while (m.find()) {
             orPositions.add(m.start());
         }
+        if(!this.hasBalancedQuotes(queryString)) {
+            throw new AppException(HttpStatus.SC_BAD_REQUEST, "Malformed query",
+                    String.format("Malformed unbalanced double quotes in query: \"%s\"", queryString));
+        }
+
         StringBuilder token = new StringBuilder();
         List<String> tokens = new ArrayList<>();
         boolean doubleQuoteStarted = false;
@@ -144,7 +148,7 @@ public class QueryParserUtil implements IQueryParserUtil {
                 if(doubleQuoteStarted) {
                     doubleQuoteStarted = false;
                 }
-                else if(hasMatchDoubleQuote(queryChars, position + 1)){
+                else {
                     doubleQuoteStarted = true;
                 }
             }
@@ -197,12 +201,34 @@ public class QueryParserUtil implements IQueryParserUtil {
         return (lastEscapeCharacterPosition == -1 || (position - lastEscapeCharacterPosition)%2 == 0);
     }
 
-    private boolean hasMatchDoubleQuote(char[] queryChars, int from) {
-        for(int i = from; i < queryChars.length; i++) {
-            if(isDoubleQuote(queryChars, i))
-                return true;
+    private boolean hasBalancedQuotes(String query) {
+        Deque<Character> stack = new ArrayDeque<>();
+
+        int escapeCharStartPosition = -1;
+        for (int i = 0; i < query.length(); i++) {
+            char currentChar = query.charAt(i);
+
+            // If the current character is an escape character
+            if (currentChar == '\\') {
+                if(escapeCharStartPosition == -1) {
+                    escapeCharStartPosition = i;
+                }
+                continue;
+            }
+
+            // If the current character is an unescaped quote
+            if (currentChar == '"' && (escapeCharStartPosition == -1 || (i - escapeCharStartPosition)%2 == 0)) {
+                if (stack.isEmpty()) {
+                    stack.push(currentChar); // Open a new pair of quotes
+                } else if (stack.peek() == '"') {
+                    stack.pop(); // Close the pair of quotes
+                }
+            }
+            escapeCharStartPosition = -1;
         }
-        return false;
+
+        // If the stack is empty, all quotes are balanced
+        return stack.isEmpty();
     }
 
     private List<QueryNode> transformStringTokensToQueryNode(List<String> tokens) {
