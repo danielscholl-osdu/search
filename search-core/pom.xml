@@ -34,7 +34,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.main.basedir>${project.basedir}</project.main.basedir>
-        <nimbus-jose-jwt.version>9.1.2</nimbus-jose-jwt.version>
+        <nimbus-jose-jwt.version>9.37.2</nimbus-jose-jwt.version>
         <jts-io-common.version>1.15.0</jts-io-common.version>
     </properties>
 
