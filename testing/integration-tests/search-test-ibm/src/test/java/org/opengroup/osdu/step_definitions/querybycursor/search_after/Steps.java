@@ -1,35 +1,21 @@
-// Copyright © Amazon Web Services
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+package org.opengroup.osdu.step_definitions.querybycursor.search_after;
 
-package org.opengroup.osdu.step_definitions.querybycursor.singlecluster;
-
-import org.opengroup.osdu.common.querybycursor.singlecluster.QueryByCursorSteps;
-import org.opengroup.osdu.util.AWSHTTPClient;
-import org.opengroup.osdu.util.Config;
 import cucumber.api.DataTable;
 import cucumber.api.Scenario;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import org.opengroup.osdu.common.querybycursor.singlecluster.QueryByCursorSteps;
+import org.opengroup.osdu.util.Config;
+import org.opengroup.osdu.util.IBMHTTPClient;
 
 import java.util.List;
 
 public class Steps extends QueryByCursorSteps {
 
     public Steps() {
-        super(new AWSHTTPClient());
+        super(new IBMHTTPClient());
     }
 
     @Given("^the schema is created with the following kind$")
@@ -45,7 +31,7 @@ public class Steps extends QueryByCursorSteps {
     @Before
     public void before(Scenario scenario) {
         this.scenario = scenario;
-        this.httpClient = new AWSHTTPClient();
+        this.httpClient = new IBMHTTPClient();
     }
 
     /******************Inputs being set**************/
@@ -80,6 +66,11 @@ public class Steps extends QueryByCursorSteps {
         super.i_set_the_fields_I_want_in_response_as(returnedFileds);
     }
 
+    @When("^I set autocomplete phrase to (.*?)$")
+    public void i_set_autocomplete_phrase(String autocompletePhrase) {
+        super.i_set_autocomplete_phrase(autocompletePhrase);
+    }
+
     @When("^I limit the count of returned results to None$$")
     public void offset_of_starting_point_as_None() {
         super.offset_of_starting_point_as_None();
@@ -93,11 +84,6 @@ public class Steps extends QueryByCursorSteps {
     @When("^I send request to tenant \"(.*?)\"$")
     public void i_send_request_to_tenant(String tenant) {
         super.i_send_request_to_tenant(tenant);
-    }
-
-    @When("^I set autocomplete phrase to (.*?)$")
-    public void i_set_autocomplete_phrase(String autocompletePhrase) {
-        super.i_set_autocomplete_phrase(autocompletePhrase);
     }
 
     @When("^I apply geographical query on field \"(.*?)\"$")
@@ -128,15 +114,15 @@ public class Steps extends QueryByCursorSteps {
         super.i_should_get_records_in_right_order(firstRecId, lastRecId);
     }
 
+    @Then("^I should get following autocomplete suggesstions (.*)")
+    public void i_should_get_following_autocomplete_suggestions(String autocompleteOptions) {
+        super.i_should_get_following_autocomplete_suggestions(autocompleteOptions);
+    }
+
     @Then("^I should get ([^\"]*) response with reason: \"(.*?)\", message: \"(.*?)\" and errors: \"(.*?)\"$")
     public void i_should_get_response_with_reason_message_and_errors(List<Integer> codes, String type, String msg,
                                                                      String error) {
         super.i_should_get_response_with_reason_message_and_errors(codes, type, msg, error);
-    }
-
-    @Then("^I should get following autocomplete suggesstions (.*)")
-    public void i_should_get_following_autocomplete_suggestions(String autocompleteOptions) {
-        super.i_should_get_following_autocomplete_suggestions(autocompleteOptions);
     }
 
     @Override
@@ -146,6 +132,6 @@ public class Steps extends QueryByCursorSteps {
 
     @Override
     protected String getApi() {
-        return Config.getSearchBaseURL() + Config.SCROLL_CURSOR_PATH_VALUE;
+        return Config.getSearchBaseURL() + Config.SEARCH_AFTER_PATH_VALUE;
     }
 }

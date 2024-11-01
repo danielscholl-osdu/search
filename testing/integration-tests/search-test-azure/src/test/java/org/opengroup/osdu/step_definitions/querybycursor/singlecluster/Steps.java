@@ -147,6 +147,6 @@ public class Steps extends QueryByCursorSteps {
 
     @Override
     protected String getApi() {
-        return Config.getSearchBaseURL() + Config.getApiPath();
+        return Config.getSearchBaseURL() + Config.SCROLL_CURSOR_PATH_VALUE;
     }
 }

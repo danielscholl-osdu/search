@@ -26,8 +26,6 @@ public class Config {
 
     private static final String DEFAULT_SECURITY_HTTPS_CERTIFICATE_TRUST = "false";
 
-    private static String apiPath = "";
-
     public static final String SCROLL_CURSOR_PATH_VALUE = "query_with_cursor";
     public static final String SEARCH_AFTER_PATH_VALUE = "query_with_cursor?search_after=true";
 
@@ -97,21 +95,6 @@ public class Config {
         return Boolean.parseBoolean(
             getEnvironmentVariableOrDefaultValue("SECURITY_HTTPS_CERTIFICATE_TRUST",
                 DEFAULT_SECURITY_HTTPS_CERTIFICATE_TRUST));
-    }
-
-    public static String getApiPath() {
-        if(Strings.isNullOrEmpty(apiPath)) {
-            apiPath = SCROLL_CURSOR_PATH_VALUE;
-        }
-        return apiPath;
-    }
-
-    public static void resetApiPath() {
-        apiPath = "";
-    }
-
-    public static void setApiPath(String path) {
-        apiPath = path;
     }
 
     private static String getEnvironmentVariableOrDefaultValue(String key, String defaultValue) {

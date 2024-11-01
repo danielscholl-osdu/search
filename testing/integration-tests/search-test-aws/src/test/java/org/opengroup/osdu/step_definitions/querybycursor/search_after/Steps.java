@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.opengroup.osdu.step_definitions.querybycursor.singlecluster;
+package org.opengroup.osdu.step_definitions.querybycursor.search_after;
 
-import org.opengroup.osdu.common.querybycursor.singlecluster.QueryByCursorSteps;
-import org.opengroup.osdu.util.AWSHTTPClient;
-import org.opengroup.osdu.util.Config;
 import cucumber.api.DataTable;
 import cucumber.api.Scenario;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import org.opengroup.osdu.common.querybycursor.singlecluster.QueryByCursorSteps;
+import org.opengroup.osdu.util.AWSHTTPClient;
+import org.opengroup.osdu.util.Config;
 
 import java.util.List;
 
@@ -146,6 +146,6 @@ public class Steps extends QueryByCursorSteps {
 
     @Override
     protected String getApi() {
-        return Config.getSearchBaseURL() + Config.SCROLL_CURSOR_PATH_VALUE;
+        return Config.getSearchBaseURL() + Config.SEARCH_AFTER_PATH_VALUE;
     }
 }
