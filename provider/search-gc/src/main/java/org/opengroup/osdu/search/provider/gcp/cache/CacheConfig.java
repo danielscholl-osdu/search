@@ -43,7 +43,7 @@ public class CacheConfig {
 
   private final RedisCacheBuilder<String, ClusterSettings> clusterSettingsCacheBuilder;
   private final RedisCacheBuilder<String, CursorSettings> cursorSettingsCacheBuilderBuilder;
-  private final RedisCacheBuilder<String, SearchAfterSettings> SearchAfterSettingsCacheBuilderBuilder;
+  private final RedisCacheBuilder<String, SearchAfterSettings> searchAfterSettingsCacheBuilderBuilder;
   private final RedisCacheBuilder<String, Map> fieldTypeMappingCacheBuilder;
 
   @Bean
@@ -102,7 +102,7 @@ public class CacheConfig {
   @Bean
   public SearchAfterSettingsCache searchAfterSettingsCache(GcpSearchConfigurationProperties gcpAppServiceConfig) {
     RedisCache<String, SearchAfterSettings> stringSearchAfterSettingsCache =
-            SearchAfterSettingsCacheBuilderBuilder.buildRedisCache(
+            searchAfterSettingsCacheBuilderBuilder.buildRedisCache(
                     gcpAppServiceConfig.getRedisSearchHost(),
                     Integer.parseInt(gcpAppServiceConfig.getRedisSearchPort()),
                     gcpAppServiceConfig.getRedisSearchPassword(),
