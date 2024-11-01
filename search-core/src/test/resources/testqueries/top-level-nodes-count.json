@@ -15,5 +15,8 @@
     "inner-nested-query": 1,
     "inner-multilevel-nested-query": 1,
     "nested-query-with-space": 1,
-    "multilevel-nested-query-with-space": 1
+    "multilevel-nested-query-with-space": 1,
+	"nested-query-with-AND-OR-keywords-inside-double-quotes": 2,
+    "nested-query-with-parent-keywords-inside-double-quotes": 2,
+	"nested-query-with-escaped-quote-inside-double-quotes": 2
 }
