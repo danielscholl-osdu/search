@@ -19,6 +19,7 @@ import org.opengroup.osdu.azure.di.RedisAzureConfiguration;
 import org.opengroup.osdu.core.common.model.entitlements.Groups;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;
+import org.opengroup.osdu.search.model.SearchAfterSettings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -59,6 +60,11 @@ public class RedisConfig {
     @Bean
     public RedisAzureCache<String, CursorSettings> cursorCache() {
         return new RedisAzureCache<>(String.class, CursorSettings.class, new RedisAzureConfiguration(database, cursorRedisTtl, port, timeout, commandTimeout));
+    }
+
+    @Bean
+    public RedisAzureCache<String, SearchAfterSettings> searchAfterSettingsCache() {
+        return new RedisAzureCache<>(String.class, SearchAfterSettings.class, new RedisAzureConfiguration(database, cursorRedisTtl, port, timeout, commandTimeout));
     }
 
     @Bean
