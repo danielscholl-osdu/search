@@ -30,7 +30,7 @@ import org.opengroup.osdu.util.Config;
 public class RunTest {
     @BeforeClass
     public static void setup(){
-        Config.setApiPath(Config.SEARCH_AFTER_PATH_VALUE);
+        Config.setApiPath(Config.SCROLL_CURSOR_PATH_VALUE);
     }
 
     @AfterClass
