@@ -1,7 +1,5 @@
 package org.opengroup.osdu.util;
 
-import com.google.common.base.Strings;
-
 public class Config {
 
     private static final String DEFAULT_ELASTIC_HOST = "";
