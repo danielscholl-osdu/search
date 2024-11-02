@@ -352,11 +352,20 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
 
         List<KindValue> kindValues = new ArrayList();
         for(FieldValue fieldValue : fieldValues) {
-            KindValue kindValue = KindValue.builder()
-                    .kind(fieldValue._kind().toString())
-                    .value(fieldValue._get())
-                    .build();
-            kindValues.add(kindValue); 
+            KindValue kindValue;
+            if(fieldValue.isDouble() || fieldValue.isLong() || fieldValue.isBoolean()) {
+                kindValue = KindValue.builder()
+                        .kind(fieldValue._kind().toString())
+                        .value(fieldValue._get().toString())
+                        .build();
+            }
+            else {
+                kindValue = KindValue.builder()
+                        .kind(fieldValue._kind().toString())
+                        .value(fieldValue._get())
+                        .build();
+            }
+            kindValues.add(kindValue);
         }
         return kindValues;
     }
@@ -371,13 +380,13 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
             FieldValue fieldValue;
             switch (kindValue.getKind()) {
                 case "Double":
-                    fieldValue = FieldValue.of((double)kindValue.getValue());
+                    fieldValue = FieldValue.of(Double.parseDouble((String)kindValue.getValue()));
                     break;
                 case "Long":
-                    fieldValue = FieldValue.of((long)kindValue.getValue());
+                    fieldValue = FieldValue.of(Long.parseLong((String)kindValue.getValue()));
                     break;
                 case "Boolean":
-                    fieldValue = FieldValue.of((boolean)kindValue.getValue());
+                    fieldValue = FieldValue.of(Boolean.parseBoolean((String)kindValue.getValue()));
                     break;
                 case "String":
                     fieldValue = FieldValue.of((String) kindValue.getValue());
