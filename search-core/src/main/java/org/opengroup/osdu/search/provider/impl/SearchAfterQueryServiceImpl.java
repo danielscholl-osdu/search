@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.DatatypeConverter;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.ContentTooLongException;
 import org.apache.http.HttpStatus;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
@@ -173,10 +174,11 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
                     e);
         }
         catch (Exception e) {
+            String error = ExceptionUtils.getStackTrace(e);
             throw new AppException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR,
                     "Search error",
-                    "Error processing search request: 3" + e.getMessage(),
+                    "Error processing search request: 3" + error,
                     e);
         }
     }
