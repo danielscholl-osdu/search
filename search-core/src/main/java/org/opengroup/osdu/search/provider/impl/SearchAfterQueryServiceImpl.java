@@ -142,10 +142,15 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
                         "Can't find the given cursor",
                         "The given cursor is invalid or expired",
                         e);
+//            throw new AppException(
+//                    HttpStatus.SC_INTERNAL_SERVER_ERROR,
+//                    "Search error",
+//                    "Error processing search request",
+//                    e);
             throw new AppException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR,
                     "Search error",
-                    "Error processing search request",
+                    "Error processing search request: 1" + e.getMessage(),
                     e);
         }
         catch (IOException e) {
@@ -156,17 +161,22 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
                         "Elasticsearch response is too long, max is 100Mb",
                         e);
             }
+//            throw new AppException(
+//                    HttpStatus.SC_INTERNAL_SERVER_ERROR,
+//                    "Search error",
+//                    "Error processing search request",
+//                    e);
             throw new AppException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR,
                     "Search error",
-                    "Error processing search request",
+                    "Error processing search request: 2" + e.getMessage(),
                     e);
         }
         catch (Exception e) {
             throw new AppException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR,
                     "Search error",
-                    "Error processing search request",
+                    "Error processing search request: 3" + e.getMessage(),
                     e);
         }
     }
