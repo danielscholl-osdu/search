@@ -33,6 +33,7 @@ import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.search.cache.SearchAfterSettingsCache;
 import org.opengroup.osdu.search.logging.AuditLogger;
+import org.opengroup.osdu.search.model.KindValue;
 import org.opengroup.osdu.search.model.SearchAfterSettings;
 import org.opengroup.osdu.search.provider.interfaces.ISearchAfterQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
@@ -260,7 +261,8 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         SearchRequest.Builder sourceBuilder = this.createSearchSourceBuilder(searchRequest);
         // The following 3 statements are required to support pagination with search_after
         sourceBuilder.pit(pit -> pit.id(cursorSettings.getPitId()).keepAlive(SEARCH_AFTER_TIMEOUT));
-        sourceBuilder.sort(cursorSettings.getSortOptionsList()).searchAfter(cursorSettings.getSearchAfterValues());
+        sourceBuilder.sort(cursorSettings.getSortOptionsList())
+                     .searchAfter(toFieldValues(cursorSettings.getKindValues()));
         sourceBuilder.searchType(SearchType.QueryThenFetch).batchedReduceSize(512L);
 
         SearchRequest elasticSearchRequest = sourceBuilder.build();
@@ -333,7 +335,7 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
                             .totalCount(searchResponse.hits().total().value()).build();
             settings.setPitId(pitId);
             settings.setSortOptionsList(sortOptionsList);
-            settings.setSearchAfterValues(searchAfterValues);
+            settings.setKindValues(toKindValues(searchAfterValues));
             settings.setClosed(isCursorClosed);
             this.searchAfterSettingsCache.put(hashCursor, settings);
             return hashCursor;
@@ -341,5 +343,53 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         else {
             return null;
         }
+    }
+
+    private List<KindValue> toKindValues(List<FieldValue> fieldValues) {
+        if(fieldValues == null) {
+            return null;
+        }
+
+        List<KindValue> kindValues = new ArrayList();
+        for(FieldValue fieldValue : fieldValues) {
+            KindValue kindValue = KindValue.builder()
+                    .kind(fieldValue._kind().toString())
+                    .value(fieldValue._get())
+                    .build();
+            kindValues.add(kindValue); 
+        }
+        return kindValues;
+    }
+
+    private List<FieldValue> toFieldValues(List<KindValue> kindValues) {
+        if(kindValues == null) {
+            return null;
+        }
+
+        List<FieldValue> fieldValues = new ArrayList();
+        for(KindValue kindValue : kindValues) {
+            FieldValue fieldValue;
+            switch (kindValue.getKind()) {
+                case "Double":
+                    fieldValue = FieldValue.of((double)kindValue.getValue());
+                    break;
+                case "Long":
+                    fieldValue = FieldValue.of((long)kindValue.getValue());
+                    break;
+                case "Boolean":
+                    fieldValue = FieldValue.of((boolean)kindValue.getValue());
+                    break;
+                case "String":
+                    fieldValue = FieldValue.of((String) kindValue.getValue());
+                    break;
+                case "Null":
+                    fieldValue = FieldValue.NULL;
+                    break;
+                default:
+                    fieldValue = FieldValue.of(kindValue.getValue());
+            }
+            fieldValues.add(fieldValue);
+        }
+        return fieldValues;
     }
 }

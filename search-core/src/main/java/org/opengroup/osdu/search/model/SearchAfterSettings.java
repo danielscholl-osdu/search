@@ -14,7 +14,6 @@
 
 package org.opengroup.osdu.search.model;
 
-import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import com.google.gson.Gson;
 import lombok.AllArgsConstructor;
@@ -30,10 +29,12 @@ public class SearchAfterSettings {
     private String pitId;
     private String userId;
     private List<SortOptions> sortOptionsList;
-    private List<FieldValue> searchAfterValues;
+    private List<KindValue> kindValues;
     private boolean closed;
     private long totalCount;
     public String toString() {
         return (new Gson()).toJson(this);
     }
 }
+
+
