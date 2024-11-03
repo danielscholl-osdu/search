@@ -20,6 +20,7 @@ import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.DatatypeConverter;
@@ -149,11 +150,13 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
 //                    "Search error",
 //                    "Error processing search request",
 //                    e);
+            SearchAfterSettings cursorSettings = this.searchAfterSettingsCache.get(searchRequest.getCursor());
+            String settingsJson = (new Gson()).toJson(cursorSettings);
             String error = ExceptionUtils.getStackTrace(e);
             throw new AppException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR,
                     "Search error",
-                    "Error processing search request(1): " + error,
+                    "Error processing search request(1): " + settingsJson + "\n" + error,
                     e);
         }
         catch (IOException e) {
