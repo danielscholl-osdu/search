@@ -149,10 +149,11 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
 //                    "Search error",
 //                    "Error processing search request",
 //                    e);
+            String error = ExceptionUtils.getStackTrace(e);
             throw new AppException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR,
                     "Search error",
-                    "Error processing search request: 1" + e.getMessage(),
+                    "Error processing search request(1): " + error,
                     e);
         }
         catch (IOException e) {
@@ -168,10 +169,11 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
 //                    "Search error",
 //                    "Error processing search request",
 //                    e);
+            String error = ExceptionUtils.getStackTrace(e);
             throw new AppException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR,
                     "Search error",
-                    "Error processing search request: 2" + e.getMessage(),
+                    "Error processing search request(2): " + error,
                     e);
         }
         catch (Exception e) {
@@ -179,7 +181,7 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
             throw new AppException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR,
                     "Search error",
-                    "Error processing search request: 3" + error,
+                    "Error processing search request(3): " + error,
                     e);
         }
     }
@@ -355,13 +357,13 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
             KindValue kindValue;
             if(fieldValue.isDouble() || fieldValue.isLong() || fieldValue.isBoolean()) {
                 kindValue = KindValue.builder()
-                        .kind(fieldValue._kind().toString())
-                        .value(fieldValue._get().toString())
+                        .kind(fieldValue._kind().name())
+                        .value(String.valueOf(fieldValue._get()))
                         .build();
             }
             else {
                 kindValue = KindValue.builder()
-                        .kind(fieldValue._kind().toString())
+                        .kind(fieldValue._kind().name())
                         .value(fieldValue._get())
                         .build();
             }
