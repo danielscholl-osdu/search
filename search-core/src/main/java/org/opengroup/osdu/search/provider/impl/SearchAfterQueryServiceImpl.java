@@ -196,10 +196,6 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         } else {
             sortOptionsList = getDefaultSortOptions();
         }
-        // Add unique tie-break option
-        SortOptions tiebreakSortOptions = new SortOptions.Builder()
-                .field(f -> f.field("_shard_doc").order(SortOrder.Asc)).build();
-        sortOptionsList.add(tiebreakSortOptions);
         return sortOptionsList;
     }
 
