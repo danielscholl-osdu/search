@@ -304,7 +304,8 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
             String cursor = this.refreshCursorCache(searchResponse, sortOptionsList, isCursorClosed, cursorSettings, piggyBack);
             queryResponse.setCursor(cursor);
             queryResponse.setResults(results);
-            results.get(0).put("settings", piggyBack.get("settings"));
+            Map<String, Object> data =(Map<String, Object>)results.get(0).get("data");
+            data.putAll(piggyBack);
         }
         else if(searchRequest.getCursor() != null) {
             this.searchAfterSettingsCache.delete(searchRequest.getCursor());
