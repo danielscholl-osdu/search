@@ -18,13 +18,13 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.*;
 import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.DatatypeConverter;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.ContentTooLongException;
 import org.apache.http.HttpStatus;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
@@ -34,7 +34,6 @@ import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.search.cache.SearchAfterSettingsCache;
 import org.opengroup.osdu.search.logging.AuditLogger;
-import org.opengroup.osdu.search.model.KindValue;
 import org.opengroup.osdu.search.model.SearchAfterSettings;
 import org.opengroup.osdu.search.provider.interfaces.ISearchAfterQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
@@ -48,8 +47,8 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +57,7 @@ import java.util.Map;
 public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearchAfterQueryService {
 
     private final Time SEARCH_AFTER_TIMEOUT = Time.of(t -> t.time("90s"));
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Inject
     private ElasticClientHandler elasticClientHandler;
@@ -146,18 +146,10 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
                         "Can't find the given cursor",
                         "The given cursor is invalid or expired",
                         e);
-//            throw new AppException(
-//                    HttpStatus.SC_INTERNAL_SERVER_ERROR,
-//                    "Search error",
-//                    "Error processing search request",
-//                    e);
-            SearchAfterSettings cursorSettings = this.searchAfterSettingsCache.get(searchRequest.getCursor());
-            String settingsJson = (new Gson()).toJson(cursorSettings);
-            String error = ExceptionUtils.getStackTrace(e);
             throw new AppException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR,
                     "Search error",
-                    "Error processing search request(1): " + settingsJson + "\n" + error,
+                    "Error processing search request",
                     e);
         }
         catch (IOException e) {
@@ -168,26 +160,17 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
                         "Elasticsearch response is too long, max is 100Mb",
                         e);
             }
-//            throw new AppException(
-//                    HttpStatus.SC_INTERNAL_SERVER_ERROR,
-//                    "Search error",
-//                    "Error processing search request",
-//                    e);
-            String error = ExceptionUtils.getStackTrace(e);
             throw new AppException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR,
                     "Search error",
-                    "Error processing search request(2): " + error,
+                    "Error processing search request",
                     e);
         }
         catch (Exception e) {
-            SearchAfterSettings cursorSettings = this.searchAfterSettingsCache.get(searchRequest.getCursor());
-            String settingsJson = (new Gson()).toJson(cursorSettings);
-            String error = ExceptionUtils.getStackTrace(e);
             throw new AppException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR,
                     "Search error",
-                    "Error processing search request(3): " + settingsJson + "\n" + error,
+                    "Error processing search request",
                     e);
         }
     }
@@ -266,11 +249,15 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         Long startTime = System.currentTimeMillis();
 
         // build query
+        searchRequest.setSort(cursorSettings.getSortQuery());
         SearchRequest.Builder sourceBuilder = this.createSearchSourceBuilder(searchRequest);
+
         // The following 3 statements are required to support pagination with search_after
+        List<SortOptions> sortOptionsList = this.getSortOptions(searchRequest, client);
+        List<FieldValue> fieldValues = this.toFieldValues(cursorSettings.getSearchAfterValues());
         sourceBuilder.pit(pit -> pit.id(cursorSettings.getPitId()).keepAlive(SEARCH_AFTER_TIMEOUT));
-        sourceBuilder.sort(cursorSettings.getSortOptionsList())
-                     .searchAfter(cursorSettings.getKindValues());
+        sourceBuilder.sort(sortOptionsList)
+                     .searchAfter(fieldValues);
         sourceBuilder.searchType(SearchType.QueryThenFetch).batchedReduceSize(512L);
 
         SearchRequest elasticSearchRequest = sourceBuilder.build();
@@ -297,15 +284,9 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
         if (results != null && !results.isEmpty()) {
             this.querySuccessAuditLogger(searchRequest);
-            List<SortOptions> sortOptionsList = (cursorSettings != null)
-                    ? cursorSettings.getSortOptionsList()
-                    : this.getSortOptions(searchRequest, client);
-            Map<String, Object> piggyBack = new HashMap<>();
-            String cursor = this.refreshCursorCache(searchResponse, sortOptionsList, isCursorClosed, cursorSettings, piggyBack);
+            String cursor = this.refreshCursorCache(searchResponse, searchRequest, isCursorClosed, cursorSettings);
             queryResponse.setCursor(cursor);
             queryResponse.setResults(results);
-            Map<String, Object> data =(Map<String, Object>)results.get(0).get("data");
-            data.putAll(piggyBack);
         }
         else if(searchRequest.getCursor() != null) {
             this.searchAfterSettingsCache.delete(searchRequest.getCursor());
@@ -324,7 +305,7 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         return false;
     }
 
-    String refreshCursorCache(SearchResponse<Map<String, Object>> searchResponse, List<SortOptions> sortOptionsList, boolean isCursorClosed, SearchAfterSettings cursorSettings, Map<String, Object> piggyBack) {
+    String refreshCursorCache(SearchResponse<Map<String, Object>> searchResponse, CursorQueryRequest searchRequest, boolean isCursorClosed, SearchAfterSettings cursorSettings) throws JsonProcessingException {
         String pitId = searchResponse.pitId();
         if (pitId != null) {
             this.digest.update(pitId.getBytes());
@@ -338,18 +319,17 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
             else {
                 searchAfterValues = new ArrayList<>();
             }
-            SearchAfterSettings settings = (cursorSettings != null)
-                    ? cursorSettings
-                    : SearchAfterSettings
-                            .builder()
-                            .userId(dpsHeaders.getUserEmail())
-                            .totalCount(searchResponse.hits().total().value()).build();
-            settings.setPitId(pitId);
-            settings.setSortOptionsList(sortOptionsList);
-            settings.setKindValues(searchAfterValues);
-            settings.setClosed(isCursorClosed);
-            piggyBack.put("settings", settings);
-            this.searchAfterSettingsCache.put(hashCursor, settings);
+            if(cursorSettings == null) {
+                cursorSettings = SearchAfterSettings
+                        .builder()
+                        .userId(dpsHeaders.getUserEmail())
+                        .sortQuery(searchRequest.getSort())
+                        .totalCount(searchResponse.hits().total().value()).build();
+            }
+            cursorSettings.setPitId(pitId);
+            cursorSettings.setSearchAfterValues(this.toEntries(searchAfterValues));
+            cursorSettings.setClosed(isCursorClosed);
+            this.searchAfterSettingsCache.put(hashCursor, cursorSettings);
             return hashCursor;
         }
         else {
@@ -357,40 +337,35 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         }
     }
 
-    private List<KindValue> toKindValues(List<FieldValue> fieldValues) {
+    private List<Map.Entry<String, Object>> toEntries(List<FieldValue> fieldValues) {
         if(fieldValues == null) {
-            return null;
+            return new ArrayList<>();
         }
 
-        List<KindValue> kindValues = new ArrayList();
+        List<Map.Entry<String, Object>> entries = new ArrayList();
         for(FieldValue fieldValue : fieldValues) {
-            KindValue kindValue;
+            fieldValue._toJsonString();
+            Map.Entry<String, Object> entry;
             if(fieldValue.isDouble() || fieldValue.isLong() || fieldValue.isBoolean()) {
-                kindValue = KindValue.builder()
-                        .kind(fieldValue._kind().name())
-                        .value(String.valueOf(fieldValue._get()))
-                        .build();
+                entry = new AbstractMap.SimpleEntry<>(fieldValue._kind().name(), String.valueOf(fieldValue._get()));
             }
             else {
-                kindValue = KindValue.builder()
-                        .kind(fieldValue._kind().name())
-                        .value(fieldValue._get())
-                        .build();
+                entry = new AbstractMap.SimpleEntry<>(fieldValue._kind().name(), fieldValue._get());
             }
-            kindValues.add(kindValue);
+            entries.add(entry);
         }
-        return kindValues;
+        return entries;
     }
 
-    private List<FieldValue> toFieldValues(List<KindValue> kindValues) {
-        if(kindValues == null) {
-            return null;
+    private List<FieldValue> toFieldValues(List<Map.Entry<String, Object>> entries) {
+        if(entries == null) {
+            return new ArrayList<>();
         }
 
         List<FieldValue> fieldValues = new ArrayList();
-        for(KindValue kindValue : kindValues) {
+        for(Map.Entry<String, Object> kindValue : entries) {
             FieldValue fieldValue;
-            switch (kindValue.getKind()) {
+            switch (kindValue.getKey()) {
                 case "Double":
                     fieldValue = FieldValue.of(Double.parseDouble((String)kindValue.getValue()));
                     break;

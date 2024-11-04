@@ -14,14 +14,15 @@
 
 package org.opengroup.osdu.search.model;
 
-import co.elastic.clients.elasticsearch._types.FieldValue;
-import co.elastic.clients.elasticsearch._types.SortOptions;
 import com.google.gson.Gson;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import org.opengroup.osdu.core.common.model.search.SortQuery;
 
 import java.util.List;
+import java.util.Map;
+
 
 @Data
 @AllArgsConstructor
@@ -29,8 +30,8 @@ import java.util.List;
 public class SearchAfterSettings {
     private String pitId;
     private String userId;
-    private List<SortOptions> sortOptionsList;
-    private List<FieldValue> kindValues;
+    private SortQuery sortQuery;
+    private List<Map.Entry<String, Object>> searchAfterValues;
     private boolean closed;
     private long totalCount;
     public String toString() {
