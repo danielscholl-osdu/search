@@ -49,6 +49,7 @@ import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -180,11 +181,13 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
                     e);
         }
         catch (Exception e) {
+            SearchAfterSettings cursorSettings = this.searchAfterSettingsCache.get(searchRequest.getCursor());
+            String settingsJson = (new Gson()).toJson(cursorSettings);
             String error = ExceptionUtils.getStackTrace(e);
             throw new AppException(
                     HttpStatus.SC_INTERNAL_SERVER_ERROR,
                     "Search error",
-                    "Error processing search request(3): " + error,
+                    "Error processing search request(3): " + settingsJson + "\n" + error,
                     e);
         }
     }
@@ -267,7 +270,7 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         // The following 3 statements are required to support pagination with search_after
         sourceBuilder.pit(pit -> pit.id(cursorSettings.getPitId()).keepAlive(SEARCH_AFTER_TIMEOUT));
         sourceBuilder.sort(cursorSettings.getSortOptionsList())
-                     .searchAfter(toFieldValues(cursorSettings.getKindValues()));
+                     .searchAfter(cursorSettings.getKindValues());
         sourceBuilder.searchType(SearchType.QueryThenFetch).batchedReduceSize(512L);
 
         SearchRequest elasticSearchRequest = sourceBuilder.build();
@@ -297,9 +300,11 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
             List<SortOptions> sortOptionsList = (cursorSettings != null)
                     ? cursorSettings.getSortOptionsList()
                     : this.getSortOptions(searchRequest, client);
-            String cursor = this.refreshCursorCache(searchResponse, sortOptionsList, isCursorClosed, cursorSettings);
+            Map<String, Object> piggyBack = new HashMap<>();
+            String cursor = this.refreshCursorCache(searchResponse, sortOptionsList, isCursorClosed, cursorSettings, piggyBack);
             queryResponse.setCursor(cursor);
             queryResponse.setResults(results);
+            results.get(0).put("settings", piggyBack.get("settings"));
         }
         else if(searchRequest.getCursor() != null) {
             this.searchAfterSettingsCache.delete(searchRequest.getCursor());
@@ -318,7 +323,7 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         return false;
     }
 
-    String refreshCursorCache(SearchResponse<Map<String, Object>> searchResponse, List<SortOptions> sortOptionsList, boolean isCursorClosed, SearchAfterSettings cursorSettings) {
+    String refreshCursorCache(SearchResponse<Map<String, Object>> searchResponse, List<SortOptions> sortOptionsList, boolean isCursorClosed, SearchAfterSettings cursorSettings, Map<String, Object> piggyBack) {
         String pitId = searchResponse.pitId();
         if (pitId != null) {
             this.digest.update(pitId.getBytes());
@@ -340,8 +345,9 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
                             .totalCount(searchResponse.hits().total().value()).build();
             settings.setPitId(pitId);
             settings.setSortOptionsList(sortOptionsList);
-            settings.setKindValues(toKindValues(searchAfterValues));
+            settings.setKindValues(searchAfterValues);
             settings.setClosed(isCursorClosed);
+            piggyBack.put("settings", settings);
             this.searchAfterSettingsCache.put(hashCursor, settings);
             return hashCursor;
         }

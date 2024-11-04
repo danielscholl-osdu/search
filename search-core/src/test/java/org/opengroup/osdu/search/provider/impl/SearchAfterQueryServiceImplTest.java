@@ -382,7 +382,7 @@ public class SearchAfterQueryServiceImplTest {
         doReturn(totalHits).when(searchHits).total();
         doReturn(totalHitsCount).when(totalHits).value();
 
-        String cursor = sut.refreshCursorCache(searchResponse, new ArrayList<>(), true, null);
+        String cursor = sut.refreshCursorCache(searchResponse, new ArrayList<>(), true, null, new HashMap<>());
         assertNotNull(cursor);
     }
 
@@ -394,7 +394,7 @@ public class SearchAfterQueryServiceImplTest {
         doReturn(searchHits).when(searchResponse).hits();
         doReturn(hits).when(searchHits).hits();
 
-        String cursor = sut.refreshCursorCache(searchResponse, new ArrayList<>(), true, cursorSettings);
+        String cursor = sut.refreshCursorCache(searchResponse, new ArrayList<>(), true, cursorSettings, new HashMap<>());
         assertNotNull(cursor);
     }
 
@@ -402,7 +402,7 @@ public class SearchAfterQueryServiceImplTest {
     public void refreshCursorCache_pitNull() {
         SearchResponse searchResponse = mock(SearchResponse.class);
         doReturn(null).when(searchResponse).pitId();
-        String cursor = sut.refreshCursorCache(searchResponse, new ArrayList<>(), true, cursorSettings);
+        String cursor = sut.refreshCursorCache(searchResponse, new ArrayList<>(), true, cursorSettings, new HashMap<>());
         assertNull(cursor);
     }
 
