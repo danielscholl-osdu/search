@@ -196,6 +196,10 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         } else {
             sortOptionsList = getDefaultSortOptions();
         }
+        // Add unique tie-break option
+        SortOptions tiebreakSortOptions = new SortOptions.Builder()
+                .field(f -> f.field("_shard_doc").order(SortOrder.Asc)).build();
+        sortOptionsList.add(tiebreakSortOptions);
         return sortOptionsList;
     }
 
@@ -363,26 +367,26 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         }
 
         List<FieldValue> fieldValues = new ArrayList();
-        for(Map.Entry<String, Object> kindValue : entries) {
+        for(Map.Entry<String, Object> entry : entries) {
             FieldValue fieldValue;
-            switch (kindValue.getKey()) {
+            switch (entry.getKey()) {
                 case "Double":
-                    fieldValue = FieldValue.of(Double.parseDouble((String)kindValue.getValue()));
+                    fieldValue = FieldValue.of(Double.parseDouble((String)entry.getValue()));
                     break;
                 case "Long":
-                    fieldValue = FieldValue.of(Long.parseLong((String)kindValue.getValue()));
+                    fieldValue = FieldValue.of(Long.parseLong((String)entry.getValue()));
                     break;
                 case "Boolean":
-                    fieldValue = FieldValue.of(Boolean.parseBoolean((String)kindValue.getValue()));
+                    fieldValue = FieldValue.of(Boolean.parseBoolean((String)entry.getValue()));
                     break;
                 case "String":
-                    fieldValue = FieldValue.of((String) kindValue.getValue());
+                    fieldValue = FieldValue.of((String) entry.getValue());
                     break;
                 case "Null":
                     fieldValue = FieldValue.NULL;
                     break;
                 default:
-                    fieldValue = FieldValue.of(kindValue.getValue());
+                    fieldValue = FieldValue.of(entry.getValue());
             }
             fieldValues.add(fieldValue);
         }
