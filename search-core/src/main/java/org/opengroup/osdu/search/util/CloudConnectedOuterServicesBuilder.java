@@ -95,7 +95,7 @@ public class CloudConnectedOuterServicesBuilder implements ConnectedOuterService
 
       return ConnectedOuterService.builder()
           .name(NAME_PREFIX + partitionId)
-          .version(client.info().version().luceneVersion())
+          .version(client.info().version().number())
           .build();
     } catch (AppException e) {
       log.error("Can't create elastic client", e.getOriginalException());
