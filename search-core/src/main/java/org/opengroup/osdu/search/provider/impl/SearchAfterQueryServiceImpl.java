@@ -86,8 +86,8 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         SearchRequest.Builder searchSourceBuilder = this.createSearchSourceBuilder(request);
         // Add PIT for SearchAfter Query. [indicesOptions] cannot be used with point in time
         String pitId = openPointInTime(index, this.elasticClientHandler.getOrCreateRestClient());
-        searchSourceBuilder.pit(pit -> pit.id(pitId).keepAlive(SEARCH_AFTER_TIMEOUT));
-        searchSourceBuilder.searchType(SearchType.QueryThenFetch).batchedReduceSize(512L);
+        searchSourceBuilder.pit(pit -> pit.id(pitId).keepAlive(SEARCH_AFTER_TIMEOUT))
+                .searchType(SearchType.QueryThenFetch).batchedReduceSize(512L);
 
         // All PIT search requests add an implicit sort tiebreaker field called _shard_doc
         if (request.getSort() == null) {
@@ -252,14 +252,17 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         searchRequest.setSort(cursorSettings.getSortQuery());
         SearchRequest.Builder sourceBuilder = this.createSearchSourceBuilder(searchRequest);
 
-        // The following 3 statements are required to support pagination with search_after
+        // Both SortOptions and FieldValue can't be cached properly with implementation
+        // org.opengroup.osdu.core.common.cache.RedisCache that uses Gson to serialize/deserialize.
+        // The serialization will lose critical information from SortOptions and FieldValue objects.
         List<SortOptions> sortOptionsList = this.getSortOptions(searchRequest, client);
         List<FieldValue> fieldValues = this.toFieldValues(cursorSettings.getSearchAfterValues());
-        sourceBuilder.pit(pit -> pit.id(cursorSettings.getPitId()).keepAlive(SEARCH_AFTER_TIMEOUT));
-        sourceBuilder.sort(sortOptionsList)
-                     .searchAfter(fieldValues);
-        sourceBuilder.searchType(SearchType.QueryThenFetch).batchedReduceSize(512L);
 
+        // The following statements are required to support pagination with search_after
+        sourceBuilder.pit(pit -> pit.id(cursorSettings.getPitId()).keepAlive(SEARCH_AFTER_TIMEOUT))
+                .sort(sortOptionsList)
+                .searchAfter(fieldValues)
+                .searchType(SearchType.QueryThenFetch).batchedReduceSize(512L);
         SearchRequest elasticSearchRequest = sourceBuilder.build();
         SearchResponse<Map<String, Object>> searchResponse = client.search(elasticSearchRequest, (Type) Map.class);
 
@@ -346,12 +349,7 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         for(FieldValue fieldValue : fieldValues) {
             KindValue kindValue = new KindValue();
             kindValue.setKind(fieldValue._kind().name());
-            if(fieldValue.isDouble() || fieldValue.isLong() || fieldValue.isBoolean()) {
-                kindValue.setValue(String.valueOf(fieldValue._get()));
-            }
-            else {
-                kindValue.setValue(fieldValue._get());
-            }
+            kindValue.setValue(fieldValue._get());
             kindValues.add(kindValue);
         }
         return kindValues;
@@ -365,24 +363,20 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         List<FieldValue> fieldValues = new ArrayList();
         for(KindValue kindValue : kindValues) {
             FieldValue fieldValue;
-            switch (kindValue.getKind()) {
-                case "Double":
-                    fieldValue = FieldValue.of(Double.parseDouble((String)kindValue.getValue()));
-                    break;
-                case "Long":
-                    fieldValue = FieldValue.of(Long.parseLong((String)kindValue.getValue()));
-                    break;
-                case "Boolean":
-                    fieldValue = FieldValue.of(Boolean.parseBoolean((String)kindValue.getValue()));
-                    break;
-                case "String":
-                    fieldValue = FieldValue.of((String) kindValue.getValue());
-                    break;
-                case "Null":
-                    fieldValue = FieldValue.NULL;
-                    break;
-                default:
-                    fieldValue = FieldValue.of(kindValue.getValue());
+            if(kindValue.getKind().equals(FieldValue.Kind.Null.name()) || kindValue.getValue() == null) {
+                fieldValue = FieldValue.NULL;
+            }
+            else if(kindValue.getKind().equals(FieldValue.Kind.Double.name())) {
+                fieldValue = FieldValue.of((double)kindValue.getValue());
+            }
+            else if(kindValue.getKind().equals(FieldValue.Kind.Long.name())) {
+                fieldValue = FieldValue.of((long)kindValue.getValue());
+            }
+            else if(kindValue.getKind().equals(FieldValue.Kind.Boolean.name())) {
+                fieldValue = FieldValue.of((boolean) kindValue.getValue());
+            }
+            else {
+                fieldValue = FieldValue.of(kindValue.getValue());
             }
             fieldValues.add(fieldValue);
         }
