@@ -34,6 +34,7 @@ import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.search.cache.SearchAfterSettingsCache;
 import org.opengroup.osdu.search.logging.AuditLogger;
+import org.opengroup.osdu.search.model.KindValue;
 import org.opengroup.osdu.search.model.SearchAfterSettings;
 import org.opengroup.osdu.search.provider.interfaces.ISearchAfterQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
@@ -47,7 +48,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -327,7 +327,7 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
                         .totalCount(searchResponse.hits().total().value()).build();
             }
             cursorSettings.setPitId(pitId);
-            cursorSettings.setSearchAfterValues(this.toEntries(searchAfterValues));
+            cursorSettings.setSearchAfterValues(this.toKindValues(searchAfterValues));
             cursorSettings.setClosed(isCursorClosed);
             this.searchAfterSettingsCache.put(hashCursor, cursorSettings);
             return hashCursor;
@@ -337,52 +337,52 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         }
     }
 
-    private List<Map.Entry<String, Object>> toEntries(List<FieldValue> fieldValues) {
+    private List<KindValue> toKindValues(List<FieldValue> fieldValues) {
         if(fieldValues == null) {
             return new ArrayList<>();
         }
 
-        List<Map.Entry<String, Object>> entries = new ArrayList();
+        List<KindValue> kindValues = new ArrayList();
         for(FieldValue fieldValue : fieldValues) {
-            fieldValue._toJsonString();
-            Map.Entry<String, Object> entry;
+            KindValue kindValue = new KindValue();
+            kindValue.setKind(fieldValue._kind().name());
             if(fieldValue.isDouble() || fieldValue.isLong() || fieldValue.isBoolean()) {
-                entry = new AbstractMap.SimpleEntry<>(fieldValue._kind().name(), String.valueOf(fieldValue._get()));
+                kindValue.setValue(String.valueOf(fieldValue._get()));
             }
             else {
-                entry = new AbstractMap.SimpleEntry<>(fieldValue._kind().name(), fieldValue._get());
+                kindValue.setValue(fieldValue._get());
             }
-            entries.add(entry);
+            kindValues.add(kindValue);
         }
-        return entries;
+        return kindValues;
     }
 
-    private List<FieldValue> toFieldValues(List<Map.Entry<String, Object>> entries) {
-        if(entries == null) {
+    private List<FieldValue> toFieldValues(List<KindValue> kindValues) {
+        if(kindValues == null) {
             return new ArrayList<>();
         }
 
         List<FieldValue> fieldValues = new ArrayList();
-        for(Map.Entry<String, Object> entry : entries) {
+        for(KindValue kindValue : kindValues) {
             FieldValue fieldValue;
-            switch (entry.getKey()) {
+            switch (kindValue.getKind()) {
                 case "Double":
-                    fieldValue = FieldValue.of(Double.parseDouble((String)entry.getValue()));
+                    fieldValue = FieldValue.of(Double.parseDouble((String)kindValue.getValue()));
                     break;
                 case "Long":
-                    fieldValue = FieldValue.of(Long.parseLong((String)entry.getValue()));
+                    fieldValue = FieldValue.of(Long.parseLong((String)kindValue.getValue()));
                     break;
                 case "Boolean":
-                    fieldValue = FieldValue.of(Boolean.parseBoolean((String)entry.getValue()));
+                    fieldValue = FieldValue.of(Boolean.parseBoolean((String)kindValue.getValue()));
                     break;
                 case "String":
-                    fieldValue = FieldValue.of((String) entry.getValue());
+                    fieldValue = FieldValue.of((String) kindValue.getValue());
                     break;
                 case "Null":
                     fieldValue = FieldValue.NULL;
                     break;
                 default:
-                    fieldValue = FieldValue.of(entry.getValue());
+                    fieldValue = FieldValue.of(kindValue.getValue());
             }
             fieldValues.add(fieldValue);
         }

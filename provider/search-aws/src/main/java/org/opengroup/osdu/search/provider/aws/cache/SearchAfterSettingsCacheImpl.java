@@ -42,6 +42,12 @@ public class SearchAfterSettingsCacheImpl implements SearchAfterSettingsCache {
     private ICache<String, SearchAfterSettings> cache;
     private Boolean local;
 
+    public void close() throws Exception {
+        if (Boolean.FALSE.equals(this.local)) {
+            ((AutoCloseable) this.cache).close();
+        }
+    }
+
     public SearchAfterSettingsCacheImpl() throws K8sParameterNotFoundException, JsonProcessingException {
         int expTimeSeconds = 60 * 60;
         K8sLocalParameterProvider provider = new K8sLocalParameterProvider();

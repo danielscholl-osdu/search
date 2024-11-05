@@ -21,7 +21,6 @@ import lombok.Data;
 import org.opengroup.osdu.core.common.model.search.SortQuery;
 
 import java.util.List;
-import java.util.Map;
 
 
 @Data
@@ -31,7 +30,7 @@ public class SearchAfterSettings {
     private String pitId;
     private String userId;
     private SortQuery sortQuery;
-    private List<Map.Entry<String, Object>> searchAfterValues;
+    private List<KindValue> searchAfterValues;
     private boolean closed;
     private long totalCount;
     public String toString() {
