@@ -30,7 +30,7 @@ data:
 
 conf:
   appName: "search"
-  elasticSecretName: "search-elastic-secret"
+  elasticSecretName: "search-elastic-secret-8"
   searchRedisSecretName: "search-redis-secret"
   replicas: 2
 
