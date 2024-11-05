@@ -24,6 +24,7 @@ public class Config {
 
     private static final String DEFAULT_SECURITY_HTTPS_CERTIFICATE_TRUST = "false";
 
+    public static final String QUERY_WITH_CURSOR_PATH_PROP = "query_with_cursor_path";
     public static final String SCROLL_CURSOR_PATH_VALUE = "query_with_cursor";
     public static final String SEARCH_AFTER_PATH_VALUE = "query_with_cursor?search_after=true";
 

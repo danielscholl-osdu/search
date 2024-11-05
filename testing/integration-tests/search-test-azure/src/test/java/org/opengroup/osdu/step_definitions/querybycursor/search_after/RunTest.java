@@ -17,12 +17,24 @@ package org.opengroup.osdu.step_definitions.querybycursor.search_after;
 
 import cucumber.api.CucumberOptions;
 import cucumber.api.junit.Cucumber;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
+import org.opengroup.osdu.util.Config;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
         features = "classpath:features/querybycursor/singlecluster/SingleClusterQueryByCursor.feature",
-        glue = {"classpath:org.opengroup.osdu.step_definitions/querybycursor/search_after"},
+        glue = {"classpath:org.opengroup.osdu.step_definitions/querybycursor/singlecluster"},
         plugin = {"pretty", "junit:target/cucumber-reports/TEST-querybysearchafter-sc.xml"})
 public class RunTest {
+    @BeforeClass
+    public static void setup(){
+        System.setProperty(Config.QUERY_WITH_CURSOR_PATH_PROP, Config.SEARCH_AFTER_PATH_VALUE);
+    }
+
+    @AfterClass
+    public static void teardown(){
+        System.clearProperty(Config.QUERY_WITH_CURSOR_PATH_PROP);
+    }
 }
