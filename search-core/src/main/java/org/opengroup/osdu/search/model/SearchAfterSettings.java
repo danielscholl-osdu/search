@@ -18,7 +18,6 @@ import com.google.gson.Gson;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import org.opengroup.osdu.core.common.model.search.SortQuery;
 
 import java.util.List;
 
@@ -29,8 +28,8 @@ import java.util.List;
 public class SearchAfterSettings {
     private String pitId;
     private String userId;
-    private SortQuery sortQuery;
-    private List<KindValue> searchAfterValues;
+    private List<String> sortOptionsJsons;
+    private List<String> fieldValueJsons;
     private boolean closed;
     private long totalCount;
     public String toString() {

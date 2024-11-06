@@ -18,11 +18,14 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.*;
 import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import co.elastic.clients.json.JsonData;
+import co.elastic.clients.json.JsonpMapper;
+import co.elastic.clients.json.JsonpSerializable;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
+import jakarta.json.stream.JsonGenerator;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.DatatypeConverter;
 import org.apache.http.ContentTooLongException;
@@ -34,7 +37,6 @@ import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
 import org.opengroup.osdu.core.common.model.search.Query;
 import org.opengroup.osdu.search.cache.SearchAfterSettingsCache;
 import org.opengroup.osdu.search.logging.AuditLogger;
-import org.opengroup.osdu.search.model.KindValue;
 import org.opengroup.osdu.search.model.SearchAfterSettings;
 import org.opengroup.osdu.search.provider.interfaces.ISearchAfterQueryService;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
@@ -45,6 +47,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -55,10 +59,6 @@ import java.util.Map;
 
 @Service
 public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearchAfterQueryService {
-
-    private final Time SEARCH_AFTER_TIMEOUT = Time.of(t -> t.time("90s"));
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     @Inject
     private ElasticClientHandler elasticClientHandler;
     @Inject
@@ -67,17 +67,20 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
     private AuditLogger auditLogger;
     @Inject
     private JaxRsDpsLog logger;
-    @Autowired
+    @Inject
     private ResponseExceptionParser exceptionParser;
-    @Autowired
+    @Inject
     private IQueryPerformanceLogger tracingLogger;
-    @Autowired
+    @Inject
     private ISortParserUtil sortParserUtil;
 
+    private final Time SEARCH_AFTER_TIMEOUT = Time.of(t -> t.time("90s"));
     private final MessageDigest digest;
+    private final JsonpMapper mapper;
 
     public SearchAfterQueryServiceImpl() throws NoSuchAlgorithmException {
         this.digest = MessageDigest.getInstance("MD5");
+        this.mapper = new JacksonJsonpMapper();
     }
 
     @Override
@@ -237,7 +240,13 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         // Set TrackTotalCount = true to get the total count in the first query
         searchRequest.setTrackTotalCount(true);
         SearchResponse<Map<String, Object>> searchResponse = this.makeSearchRequest(searchRequest, client);
-        CursorQueryResponse response = processSearchResponse(searchResponse, searchRequest, client, null);
+        List<SortOptions> sortOptionsList = this.getSortOptions(searchRequest, client);
+        SearchAfterSettings cursorSettings = SearchAfterSettings
+                .builder()
+                .userId(dpsHeaders.getUserEmail())
+                .sortOptionsJsons(this.serializeSortOptions(sortOptionsList))
+                .totalCount(searchResponse.hits().total().value()).build();
+        CursorQueryResponse response = processSearchResponse(searchResponse, searchRequest, client, cursorSettings);
 
         Long latency = System.currentTimeMillis() - startTime;
         tracingLogger.log(searchRequest, latency, 200);
@@ -249,16 +258,9 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         Long startTime = System.currentTimeMillis();
 
         // build query
-        searchRequest.setSort(cursorSettings.getSortQuery());
+        List<SortOptions> sortOptionsList = this.deserialize(cursorSettings.getSortOptionsJsons(), SortOptions.class);
+        List<FieldValue> fieldValues = this.deserialize(cursorSettings.getFieldValueJsons(), FieldValue.class);
         SearchRequest.Builder sourceBuilder = this.createSearchSourceBuilder(searchRequest);
-
-        // Both SortOptions and FieldValue can't be cached properly with implementation
-        // org.opengroup.osdu.core.common.cache.RedisCache that uses Gson to serialize/deserialize.
-        // The serialization will lose critical information from SortOptions and FieldValue objects.
-        List<SortOptions> sortOptionsList = this.getSortOptions(searchRequest, client);
-        List<FieldValue> fieldValues = this.toFieldValues(cursorSettings.getSearchAfterValues());
-
-        // The following statements are required to support pagination with search_after
         sourceBuilder.pit(pit -> pit.id(cursorSettings.getPitId()).keepAlive(SEARCH_AFTER_TIMEOUT))
                 .sort(sortOptionsList)
                 .searchAfter(fieldValues)
@@ -274,7 +276,7 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         return response;
     }
 
-    private CursorQueryResponse processSearchResponse(SearchResponse<Map<String, Object>> searchResponse, CursorQueryRequest searchRequest, ElasticsearchClient client, SearchAfterSettings cursorSettings) throws IOException {
+    private CursorQueryResponse processSearchResponse(SearchResponse<Map<String, Object>> searchResponse, CursorQueryRequest searchRequest, ElasticsearchClient client, SearchAfterSettings cursorSettings) {
         CursorQueryResponse queryResponse = CursorQueryResponse.getEmptyResponse();
 
         // We enforce trackTotalCount to be true in the first call only
@@ -287,7 +289,7 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
         if (results != null && !results.isEmpty()) {
             this.querySuccessAuditLogger(searchRequest);
-            String cursor = this.refreshCursorCache(searchResponse, searchRequest, isCursorClosed, cursorSettings);
+            String cursor = this.refreshCursorCache(searchResponse, isCursorClosed, cursorSettings);
             queryResponse.setCursor(cursor);
             queryResponse.setResults(results);
         }
@@ -308,7 +310,7 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         return false;
     }
 
-    String refreshCursorCache(SearchResponse<Map<String, Object>> searchResponse, CursorQueryRequest searchRequest, boolean isCursorClosed, SearchAfterSettings cursorSettings) throws JsonProcessingException {
+    String refreshCursorCache(SearchResponse<Map<String, Object>> searchResponse, boolean isCursorClosed, SearchAfterSettings cursorSettings) {
         String pitId = searchResponse.pitId();
         if (pitId != null) {
             this.digest.update(pitId.getBytes());
@@ -322,15 +324,8 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
             else {
                 searchAfterValues = new ArrayList<>();
             }
-            if(cursorSettings == null) {
-                cursorSettings = SearchAfterSettings
-                        .builder()
-                        .userId(dpsHeaders.getUserEmail())
-                        .sortQuery(searchRequest.getSort())
-                        .totalCount(searchResponse.hits().total().value()).build();
-            }
             cursorSettings.setPitId(pitId);
-            cursorSettings.setSearchAfterValues(this.toKindValues(searchAfterValues));
+            cursorSettings.setFieldValueJsons(this.serializeFieldValues(searchAfterValues));
             cursorSettings.setClosed(isCursorClosed);
             this.searchAfterSettingsCache.put(hashCursor, cursorSettings);
             return hashCursor;
@@ -340,54 +335,52 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         }
     }
 
-    private List<KindValue> toKindValues(List<FieldValue> fieldValues) {
-        if(fieldValues == null) {
+    private List<String> serializeFieldValues(List<FieldValue> fieldValues) {
+        if(fieldValues == null || fieldValues.isEmpty()) {
             return new ArrayList<>();
         }
 
-        List<KindValue> kindValues = new ArrayList();
-        for(FieldValue fieldValue : fieldValues) {
-            KindValue kindValue = new KindValue();
-            kindValue.setKind(fieldValue._kind().name());
-            if(fieldValue.isDouble() || fieldValue.isLong() || fieldValue.isBoolean()) {
-                kindValue.setValue(String.valueOf(fieldValue._get()));
-            }
-            else {
-                kindValue.setValue(fieldValue._get());
-            }
-            kindValues.add(kindValue);
-        }
-        return kindValues;
+        return serialize(new ArrayList<>(fieldValues));
     }
 
-    private List<FieldValue> toFieldValues(List<KindValue> kindValues) {
-        if(kindValues == null) {
+    private List<String> serializeSortOptions(List<SortOptions> sortOptionsList) {
+        if(sortOptionsList == null || sortOptionsList.isEmpty()) {
             return new ArrayList<>();
         }
 
-        List<FieldValue> fieldValues = new ArrayList();
-        for(KindValue kindValue : kindValues) {
-            FieldValue fieldValue;
-            if(kindValue.getKind().equals(FieldValue.Kind.Null.name()) || kindValue.getValue() == null) {
-                fieldValue = FieldValue.NULL;
-            }
-            else if(kindValue.getKind().equals(FieldValue.Kind.Double.name())) {
-                fieldValue = FieldValue.of(Double.parseDouble((String)kindValue.getValue()));
-            }
-            else if(kindValue.getKind().equals(FieldValue.Kind.Long.name())) {
-                fieldValue = FieldValue.of(Long.parseLong((String)kindValue.getValue()));
-            }
-            else if(kindValue.getKind().equals(FieldValue.Kind.Boolean.name())) {
-                fieldValue = FieldValue.of(Boolean.parseBoolean((String)kindValue.getValue()));
-            }
-            else if(kindValue.getKind().equals(FieldValue.Kind.String.name())) {
-                fieldValue = FieldValue.of((String) kindValue.getValue());
-            }
-            else {
-                fieldValue = FieldValue.of(kindValue.getValue());
-            }
-            fieldValues.add(fieldValue);
+        return serialize(new ArrayList<>(sortOptionsList));
+    }
+
+    private List<String> serialize(List<JsonpSerializable> objects) {
+        List<String> stringValues = new ArrayList<>();
+        for(JsonpSerializable object : objects) {
+            stringValues.add(serialize(object, mapper));
         }
-        return fieldValues;
+        return stringValues;
+    }
+
+    private String serialize(JsonpSerializable object, JsonpMapper mapper) {
+        StringWriter writer = new StringWriter();
+        try (JsonGenerator generator = mapper.jsonProvider().createGenerator(writer)) {
+            object.serialize(generator, mapper);
+        }
+        return writer.toString();
+    }
+
+    private <T> List<T> deserialize(List<String> jsons, Class<T> clazz) {
+        List<T> objects = new ArrayList<T>();
+        if(jsons == null || jsons.isEmpty()) {
+            return objects;
+        }
+
+        for(String json : jsons) {
+            objects.add(deserialize(json, mapper, clazz));
+        }
+        return objects;
+    }
+
+    private <T> T deserialize(String json, JsonpMapper mapper, Class<T> clazz) {
+        StringReader reader = new StringReader(json);
+        return JsonData.from(mapper.jsonProvider().createParser(reader), mapper).to(clazz);
     }
 }

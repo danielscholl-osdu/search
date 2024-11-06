@@ -20,7 +20,6 @@ import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
 import co.elastic.clients.elasticsearch.core.search.TotalHits;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.ContentTooLongException;
@@ -371,42 +370,22 @@ public class SearchAfterQueryServiceImplTest {
     }
 
     @Test
-    public void refreshCursorCache_create_returned_cursor() throws JsonProcessingException {
+    public void refreshCursorCache_update_returned_cursor() {
         List<Hit<Map<String, Object>>> hits = new ArrayList<>();
-        long totalHitsCount = 0L;
-
-        CursorQueryRequest cursorQueryRequest = mock(CursorQueryRequest.class);
-        SearchResponse searchResponse = mock(SearchResponse.class);
-        doReturn("pitId").when(searchResponse).pitId();
-        TotalHits totalHits = mock(TotalHits.class);
-        doReturn(searchHits).when(searchResponse).hits();
-        doReturn(hits).when(searchHits).hits();
-        doReturn(totalHits).when(searchHits).total();
-        doReturn(totalHitsCount).when(totalHits).value();
-
-        String cursor = sut.refreshCursorCache(searchResponse, cursorQueryRequest, true, null);
-        assertNotNull(cursor);
-    }
-
-    @Test
-    public void refreshCursorCache_update_returned_cursor() throws JsonProcessingException {
-        List<Hit<Map<String, Object>>> hits = new ArrayList<>();
-        CursorQueryRequest cursorQueryRequest = mock(CursorQueryRequest.class);
         SearchResponse searchResponse = mock(SearchResponse.class);
         doReturn("pitId").when(searchResponse).pitId();
         doReturn(searchHits).when(searchResponse).hits();
         doReturn(hits).when(searchHits).hits();
 
-        String cursor = sut.refreshCursorCache(searchResponse, cursorQueryRequest, true, cursorSettings);
+        String cursor = sut.refreshCursorCache(searchResponse, true, cursorSettings);
         assertNotNull(cursor);
     }
 
     @Test
-    public void refreshCursorCache_pitNull() throws JsonProcessingException {
-        CursorQueryRequest cursorQueryRequest = mock(CursorQueryRequest.class);
+    public void refreshCursorCache_pitNull()  {
         SearchResponse searchResponse = mock(SearchResponse.class);
         doReturn(null).when(searchResponse).pitId();
-        String cursor = sut.refreshCursorCache(searchResponse, cursorQueryRequest, true, cursorSettings);
+        String cursor = sut.refreshCursorCache(searchResponse, true, cursorSettings);
         assertNull(cursor);
     }
 
