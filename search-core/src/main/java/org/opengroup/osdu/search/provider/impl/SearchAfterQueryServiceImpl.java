@@ -25,7 +25,6 @@ import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
-import jakarta.json.stream.JsonGenerator;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.DatatypeConverter;
 import org.apache.http.ContentTooLongException;
@@ -43,12 +42,10 @@ import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.opengroup.osdu.search.util.IQueryPerformanceLogger;
 import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -339,7 +336,6 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         if(fieldValues == null || fieldValues.isEmpty()) {
             return new ArrayList<>();
         }
-
         return serialize(new ArrayList<>(fieldValues));
     }
 
@@ -347,40 +343,24 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         if(sortOptionsList == null || sortOptionsList.isEmpty()) {
             return new ArrayList<>();
         }
-
         return serialize(new ArrayList<>(sortOptionsList));
     }
 
     private List<String> serialize(List<JsonpSerializable> objects) {
         List<String> stringValues = new ArrayList<>();
         for(JsonpSerializable object : objects) {
-            stringValues.add(serialize(object, mapper));
+            stringValues.add(JsonData.of(object).toJson(mapper).toString());
         }
         return stringValues;
     }
 
-    private String serialize(JsonpSerializable object, JsonpMapper mapper) {
-        StringWriter writer = new StringWriter();
-        try (JsonGenerator generator = mapper.jsonProvider().createGenerator(writer)) {
-            object.serialize(generator, mapper);
-        }
-        return writer.toString();
-    }
-
     private <T> List<T> deserialize(List<String> jsons, Class<T> clazz) {
-        List<T> objects = new ArrayList<T>();
-        if(jsons == null || jsons.isEmpty()) {
-            return objects;
-        }
-
-        for(String json : jsons) {
-            objects.add(deserialize(json, mapper, clazz));
+        List<T> objects = new ArrayList<>();
+        if(jsons != null) {
+            for (String json : jsons) {
+                objects.add(JsonData.fromJson(json).to(clazz, mapper));
+            }
         }
         return objects;
-    }
-
-    private <T> T deserialize(String json, JsonpMapper mapper, Class<T> clazz) {
-        StringReader reader = new StringReader(json);
-        return JsonData.from(mapper.jsonProvider().createParser(reader), mapper).to(clazz);
     }
 }
