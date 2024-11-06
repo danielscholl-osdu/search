@@ -349,7 +349,12 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
         for(FieldValue fieldValue : fieldValues) {
             KindValue kindValue = new KindValue();
             kindValue.setKind(fieldValue._kind().name());
-            kindValue.setValue(fieldValue._get());
+            if(fieldValue.isDouble() || fieldValue.isLong() || fieldValue.isBoolean()) {
+                kindValue.setValue(String.valueOf(fieldValue._get()));
+            }
+            else {
+                kindValue.setValue(fieldValue._get());
+            }
             kindValues.add(kindValue);
         }
         return kindValues;
@@ -367,13 +372,16 @@ public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearc
                 fieldValue = FieldValue.NULL;
             }
             else if(kindValue.getKind().equals(FieldValue.Kind.Double.name())) {
-                fieldValue = FieldValue.of((double)kindValue.getValue());
+                fieldValue = FieldValue.of(Double.parseDouble((String)kindValue.getValue()));
             }
             else if(kindValue.getKind().equals(FieldValue.Kind.Long.name())) {
-                fieldValue = FieldValue.of((long)kindValue.getValue());
+                fieldValue = FieldValue.of(Long.parseLong((String)kindValue.getValue()));
             }
             else if(kindValue.getKind().equals(FieldValue.Kind.Boolean.name())) {
-                fieldValue = FieldValue.of((boolean) kindValue.getValue());
+                fieldValue = FieldValue.of(Boolean.parseBoolean((String)kindValue.getValue()));
+            }
+            else if(kindValue.getKind().equals(FieldValue.Kind.String.name())) {
+                fieldValue = FieldValue.of((String) kindValue.getValue());
             }
             else {
                 fieldValue = FieldValue.of(kindValue.getValue());
