@@ -14,7 +14,6 @@
 
 package org.opengroup.osdu.search.model;
 
-import com.google.gson.Gson;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,9 +31,6 @@ public class SearchAfterSettings {
     private List<String> fieldValueJsons;
     private boolean closed;
     private long totalCount;
-    public String toString() {
-        return (new Gson()).toJson(this);
-    }
 }
 
 
