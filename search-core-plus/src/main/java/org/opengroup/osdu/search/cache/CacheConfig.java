@@ -29,6 +29,7 @@ import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.core.common.partition.PartitionInfo;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticCredentialsCache;
 import org.opengroup.osdu.search.config.CorePlusSearchConfigurationProperties;
+import org.opengroup.osdu.search.model.SearchAfterSettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -38,6 +39,7 @@ public class CacheConfig {
 
   private final RedisCacheBuilder<String, ClusterSettings> clusterSettingsCacheBuilder;
   private final RedisCacheBuilder<String, CursorSettings> cursorSettingsCacheBuilderBuilder;
+  private final RedisCacheBuilder<String, SearchAfterSettings> searchAfterSettingsCacheBuilderBuilder;
   private final RedisCacheBuilder<String, Map> fieldTypeMappingCacheBuilder;
 
   @Bean
@@ -91,6 +93,20 @@ public class CacheConfig {
             String.class,
             CursorSettings.class);
     return new CursorCacheImpl(stringCursorSettingsCache);
+  }
+
+  @Bean
+  public SearchAfterSettingsCache searchAfterSettingsCache(CorePlusSearchConfigurationProperties gcpAppServiceConfig) {
+    RedisCache<String, SearchAfterSettings> stringSearchAfterSettingsCache =
+            searchAfterSettingsCacheBuilderBuilder.buildRedisCache(
+                    gcpAppServiceConfig.getRedisSearchHost(),
+                    Integer.parseInt(gcpAppServiceConfig.getRedisSearchPort()),
+                    gcpAppServiceConfig.getRedisSearchPassword(),
+                    gcpAppServiceConfig.getRedisSearchExpiration(),
+                    gcpAppServiceConfig.getRedisSearchWithSsl(),
+                    String.class,
+                    SearchAfterSettings.class);
+    return new SearchAfterSettingsCacheImpl(stringSearchAfterSettingsCache);
   }
 
   @Bean
