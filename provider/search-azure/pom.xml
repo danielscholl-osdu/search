@@ -44,7 +44,6 @@
         <azure.appservice.subscription />
         <guava.version>32.1.2-jre</guava.version>
         <woodstox-core.version>6.4.0</woodstox-core.version>
-        <nimbus-jose-jwt.version>9.30.2</nimbus-jose-jwt.version>
     </properties>
 
     <dependencyManagement>
@@ -193,11 +192,6 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.nimbusds</groupId>
-            <artifactId>nimbus-jose-jwt</artifactId>
-            <version>${nimbus-jose-jwt.version}</version>
         </dependency>
     </dependencies>
 
