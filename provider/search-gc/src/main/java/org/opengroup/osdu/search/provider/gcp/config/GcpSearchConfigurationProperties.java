@@ -37,4 +37,8 @@ public class GcpSearchConfigurationProperties extends SearchConfigurationPropert
     private String redisSearchPassword;
     private Integer redisSearchExpiration = 60 * 60;
     private Boolean redisSearchWithSsl = false;
+
+    private String redisGroupPassword;
+    private Integer redisGroupExpiration = 30;
+    private Boolean redisGroupWithSsl = false;
 }
