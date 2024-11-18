@@ -44,11 +44,20 @@ public class CacheConfig {
   private final RedisCacheBuilder<String, ClusterSettings> clusterSettingsCacheBuilder;
   private final RedisCacheBuilder<String, CursorSettings> cursorSettingsCacheBuilderBuilder;
   private final RedisCacheBuilder<String, SearchAfterSettings> searchAfterSettingsCacheBuilderBuilder;
+  private final RedisCacheBuilder<String, Groups> groupsRedisCacheBuilder;
   private final RedisCacheBuilder<String, Map> fieldTypeMappingCacheBuilder;
 
   @Bean
   public ICache<String, Groups> groupCache(GcpSearchConfigurationProperties appProperties) {
-    return new GcGroupCache();
+    return groupsRedisCacheBuilder.buildRedisCache(
+        appProperties.getRedisGroupHost(),
+        appProperties.getRedisGroupPort(),
+        appProperties.getRedisGroupPassword(),
+        appProperties.getRedisGroupExpiration(),
+        appProperties.getRedisGroupWithSsl(),
+        String.class,
+        Groups.class
+    );
   }
 
   @Bean
