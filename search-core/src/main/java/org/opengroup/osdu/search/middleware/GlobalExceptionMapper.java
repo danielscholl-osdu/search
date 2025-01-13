@@ -54,6 +54,8 @@ import java.util.List;
 @RequestScope
 public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
 
+    private static int MAX_LOG_MESSAGE_LENGTH = 5000;
+
     @Autowired
     private JaxRsDpsLog jaxRsDpsLogger;
 
@@ -136,22 +138,41 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
 
         String exceptionMsg = e.getError().getMessage();
 
-        if (e.getError().getCode() > 499) {
-            this.jaxRsDpsLogger.error(exceptionMsg, e);
+        if (canLogException(e)) {
+            if (e.getError().getCode() > 499) {
+                this.jaxRsDpsLogger.error(exceptionMsg, e);
+            } else {
+                this.jaxRsDpsLogger.warning(exceptionMsg, e);
+            }
+
+            // log suppressed exception from Elastic's ResponseException if any
+            this.logSuppressedElasticException(e);
         } else {
-            this.jaxRsDpsLogger.warning(exceptionMsg, e);
+            String loggingMsg = exceptionMsg.length() < MAX_LOG_MESSAGE_LENGTH ? exceptionMsg : exceptionMsg.substring(0, MAX_LOG_MESSAGE_LENGTH);
+            this.jaxRsDpsLogger.error(loggingMsg, new AppException(e.getError().getCode(), e.getError().getReason(), loggingMsg));
         }
 
-        // log suppressed exception from Elastic's ResponseException if any
-        this.logSuppressedElasticException(e);
-
-        // Support for non standard HttpStatus Codes
+        // Support for non-standard HttpStatus Codes
         HttpStatus httpStatus = HttpStatus.resolve(e.getError().getCode());
         if (httpStatus == null) {
             return ResponseEntity.status(e.getError().getCode()).body(e);
         } else {
             return new ResponseEntity<>(e.getError(), httpStatus);
         }
+    }
+
+    private boolean canLogException(AppException e) {
+        if (e.getMessage().length() > MAX_LOG_MESSAGE_LENGTH) {
+            return false;
+        }
+        Exception cause = e.getOriginalException();
+        if (cause != null && cause.getSuppressed() != null) {
+            for (Throwable t : cause.getSuppressed()) {
+                if (t instanceof ResponseException && t.getMessage() != null && t.getMessage().length() > MAX_LOG_MESSAGE_LENGTH)
+                    return false;
+            }
+        }
+        return true;
     }
 
     private ObjectNode getValidationResponse(List<String> errors) {
