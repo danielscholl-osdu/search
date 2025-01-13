@@ -72,6 +72,9 @@ public class SearchConfigurationProperties {
 	private String googleCloudProject;
 	private String googleCloudProjectRegion;
 
+	// Max length of exception message that can be logged
+	private Integer maxExceptionLogMessageLength = 5000;
+
 	public DeploymentEnvironment getDeploymentEnvironment(){
 		return DeploymentEnvironment.valueOf(deploymentEnvironment);
 	}

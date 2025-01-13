@@ -30,8 +30,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
+import org.apache.logging.log4j.util.Strings;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -40,13 +42,14 @@ import org.springframework.stereotype.Component;
 public class DetailedBadRequestMessageUtil implements IDetailedBadRequestMessageUtil {
 
   private final ObjectMapper objectMapper;
+  private final SearchConfigurationProperties configurationProperties;
 
   @Override
   public String getDetailedBadRequestMessage(SearchRequest searchRequest, Exception e) {
     String defaultErrorMessage = "Invalid parameters were given on search request";
     Throwable[] suppressed = e.getSuppressed();
     if (suppressed != null && suppressed.length > 0) {
-      String fullReasonMessage = extractAndCombineReasonMessages(suppressed);
+      String fullReasonMessage = extractAndCombineReasonMessages(e, suppressed);
       if (StringUtils.isNotEmpty(fullReasonMessage)) {
         return fullReasonMessage;
       }
@@ -72,13 +75,17 @@ public class DetailedBadRequestMessageUtil implements IDetailedBadRequestMessage
     return defaultErrorMessage;
   }
 
-  private String extractAndCombineReasonMessages(Throwable[] suppressed) {
+  private String extractAndCombineReasonMessages(Exception e, Throwable[] suppressed) {
     StringJoiner stringJoiner = new StringJoiner(".");
     for (Throwable throwable : suppressed) {
       if (throwable instanceof ResponseException) {
         ResponseException responseException = (ResponseException) throwable;
         Response response = responseException.getResponse();
         HttpEntity entity = response.getEntity();
+        if (entity.getContentLength() > configurationProperties.getMaxExceptionLogMessageLength()) {
+          log.error(String.format("%s. Truncating response for logging, error message content length: %s is too big.", e.getMessage(), entity.getContentLength()));
+          return Strings.EMPTY;
+        }
         try {
           InputStream content = entity.getContent();
           JsonNode errorNode = objectMapper.readValue(content, JsonNode.class);

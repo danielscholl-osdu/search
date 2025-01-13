@@ -25,6 +25,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.elasticsearch.client.ResponseException;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -54,10 +55,11 @@ import java.util.List;
 @RequestScope
 public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
 
-    private static int MAX_LOG_MESSAGE_LENGTH = 5000;
-
     @Autowired
     private JaxRsDpsLog jaxRsDpsLogger;
+
+    @Autowired
+    private SearchConfigurationProperties configurationProperties;
 
     @ExceptionHandler(AppException.class)
     protected ResponseEntity<Object> handleAppException(AppException e) {
@@ -148,7 +150,7 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
             // log suppressed exception from Elastic's ResponseException if any
             this.logSuppressedElasticException(e);
         } else {
-            String loggingMsg = exceptionMsg.length() < MAX_LOG_MESSAGE_LENGTH ? exceptionMsg : exceptionMsg.substring(0, MAX_LOG_MESSAGE_LENGTH);
+            String loggingMsg = exceptionMsg.length() < configurationProperties.getMaxExceptionLogMessageLength() ? exceptionMsg : exceptionMsg.substring(0, configurationProperties.getMaxExceptionLogMessageLength());
             this.jaxRsDpsLogger.error(loggingMsg, new AppException(e.getError().getCode(), e.getError().getReason(), loggingMsg));
         }
 
@@ -162,14 +164,13 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
     }
 
     private boolean canLogException(AppException e) {
-        if (e.getMessage().length() > MAX_LOG_MESSAGE_LENGTH) {
+        if (e.getMessage().length() > configurationProperties.getMaxExceptionLogMessageLength()) {
             return false;
         }
         Exception cause = e.getOriginalException();
         if (cause != null && cause.getSuppressed() != null) {
             for (Throwable t : cause.getSuppressed()) {
-                if (t instanceof ResponseException && t.getMessage() != null && t.getMessage().length() > MAX_LOG_MESSAGE_LENGTH)
-                    return false;
+                if (t instanceof ResponseException && t.getMessage() != null && ((ResponseException) t).getResponse().getEntity().getContentLength() > configurationProperties.getMaxExceptionLogMessageLength()) return false;
             }
         }
         return true;
