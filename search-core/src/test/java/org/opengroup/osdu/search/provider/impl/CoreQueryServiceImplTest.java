@@ -120,9 +120,6 @@ public class CoreQueryServiceImplTest {
     private final Point bottomRight = getPoint(2.0, 1.0);
 
     @Mock
-    private SearchConfigurationProperties configurationProperties;
-
-    @Mock
     private QueryRequest searchRequest;
 
     @Mock
@@ -180,7 +177,7 @@ public class CoreQueryServiceImplTest {
     private IAggregationParserUtil aggregationParserUtil = new AggregationParserUtil(properties);
 
     @Spy
-    private IDetailedBadRequestMessageUtil detailedBadRequestMessageUtil = new DetailedBadRequestMessageUtil(objectMapper, configurationProperties);
+    private IDetailedBadRequestMessageUtil detailedBadRequestMessageUtil = new DetailedBadRequestMessageUtil(objectMapper);
 
     @Mock
     private ElasticLoggingConfig elasticLoggingConfig;
