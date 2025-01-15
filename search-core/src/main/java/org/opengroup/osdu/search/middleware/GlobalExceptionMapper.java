@@ -141,17 +141,13 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
         String exceptionMsg = e.getError().getMessage();
 
         if (canLogException(e)) {
-            if (e.getError().getCode() > 499) {
-                this.jaxRsDpsLogger.error(exceptionMsg, e);
-            } else {
-                this.jaxRsDpsLogger.warning(exceptionMsg, e);
-            }
+            logErrorOrWarning(exceptionMsg, e);
 
             // log suppressed exception from Elastic's ResponseException if any
             this.logSuppressedElasticException(e);
         } else {
             String loggingMsg = exceptionMsg.length() < configurationProperties.getMaxExceptionLogMessageLength() ? exceptionMsg : exceptionMsg.substring(0, configurationProperties.getMaxExceptionLogMessageLength());
-            this.jaxRsDpsLogger.error(loggingMsg, new AppException(e.getError().getCode(), e.getError().getReason(), loggingMsg));
+            logErrorOrWarning(loggingMsg, new AppException(e.getError().getCode(), e.getError().getReason(), loggingMsg));
         }
 
         // Support for non-standard HttpStatus Codes
@@ -160,6 +156,14 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
             return ResponseEntity.status(e.getError().getCode()).body(e);
         } else {
             return new ResponseEntity<>(e.getError(), httpStatus);
+        }
+    }
+
+    private void logErrorOrWarning(String exceptionMsg, AppException e) {
+        if (e.getError().getCode() > 499) {
+            this.jaxRsDpsLogger.error(exceptionMsg, e);
+        } else {
+            this.jaxRsDpsLogger.warning(exceptionMsg, e);
         }
     }
 
