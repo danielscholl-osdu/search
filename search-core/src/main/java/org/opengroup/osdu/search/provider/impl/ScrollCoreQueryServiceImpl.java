@@ -171,7 +171,7 @@ public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScroll
 
     List<Map<String, Object>> results = getHitsFromSearchResponse(scrollResponse);
     queryResponse.setTotalCount(scrollResponse.hits().total().value());
-    if (results != null) {
+    if (!results.isEmpty()) {
       queryResponse.setResults(results);
       queryResponse.setCursor(
           this.refreshCursorCache(scrollResponse.scrollId(), dpsHeaders.getUserEmail()));
@@ -192,7 +192,7 @@ public class ScrollCoreQueryServiceImpl extends CoreQueryBase implements IScroll
     SearchResponse<Map<String, Object>> searchResponse =
         this.makeSearchRequest(searchRequest, client);
     List<Map<String, Object>> results = this.getHitsFromSearchResponse(searchResponse);
-    if (results != null) {
+    if (!results.isEmpty()) {
       return CursorQueryResponse.builder()
           .cursor(refreshCursorCache(searchResponse.scrollId(), dpsHeaders.getUserEmail()))
           .results(results)

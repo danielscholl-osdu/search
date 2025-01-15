@@ -87,3 +87,11 @@ Feature: Search recursively on cursor with different queries
       | "tenant1:search<timestamp>:*:*"    | None        | {"field":["data.OriginalOperator"],"order":["ASC"]}                          | "tenant1:search<timestamp>:1"   | "tenant1:search<timestamp>:2.0.0:3"   |
       | "tenant1:search<timestamp>:*:*"    | None        | {"field":["id"],"order":["DESC"]}                                            | "tenant1:search<timestamp>:3"   | "tenant1:search<timestamp>:1"   |
       | "tenant1:search<timestamp>:*:*"    | None        | {"field":["namespace","data.Rank"],"order":["ASC","DESC"]}                   | "tenant1:search<timestamp>:3"   | "tenant1:search<timestamp>:2.0.0:1"   |
+
+  @default
+  Scenario Outline: Verify that the query with cursor functions correctly when there is no result
+    When I send <query> with <kind>
+    Then I should get in response <final_count> records
+    Examples:
+      | kind                                       | query | final_count |
+      | "tenant1:not-existing-kind<timestamp>:*:*" | None  | 0           |
