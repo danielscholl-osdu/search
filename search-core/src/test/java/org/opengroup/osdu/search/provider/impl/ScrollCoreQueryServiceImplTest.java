@@ -225,6 +225,7 @@ public class ScrollCoreQueryServiceImplTest {
         assertEquals(obtainedQueryResponse.getTotalCount(), totalHitsCount);
         assertEquals(scrollRequest.scrollId(), scrollId);
         assertEquals(searchRequestCursor, cursor);
+        assertNull(obtainedQueryResponse.getCursor());
     }
 
     @Test
@@ -260,15 +261,12 @@ public class ScrollCoreQueryServiceImplTest {
     public void testQueryIndex_whenNoCursorInSearchQueryAndSearchHitsIsEmpty() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
         SearchResponse searchScrollResponse = mock(SearchResponse.class);
-        TotalHits totalHits = mock(TotalHits.class);
 
         List<Hit<Map<String, Object>>> hits = new ArrayList<>();
         long totalHitsCount = 0L;
 
         doReturn(searchHits).when(searchScrollResponse).hits();
         doReturn(hits).when(searchHits).hits();
-        doReturn(totalHits).when(searchHits).total();
-        doReturn(totalHitsCount).when(totalHits).value();
         doReturn(searchScrollResponse).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
         when(featureFlag.isFeatureEnabled(POLICY_FEATURE_NAME)).thenReturn(false);
 
@@ -276,6 +274,7 @@ public class ScrollCoreQueryServiceImplTest {
 
         assertEquals(obtainedQueryResponse.getResults().size(), 0);
         assertEquals(obtainedQueryResponse.getTotalCount(), totalHitsCount);
+        assertNull(obtainedQueryResponse.getCursor());
     }
 
     @Test(expected = AppException.class)
