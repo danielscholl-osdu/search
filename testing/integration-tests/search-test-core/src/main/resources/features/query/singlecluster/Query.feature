@@ -152,6 +152,16 @@ Feature: Search with different queries
       | "tenant1:search<timestamp>:*:*" | "Harris"       | "ZipCode"       | 4        | 2         | 0        | 400           | "Bad Request" | "Invalid parameters were given on search request" | "'distance' must be greater than 0" |
 
   @default
+  Scenario Outline: Search data across the kinds with intersection polygon inputs
+    When I send <query> with <kind>
+    And I apply geographical query on field <field>
+    And define intersection polygon with points (<lat1>, <lon1>) and (<lat2>, <lon2>) and (<lat3>, <lon3>) and (<lat4>, <lon4>) and (<lat5>, <lon5>)
+    Then I should get in response <count> records
+    Examples:
+      | kind                                                     | query                           | field                   | lat1 | lon1 | lat2 | lon2 | lat3 | lon3 | lat4 | lon4 | lat5 | lon5 | count |
+      | "tenant1:search<timestamp>:test-data--Integration:1.0.1" | None                            | "data.Location"         | 90   | -180 |  90  | 180  | -90  | 180  | -90  | -180 | 90   | -180 | 3     |
+
+  @default
   Scenario Outline: Search data across the kinds
     When I send <query> with <kind>
     And I limit the count of returned results to <limit>
