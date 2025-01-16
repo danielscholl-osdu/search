@@ -141,15 +141,13 @@ public final class GeoQueryBuilder {
   }
 
   private static Map<String, Object> createMultiPolygon(List<Polygon> polygons) {
-    Map<String, Object> geometryCollection = new HashMap<>();
-    geometryCollection.put("type", "GeometryCollection");
+    Map<String, Object> multiPolygon = new HashMap<>();
+    multiPolygon.put("type", "MultiPolygon");
 
-    List<Map<String, Object>> geometriesList = new ArrayList<>();
+    List<Object> multiPolygonCoordinates = new ArrayList<>();
 
     for (Polygon polygon : polygons) {
       checkPolygon(polygon);
-      Map<String, Object> multiPolygon = new HashMap<>();
-      multiPolygon.put("type", "MultiPolygon");
 
       List<List<List<Double>>> polygonCoordinates = new ArrayList<>();
       List<List<Double>> coordinates = new ArrayList<>();
@@ -160,14 +158,12 @@ public final class GeoQueryBuilder {
 
       polygonCoordinates.add(coordinates);
 
-      multiPolygon.put("coordinates", polygonCoordinates);
-
-      geometriesList.add(multiPolygon);
+      multiPolygonCoordinates.add(polygonCoordinates);
     }
 
-    geometryCollection.put("geometries", geometriesList);
+    multiPolygon.put("coordinates", multiPolygonCoordinates);
 
-    return geometryCollection;
+    return multiPolygon;
   }
 
   private Query getIntersectionQuery(SpatialFilter spatialFilter) {
