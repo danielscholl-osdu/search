@@ -138,17 +138,10 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
 
     private ResponseEntity<Object> getErrorResponse(AppException e) {
 
-        String exceptionMsg = e.getError().getMessage();
+        String exceptionMsgToLog = getExceptionMessageToLog(e.getError().getMessage());
 
-        if (canLogException(e)) {
-            logErrorOrWarning(exceptionMsg, e);
-
-            // log suppressed exception from Elastic's ResponseException if any
-            this.logSuppressedElasticException(e);
-        } else {
-            String loggingMsg = exceptionMsg.length() < configurationProperties.getMaxExceptionLogMessageLength() ? exceptionMsg : exceptionMsg.substring(0, configurationProperties.getMaxExceptionLogMessageLength());
-            logErrorOrWarning(loggingMsg, new AppException(e.getError().getCode(), e.getError().getReason(), loggingMsg));
-        }
+        logErrorOrWarning(exceptionMsgToLog, e);
+        logSuppressedElasticException(e);
 
         // Support for non-standard HttpStatus Codes
         HttpStatus httpStatus = HttpStatus.resolve(e.getError().getCode());
@@ -165,19 +158,6 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
         } else {
             this.jaxRsDpsLogger.warning(exceptionMsg, e);
         }
-    }
-
-    private boolean canLogException(AppException e) {
-        if (e.getMessage().length() > configurationProperties.getMaxExceptionLogMessageLength()) {
-            return false;
-        }
-        Exception cause = e.getOriginalException();
-        if (cause != null && cause.getSuppressed() != null) {
-            for (Throwable t : cause.getSuppressed()) {
-                if (t instanceof ResponseException && t.getMessage() != null && ((ResponseException) t).getResponse().getEntity().getContentLength() > configurationProperties.getMaxExceptionLogMessageLength()) return false;
-            }
-        }
-        return true;
     }
 
     private ObjectNode getValidationResponse(List<String> errors) {
@@ -200,9 +180,18 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
         Exception cause = e.getOriginalException();
         if (cause != null && cause.getSuppressed() != null) {
             for (Throwable t : cause.getSuppressed()) {
-                if (t instanceof ResponseException) this.jaxRsDpsLogger.error(t.getMessage(), (ResponseException) t);
+                if (t instanceof ResponseException) {
+                    this.jaxRsDpsLogger.error(getExceptionMessageToLog(t.getMessage()), (ResponseException) t);
+                }
             }
         }
+    }
+
+    private String getExceptionMessageToLog(String originalExceptionMessage) {
+        if (originalExceptionMessage.length() > configurationProperties.getMaxExceptionLogMessageLength()) {
+            return originalExceptionMessage.substring(0, configurationProperties.getMaxExceptionLogMessageLength());
+        }
+        return originalExceptionMessage;
     }
 }
 
