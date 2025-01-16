@@ -54,7 +54,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.ContentTooLongException;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -108,15 +107,10 @@ public class CoreQueryServiceImplTest {
     private final String DATA_GROUP_1 = "data.welldb.viewers@common.evd.cloud.slb-ds.com";
     private final String DATA_GROUP_2 = "data.npd.viewers@common.evd.cloud.slb-ds.com";
 
-    private static final String dataPartitionId = "data-partition-id";
     private static final String fieldName = "field";
     private static final String indexName = "index";
     private static final String name = "name";
     private static final String text = "text";
-    private static final String GEO_SHAPE = "geo_shape";
-    private static final String GEO_DISTANCE = "geo_distance";
-    private static final String GEO_POLYGON = "geo_polygon";
-    private static final double DELTA = 1e-6;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final Point dummyPoint = getPoint(0.0, 0.0);
@@ -124,8 +118,6 @@ public class CoreQueryServiceImplTest {
     private final List<Point> closedPolygonPoints = getPolygonPoints(getPoint(0.0, 0.0), getPoint(0.0, 1.0), getPoint(1.0, 1.0), getPoint(1.0, 0.0), getPoint(0.0, 0.0));
     private final Point topLeft = getPoint(3.0, 4.0);
     private final Point bottomRight = getPoint(2.0, 1.0);
-
-    private ObjectMapper mapper = new ObjectMapper();
 
     @Mock
     private QueryRequest searchRequest;

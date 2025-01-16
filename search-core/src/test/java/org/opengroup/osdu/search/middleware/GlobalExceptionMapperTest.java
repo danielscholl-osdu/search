@@ -26,6 +26,7 @@ import org.mockito.Mock;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -34,14 +35,21 @@ import jakarta.validation.ValidationException;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.opengroup.osdu.search.util.Constants.LARGE_ERROR_MESSAGE;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GlobalExceptionMapperTest {
 
     @Mock
     private JaxRsDpsLog log;
+    @Mock
+    private SearchConfigurationProperties configurationProperties;
     @InjectMocks
     private GlobalExceptionMapper sut;
 
@@ -98,15 +106,15 @@ public class GlobalExceptionMapperTest {
     }
 
     @Test
-    public  void should_useBadRequestInResponse_When_JsonProcessingExceptionIsHandledByGlobalExceptionMapper (){
-        JsonProcessingException exception = new JsonParseException(null,"any message");
+    public  void should_useBadRequestInResponse_When_JsonProcessingExceptionIsHandledByGlobalExceptionMapper() {
+        JsonProcessingException exception = new JsonParseException(null, "any message");
 
         ResponseEntity<Object> response = sut.handleJsonProcessingException(exception);
         assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusCodeValue());
     }
 
     @Test
-    public  void should_useBadRequestInResponse_When_handleUnrecognizedPropertyExceptionIsHandledByGlobalExceptionMapper (){
+    public  void should_useBadRequestInResponse_When_handleUnrecognizedPropertyExceptionIsHandledByGlobalExceptionMapper() {
         UnrecognizedPropertyException exception = mock(UnrecognizedPropertyException.class);
 
         ResponseEntity<Object> response = sut.handleUnrecognizedPropertyException(exception);
@@ -114,7 +122,7 @@ public class GlobalExceptionMapperTest {
     }
 
     @Test
-    public  void should_useBadRequestInResponse_When_handleValidationExceptionIsHandledByGlobalExceptionMapper (){
+    public  void should_useBadRequestInResponse_When_handleValidationExceptionIsHandledByGlobalExceptionMapper() {
         ValidationException exception = new ValidationException();
 
         ResponseEntity<Object> response = sut.handleValidationException(exception);
@@ -122,7 +130,7 @@ public class GlobalExceptionMapperTest {
     }
 
     @Test
-    public  void should_useBadRequestInResponse_When_handleAccessDeniedExceptionIsHandledByGlobalExceptionMapper (){
+    public  void should_useBadRequestInResponse_When_handleAccessDeniedExceptionIsHandledByGlobalExceptionMapper() {
         AccessDeniedException exception = new AccessDeniedException("Access is denied.");
 
         ResponseEntity<Object> response = sut.handleAccessDeniedException(exception);
@@ -145,5 +153,15 @@ public class GlobalExceptionMapperTest {
         ResponseEntity response = this.sut.handleIOException(ioException);
 
         assertEquals(HttpStatus.SC_SERVICE_UNAVAILABLE, response.getStatusCodeValue());
+    }
+
+    @Test
+    public void should_truncateMessage_when_hugeExceptionIsCaptureed() {
+        AppException appException = new AppException(HttpStatus.SC_BAD_REQUEST, "Too many clauses", LARGE_ERROR_MESSAGE);
+        when(this.configurationProperties.getMaxExceptionLogMessageLength()).thenReturn(5000);
+        ResponseEntity response = this.sut.handleAppException(appException);
+        assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusCodeValue());
+        String loggingMsg = LARGE_ERROR_MESSAGE.substring(0, this.configurationProperties.getMaxExceptionLogMessageLength());
+        verify(this.log).error(loggingMsg, new AppException(HttpStatus.SC_BAD_REQUEST, "Too many clauses", loggingMsg));
     }
 }

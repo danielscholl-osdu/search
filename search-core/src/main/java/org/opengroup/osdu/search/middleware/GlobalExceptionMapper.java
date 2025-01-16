@@ -25,6 +25,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.elasticsearch.client.ResponseException;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -56,6 +57,9 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
 
     @Autowired
     private JaxRsDpsLog jaxRsDpsLogger;
+
+    @Autowired
+    private SearchConfigurationProperties configurationProperties;
 
     @ExceptionHandler(AppException.class)
     protected ResponseEntity<Object> handleAppException(AppException e) {
@@ -134,23 +138,25 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
 
     private ResponseEntity<Object> getErrorResponse(AppException e) {
 
-        String exceptionMsg = e.getError().getMessage();
+        String exceptionMsgToLog = getExceptionMessageToLog(e.getError().getMessage());
 
-        if (e.getError().getCode() > 499) {
-            this.jaxRsDpsLogger.error(exceptionMsg, e);
-        } else {
-            this.jaxRsDpsLogger.warning(exceptionMsg, e);
-        }
+        logErrorOrWarning(exceptionMsgToLog, e);
+        logSuppressedElasticException(e);
 
-        // log suppressed exception from Elastic's ResponseException if any
-        this.logSuppressedElasticException(e);
-
-        // Support for non standard HttpStatus Codes
+        // Support for non-standard HttpStatus Codes
         HttpStatus httpStatus = HttpStatus.resolve(e.getError().getCode());
         if (httpStatus == null) {
             return ResponseEntity.status(e.getError().getCode()).body(e);
         } else {
             return new ResponseEntity<>(e.getError(), httpStatus);
+        }
+    }
+
+    private void logErrorOrWarning(String exceptionMsg, AppException e) {
+        if (e.getError().getCode() > 499) {
+            this.jaxRsDpsLogger.error(exceptionMsg, e);
+        } else {
+            this.jaxRsDpsLogger.warning(exceptionMsg, e);
         }
     }
 
@@ -174,9 +180,18 @@ public class GlobalExceptionMapper extends ResponseEntityExceptionHandler {
         Exception cause = e.getOriginalException();
         if (cause != null && cause.getSuppressed() != null) {
             for (Throwable t : cause.getSuppressed()) {
-                if (t instanceof ResponseException) this.jaxRsDpsLogger.error(t.getMessage(), (ResponseException) t);
+                if (t instanceof ResponseException) {
+                    this.jaxRsDpsLogger.error(getExceptionMessageToLog(t.getMessage()), (ResponseException) t);
+                }
             }
         }
+    }
+
+    private String getExceptionMessageToLog(String originalExceptionMessage) {
+        if (originalExceptionMessage.length() > configurationProperties.getMaxExceptionLogMessageLength()) {
+            return originalExceptionMessage.substring(0, configurationProperties.getMaxExceptionLogMessageLength());
+        }
+        return originalExceptionMessage;
     }
 }
 

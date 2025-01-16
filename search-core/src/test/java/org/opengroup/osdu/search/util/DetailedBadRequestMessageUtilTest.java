@@ -83,7 +83,6 @@ public class DetailedBadRequestMessageUtilTest {
         assertEquals(NESTED_FAIL_REASON + "." + GEO_FIELD_FAIL_REASON, detailedBadRequestMessage);
     }
 
-
     private InputStream getResponseContent(String fileName) {
         return this.getClass().getResourceAsStream("/errorresponses/" + fileName);
     }
