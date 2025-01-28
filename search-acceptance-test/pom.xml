@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+	<groupId>org.opengroup.osdu.search</groupId>
+    <artifactId>search-acceptance-test</artifactId>
+    <version>0.28.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <cucumber.version>1.2.5</cucumber.version>
+        <osdu.oscorecommon.version>0.27.2</osdu.oscorecommon.version>
+        <jackson-databind.version>2.15.2</jackson-databind.version>
+        <jackson.version>2.15.2</jackson.version>
+        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>		
+        <argLine>
+            --add-opens=java.base/java.util=ALL-UNNAMED
+            --add-opens java.base/java.lang=ALL-UNNAMED
+            --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+            --add-opens java.base/java.text=ALL-UNNAMED
+            --add-opens java.desktop/java.awt.font=ALL-UNNAMED
+        </argLine>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.opengroup.osdu</groupId>
+            <artifactId>os-core-common</artifactId>
+            <version>${osdu.oscorecommon.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+            <version>1.28.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>oauth2-oidc-sdk</artifactId>
+            <version>9.15</version>
+        </dependency>
+
+        <!-- Cucumber -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+        </dependency>
+        <dependency>
+            <groupId>info.cukes</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>${cucumber.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>info.cukes</groupId>
+            <artifactId>cucumber-junit</artifactId>
+            <version>${cucumber.version}</version>
+        </dependency>
+
+        <!-- Gson: Java to Json conversion -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.9.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+            <version>2.15.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>1.1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>1.19.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.26</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+        </dependency>
+
+        <!--Logging-->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-to-slf4j</artifactId>
+            <version>2.11.2</version>
+        </dependency>
+        <dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		    <version>1.7.30</version>
+		</dependency>
+        <dependency>
+        	<groupId>ch.qos.logback</groupId>
+        	<artifactId>logback-classic</artifactId>
+        	<version>1.2.3</version>
+    		<scope>test</scope>
+        </dependency>
+        <dependency>
+        	<groupId>ch.qos.logback</groupId>
+        	<artifactId>logback-core</artifactId>
+        	<version>1.2.3</version>
+    		<scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>27.1-jre</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson-databind.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+    </dependencies>
+    <build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven-surefire-plugin.version}</version>
+			</plugin>
+		</plugins>
+	</build>
+	<repositories>
+		<repository>
+			<id>${repo.releases.id}</id>
+			<url>${repo.releases.url}</url>
+		</repository>
+	</repositories>
+
+	<distributionManagement>
+		<repository>
+			<id>${publish.releases.id}</id>
+			<url>${publish.releases.url}</url>
+		</repository>
+		<snapshotRepository>
+			<id>${publish.snapshots.id}</id>
+			<url>${publish.snapshots.url}</url>
+		</snapshotRepository>
+	</distributionManagement>
+	<profiles>
+		<profile>
+			<id>Default</id>
+			<activation>
+				<property>
+					<name>!repo.releases.id</name>
+				</property>
+			</activation>
+			<properties>
+				<repo.releases.id>community-maven-repo</repo.releases.id>
+				<publish.snapshots.id>community-maven-via-job-token</publish.snapshots.id>
+				<publish.releases.id>community-maven-via-job-token</publish.releases.id>
+				<repo.releases.url>
+					https://community.opengroup.org/api/v4/groups/17/-/packages/maven</repo.releases.url>
+				<publish.snapshots.url>
+					https://community.opengroup.org/api/v4/projects/44/packages/maven</publish.snapshots.url>
+				<publish.releases.url>
+					https://community.opengroup.org/api/v4/projects/44/packages/maven</publish.releases.url>
+			</properties>
+		</profile>
+	</profiles>
+</project>
