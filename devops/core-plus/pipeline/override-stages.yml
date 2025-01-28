@@ -7,3 +7,8 @@ core-test:
   variables:
     DEFAULT_DATA_PARTITION_ID_TENANT2: non-exist
     CUCUMBER_OPTIONS: "--tags ~@autocomplete"
+
+core-acceptance-test:
+  variables:
+    DEFAULT_DATA_PARTITION_ID_TENANT2: non-exist
+    CUCUMBER_OPTIONS: "--tags @default,@health,@SpatialLongitudeStandardRange"
