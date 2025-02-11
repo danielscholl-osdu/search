@@ -12,7 +12,6 @@ data:
   entitlementsHost: "http://entitlements"
   partitionHost: "http://partition"
   policyHost: "http://policy"
-  indexerHost: "http://indexer"
   policyId: 'osdu.partition["%s"].search'
   securityHttpsCertificateTrust: "true"
   # Deployments

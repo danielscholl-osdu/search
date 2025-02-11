@@ -26,4 +26,3 @@ data:
   PARTITION_HOST: {{ .Values.data.partitionHost | quote }}
   POLICY_HOST: {{ .Values.data.policyHost | quote }}
   POLICY_ID: {{ .Values.data.policyId | quote }}
-  INDEXER_BASE_HOST: {{ .Values.data.indexerHost | quote }}
