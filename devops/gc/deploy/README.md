@@ -30,6 +30,7 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 
 | Name | Description | Type | Default |Required |
 |------|-------------|------|---------|---------|
+
 **global.domain** | your domain for the external endpoint, ex `example.com` | string | - | yes
 **global.onPremEnabled** | whether on-prem is enabled | boolean | `false` | yes
 **global.limitsEnabled** | whether CPU and memory limits are enabled | boolean | `true` | yes
@@ -41,9 +42,9 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 
 | Name | Description | Type | Default |Required |
 |------|-------------|------|---------|---------|
+
 **data.logLevel** | logging severity level for this service only  | string | - | yes, only if differs from the `global.logLevel`
 **data.entitlementsHost** | Entitlements service host | string | `http://entitlements` | yes
-**data.indexerHost** | Indexer service host | string | `http://indexer` | yes
 **data.policyHost** | Policy service host | string | `http://policy` | yes
 **data.partitionHost** | Partition service host | string | `http://partition` | yes
 **data.policyId** | policy id from ex `${POLICY_HOST}/api/policy/v1/policies` | string | `search` | yes
@@ -55,6 +56,7 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
+
 **data.requestsCpu** | amount of requested CPU | string | `20m` | yes
 **data.requestsMemory** | amount of requested memory| string | `550Mi` | yes
 **data.limitsCpu** | CPU limit | string | `1` | only if `global.limitsEnabled` is true
@@ -68,6 +70,7 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
+
 **conf.appName** | Service name | string | `search` | yes
 **conf.elasticSecretName** | secret for elasticsearch | string | `search-elastic-secret` | yes
 **conf.searchRedisSecretName** | search Redis secret that contains redis password with REDIS_PASSWORD key | string | `search-redis-secret` | yes
@@ -76,6 +79,7 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 
 | Name | Description | Type | Default |Required |
 |------|-------------|------|---------|---------|
+
 **istio.proxyCPU** | CPU request for Envoy sidecars | string | `10m` | yes
 **istio.proxyCPULimit** | CPU limit for Envoy sidecars | string | `200m` | yes
 **istio.proxyMemory** | memory request for Envoy sidecars | string | `100Mi` | yes

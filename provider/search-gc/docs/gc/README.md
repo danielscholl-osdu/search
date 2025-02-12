@@ -1,4 +1,4 @@
-## Service Configuration for Google Cloud
+# Service Configuration for Google Cloud
 
 ## Run args
 
@@ -16,12 +16,15 @@ java -jar search.jar --add-opens java.base/java.lang=ALL-UNNAMED --add-opens jav
 
 ## Table of Contents <a name="TOC"></a>
 
-* [Environment variables](#Environment-variables)
-    * [Properties set in Partition service](#properties-set-in-partition-service)
-* [Elasticsearch configuration](#Elasticsearch configuration)
-* [Google cloud service account configuration](#Google-cloud-service-account-configuration)
-* [Running E2E Tests](#running-e2e-tests)
-* [License](#license)
+- [Service Configuration for Google Cloud](#service-configuration-for-google-cloud)
+  - [Run args](#run-args)
+  - [Table of Contents ](#table-of-contents-)
+  - [Environment variables](#environment-variables)
+  - [Properties set in Partition service](#properties-set-in-partition-service)
+  - [Elasticsearch configuration](#elasticsearch-configuration)
+  - [Google cloud service account configuration](#google-cloud-service-account-configuration)
+    - [Running E2E Tests](#running-e2e-tests)
+  - [License](#license)
 
 ## Environment variables
 
@@ -58,7 +61,6 @@ Defined in default application property file but possible to override:
 | `POLICY_API`                       | ex `http://localhost:8080/api/policy/v1/`                       | Policy service endpoint                                                               | no         | output of infrastructure deployment                          |
 | `POLICY_ID`                        | ex `search`                                                     | policyId from ex `http://localhost:8080/api/policy/v1/policies`. Look at `POLICY_API` | no         | -                                                            |
 | `SERVICE_POLICY_ENABLED`           | ex `false`                                                      | Enable or Disable an integration with Policy Service                                  | no         | output of infrastructure deployment                          |
-| `INDEXER_HOST`                     | ex `https://os-indexer-dot-opendes.appspot.com/api/indexer/v2/` | Indexer API endpoint                                                                  | no         | output of infrastructure deployment                          |
 | `MANAGEMENT_ENDPOINTS_WEB_BASE`    | ex `/`                                                          | Web base for Actuator                                                                 | no         | -                                                            |
 | `MANAGEMENT_SERVER_PORT`           | ex `8081`                                                       | Port for Actuator                                                                     | no         | -                                                            |
 
@@ -79,11 +81,11 @@ Example:
 
 ```
     "elasticsearch.port": {
-      "sensitive": false, <- value not sensitive 
+      "sensitive": false, <- value not sensitive
       "value": "9243"  <- will be used as is.
     },
       "elasticsearch.password": {
-      "sensitive": true, <- value is sensitive 
+      "sensitive": true, <- value is sensitive
       "value": "ELASTIC_SEARCH_PASSWORD_OSDU" <- service consumer should have env variable ELASTIC_SEARCH_PASSWORD_OSDU with elastic search password
     }
 ```
@@ -156,7 +158,7 @@ You will need to have the following environment variables defined.
 | `DEFAULT_DATA_PARTITION_ID_TENANT2` | ex `not-exist`                                                  | HTTP Header 'Data-Partition-ID' with not existing tenant                  | no         | -                                                            |
 | `SEARCH_INTEGRATION_TESTER`         | `ewogICJ0....` or `tmp/service-acc.json`                        | Service account for API calls as Base64 string or path to a file          | yes        | <https://console.cloud.google.com/iam-admin/serviceaccounts> |
 | `SEARCH_HOST`                       | ex `http://localhost:8080/api/search/v2/`                       | Endpoint of search service                                                | no         | -                                                            |
-| `LEGAL_TAG`                         | ex `my-legal-tag`                                               | a valid legal tag                                                         | no         | -                                                            |  
+| `LEGAL_TAG`                         | ex `my-legal-tag`                                               | a valid legal tag                                                         | no         | -                                                            |
 
 **Entitlements configuration for integration accounts**
 
