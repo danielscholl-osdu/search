@@ -73,8 +73,8 @@ phases:
       - cp devops/aws/requirements.txt testing/integration-tests/search-test-aws/build-aws/requirements.txt
 
       - echo "Building primary service assemblies..."
-      - mvn -ntp -B test install -pl .,search-core,provider/search-aws -Ddeployment.environment=prod
-      - mvn sonar:sonar -pl .,provider/search-aws -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME} -Dsonar.host.url=${SONAR_URL}
+      - mvn -ntp -B test install -pl .,search-core,provider/search-aws -P aws,core -Ddeployment.environment=prod
+      - mvn sonar:sonar -pl .,provider/search-aws -P aws -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME} -Dsonar.host.url=${SONAR_URL}
       - echo "Building integration testing assemblies and gathering artifacts..."
       - ./testing/integration-tests/search-test-aws/build-aws/prepare-dist.sh
 
