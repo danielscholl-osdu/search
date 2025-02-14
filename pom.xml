@@ -56,14 +56,6 @@
     	</license>
     </licenses>
 
-    <modules>
-        <module>search-core</module>
-        <module>search-core-plus</module>
-        <module>provider/search-gc</module>
-        <module>provider/search-aws</module>
-        <module>provider/search-azure</module>
-        <module>provider/search-ibm</module>
-    </modules>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -369,6 +361,40 @@
                 <publish.snapshots.url>https://community.opengroup.org/api/v4/projects/19/packages/maven</publish.snapshots.url>
                 <publish.releases.url>https://community.opengroup.org/api/v4/projects/19/packages/maven</publish.releases.url>
             </properties>
+        </profile>
+        <profile>
+            <id>core</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>search-core</module>
+                <module>search-core-plus</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>aws</id>
+            <modules>
+                <module>provider/search-aws</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>azure</id>
+            <modules>
+                <module>provider/search-azure</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>ibm</id>
+            <modules>
+                <module>provider/search-ibm</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>gc</id>
+            <modules>
+                <module>provider/search-gc</module>
+            </modules>
         </profile>
     </profiles>
 
