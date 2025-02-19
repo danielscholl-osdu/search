@@ -1,0 +1,12 @@
+aws-acceptance-test:
+  variables:
+    CUCUMBER_OPTIONS: "--tags @default,@health,@SpatialLongitudeExtendedRange"
+    GROUP_ID: $DOMAIN
+  script:
+    - >
+      $MAVEN_BUILD . test-results.log
+      verify -DdisableXmlReport=true
+      --quiet
+      --file $ACCEPTANCE_TEST_DIR/pom.xml
+      --update-snapshots
+      -Dcucumber.filter.tags="${CUCUMBER_OPTIONS}"
