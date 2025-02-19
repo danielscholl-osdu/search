@@ -75,6 +75,7 @@ include:
     file: "cloud-providers/ibm-one-pipeline.yml"
 
   - local: "devops/gc/pipeline/override-stages.yml"
+  - local: "devops/aws/pipeline/override-stages.yml"
   - local: "/publish.yml"
 
 download_plugins:
