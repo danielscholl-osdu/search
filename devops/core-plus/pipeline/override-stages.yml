@@ -1,14 +1,14 @@
 variables:
-  CORE_SERVICE: search
-  CORE_TESTING_DIR: "testing/integration-tests"
-  CORE_BUILD_PATH: "search-core-plus/cloudbuild/Dockerfile"
+  CIMPL_SERVICE: "search"
+  CIMPL_TESTING_DIR: "testing/integration-tests"
+  CIMPL_BUILD_PATH: "search-core-plus/cloudbuild/Dockerfile"
 
-core-test:
+cimpl-test:
   variables:
     DEFAULT_DATA_PARTITION_ID_TENANT2: non-exist
     CUCUMBER_OPTIONS: "--tags ~@autocomplete"
 
-core-acceptance-test:
+cimpl-acceptance-test:
   variables:
     DEFAULT_DATA_PARTITION_ID_TENANT2: non-exist
     CUCUMBER_OPTIONS: "--tags @default,@health,@SpatialLongitudeStandardRange"
