@@ -1,29 +1,15 @@
 # Service Configuration for Google Cloud
 
-## Run args
-
-In order to run Search with Java 17 additional run args must be provided:
-
-```bash
---add-opens java.base/java.lang=ALL-UNNAMED --add-opens  java.base/java.lang.reflect=ALL-UNNAMED
-```
-
-Full command:
-
-```bash
-java -jar search.jar --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED
-```
-
 ## Table of Contents <a name="TOC"></a>
 
 - [Service Configuration for Google Cloud](#service-configuration-for-google-cloud)
-  - [Run args](#run-args)
   - [Table of Contents ](#table-of-contents-)
   - [Environment variables](#environment-variables)
   - [Properties set in Partition service](#properties-set-in-partition-service)
   - [Elasticsearch configuration](#elasticsearch-configuration)
+  - [Run args](#run-args)
   - [Google cloud service account configuration](#google-cloud-service-account-configuration)
-    - [Running E2E Tests](#running-e2e-tests)
+  - [Running E2E Tests](#running-e2e-tests)
   - [License](#license)
 
 ## Environment variables
@@ -134,6 +120,26 @@ curl -L -X PATCH 'http://partition.com/api/partition/v1/partitions/opendes' -H '
 }'
 
 ```
+# Run args
+
+In order to run Search with Java 17 additional run args must be provided:
+
+```bash
+--add-opens java.base/java.lang=ALL-UNNAMED --add-opens  java.base/java.lang.reflect=ALL-UNNAMED
+```
+
+Full command:
+
+```bash
+java --add-opens java.base/java.lang=ALL-UNNAMED \
+    --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
+    -Djava.security.egd=file:/dev/./urandom \
+    -Dserver.port=${PORT} \
+    -Dlog4j.formatMsgNoLookups=true \
+    -Dloader.main=org.opengroup.osdu.search.provider.gcp.SearchGcpApplication \
+    -jar /target/search-${PROVIDER_NAME}.jar
+```
+
 
 ## Google cloud service account configuration
 

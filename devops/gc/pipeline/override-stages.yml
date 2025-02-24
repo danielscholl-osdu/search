@@ -10,3 +10,26 @@ gc-test:
 gc-dev2-test:
   variables:
     CUCUMBER_OPTIONS: "--tags @autocomplete,~@ignore"
+
+download_gc_plugins:
+  image: maven:3.8.3-openjdk-17-slim
+  stage: build
+  variables:
+    GC_APD_PACKAGE_REGISTRY_URL: "https://community.opengroup.org/api/v4/projects/1480/packages/maven"
+    GC_APD_VERSION: "0.27.2"
+  artifacts:
+    paths:
+      - ./tmp-gc/*.jar
+    when: always
+    expire_in: 1 days
+  script:
+    - mvn dependency:copy -DrepoUrl=$GC_APD_PACKAGE_REGISRTY_URL -Dartifact="org.opengroup.osdu:gc-apd-acc:$GC_APD_VERSION:jar:plugin" -Dtransitive=false -DoutputDirectory="./tmp-gc"
+  only:
+    variables:
+      - $GC == '1'
+
+gc-containerize-gitlab:
+  needs: ["gc-compile-and-unit-test", "download_gc_plugins"]
+
+gc-containerize-gcr:
+  needs: ["gc-compile-and-unit-test", "download_gc_plugins"]
