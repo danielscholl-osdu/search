@@ -1,4 +1,4 @@
-# Search and Indexer Service
+# Search Service
 os-search-gc is a [Spring Boot](https://spring.io/projects/spring-boot) service that hosts CRUD APIs that enable the execution of OSDU R2 domain searches against Elasticsearch.
 
 ## Getting Started
@@ -8,7 +8,7 @@ These instructions will get you a copy of the project up and running on your loc
 Pre-requisites
 
 * GCloud SDK with java (latest version)
-* JDK 8
+* JDK 17 or later
 * Lombok 1.16 or later
 * Maven
 
@@ -16,8 +16,6 @@ Pre-requisites
 
 ## Service Configuration
 
-### Baremetal:
-[Baremetal service configuration ](docs/baremetal/README.md)
 ### Google Cloud:
 [Google Cloud service configuration ](docs/gc/README.md)
 
@@ -97,7 +95,14 @@ mvn clean install -DskipTests
 After configuring your environment as specified above, you can follow these steps to build and run the application. These steps should be invoked from the *repository root.*
 
 ```bash
-cd provider/search-gc/ && mvn spring-boot:run -Dspring-boot.run.jvmArguments="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens  java.base/java.lang.reflect=ALL-UNNAMED"
+cd provider/search-gc/ && 
+java --add-opens java.base/java.lang=ALL-UNNAMED \
+    --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
+    -Djava.security.egd=file:/dev/./urandom \
+    -Dserver.port=${PORT} \
+    -Dlog4j.formatMsgNoLookups=true \
+    -Dloader.main=org.opengroup.osdu.search.provider.gcp.SearchGcpApplication \
+    -jar /target/search-${PROVIDER_NAME}.jar
 ```
 
 ## Testing
@@ -111,26 +116,17 @@ $ (cd testing/storage-test-core/ && mvn clean install)
 ### Running E2E Tests 
 This section describes how to run cloud OSDU E2E tests.
 
-### Baremetal test configuration:
-[Baremetal service configuration ](docs/baremetal/README.md)
 ### Google Cloud test configuration:
 [Google Cloud service configuration ](docs/gc/README.md)
 
 ## Deployment
+Search Service is compatible with App Engine Flexible Environment and Cloud Run.
 
-* Data-Lake Search Google Cloud Endpoints on App Engine Flex environment
-  * Edit the app.yaml
-    * Open the [app.yaml](search/src/main/appengine/app.yaml) file in editor, and replace the YOUR-PROJECT-ID `PROJECT` line with Google Cloud Platform project Id. Also update `SEARCH_HOST`, `STORAGE_HOST`, `STORAGE_SCHEMA_HOST`, `IDENTITY_QUERY_ACCESS_HOST` and `IDENTITY_AUTHORIZE_HOST` based on your deployment
- 
-  * Deploy
-    ```sh
-    mvn appengine:deploy -pl org.opengroup.osdu.search:search -amd
-    ```
+* To deploy into Cloud run, please, use this documentation:
+  https://cloud.google.com/run/docs/quickstarts/build-and-deploy
 
-  * If you wish to deploy the search service without running tests
-    ```sh
-    mvn appengine:deploy -pl org.opengroup.osdu.search:search -amd -DskipTests
-    ```
+* To deploy into GKE, please, use this documentation:
+  https://cloud.google.com/kubernetes-engine/docs/deploy-app-cluster
 
 #### Memory Store (Redis Instance) Setup
 
