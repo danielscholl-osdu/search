@@ -59,7 +59,7 @@ include:
     file: "cloud-providers/gc-global.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
-    file: "cloud-providers/core-global.yml"
+    file: "cloud-providers/cimpl-global.yml"
 
   - local: "devops/core-plus/pipeline/override-stages.yml"
   - project: "osdu/platform/ci-cd-pipelines"
@@ -97,6 +97,7 @@ download_plugins:
   only:
     variables:
       - $PROTECTED == '1'
+
 
 aws-test-java:
   image: $CI_REGISTRY/osdu/platform/deployment-and-operations/base-containers-aws/aws-maven/aws-maven:v2.0
