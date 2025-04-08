@@ -30,7 +30,7 @@
 
     <properties>
         <!-- Core Dependencies -->
-        <core-lib-azure.version>2.0.4</core-lib-azure.version>
+        <core-lib-azure.version>2.0.6</core-lib-azure.version>
         <gson.version>2.11.0</gson.version>
 
         <!-- Plugin Versions -->
