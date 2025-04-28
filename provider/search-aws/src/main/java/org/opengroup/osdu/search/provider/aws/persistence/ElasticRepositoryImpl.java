@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License. */
 
 package org.opengroup.osdu.search.provider.aws.persistence;
-import org.opengroup.osdu.core.aws.ssm.K8sLocalParameterProvider;
-import org.opengroup.osdu.core.aws.ssm.K8sParameterNotFoundException;
+import org.opengroup.osdu.core.aws.v2.ssm.K8sLocalParameterProvider;
+import org.opengroup.osdu.core.aws.v2.ssm.K8sParameterNotFoundException;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import jakarta.annotation.PostConstruct;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;

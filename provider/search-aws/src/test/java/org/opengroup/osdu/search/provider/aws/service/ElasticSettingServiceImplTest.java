@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
-import org.opengroup.osdu.core.aws.ssm.K8sLocalParameterProvider;
+import org.opengroup.osdu.core.aws.v2.ssm.K8sLocalParameterProvider;
 import org.powermock.reflect.Whitebox;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 

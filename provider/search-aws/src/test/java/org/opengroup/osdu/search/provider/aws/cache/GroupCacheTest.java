@@ -14,7 +14,7 @@
 
 package org.opengroup.osdu.search.provider.aws.cache;
 
-import org.opengroup.osdu.core.aws.ssm.K8sLocalParameterProvider;
+import org.opengroup.osdu.core.aws.v2.ssm.K8sLocalParameterProvider;
 import org.opengroup.osdu.core.common.cache.RedisCache;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;

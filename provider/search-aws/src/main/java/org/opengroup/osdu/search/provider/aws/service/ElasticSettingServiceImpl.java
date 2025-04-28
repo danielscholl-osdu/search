@@ -14,8 +14,8 @@ limitations under the License. */
 
 package org.opengroup.osdu.search.provider.aws.service;
 
-import org.opengroup.osdu.core.aws.ssm.K8sLocalParameterProvider;
-import org.opengroup.osdu.core.aws.ssm.K8sParameterNotFoundException;
+import org.opengroup.osdu.core.aws.v2.ssm.K8sLocalParameterProvider;
+import org.opengroup.osdu.core.aws.v2.ssm.K8sParameterNotFoundException;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
 import org.springframework.beans.factory.annotation.Value;
