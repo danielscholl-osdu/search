@@ -2,41 +2,38 @@
 
 You will need to have the following environment variables defined.
 
-| name                                 | value                                            | description                                                                                                                                                                                                                    | sensitive?                              | source |
-|--------------------------------------|--------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------|--------|
-| `HOST`                               | eg `https://osdu.core-dev.gcp.gnrg-osdu.projects.epam.com`                                                   | -                                                                                                                                                                  | no                                     | -      |
-| `SEARCH_HOST`                        | eg `https://osdu.core-dev.gcp.gnrg-osdu.projects.epam.com/api/search/v2/`                                                   | -                                                                                                                                                   | no                                     | -      |
-| `STORAGE_HOST`                       | eg `https://osdu.core-dev.gcp.gnrg-osdu.projects.epam.com/api/storage/v2/`                                                   | -                                                                                                                                                  | no                                     | -      |
-| `INDEXER_HOST`                       | eg `https://osdu.core-dev.gcp.gnrg-osdu.projects.epam.com/api/indexer/v2/`                                                   | -                                                                                                                                                  | no                                     | -      |
-| `DEFAULT_DATA_PARTITION_ID_TENANT1`  | eg `osdu`                                        | Partition Id used for testing                                                                                                                                                                                                  | no                                     | -      |
-| `DEFAULT_DATA_PARTITION_ID_TENANT2`  | eg `non-exist`                                   |                                                                                                                                                                                                                                | no                                     | -      |
-| `ENTITLEMENTS_DOMAIN`                | eg `group`                                   |                                                                                                                                                                                                                                    | no                                     | -      |
-| `GROUP_ID`                | eg `group`                                   |                                                                                                                                                                                                                                    | no                                     | -      |
-| `LEGAL_TAG`                | eg `osdu-demo-legaltag`                                   |                                                                                                                                                                                                                                    | no                                     | -      |
-| `OTHER_RELEVANT_DATA_COUNTRIES`                | eg `US`                                   |                                                                                                                                                                                                                                    | no                                     | -      |
-
+| name                                | value                                                                      | description                                          | sensitive? | source |
+|-------------------------------------|----------------------------------------------------------------------------|------------------------------------------------------|------------|--------|
+| `HOST`                              | eg `https://osdu.core-dev.gcp.gnrg-osdu.projects.epam.com`                 | Base URL for the OSDU platform                       | no         | -      |
+| `SEARCH_HOST`                       | eg `https://osdu.core-dev.gcp.gnrg-osdu.projects.epam.com/api/search/v2/`  | Base URL for the Search API service                  | no         | -      |
+| `STORAGE_HOST`                      | eg `https://osdu.core-dev.gcp.gnrg-osdu.projects.epam.com/api/storage/v2/` | Base URL for the Storage API service                 | no         | -      |
+| `INDEXER_HOST`                      | eg `https://osdu.core-dev.gcp.gnrg-osdu.projects.epam.com/api/indexer/v2/` | Base URL for the Indexer API service                 | no         | -      |
+| `DEFAULT_DATA_PARTITION_ID_TENANT1` | eg `osdu`                                                                  | Primary partition ID used for testing tenant 1       | no         | -      |
+| `DEFAULT_DATA_PARTITION_ID_TENANT2` | eg `non-exist`                                                             | Non-existing tenant name                             | no         | -      |
+| `ENTITLEMENTS_DOMAIN`               | eg `group`                                                                 | Domain name for entitlements service                 | no         | -      |
+| `GROUP_ID`                          | eg `group`                                                                 | Group i                                              | no         | -      |
+| `LEGAL_TAG`                         | eg `osdu-demo-legaltag`                                                    | Legal tag                                            | no         | -      |
+| `OTHER_RELEVANT_DATA_COUNTRIES`     | eg `US`                                                                    |                                                      | no         | -      |
 
 Authentication can be provided as OIDC config:
 
-| name                                            | value                                   | description                   | sensitive? | source |
-|-------------------------------------------------|-----------------------------------------|-------------------------------|------------|--------|
-| `PRIVILEGED_USER_OPENID_PROVIDER_CLIENT_ID`     | `********`                              | PRIVILEGED_USER Client Id     | yes        | -      |
-| `PRIVILEGED_USER_OPENID_PROVIDER_CLIENT_SECRET` | `********`                              | PRIVILEGED_USER Client secret | yes        | -      |
-| `TEST_OPENID_PROVIDER_URL`                      | `https://keycloak.com/auth/realms/osdu` | OpenID provider url           | yes        | -      |
+| name                                            | value                                   | description                                             | sensitive? | source |
+|------------------------------------------------|-----------------------------------------|----------------------------------------------------------|------------|--------|
+| `PRIVILEGED_USER_OPENID_PROVIDER_CLIENT_ID`     | `********`                              | Client ID for privileged user authentication            | yes        | -      |
+| `PRIVILEGED_USER_OPENID_PROVIDER_CLIENT_SECRET` | `********`                              | Client secret for privileged user authentication        | yes        | -      |
+| `TEST_OPENID_PROVIDER_URL`                      | `https://keycloak.com/auth/realms/osdu` | URL of the OpenID Connect provider for authentication   | yes        | -      |
 
 Or tokens can be used directly from env variables:
 
-| name                    | value      | description           | sensitive? | source |
-|-------------------------|------------|-----------------------|------------|--------|
-| `PRIVILEGED_USER_TOKEN` | `********` | PRIVILEGED_USER_TOKEN Token | yes        | -      |
-
+| name                    | value      | description                                       | sensitive? | source |
+|------------------------|------------|----------------------------------------------------|------------|--------|
+| `PRIVILEGED_USER_TOKEN` | `********` | Authentication token for privileged user access   | yes        | -      |
 
 **Entitlements configuration for integration accounts**
 
 | PRIVILEGED_USER                                                                                                                                   |
 |---------------------------------------------------------------------------------------------------------------------------------------------------|
-|  users<br/>service.entitlements.user<br/>service.search.user<br/>data.test1<br/>data.integration.test<br/>users@{tenant1}@{groupId}.com |
-
+|  users<br/>service.entitlements.user<br/>service.search.user<br/>data.test1<br/>data.integration.test<br/>users@{tenant1}@{groupId}.com           |
 
 Execute following command to build code and run all the integration tests:
 
@@ -49,6 +46,7 @@ $ (cd search-acceptance-test && mvn clean test)
 **Cucumber Tagging Scenarios**
 
 Tags being covered in acceptance test:
+
 | Cucumber Tag | Covered |
 |--------------------------------|--------|
 | @default <br/> @health <br/> @autocomplete | YES |
