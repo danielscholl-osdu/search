@@ -1,15 +1,17 @@
 variables:
   GC_SERVICE: search
   GC_VENDOR: gc
-  GC_TESTING_DIR: "testing/integration-tests"
-
-gc-test:
-  variables:
-    CUCUMBER_OPTIONS: "--tags @autocomplete,~@ignore"
-
-gc-dev2-test:
-  variables:
-    CUCUMBER_OPTIONS: "--tags @autocomplete,~@ignore"
+  # GC Acceptance Test Variables
+  HOST: "https://$GC_DOMAIN"
+  SEARCH_HOST: "https://$GC_DOMAIN/api/search/v2/"
+  STORAGE_HOST: "https://$GC_DOMAIN/api/storage/v2/"
+  INDEXER_HOST: "https://$GC_DOMAIN/api/indexer/v2/"
+  DEFAULT_DATA_PARTITION_ID_TENANT1: $GC_TENANT
+  DEFAULT_DATA_PARTITION_ID_TENANT2: "non-exist"
+  ENTITLEMENTS_DOMAIN: "group"
+  GROUP_ID: "group"
+  LEGAL_TAG: "$LEGAL_TAG"
+  OTHER_RELEVANT_DATA_COUNTRIES: "US"
 
 download_gc_plugins:
   image: maven:3.8.3-openjdk-17-slim
