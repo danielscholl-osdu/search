@@ -1,0 +1,58 @@
+global:
+  domain: ""
+  onPremEnabled: false
+  limitsEnabled: true
+  logLevel: "ERROR"
+  tier: ""
+  autoscaling: true
+
+data:
+  # Configmaps
+  logLevel: ""
+  entitlementsHost: "http://entitlements"
+  partitionHost: "http://partition"
+  policyHost: "http://policy"
+  policyId: 'osdu.partition["%s"].search'
+  securityHttpsCertificateTrust: "true"
+  # Deployments
+  requestsCpu: "35m"
+  requestsMemory: "400Mi"
+  limitsCpu: "1"
+  limitsMemory: "1G"
+  serviceAccountName: "search"
+  imagePullPolicy: "IfNotPresent"
+  image: ""
+  # redis connection. Change it if you want to use external redis
+  redisSearchHost: ""
+  redisSearchPort: 6379
+  redisImage: "docker.io/library/redis:7.2-alpine"
+
+conf:
+  appName: "search"
+  elasticSecretName: "search-elastic-secret"
+  searchRedisSecretName: "search-redis-secret"
+  replicas: 2
+
+istio:
+  proxyCPU: "5m"
+  proxyCPULimit: "200m"
+  proxyMemory: "50Mi"
+  proxyMemoryLimit: "256Mi"
+
+hpa:
+  enabled: true
+  minReplicas: 6
+  maxReplicas: 15
+  targetType: "AverageValue"
+  targetValue: 200
+  behaviorScaleUpStabilizationWindowSeconds: 10
+  behaviorScaleUpPoliciesValue: 50
+  behaviorScaleUpPoliciesPeriodSeconds: 15
+  behaviorScaleDownStabilizationWindowSeconds: 60
+  behaviorScaleDownPoliciesValue: 25
+  behaviorScaleDownPoliciesPeriodSeconds: 60
+
+local_ratelimit:
+  max_tokens: 150
+  tokens_per_fill: 150
+  fill_interval: "1s"

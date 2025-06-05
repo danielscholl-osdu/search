@@ -1,158 +1,86 @@
-# Fork Management Template
+Copyright 2017-2019, Schlumberger
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![GitHub Issues](https://img.shields.io/github/issues/danielscholl-osdu/osdu-fork-template)](https://github.com/danielscholl-osdu/osdu-fork-template/issues)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/danielscholl-osdu/osdu-fork-template/pulls)
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-## 🤖 AI-Driven Development
+     http://www.apache.org/licenses/LICENSE-2.0
 
-[![Claude Ready](https://img.shields.io/badge/Claude%20Code-Ready-orange?logo=anthropic)](https://github.com/danielscholl/pr-generator-agent/blob/main/CLAUDE.md)
-[![Copilot-Ready](https://img.shields.io/badge/Copilot%20Agent-Ready-8A2BE2?logo=github)](https://github.com/danielscholl-osdu/osdu-fork-template/blob/main/.github/copilot-instructions.md)
-[![Template CI](https://img.shields.io/badge/Template%20CI-Active-green?logo=github)](https://github.com/danielscholl-osdu/osdu-fork-template/actions)
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+# Search and Indexer Service
 
-This project follows an AI-driven development workflow:
-- 🤖 **Built with AI** - Developed and maintained using Claude Code and GitHub Copilot
-- 📋 **AI Task Assignment** - Issues labeled with `copilot` are designed for AI implementation
-- 📚 **AI-Friendly Documentation** - Comprehensive guides for AI agents in [CLAUDE.md](CLAUDE.md)
-- 🔄 **Automated Workflows** - GitHub Actions with AI-enhanced PR descriptions and conflict resolution
-- 🎯 **AI-First Architecture** - Designed with clear patterns for AI understanding and modification
+## Azure Implementation
 
-This repository provides an automated template for managing long-lived forks of upstream repositories, ensuring controlled synchronization and release management. To understand conceptionally what is trying to be accomplished in this effort, see the [Overview OnePager](doc/overview.md). For detailed design and requirements, see the [Product Requirements Document](doc/prd.md).
+All documentation for the Azure implementation of `os-search` lives [here](./provider/search-azure/README.md)
 
-## Features
+## Google Cloud Implementation
 
-This template automates the process of maintaining a fork while keeping it updated with upstream changes. When you create a repository from this template, it will:
+All documentation for the GC implementation of `os-search` lives [here](./provider/search-gc/README.md)
 
-- Set up a structured branch strategy for controlled upstream synchronization
-- Configure automated workflows to handle syncing, validation, and releases
-- Enforce branch protection rules to maintain repository integrity
-- Manage releases with semantic versioning and upstream tracking
+## AWS Implementation
 
-## Prerequisites
+All documentation for the AWS implementation of `os-search` lives [here](./provider/search-aws/README.md)
 
-Before starting, ensure you have:
-- GitHub account with repository creation permissions
-- (Optional) Personal Access Token (PAT) for full automation:
-  - Create a secret named `GH_TOKEN` in your repository
-  - Required scopes: `repo`, `workflow`, `admin:repo_hook`
-  - Without PAT: Manual configuration of branch protection and secrets required
+### Open API spec
+go-swagger brings to the go community a complete suite of fully-featured, high-performance, API components to work with a Swagger API: server, client and data model.
+* How to generate go client libraries?
+    Assumptions:
+    a.	Running Windows
+    b.	Using Powershell
+    c.	Directory for source code: C:\devel\
 
-## Quick Start
+    1.	Install Golang
+    2.	Install go-swagger.exe, add to $PATH
+        ```
+        go get -u github.com/go-swagger/go-swagger/cmd/swagger
+        ```
+    3.	Create the following directories:
+        ```
+        C:\devel\datalake-test\src\
+        ```
+    4.	Copy “search_openapi.json” to “C:\devel\datalake-test\src”
+    5.	Set environment variable GOPATH (run the following in Powershell):
+        ```
+        $env:GOPATH="C:\devel\datalake-test\"
+        ```
+    6.	Change current directory to “C:\devel\datalake-test\src”
+        ```
+        cd C:\devel\datalake-test\src
+        ```
+    7.	Run the following command:
+        ```
+        swagger generate client -f 'search_openapi.json' -A search_openapi
+        ``` 
 
-### 1. Create New Repository
-1. Click the "Use this template" button above
-2. Choose a name and owner for your new repository
-3. Create repository
+#### Server Url(full path vs relative path) configuration
+- `api.server.fullUrl.enabled=true` It will generate full server url in the OpenAPI swagger
+- `api.server.fullUrl.enabled=false` It will generate only the contextPath only
+- default value is false (Currently only in Azure it is enabled)
+[Reference]:(https://springdoc.org/faq.html#_how_is_server_url_generated) 
 
-### 2. Initialize Repository
-1. Go to Actions → Select "Initialize Fork" → Click "Run workflow" (if not already running)
-2. An initialization issue will appear in the Issues tab
-3. Follow the instructions in the issue from the bot to complete setup
+### Maintenance
+* Indexer:
+  * Cleanup indexes - Indexer has a cron job running which hits following url:
+  ```
+  /_ah/cron/indexcleanup
+  ```
+  Note: The job will run for all the tenants in a deployment. It will delete all the indices following the pattern as:
+  ```
+    <accountid>indexpattern
+  ```
+  where indexpattern is the index pattern regular expression which you want to delete
+  indexpattern is defined in web.xml (in indexer) file with an environment variable as CRON_INDEX_CLEANUP_PATTERN
+  The scheduling of cron is done in the following repository:
+  https://slb-swt.visualstudio.com/data-management/_git/deployment-init-scripts?path=%2F3_post_deploy%2F1_appengine_cron%2Fcron.yaml&version=GBmaster
 
-## Branch Structure
+### Open API 3.0 - Swagger
+- Swagger UI : https://host/context-path/swagger (will redirect to https://host/context-path/swagger-ui/index.html)
+- api-docs (JSON) : https://host/context-path/api-docs
+- api-docs (YAML) : https://host/context-path/api-docs.yaml
 
-The permanent branches control how upstream updates flow through validation before reaching the main branch:
+All the Swagger and OpenAPI related common properties are managed here [swagger.properties](./search-core/src/main/resources/swagger.properties)
 
-```
-             ┌────────────────────────┐
-             │ fork_upstream          │
-             │ (Tracks Upstream)      │
-             └────────────────────────┘
-                      ↓
-             ┌───────────────────────┐
-             │ fork_integration      │
-             │ (Conflict Resolution) │
-             └───────────────────────┘
-                      ↓
-             ┌───────────────────────┐
-             │ main                  │
-             │ (Stable)              │
-             └───────────────────────┘
-              ↑                     ↑
-        Feature Branches       Certified Tags
-        (Feature1, etc.)      (Downstream Pull)
-```
-
-## Automated Workflows
-
-These workflows keep your fork in sync, enforce validation rules, and manage releases automatically:
-
-### 1. Upstream Sync
-- Scheduled automatic sync from upstream repository
-- Manual sync available via Actions tab
-- Automated conflict detection and notification
-- [Details →](doc/sync-workflow.md)
-
-### 2. Validation
-- Enforces commit format and branch status
-- Prevents merging of invalid PRs
-- Ensures code quality and consistency
-- [Details →](doc/validation-workflow.md)
-
-### 3. Release Management
-- Automated versioning and changelogs
-- Tracks upstream versions with release tags
-- [Details →](doc/release-workflow.md)
-
-## Development Workflow
-
-```mermaid
-gitGraph
-    checkout main
-    commit id: "Init Repo" tag: "0.0.0"
-
-    branch upstream
-    checkout upstream
-    commit id: "Upstream Sync 1" tag: "upstream-v1.0.0"
-
-    checkout main
-    branch integration
-    checkout integration
-
-
-    merge upstream 
-
-
-    commit id: "Bugfix 1"
-
-    checkout upstream
-    commit id: "Upstream Sync 2" tag: "upstream-v2.0.0"
-
-    checkout integration
-    merge upstream
-
-
-    commit id: "Bugfix 2"
-
-    checkout main
-    commit id: "Feature Work 1" tag: "0.0.1"
-    commit id: "Feature Work 2" tag: "0.1.0"
-
-    merge integration tag: "2.0.0"
-
-    commit id: "Feature Work 3" tag: "2.1.1"
-    commit id: "Feature Work 4" tag: "2.1.2"
-
-```
-
-### 1. Feature Development
-1. Branch from main: `git checkout -b feature/my-feature main`
-2. Make changes and test
-3. Use conventional commits:
-   ```
-   feat: new feature
-   fix: bug fix
-   feat!: breaking change
-   ```
-4. Create PR → Review → Merge
-
-### 2. Upstream Sync Process
-1. Auto-sync PR created daily
-2. Review changes
-3. Resolve conflicts if needed
-4. Merge sync PR
-
-### 3. Release Process
-1. Merge to main with conventional commits
-2. Release Please handles versioning and changelog
-3. Release includes upstream version tracking

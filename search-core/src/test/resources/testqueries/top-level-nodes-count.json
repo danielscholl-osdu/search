@@ -1,0 +1,22 @@
+{
+    "simple-query": 1,
+    "simple-query-with-bool": 2,
+    "combined-simple-query": 2,
+    "nested-query": 1,
+    "nested-query-with-similar-properties": 1,
+    "range-nested-query": 1,
+    "combined-range-nested-query": 1,
+    "combined-simple-nested-query": 3,
+    "combined-simple-or-nested-query": 2,
+    "multilevel-nested-query": 1,
+    "combined-multilevel-nested-query": 1,
+    "combined-nested-query-with-not": 1,
+    "nested-query-with-similar-inner-properties": 1,
+    "inner-nested-query": 1,
+    "inner-multilevel-nested-query": 1,
+    "nested-query-with-space": 1,
+    "multilevel-nested-query-with-space": 1,
+	"nested-query-with-AND-OR-keywords-inside-double-quotes": 2,
+    "nested-query-with-parent-keywords-inside-double-quotes": 2,
+	"nested-query-with-escaped-quote-inside-double-quotes": 2
+}
