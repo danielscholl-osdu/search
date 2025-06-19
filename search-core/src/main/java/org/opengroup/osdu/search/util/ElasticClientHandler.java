@@ -28,6 +28,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
 import javax.net.ssl.SSLContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
@@ -56,6 +58,7 @@ public class ElasticClientHandler implements Closeable {
   private static final int CLOUD_REST_CLIENT_PORT = 9243;
   private static final int REST_CLIENT_CONNECT_TIMEOUT = 60000;
   private static final int REST_CLIENT_SOCKET_TIMEOUT = 60000;
+  private static final int REST_CLIENT_CONNECTION_KEEPALIVE_SECONDS = 60;
 
   @Value("#{new Boolean('${security.https.certificate.trust:false}')}")
   private Boolean isSecurityHttpsCertificateTrust;
@@ -135,7 +138,8 @@ public class ElasticClientHandler implements Closeable {
             requestConfigBuilder
                 .setConnectTimeout(REST_CLIENT_CONNECT_TIMEOUT)
                 .setSocketTimeout(REST_CLIENT_SOCKET_TIMEOUT));
-
+    builder.setHttpClientConfigCallback(httpClientCallback -> httpClientCallback.setConnectionTimeToLive(REST_CLIENT_CONNECTION_KEEPALIVE_SECONDS, TimeUnit.SECONDS));
+    
     Header[] defaultHeaders =
         new Header[] {
           new BasicHeader("client.transport.nodes_sampler_interval", "30s"),
@@ -158,7 +162,8 @@ public class ElasticClientHandler implements Closeable {
           httpClientBuilder ->
               httpClientBuilder
                   .setSSLContext(sslContext)
-                  .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE));
+                  .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                  .setConnectionTimeToLive(REST_CLIENT_CONNECTION_KEEPALIVE_SECONDS, TimeUnit.SECONDS));
     }
 
     builder.setDefaultHeaders(defaultHeaders);
