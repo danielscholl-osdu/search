@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -50,7 +51,8 @@ public class ElasticClientHandlerAwsTest {
         RestClientBuilder expected = RestClient.builder(new HttpHost(host, port, protocolScheme));
         expected.setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder
                 .setConnectTimeout(60000)
-                .setSocketTimeout(60000)); 
+                .setSocketTimeout(60000));
+        expected.setHttpClientConfigCallback(httpClientCallback -> httpClientCallback.setConnectionTimeToLive(60, TimeUnit.SECONDS)); 
 
         SSLContext sslContext;            
 
@@ -58,7 +60,8 @@ public class ElasticClientHandlerAwsTest {
         sslContext.init(null, new TrustManager[]{ UnsafeX509ExtendedTrustManager.INSTANCE }, null);
         expected.setHttpClientConfigCallback(httpClientBuilder -> 
         httpClientBuilder.setSSLContext(sslContext)
-                    .setSSLHostnameVerifier((s, session) -> true));
+                    .setSSLHostnameVerifier((s, session) -> true)
+                    .setConnectionTimeToLive(60, TimeUnit.SECONDS));
         
         Header[] defaultHeaders = new Header[]{
                 new BasicHeader("client.transport.nodes_sampler_interval", "30s"),
