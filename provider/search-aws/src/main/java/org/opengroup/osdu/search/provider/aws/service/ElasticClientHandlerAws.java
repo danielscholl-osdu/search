@@ -16,6 +16,7 @@ package org.opengroup.osdu.search.provider.aws.service;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -38,6 +39,7 @@ public class ElasticClientHandlerAws extends ElasticClientHandler {
 
     private static final int REST_CLIENT_CONNECT_TIMEOUT = 60000;
     private static final int REST_CLIENT_SOCKET_TIMEOUT = 60000;
+    private static final int REST_CLIENT_CONNECTION_KEEPALIVE_SECONDS = 60;
 
     @Value("${aws.es.certificate.disableTrust:false}")
     // @Value("#{new Boolean('${aws.es.certificate.disableTrust:false}')}")
@@ -50,7 +52,8 @@ public class ElasticClientHandlerAws extends ElasticClientHandler {
         RestClientBuilder builder = RestClient.builder(new HttpHost(host, port, protocolScheme));
         builder.setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder
         .setConnectTimeout(REST_CLIENT_CONNECT_TIMEOUT)
-        .setSocketTimeout(REST_CLIENT_SOCKET_TIMEOUT));    
+        .setSocketTimeout(REST_CLIENT_SOCKET_TIMEOUT));
+        builder.setHttpClientConfigCallback(httpClientCallback -> httpClientCallback.setConnectionTimeToLive(REST_CLIENT_CONNECTION_KEEPALIVE_SECONDS, TimeUnit.SECONDS));    
 
         Boolean isLocal = isLocalHost(host);
         if (isLocal || disableSslCertificateTrust) {
@@ -60,7 +63,8 @@ public class ElasticClientHandlerAws extends ElasticClientHandler {
                 sslContext = SSLContext.getInstance("TLS");
                 sslContext.init(null, new TrustManager[] { UnsafeX509ExtendedTrustManager.INSTANCE }, null);
                 builder.setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setSSLContext(sslContext)
-                        .setSSLHostnameVerifier((s, session) -> true));
+                        .setSSLHostnameVerifier((s, session) -> true)
+                        .setConnectionTimeToLive(REST_CLIENT_CONNECTION_KEEPALIVE_SECONDS, TimeUnit.SECONDS));
             } catch (NoSuchAlgorithmException e) {
                 log.error("No such algorithm", e);
             } catch (KeyManagementException e) {
