@@ -1,0 +1,32 @@
+{
+    "error": {
+        "root_cause": [{
+            "type": "query_shard_exception",
+            "reason": "failed to create query: [nested] failed to find nested object under path [data.NameAliases]",
+            "index_uuid": "yTHQkD08S_Whctq_6QkXPA",
+            "index": "osdu-wks-master-data--well-1.0.0"
+        }
+        ],
+        "type": "search_phase_execution_exception",
+        "reason": "all shards failed",
+        "phase": "query",
+        "grouped": true,
+        "failed_shards": [{
+            "shard": 0,
+            "index": "osdu-wks-master-data--well-1.0.0",
+            "node": "I9579IL-TX2IXJVJatOu6Q",
+            "reason": {
+                "type": "query_shard_exception",
+                "reason": "failed to create query: [nested] failed to find nested object under path [data.NameAliases]",
+                "index_uuid": "yTHQkD08S_Whctq_6QkXPA",
+                "index": "osdu-wks-master-data--well-1.0.0",
+                "caused_by": {
+                    "type": "illegal_state_exception",
+                    "reason": "[nested] failed to find nested object under path [data.NameAliases]"
+                }
+            }
+        }
+        ]
+    },
+    "status": 400
+}
