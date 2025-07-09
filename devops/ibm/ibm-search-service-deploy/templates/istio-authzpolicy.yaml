@@ -1,0 +1,22 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Values.conf.appName }}-authz-policy
+spec:
+  selector:
+    matchLabels:
+      {{- include "ibm-search-service-deploy.selectorLabels" . | nindent 6 }}
+  action: DENY
+  rules:
+  - from:
+    - source:
+        notRequestPrincipals:
+        - '*'
+    to:
+    - operation:
+        notPaths:
+        - '*/v2/api-docs'
+        - /api/search/v1/info
+        - /api/search/v1/_ah/liveness_check
+        - /api/search/v1/_ah/readiness_check
+        - /api/search/v1/api-docs
