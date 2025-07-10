@@ -89,6 +89,13 @@ phases:
           --commitMessage "\"${COMMIT_MESSAGE}\"" --commitAuthor "\"${COMMIT_AUTHOR}\"" --commitDate "\"${COMMIT_DATE}\"" \
           --buildid ${CODEBUILD_BUILD_ID} --buildnumber ${CODEBUILD_BUILD_NUMBER} --reponame ${REPO_NAME} --outdir ${OUTPUT_DIR} \
           --artifact ${ECR_IMAGE}
+          
+  post_build:
+    commands:
+      - mkdir -p ${OUTPUT_DIR}/acceptance-tests
+      - cp -r search-acceptance-test/* ${OUTPUT_DIR}/acceptance-tests
+      - cp testing/integration-tests/search-test-aws/build-aws/run-acceptance-tests.sh ${OUTPUT_DIR}/acceptance-tests
+
 
 reports:
   SurefireReports: # CodeBuild will create a report group called "SurefireReports".
