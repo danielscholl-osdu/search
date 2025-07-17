@@ -14,7 +14,7 @@ data:
   policyId: 'osdu.partition["%s"].search'
   securityHttpsCertificateTrust: "true"
   # Deployments
-  requestsCpu: "35m"
+  requestsCpu: "65m"
   requestsMemory: "400Mi"
   limitsCpu: "1"
   limitsMemory: "1G"
@@ -47,7 +47,7 @@ hpa:
   minReplicas: 1
   maxReplicas: 6
   cpu:
-    utilization: 350
+    utilization: 200
     scaleUpStabilizationWindowSeconds: 30
     scaleUpValue: 200
     scaleUpPeriod: 15
