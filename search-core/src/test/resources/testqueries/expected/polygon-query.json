@@ -1,0 +1,10 @@
+{
+  "geo_shape":{
+    "data.SpatialLocation.Wgs84Coordinates":{
+      "shape":"{coordinates=[[[-8.61, 1.02], [-2.48, 1.02], [-2.48, 10.74], [-8.61, 10.74], [-8.61, 1.02]]], type=Polygon}",
+      "relation":"within"
+    },
+    "boost":1.0,
+    "ignore_unmapped":true
+  }
+}
