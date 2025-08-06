@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/danielscholl-osdu/search/compare/v1.0.0...v1.1.0) (2025-08-06)
+
+
+### ✨ Features
+
+* **search:** Enable search-after feature by default ([d084240](https://github.com/danielscholl-osdu/search/commit/d084240f2e31801172add78abc7b2a9f362d82ba))
+
 ## 1.0.0 (2025-07-21)
 
 
