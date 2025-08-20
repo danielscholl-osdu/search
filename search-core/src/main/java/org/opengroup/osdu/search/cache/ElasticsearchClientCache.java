@@ -18,6 +18,7 @@
 package org.opengroup.osdu.search.cache;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import com.google.common.cache.RemovalListener;
 import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.cache.VmCache;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
@@ -28,11 +29,16 @@ public class ElasticsearchClientCache implements ICache<String, ElasticsearchCli
 
   private final VmCache<String, ElasticsearchClient> vmCache;
 
-  public ElasticsearchClientCache(SearchConfigurationProperties searchConfigurationProperties) {
+  public ElasticsearchClientCache(
+          SearchConfigurationProperties searchConfigurationProperties,
+          RemovalListener<String, ElasticsearchClient> removalListener
+  ) {
     this.vmCache =
         new VmCache<>(
             searchConfigurationProperties.getElasticCacheExpiration(),
-            searchConfigurationProperties.getMaximumCacheSize());
+            searchConfigurationProperties.getMaximumCacheSize(),
+            removalListener
+        );
   }
 
   @Override
