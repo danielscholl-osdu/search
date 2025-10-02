@@ -1,0 +1,57 @@
+{
+    "bool": {
+        "must": [{
+            "bool": {
+                "must": [{
+                    "nested": {
+                        "query": {
+                            "query_string": {
+                                "query": "(data.NestedTest.NumberTest:(12345.0 OR 0) AND data.NestedTest.StringTest:\"test string\")",
+                                "fields": [],
+                                "type": "best_fields",
+                                "default_operator": "or",
+                                "max_determinized_states": 10000,
+                                "allow_leading_wildcard": false,
+                                "enable_position_increments": true,
+                                "fuzziness": "AUTO",
+                                "fuzzy_prefix_length": 0,
+                                "fuzzy_max_expansions": 50,
+                                "phrase_slop": 0,
+                                "escape": false,
+                                "auto_generate_synonyms_phrase_query": true,
+                                "fuzzy_transpositions": true,
+                                "boost": 1.0
+                            }
+                        },
+                        "path": "data.NestedTest",
+                        "ignore_unmapped": true,
+                        "score_mode": "avg",
+                        "boost": 1.0
+                    }
+                }, {
+                    "query_string": {
+                        "query": "data.First:\"Example*\"",
+                        "fields": [],
+                        "type": "best_fields",
+                        "default_operator": "or",
+                        "max_determinized_states": 10000,
+                        "allow_leading_wildcard": false,
+                        "enable_position_increments": true,
+                        "fuzziness": "AUTO",
+                        "fuzzy_prefix_length": 0,
+                        "fuzzy_max_expansions": 50,
+                        "phrase_slop": 0,
+                        "escape": false,
+                        "auto_generate_synonyms_phrase_query": true,
+                        "fuzzy_transpositions": true,
+                        "boost": 1.0
+                    }
+                }
+                ],
+                "boost": 1.0
+            }
+        }
+        ],
+        "boost": 1.0
+    }
+}

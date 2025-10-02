@@ -1,0 +1,214 @@
+{
+    "dynamic": "false",
+    "properties": {
+        "acl": {
+            "properties": {
+                "owners": {
+                    "type": "keyword"
+                },
+                "viewers": {
+                    "type": "keyword"
+                }
+            }
+        },
+        "ancestry": {
+            "properties": {
+                "parents": {
+                    "type": "keyword"
+                }
+            }
+        },
+        "data": {
+            "properties": {
+                "Code": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "CodeAsNumber": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "CodeSpace": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "CoordinateReferenceSystemType": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "CoordinateSystem": {
+                    "type": "object"
+                },
+                "Datum": {
+                    "type": "object"
+                },
+                "Description": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "ID": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "Kind": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "Name": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "PersistableReference": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "PreferredUsage": {
+                    "type": "object"
+                },
+                "RevisionDate": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "Usages": {
+                    "type": "object"
+                },
+                "Wgs84Coordinates": {
+                    "type": "geometrycollection",
+                    "geometries": [
+                        {
+                            "type": "Polygon",
+                            "coordinates": [[[-8.61, 1.02], [-2.48, 1.02], [-2.48, 10.74], [-8.61, 10.74], [-8.61, 1.02]]]
+                        }
+                    ]
+                },
+                "Source": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "CommitDate": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "null_value": "null",
+                            "ignore_above": 256
+                        }
+                    }
+                }
+            }
+        },
+        "id": {
+            "type": "keyword"
+        },
+        "index": {
+            "properties": {
+                "lastUpdateTime": {
+                    "type": "date"
+                },
+                "statusCode": {
+                    "type": "integer"
+                },
+                "trace": {
+                    "type": "text"
+                }
+            }
+        },
+        "kind": {
+            "type": "keyword"
+        },
+        "legal": {
+            "properties": {
+                "legaltags": {
+                    "type": "keyword"
+                },
+                "otherRelevantDataCountries": {
+                    "type": "keyword"
+                },
+                "status": {
+                    "type": "keyword"
+                }
+            }
+        },
+        "namespace": {
+            "type": "keyword"
+        },
+        "tags": {
+            "type": "object"
+        },
+        "type": {
+            "type": "keyword"
+        },
+        "version": {
+            "type": "long"
+        },
+        "x-acl": {
+            "type": "keyword"
+        }
+    }
+}
