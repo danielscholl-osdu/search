@@ -1,0 +1,143 @@
+[{
+  "id": "test:well:1.0.0:1",
+  "kind": "<Kind>",
+  "namespace": "tenant1:testdatasource",
+  "type": "well",
+  "acl": "{viewers=[<Data-Group>], owners=[<Data-Group>]}",
+  "x-acl": [
+    "<Data-Group>"
+  ],
+  "legal": {
+    "legaltags": [
+      "<Legal-Tag>"
+    ],
+    "otherRelevantDataCountries": [
+      "<Country>"
+    ],
+    "status": "compliant"
+  },
+  "data": {
+    "Code": "4143",
+    "CodeAsNumber": 4143,
+    "CodeSpace": "EPSG",
+    "CoordinateReferenceSystemType": "GeodeticCRS",
+    "CoordinateSystem": {
+      "AuthorityCode": {
+        "Authority": "EPSG",
+        "Code": 6422
+      },
+      "Name": "Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: degree",
+      "HorizontalAxisUnitID": "{{NAMESPACE}}:reference-data--UnitOfMeasure:dega:"
+    },
+    "Datum": {
+      "AuthorityCode": {
+        "Authority": "EPSG",
+        "Code": 6143
+      },
+      "Name": "Abidjan 1987"
+    },
+    "Description": "Replaces Locodjo 1965 (EPSG code 4142).",
+    "ID": "Geographic2D:EPSG::4143",
+    "Kind": "geographic 2D",
+    "Name": "Abidjan 1987",
+    "PersistableReference": "{\"authCode\":{\"auth\":\"EPSG\",\"code\":\"4143\"},\"name\":\"GCS_Abidjan_1987\",\"type\":\"LBC\",\"ver\":\"PE_10_9_1\",\"wkt\":\"GEOGCS[\\\"GCS_Abidjan_1987\\\",DATUM[\\\"D_Abidjan_1987\\\",SPHEROID[\\\"Clarke_1880_RGS\\\",6378249.145,293.465]],PRIMEM[\\\"Greenwich\\\",0.0],UNIT[\\\"Degree\\\",0.0174532925199433],AUTHORITY[\\\"EPSG\\\",4143]]\"}",
+    "PreferredUsage": {
+      "AuthorityCode": {
+        "Authority": "EPSG",
+        "Code": 3028
+      },
+      "Extent": {
+        "AuthorityCode": {
+          "Authority": "EPSG",
+          "Code": 1075
+        },
+        "BoundingBoxEastBoundLongitude": -2.48,
+        "BoundingBoxNorthBoundLatitude": 10.74,
+        "BoundingBoxSouthBoundLatitude": 1.02,
+        "BoundingBoxWestBoundLongitude": -8.61,
+        "Description": "C\u00f4te d'Ivoire (Ivory Coast) - onshore and offshore.",
+        "Name": "Cote d'Ivoire (Ivory Coast)"
+      },
+      "Name": "Cote d'Ivoire (Ivory Coast)",
+      "Scope": {
+        "AuthorityCode": {
+          "Authority": "EPSG",
+          "Code": 1027
+        },
+        "Name": "Geodesy."
+      }
+    },
+    "RevisionDate": "2016-12-15T00:00:00+00:00",
+    "Usages": [
+      {
+        "AuthorityCode": {
+          "Authority": "EPSG",
+          "Code": 3028
+        },
+        "Extent": {
+          "AuthorityCode": {
+            "Authority": "EPSG",
+            "Code": 1075
+          },
+          "BoundingBoxEastBoundLongitude": -2.48,
+          "BoundingBoxNorthBoundLatitude": 10.74,
+          "BoundingBoxSouthBoundLatitude": 1.02,
+          "BoundingBoxWestBoundLongitude": -8.61,
+          "Description": "C\u00f4te d'Ivoire (Ivory Coast) - onshore and offshore.",
+          "Name": "Cote d'Ivoire (Ivory Coast)"
+        },
+        "Name": "Cote d'Ivoire (Ivory Coast)",
+        "Scope": {
+          "AuthorityCode": {
+            "Authority": "EPSG",
+            "Code": 1027
+          },
+          "Name": "Geodesy."
+        }
+      }
+    ],
+    "Wgs84Coordinates": {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {},
+          "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  -8.61,
+                  1.02
+                ],
+                [
+                  -2.48,
+                  1.02
+                ],
+                [
+                  -2.48,
+                  10.74
+                ],
+                [
+                  -8.61,
+                  10.74
+                ],
+                [
+                  -8.61,
+                  1.02
+                ]
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    "Source": "Workbook Resources/IOGP/Manifests/reference-data/CoordinateReferenceSystem.1.1.0.json; commit SHA a046fbd2.",
+    "CommitDate": "2022-04-02T14:45:12+02:00"
+  },
+  "index": {
+    "statusCode": 200,
+    "lastUpdateTime": "2018-10-04T10:11:22.303000"
+  }
+}
+]
