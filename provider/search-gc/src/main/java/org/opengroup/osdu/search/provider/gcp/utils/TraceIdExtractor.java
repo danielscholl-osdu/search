@@ -25,6 +25,8 @@ import javax.ws.rs.core.MultivaluedMap;
 public class TraceIdExtractor {
 
   public static final String CLOUD_TRACE_CONTEXT = "x-cloud-trace-context";
+  
+  private static final Random RANDOM = new Random();
 
   private TraceIdExtractor() {
   }
@@ -72,6 +74,6 @@ public class TraceIdExtractor {
   }
 
   private static String getNewSpanId() {
-    return Integer.toUnsignedString(new Random().nextInt());
+    return Integer.toUnsignedString(RANDOM.nextInt());
   }
 }
