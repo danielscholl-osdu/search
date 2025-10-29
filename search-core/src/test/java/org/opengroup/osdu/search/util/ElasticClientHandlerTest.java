@@ -19,6 +19,8 @@
 package org.opengroup.osdu.search.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -38,12 +40,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
+import org.opengroup.osdu.search.cache.ElasticsearchClientCache;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ElasticClientHandlerTest {
@@ -60,7 +62,7 @@ public class ElasticClientHandlerTest {
   @Mock
   private JaxRsDpsLog log;
   @Mock
-  private ICache<String, ElasticsearchClient> clientCache;
+  private ElasticsearchClientCache clientCache;
   @Mock
   private TenantInfo tenantInfo;
 
@@ -74,6 +76,14 @@ public class ElasticClientHandlerTest {
     mockedRestClients = mockStatic(RestClient.class);
 
     elasticClientHandler.setSecurityHttpsCertificateTrust(SECURITY_HTTPS_CERTIFICATE_TRUST);
+    when(tenantInfo.getDataPartitionId()).thenReturn("dp1");
+    
+    // Mock the cache to call the lambda function when computeIfAbsent is invoked
+    when(clientCache.computeIfAbsent(eq("dp1"), any())).thenAnswer(invocation -> {
+      String partitionId = invocation.getArgument(0);
+      java.util.function.Function<String, ElasticsearchClient> supplier = invocation.getArgument(1);
+      return supplier.apply(partitionId);
+    });
   }
 
   @After

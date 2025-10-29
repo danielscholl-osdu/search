@@ -24,6 +24,8 @@ import org.opengroup.osdu.core.common.cache.VmCache;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.function.Function;
+
 @Component
 public class ElasticsearchClientCache implements ICache<String, ElasticsearchClient> {
 
@@ -33,12 +35,11 @@ public class ElasticsearchClientCache implements ICache<String, ElasticsearchCli
           SearchConfigurationProperties searchConfigurationProperties,
           RemovalListener<String, ElasticsearchClient> removalListener
   ) {
-    this.vmCache =
-        new VmCache<>(
-            searchConfigurationProperties.getElasticCacheExpiration(),
-            searchConfigurationProperties.getMaximumCacheSize(),
-            removalListener
-        );
+    this.vmCache = new VmCache<>(
+        searchConfigurationProperties.getElasticCacheExpiration(),
+        searchConfigurationProperties.getMaximumCacheSize(),
+        removalListener
+    );
   }
 
   @Override
@@ -59,5 +60,17 @@ public class ElasticsearchClientCache implements ICache<String, ElasticsearchCli
   @Override
   public void clearAll() {
     this.vmCache.clearAll();
+  }
+  
+  /**
+   * Thread-safe atomic compute-if-absent operation to prevent race conditions.
+   * Delegates to VmCache which uses Guava Cache's atomic get(K, Callable) operation.
+   * 
+   * @param partitionId The partition ID to look up or compute
+   * @param mappingFunction Function to create a new client if not present
+   * @return The existing or newly computed client
+   */
+  public ElasticsearchClient computeIfAbsent(String partitionId, Function<String, ElasticsearchClient> mappingFunction) {
+    return this.vmCache.computeIfAbsent(partitionId, mappingFunction);
   }
 }
