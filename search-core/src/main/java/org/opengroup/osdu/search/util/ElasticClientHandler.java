@@ -27,7 +27,6 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
@@ -41,11 +40,11 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
-import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
+import org.opengroup.osdu.search.cache.ElasticsearchClientCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -64,17 +63,37 @@ public class ElasticClientHandler implements Closeable {
   private Boolean isSecurityHttpsCertificateTrust;
 
   @Autowired private IElasticSettingService elasticSettingService;
-  @Autowired private ICache<String, ElasticsearchClient> clientCache;
+  @Autowired private ElasticsearchClientCache clientCache;
   @Autowired private TenantInfo tenantInfo;
 
   public ElasticsearchClient getOrCreateRestClient() {
     String partitionId = tenantInfo.getDataPartitionId();
-    ElasticsearchClient client = clientCache.get(partitionId);
-    if (Objects.isNull(client)) {
-      client = getCloudRestClient(elasticSettingService.getElasticClusterInformation());
-      clientCache.put(partitionId, client);
+    return getOrCreateRestClient(partitionId);
+  }
+  
+  /**
+   * Thread-safe method to get or create a REST client for a specific partition.
+   * This method prevents race conditions by using atomic computeIfAbsent operation.
+   * 
+   * @param partitionId The partition ID to get or create a client for
+   * @return The Elasticsearch client for the partition
+   */
+  public ElasticsearchClient getOrCreateRestClient(String partitionId) {
+    if (partitionId == null || partitionId.trim().isEmpty()) {
+      throw new IllegalArgumentException("Partition ID cannot be null or empty");
     }
-    return client;
+    
+    // Use atomic computeIfAbsent to prevent race conditions
+    // This ensures only one thread creates the client for each partition
+    return clientCache.computeIfAbsent(partitionId, pid -> {
+      log.info("Creating new ElasticsearchClient for partition: {}", pid);
+      try {
+        return getCloudRestClient(elasticSettingService.getElasticClusterInformation());
+      } catch (Exception e) {
+        log.error("Failed to create ElasticsearchClient for partition: {}", pid, e);
+        throw e; // Re-throw to prevent caching of null values
+      }
+    });
   }
 
   public ElasticsearchClient createRestClient(final ClusterSettings clusterSettings) {
@@ -189,6 +208,17 @@ public class ElasticClientHandler implements Closeable {
     this.isSecurityHttpsCertificateTrust = isSecurityHttpsCertificateTrust;
   }
 
+  /**
+   * Clears all cached clients. Should be used with caution in production.
+   */
+  public void clearAllClients() {
+    log.info("Clearing all cached Elasticsearch clients");
+    clientCache.clearAll();
+  }
+
   @Override
-  public void close() throws IOException {}
+  public void close() throws IOException {
+    log.info("Closing ElasticClientHandler and clearing all cached clients");
+    clearAllClients();
+  }
 }
