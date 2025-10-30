@@ -11,7 +11,7 @@
 
     <groupId>org.opengroup.osdu.search</groupId>
     <artifactId>search-test-gc</artifactId>
-    <version>0.29.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <properties>
         <maven.compiler.target>17</maven.compiler.target>
