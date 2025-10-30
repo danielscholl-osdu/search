@@ -2,13 +2,16 @@ variables:
   CIMPL_SERVICE: "search"
   CIMPL_TESTING_DIR: "testing/integration-tests"
   CIMPL_BUILD_PATH: "search-core-plus/cloudbuild/Dockerfile"
-
-cimpl-test:
-  variables:
-    DEFAULT_DATA_PARTITION_ID_TENANT2: non-exist
-    CUCUMBER_OPTIONS: "--tags ~@autocomplete"
+  DISABLE_INTEGRATION_TEST: true
 
 cimpl-acceptance-test:
+  variables:
+    DEFAULT_DATA_PARTITION_ID_TENANT2: non-exist
+    CUCUMBER_OPTIONS: "--tags @default,@health,@SpatialLongitudeStandardRange"
+
+#dev2 jobs
+
+cimpl-dev2-acceptance-test:
   variables:
     DEFAULT_DATA_PARTITION_ID_TENANT2: non-exist
     CUCUMBER_OPTIONS: "--tags @default,@health,@SpatialLongitudeStandardRange"
