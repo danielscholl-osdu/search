@@ -1,0 +1,45 @@
+site_name: OSDU Search Service Documentation
+site_description: OSDU Search Service
+site_author: Shane Hutchins
+
+# Repository
+repo_url: https://community.opengroup.org/osdu/platform/system/search-service
+repo_name: Search
+
+# Copyright
+copyright: Copyright &copy; 2024 Open Subsurface Data Universe Software
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+markdown_extensions:
+  - admonition
+  - sane_lists
+
+plugins:
+  - search
+  - git-revision-date
+
+#nav:
+#  - OSDU Legal (Compliance) Service: 'index.md'
+#  - Ingestion Workflow: 'ingestion.md'
+#  - API: 'api.md'
+#  - Configuration:
+#      - Allow Data Ingestion from Specific Country of Origin: 'AllowDataIngestionFromCertainCOO.md'
+#      - Feature Flags: 'features.md'
