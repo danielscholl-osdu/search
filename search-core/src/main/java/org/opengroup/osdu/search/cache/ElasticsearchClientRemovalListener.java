@@ -17,6 +17,7 @@ public class ElasticsearchClientRemovalListener implements RemovalListener<Strin
         ElasticsearchClient elasticSearchClient = notification.getValue();
         if (elasticSearchClient != null) {
             try {
+                log.debug("Removing ElasticsearchClient from cache, cause: {}", notification.getCause());
                 elasticSearchClient._transport().close();
             } catch (IOException e) {
                 log.error("Error while closing transport on ElasticsearchClient {}", e.getMessage(), e);
