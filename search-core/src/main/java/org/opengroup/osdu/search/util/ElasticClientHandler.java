@@ -96,6 +96,17 @@ public class ElasticClientHandler implements Closeable {
     });
   }
 
+    /**
+     * Create a new uncached ElasticsearchClient with the give settings
+     *
+     * @deprecated This method creates uncached clients that can cause memory leaks if not properly closed.
+     * Use {@link #getOrCreateRestClient(String)} instead for cached clients.
+     * Only use this method if you have a specific need for an uncached client, and you
+     * guarantee proper cleanup by closing the client after use.
+     * @param clusterSettings The cluster settings to use
+     * @return A new uncached ElasticsearchClient instance (caller must close it)
+     */
+  @Deprecated
   public ElasticsearchClient createRestClient(final ClusterSettings clusterSettings) {
     return getCloudRestClient(clusterSettings);
   }
@@ -107,6 +118,7 @@ public class ElasticClientHandler implements Closeable {
     int port = CLOUD_REST_CLIENT_PORT;
     String protocolScheme = "https";
     String tls = "true";
+    RestClient restClient = null;
 
     try {
       cluster = clusterSettings.getHost();
@@ -126,13 +138,19 @@ public class ElasticClientHandler implements Closeable {
       RestClientBuilder builder =
           createClientBuilder(host, basicAuthenticationHeaderVal, port, protocolScheme, tls);
 
+      restClient = builder.build();
+
       RestClientTransport transport =
-          new RestClientTransport(builder.build(), new JacksonJsonpMapper());
+          new RestClientTransport(restClient, new JacksonJsonpMapper());
 
       return new ElasticsearchClient(transport);
     } catch (AppException e) {
+      log.error("AppException while creating ElasticsearchClient. Cleaning up resources.", e);
+      closeRestClient(restClient);
       throw e;
     } catch (Exception e) {
+      log.error("Exception while creating ElasticsearchClient. Cleaning up resources.", e);
+      closeRestClient(restClient);
       throw new AppException(
           HttpStatus.SC_INTERNAL_SERVER_ERROR,
           "search client error",
@@ -157,7 +175,6 @@ public class ElasticClientHandler implements Closeable {
             requestConfigBuilder
                 .setConnectTimeout(REST_CLIENT_CONNECT_TIMEOUT)
                 .setSocketTimeout(REST_CLIENT_SOCKET_TIMEOUT));
-    builder.setHttpClientConfigCallback(httpClientCallback -> httpClientCallback.setConnectionTimeToLive(REST_CLIENT_CONNECTION_KEEPALIVE_SECONDS, TimeUnit.SECONDS));
     
     Header[] defaultHeaders =
         new Header[] {
@@ -183,6 +200,13 @@ public class ElasticClientHandler implements Closeable {
                   .setSSLContext(sslContext)
                   .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
                   .setConnectionTimeToLive(REST_CLIENT_CONNECTION_KEEPALIVE_SECONDS, TimeUnit.SECONDS));
+    } else {
+        builder.setHttpClientConfigCallback(
+                httpClientBuilder ->
+                        httpClientBuilder.setConnectionTimeToLive(
+                                REST_CLIENT_CONNECTION_KEEPALIVE_SECONDS, TimeUnit.SECONDS
+                        )
+        );
     }
 
     builder.setDefaultHeaders(defaultHeaders);
@@ -198,6 +222,17 @@ public class ElasticClientHandler implements Closeable {
       log.error(e.getMessage());
     }
     return null;
+  }
+
+  private void closeRestClient(RestClient restClient) {
+      if (restClient != null) {
+          try {
+              restClient.close();
+              log.debug("Closed RestClient during error cleanup");
+          } catch (IOException e) {
+              log.error("Failed to close RestClient during error cleanup", e);
+          }
+      }
   }
 
   public Boolean isSecurityHttpsCertificateTrust() {
