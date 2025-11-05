@@ -31,7 +31,6 @@ import org.opengroup.osdu.core.common.info.ConnectedOuterServicesBuilder;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
 import org.opengroup.osdu.core.common.model.info.ConnectedOuterService;
-import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
@@ -77,7 +76,7 @@ public class CloudConnectedOuterServicesBuilder implements ConnectedOuterService
   private List<ConnectedOuterService> fetchElasticInfos() {
     try {
       return elasticSettingService.getAllClustersSettings().entrySet().stream()
-          .map(entry -> fetchElasticInfo(entry.getKey(), entry.getValue()))
+          .map(entry -> fetchElasticInfo(entry.getKey()))
           .collect(Collectors.toList());
     } catch (AppException e) {
       log.error("Can't fetch cluster settings", e.getOriginalException());
@@ -89,9 +88,9 @@ public class CloudConnectedOuterServicesBuilder implements ConnectedOuterService
     }
   }
 
-  private ConnectedOuterService fetchElasticInfo(String partitionId, ClusterSettings settings) {
+  private ConnectedOuterService fetchElasticInfo(String partitionId) {
     try {
-      ElasticsearchClient client = elasticClient.createRestClient(settings);
+      ElasticsearchClient client = elasticClient.getOrCreateRestClient(partitionId);
 
       return ConnectedOuterService.builder()
           .name(NAME_PREFIX + partitionId)
