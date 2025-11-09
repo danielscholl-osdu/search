@@ -45,7 +45,7 @@
         <json-smart.version>2.5.0</json-smart.version>
         <mockito-core.version>5.12.0</mockito-core.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
-        <spring-boot.version>3.3.7</spring-boot.version>
+        <spring-boot.version>3.5.7</spring-boot.version>
     </properties>
 
     <licenses>
