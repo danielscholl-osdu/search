@@ -1,0 +1,78 @@
+{
+    "bool": {
+        "must": [
+            {
+                "nested": {
+                    "query": {
+                        "bool": {
+                            "must": [
+                                {
+                                    "nested": {
+                                        "query": {
+                                            "query_string": {
+                                                "query": "(data.ParentNested.FirstInnerNested.NumberTest:(12345.0 OR 0) AND data.ParentNested.FirstInnerNested.StringTest:\"test string\")",
+                                                "fields": [],
+                                                "type": "best_fields",
+                                                "default_operator": "or",
+                                                "max_determinized_states": 10000,
+                                                "allow_leading_wildcard": false,
+                                                "enable_position_increments": true,
+                                                "fuzziness": "AUTO",
+                                                "fuzzy_prefix_length": 0,
+                                                "fuzzy_max_expansions": 50,
+                                                "phrase_slop": 0,
+                                                "escape": false,
+                                                "auto_generate_synonyms_phrase_query": true,
+                                                "fuzzy_transpositions": true,
+                                                "boost": 1.0
+                                            }
+                                        },
+                                        "path": "data.ParentNested.FirstInnerNested",
+                                        "ignore_unmapped": true,
+                                        "score_mode": "avg",
+                                        "boost": 1.0
+                                    }
+                                }
+                            ],
+                            "must_not": [
+                                {
+                                    "nested": {
+                                        "query": {
+                                            "query_string": {
+                                                "query": "(data.ParentNested.SecondInnerNested.NumberTest:\"12345.0\" AND data.ParentNested.SecondInnerNested.StringTest:\"test string\")",
+                                                "fields": [],
+                                                "type": "best_fields",
+                                                "default_operator": "or",
+                                                "max_determinized_states": 10000,
+                                                "allow_leading_wildcard": false,
+                                                "enable_position_increments": true,
+                                                "fuzziness": "AUTO",
+                                                "fuzzy_prefix_length": 0,
+                                                "fuzzy_max_expansions": 50,
+                                                "phrase_slop": 0,
+                                                "escape": false,
+                                                "auto_generate_synonyms_phrase_query": true,
+                                                "fuzzy_transpositions": true,
+                                                "boost": 1.0
+                                            }
+                                        },
+                                        "path": "data.ParentNested.SecondInnerNested",
+                                        "ignore_unmapped": true,
+                                        "score_mode": "avg",
+                                        "boost": 1.0
+                                    }
+                                }
+                            ],
+                            "boost": 1.0
+                        }
+                    },
+                    "path": "data.ParentNested",
+                    "ignore_unmapped": true,
+                    "score_mode": "avg",
+                    "boost": 1.0
+                }
+            }
+        ],
+        "boost": 1.0
+    }
+}
