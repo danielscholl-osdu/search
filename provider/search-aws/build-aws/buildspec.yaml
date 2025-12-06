@@ -74,7 +74,7 @@ phases:
 
       - echo "Building primary service assemblies..."
       - mvn -ntp -B test install -pl .,search-core,provider/search-aws -P aws,core -Ddeployment.environment=prod
-      - mvn sonar:sonar -pl .,provider/search-aws -P aws -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME} -Dsonar.host.url=${SONAR_URL}
+      - mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -pl .,provider/search-aws -P aws -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.branch.name=${BRANCH_NAME} -Dsonar.host.url=${SONAR_URL}
       - echo "Building integration testing assemblies and gathering artifacts..."
       - ./testing/integration-tests/search-test-aws/build-aws/prepare-dist.sh
 
@@ -89,7 +89,7 @@ phases:
           --commitMessage "\"${COMMIT_MESSAGE}\"" --commitAuthor "\"${COMMIT_AUTHOR}\"" --commitDate "\"${COMMIT_DATE}\"" \
           --buildid ${CODEBUILD_BUILD_ID} --buildnumber ${CODEBUILD_BUILD_NUMBER} --reponame ${REPO_NAME} --outdir ${OUTPUT_DIR} \
           --artifact ${ECR_IMAGE}
-          
+
   post_build:
     commands:
       - mkdir -p ${OUTPUT_DIR}/acceptance-tests
