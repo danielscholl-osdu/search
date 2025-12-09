@@ -16,19 +16,29 @@ Pre-requisites
 ### Service Configuration
 In order to run the service locally or remotely, you will need to have the following environment variables defined.
 
-| name | example value | required | description | sensitive? |
-| ---  | ---   | ---         | ---        | ---    |
-| `LOCAL_MODE` | `true` | yes | Set to 'true' to use env vars in place of the k8s variable resolver | no |
-| `APPLICATION_PORT` | `8080` | yes | The port the service will be hosted on. | no |
-| `AWS_REGION` | `us-east-1` | yes | The region where resources needed by the service are deployed | no |
-| `AWS_ACCESS_KEY_ID` | `ASIAXXXXXXXXXXXXXX` | yes | The AWS Access Key for a user with access to Backend Resources required by the service | yes |
-| `AWS_SECRET_ACCESS_KEY` | `super-secret-key==` | yes | The AWS Secret Key for a user with access to Backend Resources required by the service | yes |
-| `AWS_SESSION_TOKEN` | `session-token-xxxxxxxxxx` | no | AWS Session token needed if using an SSO user session to authenticate | yes |
-| `ENVIRONMENT` | `osdu-prefix` | yes | The Resource Prefix defined during deployment | no |
-| `LOG_LEVEL` | `DEBUG` | yes | The Log Level severity to use (https://www.tutorialspoint.com/log4j/log4j_logging_levels.htm) | no |
-| `SSM_ENABLED` | `true` | yes | Set to 'true' to use SSM to resolve config properties, otherwise use env vars | no |
-| `SSL_ENABLED` | `false` | no | Set to 'false' to disable SSL for local development | no |
-| `ENTITLEMENTS_BASE_URL` | `http://localhost:8081` or `https://some-hosted-url` | yes | Specify the base url for an entitlements service instance. Can be run locally or remote | no |
+| name                                | example value              | required | description                                                                                   | sensitive? |
+|-------------------------------------|----------------------------|----------|-----------------------------------------------------------------------------------------------|------------|
+| `LOCAL_MODE`                        | `true`                     | yes      | Set to 'true' to use env vars in place of the k8s variable resolver                           | no         |
+| `DISABLE_CACHE`                     | `true`                     | no       | Set to 'true' to disable caching for local development                                        | no         |
+| `PARAMETER_MOUNT_PATH`              | `/mnt/params`              | no       | Path to mounted parameters directory                                                          | no         |
+| `APPLICATION_PORT`                  | `8080`                     | yes      | The port the service will be hosted on.                                                       | no         |
+| `AWS_REGION`                        | `us-east-1`                | yes      | The region where resources needed by the service are deployed                                 | no         |
+| `OSDU_INSTANCE_NAME`                | `local`                    | yes      | The OSDU instance name                                                                        | no         |
+| `AWS_ACCESS_KEY_ID`                 | `ASIAXXXXXXXXXXXXXX`       | yes      | The AWS Access Key for a user with access to Backend Resources required by the service        | yes        |
+| `AWS_SECRET_ACCESS_KEY`             | `super-secret-key==`       | yes      | The AWS Secret Key for a user with access to Backend Resources required by the service        | yes        |
+| `AWS_SESSION_TOKEN`                 | `session-token-xxxxxxxxxx` | no       | AWS Session token needed if using an SSO user session to authenticate                         | yes        |
+| `LOG_LEVEL`                         | `DEBUG`                    | yes      | The Log Level severity to use (https://www.tutorialspoint.com/log4j/log4j_logging_levels.htm) | no         |
+| `SSM_ENABLED`                       | `True`                     | yes      | Set to 'true' to use SSM to resolve config properties, otherwise use env vars                 | no         |
+| `SSL_ENABLED`                       | `false`                    | no       | Set to 'false' to disable SSL for local development                                           | no         |
+| `ENTITLEMENTS_BASE_URL`             | `http://localhost:8081`    | yes      | Specify the base url for an entitlements service instance. Can be run locally or remote       | no         |
+| `PARTITION_BASE_URL`                | `http://localhost:8082`    | no       | Base URL for partition service                                                                | no         |
+| `POLICY_BASE_URL`                   | `http://localhost:8083`    | no       | Base URL for policy service                                                                   | no         |
+| `POLICY_SERVICE_ENABLED`            | `true`                     | no       | Enable policy service integration                                                             | no         |
+| `POLICY_CACHE_TIMEOUT`              | `2`                        | no       | Policy cache timeout in minutes                                                               | no         |
+| `ELASTIC_DISABLE_CERTIFICATE_TRUST` | `true`                     | no       | Disable SSL certificate validation for Elasticsearch                                          | no         |
+| `TMP_VOLUME_PATH`                   | `/tmp`                     | no       | Path for temporary volume storage                                                             | no         |
+| `COLLABORATION_FF_ENABLED`          | `false`                    | no       | Enable collaboration feature flag                                                             | no         |
+| `DISABLE_USER_AGENT`                | `false`                    | no       | Disable user agent validation                                                                 | no         |
 
 ### Run Locally
 Check that maven is installed:
@@ -49,13 +59,13 @@ You may need to configure access to the remote maven repository that holds the O
 * Navigate to the service's root folder and run:
 
 ```bash
-mvn clean package -pl search-core,provider/search-aws
+mvn clean package -pl .,search-core,provider/search-aws -P aws,core
 ```
 
 * If you wish to build the project without running tests
 
 ```bash
-mvn clean package -pl search-core,provider/search-aws -DskipTests
+mvn clean package -pl .,search-core,provider/search-aws -P aws,core -DskipTests
 ```
 
 After configuring your environment as specified above, you can follow these steps to run the application. These steps should be invoked from the *repository root.*

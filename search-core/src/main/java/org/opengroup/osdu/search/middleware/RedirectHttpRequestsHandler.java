@@ -21,13 +21,9 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.opengroup.osdu.core.common.model.http.AppException;
-import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 
 //@Component
 public class RedirectHttpRequestsHandler implements Filter {
-
-    @Inject
-    private IProviderHeaderService providerHeaderService;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -49,10 +45,6 @@ public class RedirectHttpRequestsHandler implements Filter {
     	} else {
     		throw new ServletException("Request is not HttpServletRequest");
     	}
-        //Skip if it is a cron job
-        String expectedCronHeaderValue = "true";
-        String cronHeader = httpRequest.getHeader(providerHeaderService.getCronServiceHeader());
-        if (expectedCronHeaderValue.equalsIgnoreCase(cronHeader)) return;
 
         // return 302 redirect if http connection is attempted
         if ("http".equals(httpRequest.getScheme())) {

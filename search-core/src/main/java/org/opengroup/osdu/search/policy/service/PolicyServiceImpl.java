@@ -24,7 +24,7 @@ import org.opengroup.osdu.core.common.policy.IPolicyFactory;
 import org.opengroup.osdu.core.common.policy.IPolicyProvider;
 import org.opengroup.osdu.core.common.policy.PolicyException;
 import org.opengroup.osdu.search.policy.di.PolicyServiceConfiguration;
-import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
+import org.opengroup.osdu.search.context.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,14 +40,17 @@ public class PolicyServiceImpl implements IPolicyService {
   @Autowired
   private DpsHeaders headers;
 
+  @Autowired
+  private UserContext userContext;
+
   @Override
-  public String getCompiledPolicy(IProviderHeaderService providerHeaderService) {
+  public String getCompiledPolicy() {
     try {
-      String groups = this.headers.getHeaders().get(providerHeaderService.getDataGroupsHeader());
-      List<String> groupsList =
-          groups != null
-              ? new ArrayList<>(Arrays.asList(groups.trim().split("\\s*,\\s*")))
-              : new ArrayList<>();
+      List<String> groupsList = userContext.getDataGroups();
+      if (groupsList == null) {
+        groupsList = new ArrayList<>();
+      }
+      
       Map<String, Object> input = new HashMap<>();
       input.put("groups", groupsList);
       input.put("operation", "view");

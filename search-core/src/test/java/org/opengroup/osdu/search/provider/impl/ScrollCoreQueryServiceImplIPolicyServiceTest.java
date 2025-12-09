@@ -53,7 +53,6 @@ import org.opengroup.osdu.search.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.model.QueryNode;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
-import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
@@ -76,9 +75,6 @@ public class ScrollCoreQueryServiceImplIPolicyServiceTest {
 
   @Mock
   private JaxRsDpsLog log;
-
-  @Mock
-  private IProviderHeaderService providerHeaderService;
 
   @Mock
   private CrossTenantUtils crossTenantUtils;
@@ -205,7 +201,7 @@ public class ScrollCoreQueryServiceImplIPolicyServiceTest {
         BoolQuery.Builder textQueryBuilder = new BoolQuery.Builder();
 		textQueryBuilder.must(queryNodes.get(0).toQueryBuilder().build());
 
-		when(iPolicyService.getCompiledPolicy(any())).thenReturn("PolicyString");
+		when(iPolicyService.getCompiledPolicy()).thenReturn("PolicyString");
 		when(iFeatureFlag.isFeatureEnabled(POLICY_FEATURE_NAME)).thenReturn(true);
 		when(queryParserUtil.buildQueryBuilderFromQueryString(anyString())).thenReturn(textQueryBuilder);
 		when(elasticClientHandler.getOrCreateRestClient())

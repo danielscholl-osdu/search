@@ -41,7 +41,6 @@ import org.opengroup.osdu.search.cache.SearchAfterSettingsCache;
 import org.opengroup.osdu.search.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.model.SearchAfterSettings;
-import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.*;
 
 import java.io.IOException;
@@ -88,9 +87,6 @@ public class SearchAfterQueryServiceImplTest {
 
     @Mock
     private ElasticClientHandler elasticClientHandler;
-
-    @Mock
-    private IProviderHeaderService providerHeaderService;
 
     @Mock
     private SearchAfterSettingsCache cursorCache;

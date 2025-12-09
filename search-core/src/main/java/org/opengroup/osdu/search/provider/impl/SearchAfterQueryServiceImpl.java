@@ -56,6 +56,7 @@ import java.util.Map;
 
 @Service
 public class SearchAfterQueryServiceImpl extends CoreQueryBase implements ISearchAfterQueryService {
+
     @Inject
     private ElasticClientHandler elasticClientHandler;
     @Inject
