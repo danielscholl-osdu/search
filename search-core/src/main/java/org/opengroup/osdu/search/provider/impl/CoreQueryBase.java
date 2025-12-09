@@ -53,7 +53,7 @@ import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
-import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
+import org.opengroup.osdu.search.context.UserContext;
 import org.opengroup.osdu.search.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -61,8 +61,8 @@ abstract class CoreQueryBase {
 
   @Inject DpsHeaders dpsHeaders;
   @Inject private JaxRsDpsLog log;
-  @Inject private IProviderHeaderService providerHeaderService;
   @Inject private CrossTenantUtils crossTenantUtils;
+  @Inject private UserContext userContext;
 
   private final Time REQUEST_TIMEOUT = Time.of(t -> t.time("1m"));
 
@@ -126,7 +126,7 @@ abstract class CoreQueryBase {
     }
 
     if (featureFlag.isFeatureEnabled(POLICY_FEATURE_NAME)) {
-      String compiledESPolicy = this.iPolicyService.getCompiledPolicy(providerHeaderService);
+      String compiledESPolicy = this.iPolicyService.getCompiledPolicy();
       WrapperQuery.Builder wrapperQueryBuilder =
           QueryBuilders.wrapper()
               .query(Base64.getEncoder().encodeToString(compiledESPolicy.getBytes()));
@@ -142,11 +142,11 @@ abstract class CoreQueryBase {
       return queryBuilder;
     }
 
-    String groups = dpsHeaders.getHeaders().get(providerHeaderService.getDataGroupsHeader());
-    if (groups != null) {
+    List<String> groupsList = userContext.getDataGroups();
+    if (groupsList != null && !groupsList.isEmpty()) {
       TermsQueryField groupArray =
           new TermsQueryField.Builder()
-              .value(Arrays.stream(groups.trim().split("\\s*,\\s*")).map(FieldValue::of).toList())
+              .value(groupsList.stream().map(FieldValue::of).toList())
               .build();
 
       if (asOwner) {
@@ -440,11 +440,7 @@ abstract class CoreQueryBase {
   }
 
   private boolean userHasFullDataAccess() {
-    String dataRootUser =
-        dpsHeaders
-            .getHeaders()
-            .getOrDefault(providerHeaderService.getDataRootUserHeader(), "false");
-    return Boolean.parseBoolean(dataRootUser);
+    return userContext.isRootUser();
   }
 
   <T> void processBuckets(

@@ -134,29 +134,6 @@ $ (cd testing/integration-tests/search-test-azure/ && mvn clean test)
 
 Jet Brains - the authors of Intellij IDEA, have written an [excellent guide](https://www.jetbrains.com/help/idea/debugging-your-first-java-application.html) on how to debug java programs.
 
-## Known Limitation for Azure Http Header Size
-
-In  Microsoft Azure, there is a limitation for the Http Header size in Azure. For more information, see: https://learn.microsoft.com/en-US/troubleshoot/developer/webapps/iis/www-administration-management/http-bad-request-response-kerberos#cause
-
-Consider If the user belongs to more than **2000** data groups. When Search calls Policy translate API, in the request header **'X-Data-Groups'** (>2000) values are passed. Microsoft Azure Application Gateway doesn't support such large headers. As a result, it returns a **'400 Request Header Or Cookie Too Large'** error before even reaching the policy service.
-
-This error body is translated as input query for ElasticSearch, which results in ElasticSearch exception. As a result, the search API response will be:
-
-```
-{
-    "code": 400,
-    "reason": "Bad Request",
-    "message": "Failed to derive xcontent"
-}
-```
-
-#### Workaround
-
-Delete any stale or test groups associated with the user via the Entitlements API, such that the number of data groups is within the limit of 2000.
-
-For more information, see: https://learn.microsoft.com/en-US/troubleshoot/developer/webapps/iis/www-administration-management/http-bad-request-response-kerberos#workaround-1-decrease-the-number-of-active-directory-groups
-
-
 ## Deploying service to Azure
 
 Service deployments into Azure are standardized to make the process the same for all services if using ADO and are closely related to the infrastructure deployed. The steps to deploy into Azure can be [found here](https://github.com/azure/osdu-infrastructure)

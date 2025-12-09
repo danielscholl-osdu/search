@@ -32,13 +32,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
-import org.opengroup.osdu.search.service.ProviderHeaderServiceImpl;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedirectHttpRequestsHandlerTest {
 
-  @Mock
-  ProviderHeaderServiceImpl providerHeaderService;
   @Mock
   private SearchConfigurationProperties searchConfigurationProperties;
   @Mock
@@ -66,19 +63,4 @@ public class RedirectHttpRequestsHandlerTest {
     }
   }
 
-    /*
-    @Test
-    public void should_not_throwAppExceptionWithHttpsLocation_when_client_isACronJobNotUsingHttps() throws Exception {
-        Map<String,String> headers=new HashMap<>();
-        headers.put(providerHeaderService.getCronServiceHeader(),"true");
-        setupRequestHeaderMock(headers, httpRequest);
-        when(httpRequest.getScheme()).thenReturn("http");
-        when(Config.getDeploymentEnvironment()).thenReturn(DeploymentEnvironment.CLOUD);
-        try {
-        	sut.doFilter(httpRequest, httpResponse, filterChain);
-        } catch (AppException e) {
-            fail("should not throw");
-        }
-    }
-    */
 }

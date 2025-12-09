@@ -14,9 +14,7 @@
 
 package org.opengroup.osdu.search.policy.service;
 
-import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
-
 public interface IPolicyService {
 
-    String getCompiledPolicy(IProviderHeaderService providerHeaderService);
+    String getCompiledPolicy();
 }

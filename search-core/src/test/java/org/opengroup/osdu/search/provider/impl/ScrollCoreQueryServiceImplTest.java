@@ -67,7 +67,6 @@ import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.search.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.logging.AuditLogger;
-import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.util.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -105,9 +104,6 @@ public class ScrollCoreQueryServiceImplTest {
 
     @Mock
     private ElasticClientHandler elasticClientHandler;
-
-    @Mock
-    private IProviderHeaderService providerHeaderService;
 
     @Mock
     private CursorCache cursorCache;

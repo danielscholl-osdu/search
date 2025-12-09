@@ -10,7 +10,7 @@ import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.SearchServiceRole;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.core.common.provider.interfaces.IAuthorizationService;
-import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
+import org.opengroup.osdu.search.context.UserContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
@@ -30,7 +30,6 @@ public class AuthorizationFilter {
 
     private static final String PATH_SWAGGER = "/swagger.json";
     private static final String PATH_INDEX_API = "/index";
-    private static final String PATH_CRON_HANDLERS = "cron-handlers";
 
     @Inject
     private IAuthorizationService authorizationService;
@@ -39,10 +38,10 @@ public class AuthorizationFilter {
     private DpsHeaders requestHeaders;
 
     @Inject
-    private IProviderHeaderService providerHeaderService;
+    private HttpServletRequest request;
 
     @Inject
-    private HttpServletRequest request;
+    private UserContext userContext;
 
     public boolean hasPermission(String... requiredRoles) {
 
@@ -58,14 +57,7 @@ public class AuthorizationFilter {
         try {
             checkApiAccess(requiredRoles, path, requestHeaders);
         } catch (AppException e) {
-            if (Arrays.asList(requiredRoles).contains(SearchServiceRole.CRON) && "GET".equals(request.getMethod())) {
-                if (path.contains(PATH_CRON_HANDLERS)) {
-                    checkCronApiAccess(requestHeaders);
-                    return true;
-                }
-            } else {
-                return false;
-            }
+            return false;
         }
         return true;
     }
@@ -97,9 +89,12 @@ public class AuthorizationFilter {
         requestHeaders.put(DpsHeaders.DATA_PARTITION_ID, StringUtils.join(accountIds, ","));
 
         // don't proceed if data groups are empty
-        if (dataGroups.isEmpty()) throw AppException.createForbidden("no data group found for user");
-        requestHeaders.put(providerHeaderService.getDataGroupsHeader(), StringUtils.join(dataGroups, ','));
-        requestHeaders.put(providerHeaderService.getDataRootUserHeader(), Boolean.toString(dataRootUser));
+        if (dataGroups.isEmpty()) {
+            throw AppException.createForbidden("no data group found for user");
+        }
+        // Store groups and root user flag in UserContext
+        userContext.setDataGroups(dataGroups);
+        userContext.setRootUser(dataRootUser);
     }
 
     private List<String> validateAccountId(DpsHeaders requestHeaders, String path) {
@@ -122,14 +117,6 @@ public class AuthorizationFilter {
             }
         }
         return accountIds;
-    }
-
-
-    private void checkCronApiAccess(DpsHeaders headersInfo) {
-        String expectedCronHeaderValue = "true";
-        String cronHeader = headersInfo.getHeaders().getOrDefault(providerHeaderService.getCronServiceHeader(), null);
-        if (expectedCronHeaderValue.equalsIgnoreCase(cronHeader)) return;
-        throw AppException.createForbidden("invalid user agent, Engine Cron only");
     }
 
     String getPrimaryAccountId(List<String> accountIds) {

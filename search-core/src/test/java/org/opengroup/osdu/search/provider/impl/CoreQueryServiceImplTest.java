@@ -43,6 +43,7 @@ import java.net.SocketTimeoutException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +51,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.ContentTooLongException;
 import org.junit.Assert;
@@ -79,7 +81,6 @@ import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.logging.AuditLogger;
-import org.opengroup.osdu.search.provider.interfaces.IProviderHeaderService;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
@@ -153,7 +154,7 @@ public class CoreQueryServiceImplTest {
     private CrossTenantUtils crossTenantUtils;
 
     @Mock
-    private IProviderHeaderService providerHeaderService;
+    private HttpServletRequest request;
 
     @Spy
     private SearchConfigurationProperties properties = new SearchConfigurationProperties();
@@ -210,9 +211,12 @@ public class CoreQueryServiceImplTest {
         Map<String, String> HEADERS = new HashMap<>();
         HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
         HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
-        HEADERS.put(DATA_GROUPS, String.format("%s,%s", DATA_GROUP_1, DATA_GROUP_2));
+        
+        // Mock request attributes instead of headers for groups
+        List<String> dataGroups = Arrays.asList(DATA_GROUP_1, DATA_GROUP_2);
+        when(request.getAttribute("userDataGroups")).thenReturn(dataGroups);
+        when(request.getAttribute("userDataRootUser")).thenReturn(false);
 
-        when(providerHeaderService.getDataGroupsHeader()).thenReturn(DATA_GROUPS);
         when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
 
         ReflectionTestUtils.setField(suggestionsQueryUtil, "autocompleteFeatureFlag", autocompleteFeatureFlag);
@@ -744,8 +748,11 @@ public class CoreQueryServiceImplTest {
         Map<String, String> HEADERS = new HashMap<>();
         HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
         HEADERS.put(DpsHeaders.AUTHORIZATION, "Bearer blah");
-        HEADERS.put(DATA_GROUPS, String.format("%s,%s", DATA_GROUP_1, DATA_GROUP_2));
-        HEADERS.put(providerHeaderService.getDataRootUserHeader(), "true");
+        
+        // Mock request attributes for data root user
+        List<String> dataGroups = Arrays.asList(DATA_GROUP_1, DATA_GROUP_2);
+        when(request.getAttribute("userDataGroups")).thenReturn(dataGroups);
+        when(request.getAttribute("userDataRootUser")).thenReturn(true);
         when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
 
         BoolQuery.Builder builder = this.sut.buildQuery(null, null, false);
@@ -824,11 +831,12 @@ public class CoreQueryServiceImplTest {
         Mockito.when(crossTenantUtils.getIndexName(Mockito.any()))
                 .thenReturn(index);
 
-        Mockito.when(providerHeaderService.getDataGroupsHeader())
-                .thenReturn("groups");
+        // Mock request attributes instead of headers
+        List<String> dataGroups = new ArrayList<>();
+        Mockito.when(request.getAttribute("userDataGroups")).thenReturn(dataGroups);
+        Mockito.when(request.getAttribute("userDataRootUser")).thenReturn(false);
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("groups", "[]");
         Mockito.when(dpsHeaders.getHeaders())
                 .thenReturn(headers);
 
