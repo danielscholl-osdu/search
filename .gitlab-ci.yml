@@ -1,4 +1,6 @@
 variables:
+  CIMPL: 1
+
   AWS_BUILD_SUBDIR: provider/search-aws/build-aws
   AWS_TEST_SUBDIR: testing/integration-tests/search-test-aws
   AWS_CHART_SUBDIR: devops/aws/chart
