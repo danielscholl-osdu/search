@@ -15,6 +15,7 @@ data:
   REDIS_GROUP_HOST: {{ printf "redis-%s" .Values.conf.appName | quote }}
   REDIS_SEARCH_HOST: {{ printf "redis-%s" .Values.conf.appName | quote }}
   {{- end }}
+  COLLABORATIONS_ENABLED: {{ .Values.data.collaborationsEnabled | quote }}
   REDIS_SEARCH_PORT: {{ .Values.data.redisSearchPort | quote }}
   REDIS_GROUP_PORT: {{ .Values.data.redisSearchPort | quote }}
   ENTITLEMENTS_HOST: {{ .Values.data.entitlementsHost | quote }}
