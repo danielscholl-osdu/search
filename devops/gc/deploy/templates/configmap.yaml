@@ -36,3 +36,7 @@ data:
   PARTITION_HOST: {{ .Values.data.partitionHost | quote }}
   POLICY_HOST: {{ .Values.data.policyHost | quote }}
   POLICY_ID: {{ .Values.data.policyId | quote }}
+  {{- if .Values.data.otelJavaagentEnabled }}
+  OTEL_JAVAAGENT_ENABLED: {{.Values.data.otelJavaagentEnabled | quote}}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{.Values.data.otelExporterEndpoint | quote}}
+  {{- end }}
