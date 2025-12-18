@@ -23,11 +23,13 @@ import org.opengroup.osdu.core.common.cache.RedisCache;
 import org.opengroup.osdu.core.common.cache.VmCache;
 import org.opengroup.osdu.core.common.model.entitlements.Groups;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 @Component
+@Primary
 public class GroupCache<K, V> implements ICache<K, V> {
     @Value("${aws.elasticache.cluster.endpoint:null}")
     String redisSearchHost;
