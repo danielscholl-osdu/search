@@ -7,11 +7,11 @@ variables:
 cimpl-acceptance-test:
   variables:
     DEFAULT_DATA_PARTITION_ID_TENANT2: non-exist
-    CUCUMBER_OPTIONS: "--tags @default,@health,@SpatialLongitudeStandardRange"
+    CUCUMBER_OPTIONS: "--plugin io.qameta.allure.cucumberjvm.AllureCucumberJvm --tags @default,@health,@SpatialLongitudeStandardRange"
 
 #dev2 jobs
 
 cimpl-dev2-acceptance-test:
   variables:
     DEFAULT_DATA_PARTITION_ID_TENANT2: non-exist
-    CUCUMBER_OPTIONS: "--tags @default,@health,@SpatialLongitudeStandardRange"
+    CUCUMBER_OPTIONS: "--plugin io.qameta.allure.cucumberjvm.AllureCucumberJvm --tags @default,@health,@SpatialLongitudeStandardRange"
