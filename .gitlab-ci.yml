@@ -1,0 +1,108 @@
+variables:
+  AWS_BUILD_SUBDIR: provider/search-aws/build-aws
+  AWS_TEST_SUBDIR: testing/integration-tests/search-test-aws
+  AWS_CHART_SUBDIR: devops/aws/chart
+  AWS_SERVICE: search
+  AWS_SERVICE_GATEWAY: osdu-gateway
+  AWS_ENVIRONMENT: dev
+  AWS_DEPLOY_TARGET: TF
+  AWS_EKS_DEPLOYMENT_NAME: os-search
+
+  GCP_BUILD_SUBDIR: provider/search-gcp
+  GCP_INT_TEST_SUBDIR: testing/integration-tests/search-test-gcp
+  GCP_APPLICATION_NAME: osdu-search
+  GCP_ENVIRONMENT: dev
+  GCP_PROJECT: opendes
+  GCP_TENANT_NAME: opendes
+  GCP_DEPLOY_ENV: p4d
+  GCP_DOMAIN: cloud.slb-ds.com
+  GCP_STORAGE_URL: https://osdu-search-dot-opendes.appspot.com/api/storage/v2/
+
+  IBM_BUILD_SUBDIR: provider/search-ibm
+  IBM_INT_TEST_SUBDIR: testing/integration-tests/search-test-ibm
+  DEFAULT_DATA_PARTITION_ID_TENANT1_IBM: tenant1
+  IBM_HELM_CONFIG_PATH: devops/ibm/ibm-search-service-config
+  IBM_HELM_DEPLOY_PATH: devops/ibm/ibm-search-service-deploy
+
+  AZURE_SERVICE: search
+  AZURE_BUILD_SUBDIR: provider/search-azure
+  AZURE_TEST_SUBDIR: testing/integration-tests/search-test-azure
+  SERVICE_JAVA_VERSION: "17"
+  ACCEPTANCE_TEST_DIR: "search-acceptance-test"
+
+include:
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "standard-setup.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "build/maven.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "scanners/fossa-maven.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "scanners/gitlab-ultimate.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "reporting/reporting.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "publishing/common-pages.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/aws-global.yml"
+ 
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/aws-maven.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/ibm.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/azure.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/gc-global.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/cimpl-global.yml"
+
+  - local: "devops/core-plus/pipeline/override-stages.yml"
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/aws-one-pipeline.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/azure-one-pipeline.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/gc-one-pipeline.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "cloud-providers/ibm-one-pipeline.yml"
+
+  - local: "devops/gc/pipeline/override-stages.yml"
+  - local: "devops/aws/pipeline/override-stages.yml"
+
+download_plugins:
+  image: maven:3.8.3-openjdk-17-slim
+  stage: build
+  variables:
+    APD_PACKAGE_REGISTRY_URL: "https://community.opengroup.org/api/v4/projects/1445/packages/maven"
+    APD_VERSION: "0.26.0"
+
+  artifacts:
+    paths:
+      - ./tmp/*.jar
+    when: always
+    expire_in: 1 days
+
+  script:
+    - mvn dependency:copy -DrepoUrl=$APD_PACKAGE_REGISTRY_URL -Dartifact="org.opengroup.osdu:apd-openid:$APD_VERSION:jar:plugin" -Dtransitive=false -DoutputDirectory="./tmp"
+
+  only:
+    variables:
+      - $PROTECTED == '1'
+
+
+aws-test-java:
+  image: $CI_REGISTRY/osdu/platform/deployment-and-operations/base-containers-aws/aws-maven/aws-maven:v2.0

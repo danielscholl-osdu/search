@@ -1,0 +1,11 @@
+apiVersion: skaffold/v2beta9
+kind: Config
+metadata:
+  name: search-reference
+build:
+  artifacts:
+    - image: gcr.io/osdu-anthos-02/os-search/search-reference
+deploy:
+  kubectl:
+    manifests:
+    - kubernetes/deployments/deployment-os-search-service.yml

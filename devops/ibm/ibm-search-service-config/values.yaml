@@ -1,0 +1,54 @@
+data:
+  # common
+  logLevel: "INFO"
+  javaAppJar: "/deployments/*-spring-boot.jar"
+  serverPort: 8080
+  # ibm
+  contextPath: "/api/search/v2"
+  beanDefOverriding: true
+  acceptHttp: true
+  logPrefix: search
+  cacheExpiration: 9000
+  cahceMaxSize: 2000
+  healthCheckUri: "/api/search/v1/info,/api/search/v1/_ah/liveness_check,/api/search/v1/_ah/readiness_check,/api/search/v1/info,/api/search/v1/api-docs"
+  loggingLevelOsdu: debug
+  loggingLevelSpring: debug
+  #get-from-svc-name-template
+  authorizeAPI: http://TBD:8080/api/entitlements/v2
+  deployEnv: CLOUD
+  #get-from-svc-name-template
+  dbURL: http://tbd:5984
+  #get-from-existing secret
+  dbUser: admin
+  envPrefix: ibm-iks
+  envPrefixProject: ibm-ibm-build
+  #get-keycloakAuthHostName-from-post-install-kc-ingress
+  keycloakEndPointHost: tbd
+  keycloakRealm: OSDU
+  keycloakUserEmail: admin-sa@ibm.com
+  #move to secre. do not commit.
+  #get-from-existing secret  
+  dbPassw: tbd
+  #get-from-svc-name-template
+  patitionAPI: http://tbd:8080/api/partition/v1
+  #get-from-svc-name-template
+  policyAPI: http://tbd:8080/api/policy/v1
+  kcClientId: search-service
+  grantType: password
+  #get-from-job or dynamically
+  kcPassword: tbd
+  kcUser: search-service-admin
+  tenantCacheExpiryInSec: 10000
+  pKCEndPointHost: tbd
+  pKCClientId: partition-service
+  pKCClientSecret: tbd
+  pKCPassword: changeit
+  pKCUser: partition-service-admin
+  pKAcceptHttp: true
+  ibmElasticHost: elasticsearch-master
+  ibmElasticPort: 9200
+  ibmElasticSSLSecurity: true
+  policServiceEnabled: false
+  providerKey: IBM
+conf:
+  configmap: "search-config"
