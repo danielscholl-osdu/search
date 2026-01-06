@@ -66,6 +66,16 @@ public class CorePlusAuthorizationService extends AuthorizationServiceImpl {
     }
   }
 
+  protected AuthorizationResponse authorizeViaParent(
+          DpsHeaders dpsHeaders, String... roles) {
+    return super.authorizeAny(dpsHeaders, roles);
+  }
+
+  protected AuthorizationResponse authorizeViaParent(
+          String tenantName, DpsHeaders dpsHeaders, String... roles) {
+    return super.authorizeAny(tenantName, dpsHeaders, roles);
+  }
+
   @Nullable
   private Groups getGroupsFromCache(String cacheKey) {
     Groups groups = null;
