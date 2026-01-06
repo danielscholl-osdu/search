@@ -18,9 +18,8 @@
 
 package org.opengroup.osdu.search.service;
 
-
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -28,27 +27,26 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.indices.*;
 import co.elastic.clients.elasticsearch.indices.get_alias.IndexAliases;
 import java.io.IOException;
 import java.util.*;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.search.ElasticIndexNameResolver;
 import org.opengroup.osdu.search.cache.MultiPartitionIndexAliasCache;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 import org.springframework.context.annotation.Lazy;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class IndexAliasServiceImplTest {
 
     private static final String KIND = "common:welldb:wellbore:1.2.0";
@@ -76,9 +74,9 @@ public class IndexAliasServiceImplTest {
     private ElasticsearchIndicesClient indicesClient;
     private GetAliasResponse getAliasesResponse;
 
-    @Before
+    @BeforeEach
     public void setup() {
-        initMocks(this);
+
         indicesClient = mock(ElasticsearchIndicesClient.class);
         restHighLevelClient = mock(ElasticsearchClient.class);
         getAliasesResponse = mock(GetAliasResponse.class);

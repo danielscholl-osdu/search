@@ -14,8 +14,8 @@
 
 package org.opengroup.osdu.search.middleware;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -30,15 +30,15 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ResourceInfo;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.entitlements.GroupInfo;
 import org.opengroup.osdu.core.common.model.entitlements.Groups;
@@ -47,7 +47,6 @@ import org.opengroup.osdu.core.common.model.entitlements.AuthorizationResponse;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.provider.interfaces.IAuthorizationService;
-import org.mockito.junit.MockitoJUnitRunner;
 
 /* These tests indirectly test the AuthorizationFilter that is called via the 
  * @PreAuthorize annotations on API methods. They verify the behavior
@@ -55,7 +54,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  * requests.
  */
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AuthorizationRequestFilterTest {
 
     private static final String ROLE1 = "role1";
@@ -84,7 +83,7 @@ public class AuthorizationRequestFilterTest {
     @Mock
     private JaxRsDpsLog logger;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         doNothing().when(filterChain).doFilter(httpRequest, httpResponse);
         doNothing().when(logger).request(any(Request.class));
@@ -97,11 +96,8 @@ public class AuthorizationRequestFilterTest {
     	when(httpRequest.getRemoteAddr()).thenReturn("127.0.0.1");
         when(httpResponse.getStatus()).thenReturn(200);
 
-
         Method method = this.getClass().getMethod("rolesAllowedTestMethod");
     }
-
-
 
     @Test
     public void should_skipFilter_when_requestingSwaggerEndpoint() throws Exception {
@@ -194,7 +190,6 @@ public class AuthorizationRequestFilterTest {
         dpsHeaders.put(DpsHeaders.ACCOUNT_ID, "tenant1,common");
         setupRequestHeaderMock(headers, httpRequest);
         org.springframework.test.util.ReflectionTestUtils.setField(sut, "ACCESS_CONTROL_ALLOW_ORIGIN_DOMAINS", "custom-domain");
-
 
         try {
         	sut.doFilter(httpRequest, httpResponse, filterChain);

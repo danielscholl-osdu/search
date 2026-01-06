@@ -32,15 +32,15 @@ import co.elastic.clients.json.JsonData;
 import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.util.*;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.feature.IFeatureFlag;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
@@ -64,7 +64,7 @@ import org.opengroup.osdu.search.util.ISortParserUtil;
 import org.opengroup.osdu.search.util.ResponseExceptionParser;
 import org.opengroup.osdu.search.util.SuggestionsQueryUtil;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ScrollCoreQueryServiceImplIPolicyServiceTest {
 
   @InjectMocks
@@ -121,11 +121,13 @@ public class ScrollCoreQueryServiceImplIPolicyServiceTest {
   @Mock
   public IFeatureFlag iFeatureFlag;
 
-  @Before
+  @BeforeEach
   public void setup() {
     MockitoAnnotations.openMocks(this);
 
-    when(elasticLoggingConfig.getEnabled()).thenReturn(false);
+	lenient().when(iFeatureFlag.isFeatureEnabled(anyString())).thenReturn(false);
+
+	when(elasticLoggingConfig.getEnabled()).thenReturn(false);
     when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
   }
 

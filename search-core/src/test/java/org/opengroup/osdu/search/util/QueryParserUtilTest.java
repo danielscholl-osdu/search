@@ -1,7 +1,5 @@
 package org.opengroup.osdu.search.util;
 
-import static org.junit.Assert.assertEquals;
-
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import com.google.gson.Gson;
@@ -14,71 +12,78 @@ import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.junit.Rule;
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.FromDataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.search.model.QueryNode;
 
-@RunWith(Theories.class)
-public class QueryParserUtilTest {
+import static org.junit.jupiter.api.Assertions.*;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
+public class QueryParserUtilTest {
 
     private QueryParserUtil queryParserUtil = new QueryParserUtil();
 
-    @DataPoints("VALID_QUERIES")
-    public static List<ImmutablePair> validQueriesList() {
-        InputStream inStream = QueryParserUtilTest.class.getResourceAsStream("/testqueries/valid-queries.json");
-        return getPairsFromFile(inStream);
+    @ParameterizedTest
+    @MethodSource("validQueriesList")
+    @DisplayName("Should return query builder for valid query: {0}")
+    public void shouldReturnQueryBuilderForValidQueries(ImmutablePair<String, String> pair) {
+
+            BoolQuery.Builder builder = queryParserUtil.buildQueryBuilderFromQueryString(pair.getValue());
+            BoolQuery actual = builder.build();
+
+            JsonObject expectedQuery = getExpectedQuery(pair.getKey());
+            SearchRequest expected = SearchRequest.of(
+                    sr -> sr.query(q -> q.withJson(new StringReader(expectedQuery.toString())))
+            );
+            assertEquals(expected.query().toString(), actual._toQuery().toString());
+        }
+
+    @ParameterizedTest
+    @MethodSource("validQueriesList")
+    @DisplayName("Should return query builder for valid query: {0}")
+    public void shouldReturnQueryNodesForValidQueries(ImmutablePair<String, String> pair) {
+            List<QueryNode> nodes = queryParserUtil.parseQueryNodesFromQueryString(pair.getValue());
+            assertEquals(getClauseCounts(pair.getKey()), nodes.size());
     }
 
-
-    @DataPoints("NOT_VALID_QUERIES")
-    public static List<ImmutablePair> notValidQueriesList() {
-        InputStream inStream = QueryParserUtilTest.class.getResourceAsStream("/testqueries/not-valid-queries.json");
-        return getPairsFromFile(inStream);
-    }
-    @Theory
-    public void shouldReturnQueryBuilderForValidQueries(@FromDataPoints("VALID_QUERIES") ImmutablePair<String, String> pair) {
-        BoolQuery.Builder queryBuilder =
-        queryParserUtil.buildQueryBuilderFromQueryString(pair.getValue());
-        BoolQuery actualResult = queryBuilder.build();
-        JsonObject expectedQuery = getExpectedQuery(pair.getKey());
-        SearchRequest expectedResult =
-            SearchRequest.of(
-                sr -> sr.query(q -> q.withJson(new StringReader(expectedQuery.toString()))));
-
-        assertEquals(expectedResult.query().toString(), actualResult._toQuery().toString());
+    @Test
+    public void shouldThrowExceptionForNotValidQueries() {
+        notValidQueriesList().forEach(pair -> {
+            AppException ex = assertThrows(
+                    AppException.class,
+                    () -> queryParserUtil.buildQueryBuilderFromQueryString(pair.getValue())
+            );
+            assertTrue(
+                    ex.getMessage().contains(pair.getKey()),
+                    () -> "Expected message to contain: '" + pair.getKey() + "' but got: '" + ex.getMessage() + "'"
+            );
+        });
     }
 
-    @Theory
-    public void shouldReturnQueryNodesForValidQueries(@FromDataPoints("VALID_QUERIES") ImmutablePair<String, String> pair) {
-        List<QueryNode> queryNodes = queryParserUtil.parseQueryNodesFromQueryString(pair.getValue());
-        assertEquals(getClauseCounts(pair.getKey()), queryNodes.size());
+    private static List<ImmutablePair<String, String>> validQueriesList() {
+        InputStream in = QueryParserUtilTest.class.getResourceAsStream("/testqueries/valid-queries.json");
+        return getPairsFromFile(in);
     }
 
-    @Theory
-    public void shouldThrowExceptionForNotValidQueries(@FromDataPoints("NOT_VALID_QUERIES") ImmutablePair<String, String> pair) {
-        exceptionRule.expect(AppException.class);
-        exceptionRule.expectMessage(pair.getKey());
-        queryParserUtil.buildQueryBuilderFromQueryString(pair.getValue());
+    private static List<ImmutablePair<String, String>> notValidQueriesList() {
+        InputStream in = QueryParserUtilTest.class.getResourceAsStream("/testqueries/not-valid-queries.json");
+        return getPairsFromFile(in);
     }
 
-    private static List<ImmutablePair> getPairsFromFile(InputStream inStream) {
+    private static List<ImmutablePair<String, String>> getPairsFromFile(InputStream inStream) {
         BufferedReader br = new BufferedReader(new InputStreamReader(inStream));
         Gson gson = new Gson();
         JsonReader reader = new JsonReader(br);
-        Map<String, String> queriesMap = gson.fromJson(reader, Map.class);
-        List<ImmutablePair> pairs =
-            queriesMap.entrySet().stream().map(entry -> new ImmutablePair(entry.getKey(), entry.getValue())).collect(Collectors.toList());
-        return pairs;
+        Map<String, String> map = gson.fromJson(reader, Map.class);
+        return map.entrySet().stream()
+                .map(e -> new ImmutablePair<>(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
     }
 
     private int getClauseCounts(String query) {
@@ -97,5 +102,4 @@ public class QueryParserUtilTest {
         JsonReader reader = new JsonReader(br);
         return gson.fromJson(reader, JsonObject.class);
     }
-
 }

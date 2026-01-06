@@ -17,8 +17,7 @@
 
 package org.opengroup.osdu.search.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,17 +30,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.search.SortQuery;
 import org.opengroup.osdu.search.model.QueryNode;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SortParserUtilTest {
 
   private static final String ORDER = "ASC";
@@ -191,24 +190,32 @@ public class SortParserUtilTest {
     assertEquals(expectedFieldSort.toString(), actualFileSort.toString());
   }
 
-  @Test(expected = AppException.class)
+  @Test
   public void testMalformedNestedSortString() {
-    sortParserUtil.parseSort(MALFORMED_NESTED_SORT_STRING, ORDER, null);
+    assertThrows(AppException.class, () -> {
+      sortParserUtil.parseSort(MALFORMED_NESTED_SORT_STRING, ORDER, null);
+    });
   }
 
-  @Test(expected = AppException.class)
+  @Test
   public void testMalformedMultilevelNestedSortString() {
-    sortParserUtil.parseSort(MALFORMED_MULTILEVEL_NESTED_SORT_STRING, ORDER, null);
+    assertThrows(AppException.class, () -> {
+      sortParserUtil.parseSort(MALFORMED_MULTILEVEL_NESTED_SORT_STRING, ORDER, null);
+    });
   }
 
-  @Test(expected = AppException.class)
+  @Test
   public void testSortFilterWithoutNestedContext() {
-    this.sut.parseSort(SIMPLE_NESTED_SORT_STRING, ORDER, NO_NESTED_BLOCK_FILTER);
+    assertThrows(AppException.class, () -> {
+      this.sut.parseSort(SIMPLE_NESTED_SORT_STRING, ORDER, NO_NESTED_BLOCK_FILTER);
+    });
   }
 
-  @Test(expected = AppException.class)
+  @Test
   public void testSortFilterTopLevelOperator() {
-    this.sut.parseSort(SIMPLE_NESTED_SORT_STRING, ORDER, topLevelOperatorFilter);
+    assertThrows(AppException.class, () -> {
+      this.sut.parseSort(SIMPLE_NESTED_SORT_STRING, ORDER, topLevelOperatorFilter);
+    });
   }
 
   @Test

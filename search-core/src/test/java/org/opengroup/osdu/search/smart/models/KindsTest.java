@@ -15,27 +15,28 @@
 package org.opengroup.osdu.search.smart.models;
 
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.provider.interfaces.IKindsCache;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class KindsTest {
     @Mock
     private JaxRsDpsLog log;
@@ -80,8 +81,8 @@ public class KindsTest {
     }
 
     public KindsSut setup(boolean cacheHit){
-        when(dpsHeaders.getPartitionId()).thenReturn("tenant1");
-        when(cache.get(any())).thenReturn(cacheHit ? new HashSet() : null);
+        Mockito.lenient().when(dpsHeaders.getPartitionId()).thenReturn("tenant1");
+        Mockito.lenient().when(cache.get(any())).thenReturn(cacheHit ? new HashSet() : null);
         return new KindsSut(configurationProperties, elasticClientHandler, cache, dpsHeaders,log);
     }
 

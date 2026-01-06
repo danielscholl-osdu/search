@@ -1,6 +1,6 @@
 package org.opengroup.osdu.search.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
@@ -11,14 +11,14 @@ import java.io.InputStream;
 import org.apache.http.HttpEntity;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DetailedBadRequestMessageUtilTest {
 
     private static final String NESTED_FAIL_REASON = "failed to create query: [nested] failed to find nested object under path [data.NameAliases]";
@@ -32,7 +32,7 @@ public class DetailedBadRequestMessageUtilTest {
     @Mock
     private SearchRequest searchRequest;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         badRequestMessageUtil = new DetailedBadRequestMessageUtil(objectMapper);
     }

@@ -16,7 +16,7 @@
  */
 package org.opengroup.osdu.search.smart.models;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -27,14 +27,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import org.opengroup.osdu.core.common.http.IUrlFetchService;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
@@ -44,7 +44,7 @@ import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.smart.attributes.AttributeLoader;
 import org.opengroup.osdu.search.util.ElasticClientHandler;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AttributesTest {
 
 	private static MockedStatic<AttributeLoader> mockedSettings;
@@ -65,14 +65,14 @@ public class AttributesTest {
 
 	private final String index = "tenant-test-test-1.0.0";
 
-	@Before
+	@BeforeEach
 	public void setup() throws IOException {
 		mockedSettings = mockStatic(AttributeLoader.class);
 		when(searchConfigurationProperties.getDeployedServiceId()).thenReturn("search");
 		when(AttributeLoader.getAttributes()).thenAnswer((Answer<List<Attribute>>) invocation -> new ArrayList<>());
 
 	}
-	@After
+	@AfterEach
 	public void close() {
 		mockedSettings.close();
 	}
