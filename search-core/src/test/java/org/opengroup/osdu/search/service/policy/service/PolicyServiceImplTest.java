@@ -1,31 +1,31 @@
 package org.opengroup.osdu.search.service.policy.service;
 
 import org.apache.http.HttpStatus;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.http.HttpResponse;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.policy.IPolicyFactory;
 import org.opengroup.osdu.core.common.policy.IPolicyProvider;
 import org.opengroup.osdu.core.common.policy.PolicyException;
+import org.opengroup.osdu.search.context.UserContext;
 import org.opengroup.osdu.search.policy.di.PolicyServiceConfiguration;
 import org.opengroup.osdu.search.policy.service.PolicyServiceImpl;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PolicyServiceImplTest {
 
     @Mock
@@ -40,11 +40,14 @@ public class PolicyServiceImplTest {
     @Mock
     private PolicyServiceConfiguration policyServiceConfiguration;
 
-    @Spy
+    @Mock
     private IPolicyProvider serviceClient;
 
     @InjectMocks
     private PolicyServiceImpl sut;
+
+    @Mock
+    private UserContext userContext;
 
     @Test
     public void getCompiledPolicyTest() throws PolicyException {
@@ -68,20 +71,20 @@ public class PolicyServiceImplTest {
                 "    }";
         Map<String, String> dpsHeaders = new HashMap<>();
         List<String> groupsList = Arrays.asList("AAA", "BBB");
-        Mockito.when(request.getAttribute("userDataGroups")).thenReturn(groupsList);
-        Mockito.when(headers.getHeaders()).thenReturn(dpsHeaders);
-        Mockito.when(headers.getPartitionId()).thenReturn("dpi");
-        Mockito.when(policyFactory.create(any())).thenReturn(serviceClient);
+        when(userContext.getDataGroups()).thenReturn(groupsList);
+        when(headers.getPartitionId()).thenReturn("dpi");
+        Mockito.lenient().when(headers.getHeaders()).thenReturn(dpsHeaders);
+        when(policyFactory.create(any())).thenReturn(serviceClient);
 
         String searchPolicyId = "osdu.instance.search";
-        Mockito.when(policyServiceConfiguration.getId()).thenReturn(searchPolicyId);
-        Mockito.when(serviceClient.getCompiledPolicy("data.osdu.instance.search.allow == true", unknownsList, input)).thenReturn(PolicyServiceResponse);
-        Assert.assertNotNull(sut.getCompiledPolicy());
+        when(policyServiceConfiguration.getId()).thenReturn(searchPolicyId);
+        when(serviceClient.getCompiledPolicy("data.osdu.instance.search.allow == true", unknownsList, input)).thenReturn(PolicyServiceResponse);
+        assertNotNull(sut.getCompiledPolicy());
 
         searchPolicyId = "osdu.partition[\"%s\"].search";
-        Mockito.when(policyServiceConfiguration.getId()).thenReturn(searchPolicyId);
-        Mockito.when(serviceClient.getCompiledPolicy("data.osdu.partition[\"dpi\"].search.allow == true", unknownsList, input)).thenReturn(PolicyServiceResponse);
-        Assert.assertNotNull(sut.getCompiledPolicy());
+        when(policyServiceConfiguration.getId()).thenReturn(searchPolicyId);
+        when(serviceClient.getCompiledPolicy("data.osdu.partition[\"dpi\"].search.allow == true", unknownsList, input)).thenReturn(PolicyServiceResponse);
+        assertNotNull(sut.getCompiledPolicy());
     }
 
     @Test
@@ -96,20 +99,19 @@ public class PolicyServiceImplTest {
         unknownsList.add("input.record");
         Map<String, String> dpsHeaders = new HashMap<>();
         List<String> groupsList = Arrays.asList("AAA", "BBB");
-        Mockito.when(request.getAttribute("userDataGroups")).thenReturn(groupsList);
-        Mockito.when(headers.getHeaders()).thenReturn(dpsHeaders);
-        Mockito.when(headers.getPartitionId()).thenReturn("dpi");
-        Mockito.when(policyFactory.create(any())).thenReturn(serviceClient);
+        when(userContext.getDataGroups()).thenReturn(groupsList);
+        when(headers.getPartitionId()).thenReturn("dpi");
+        Mockito.lenient().when(headers.getHeaders()).thenReturn(dpsHeaders);
+        when(policyFactory.create(any())).thenReturn(serviceClient);
 
         String searchPolicyId = "osdu.instance.search";
-        Mockito.when(policyServiceConfiguration.getId()).thenReturn(searchPolicyId);
+        when(policyServiceConfiguration.getId()).thenReturn(searchPolicyId);
 
         HttpResponse httpResponse = new HttpResponse();
         httpResponse.setBody("{\\\"detail\\\":\\\"Translate API Error: expected query in format data.osdu.partition...\\\"}");
         httpResponse.setResponseCode(HttpStatus.SC_BAD_REQUEST);
         PolicyException policyException = new PolicyException("Error making request to Policy service", httpResponse);
         Mockito.when(serviceClient.getCompiledPolicy(anyString(), anyList(), anyMap())).thenThrow(policyException);
-
         AppException exception = assertThrows(AppException.class, () -> {
             sut.getCompiledPolicy();
         });
@@ -129,15 +131,15 @@ public class PolicyServiceImplTest {
         unknownsList.add("input.record");
         Map<String, String> dpsHeaders = new HashMap<>();
         List<String> groupsList = Arrays.asList("AAA", "BBB");
-        Mockito.when(request.getAttribute("userDataGroups")).thenReturn(groupsList);
-        Mockito.when(headers.getHeaders()).thenReturn(dpsHeaders);
-        Mockito.when(headers.getPartitionId()).thenReturn("dpi");
-        Mockito.when(policyFactory.create(any())).thenReturn(serviceClient);
+        when(userContext.getDataGroups()).thenReturn(groupsList);
+        when(headers.getPartitionId()).thenReturn("dpi");
+        Mockito.lenient().when(headers.getHeaders()).thenReturn(dpsHeaders);
+        when(policyFactory.create(any())).thenReturn(serviceClient);
 
         String searchPolicyId = "osdu.instance.search";
-        Mockito.when(policyServiceConfiguration.getId()).thenReturn(searchPolicyId);
+        when(policyServiceConfiguration.getId()).thenReturn(searchPolicyId);
 
-        Mockito.when(serviceClient.getCompiledPolicy(anyString(), anyList(), anyMap())).thenThrow(new RuntimeException());
+        when(serviceClient.getCompiledPolicy(anyString(), anyList(), anyMap())).thenThrow(new RuntimeException());
 
         AppException exception = assertThrows(AppException.class, () -> {
             sut.getCompiledPolicy();

@@ -462,7 +462,6 @@ CPL-1.0
 The following software have components provided under the terms of this license:
 
 - JUnit (from http://junit.org)
-- System Rules (from http://stefanbirkner.github.com/system-rules/, http://stefanbirkner.github.io/system-rules/)
 
 ========================================================================
 DOC
@@ -683,6 +682,7 @@ The following software have components provided under the terms of this license:
 - Spring Cloud Azure Starter (from https://microsoft.github.io/spring-cloud-azure)
 - Spring Cloud Azure Starter Active Directory (from https://microsoft.github.io/spring-cloud-azure)
 - Spring Data for Azure Cosmos DB SQL API (from https://github.com/Azure/azure-sdk-for-java/tree/master/sdk/cosmos/azure-spring-data-cosmos, https://github.com/Azure/azure-sdk-for-java/tree/master/sdk/spring/azure-spring-data-cosmos)
+- System Lambda (from https://github.com/stefanbirkner/system-lambda/)
 - System Stubs Core (from https://repo1.maven.org/maven2/uk/org/webcompere/system-stubs-core)
 - adal4j (from https://github.com/AzureAD/azure-activedirectory-library-for-java)
 - javamsalruntime (from https://github.com/AzureAD/microsoft-authentication-library-for-cpp)
@@ -800,7 +800,6 @@ The following software have components provided under the terms of this license:
 
 - "Java Concurrency in Practice" book annotations (from http://jcip.net/)
 - JUnit (from http://junit.org)
-- System Rules (from http://stefanbirkner.github.com/system-rules/, http://stefanbirkner.github.io/system-rules/)
 - btf (from https://github.com/java-json-tools/btf)
 - json-patch (from https://github.com/fge/json-patch, https://github.com/java-json-tools/json-patch)
 - msg-simple (from https://github.com/java-json-tools/msg-simple)
