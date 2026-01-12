@@ -1,0 +1,19 @@
+{
+  "filter": [{
+    "terms": {
+      "x-acl": ["data.welldb.viewers@common.evd.cloud.slb-ds.com", "data.npd.viewers@common.evd.cloud.slb-ds.com"],
+      "boost": 1.0
+    }
+  }
+  ],
+  "must": [{
+    "term": {
+      "collaborationId": {
+        "value": "c3cc62d5-0ff6-4931-b4e8-51e5e72667fc",
+        "boost": 1.0
+      }
+    }
+  }
+  ],
+  "boost": 1.0
+}

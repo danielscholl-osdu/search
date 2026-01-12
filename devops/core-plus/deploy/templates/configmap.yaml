@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: {{ .Values.conf.appName | quote }}
+  name: {{ printf "%s-config" .Values.conf.appName | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+data:
+  SPRING_PROFILES_ACTIVE: "anthos"
+  LOG_LEVEL: {{ .Values.data.logLevel | quote }}
+  {{- if .Values.data.redisSearchHost }}
+  REDIS_GROUP_HOST: {{ .Values.data.redisSearchHost | quote }}
+  REDIS_SEARCH_HOST: {{ .Values.data.redisSearchHost | quote }}
+  {{- else }}
+  REDIS_GROUP_HOST: {{ printf "redis-%s" .Values.conf.appName | quote }}
+  REDIS_SEARCH_HOST: {{ printf "redis-%s" .Values.conf.appName | quote }}
+  {{- end }}
+  REDIS_SEARCH_PORT: {{ .Values.data.redisSearchPort | quote }}
+  REDIS_GROUP_PORT: {{ .Values.data.redisSearchPort | quote }}
+  ENTITLEMENTS_HOST: {{ .Values.data.entitlementsHost | quote }}
+  SECURITY_HTTPS_CERTIFICATE_TRUST: {{ .Values.data.securityHttpsCertificateTrust | quote }}
+  PARTITION_HOST: {{ .Values.data.partitionHost | quote }}
+  POLICY_HOST: {{ .Values.data.policyHost | quote }}
+  POLICY_ID: {{ .Values.data.policyId | quote }}
+  INDEXER_BASE_HOST: {{ .Values.data.indexerHost | quote }}

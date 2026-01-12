@@ -1,0 +1,6 @@
+/TestResults
+/packages
+/.vs
+/obj
+/bin
+*/*.csproj.user

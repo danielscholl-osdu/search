@@ -1,0 +1,23 @@
+{
+    "simple-query": "simple query",
+    "simple-query-with-bool": "TEXAS OR TX",
+    "combined-simple-query": "(data.First:\"some data\") AND (data.Second:\"other data\")",
+    "nested-query": "nested(data.NestedTest, (NumberTest:(12345.0 OR 0) AND StringTest:\"test string\"))",
+    "nested-query-with-similar-properties": "nested(data.NestedTest, (NumberTest:(12345.0 OR 0) AND NumberTestID:\"test string\"))",
+    "range-nested-query": "nested(data.NestedTest, (MarkerMeasuredDepth:(>0)))",
+    "combined-range-nested-query": "nested(data.NestedTest, (NumberTest:(>12345.0) AND SecondNumber:[0 TO 100]))",
+    "combined-simple-nested-query": "data.First:\"Example*\" OR nested(data.NestedTest, (StringTest:\"Example*\")) AND data.Second:\"test string\"",
+    "combined-simple-or-nested-query": "data.Code.keyword:\"GOR\" OR nested(data.NameAlias, (AliasName.keyword:(\"FOO\")))",
+    "multilevel-nested-query": "nested(data.FirstLevel, nested(data.FirstLevel.SecondLevel, nested(data.FirstLevel.SecondLevel.ThirdLevel, (ThirdLevelNumberTest:\"12345.0\"))))",
+    "combined-multilevel-nested-query": "nested(data.ParentNested, nested(data.ParentNested.FirstInnerNested, (NumberTest:(12345.0 OR 0) AND StringTest:\"test string\")) OR nested(data.ParentNested.SecondInnerNested, (NumberTest:\"12345.0\" AND StringTest:\"test string\")))",
+    "combined-nested-query-with-not": "nested(data.ParentNested, nested(data.ParentNested.FirstInnerNested, (NumberTest:(12345.0 OR 0) AND StringTest:\"test string\")) NOT nested(data.ParentNested.SecondInnerNested, (NumberTest:\"12345.0\" AND StringTest:\"test string\")))",
+    "nested-query-with-similar-inner-properties": "nested(data.VerticalMeasurements, (VerticalMeasurementID:\"Rotary Table\" AND VerticalMeasurement:(>30)))",
+    "inner-nested-query": "(nested(data.NestedTest, (NumberTest:(12345.0 OR 0) AND StringTest:\"test string\")) AND data.First:\"Example*\")",
+    "inner-multilevel-nested-query": "(nested(data.FirstLevel, nested(data.FirstLevel.SecondLevel, nested(data.FirstLevel.SecondLevel.ThirdLevel, (ThirdLevelNumberTest:\"12345.0\")))))",
+    "nested-query-with-space": "nested (data.NestedTest,(NumberTest:(12345.0 OR 0) AND StringTest:\"test string\"))",
+    "multilevel-nested-query-with-space": "nested (data.FirstLevel, nested(data.FirstLevel.SecondLevel, nested(data.FirstLevel.SecondLevel.ThirdLevel,(ThirdLevelNumberTest:\"12345.0\"))))",
+    "nested-query-with-AND-OR-keywords-inside-double-quotes": "\"test AND test2 OR test3\" OR nested(data.comments, (\"test AND test2 OR test3\"))",
+    "nested-query-with-parent-keywords-inside-double-quotes": "\"test(v1)\" OR nested(data.comments, (\"test(v1)\"))",
+	"nested-query-with-escaped-quote-inside-double-quotes":"\"bala\\\" AND bala\" OR nested(data.comments, (\"bala\\\" AND bala\"))"
+}
+

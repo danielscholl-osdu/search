@@ -1,0 +1,40 @@
+global:
+  domain: ""
+  limitsEnabled: true
+
+# This flag enables configuration specific to ROSA environments.
+rosa: false 
+
+data:
+  # Configmaps
+  logLevel: "ERROR"
+  entitlementsHost: "http://entitlements"
+  partitionHost: "http://partition"
+  policyHost: "http://policy"
+  indexerHost: "http://indexer"
+  policyId: 'osdu.partition["%s"].search'
+  securityHttpsCertificateTrust: "true"
+  # Deployments
+  requestsCpu: "15m"
+  requestsMemory: "400Mi"
+  limitsCpu: "1"
+  limitsMemory: "1G"
+  serviceAccountName: "search"
+  imagePullPolicy: "IfNotPresent"
+  image: ""
+  # redis connection. Change it if you want to use external redis
+  redisSearchHost: ""
+  redisSearchPort: 6379
+  redisImage: "docker.io/library/redis:7.2-alpine"
+
+conf:
+  appName: "search"
+  elasticSecretName: "search-elastic-secret"
+  searchRedisSecretName: "search-redis-secret"
+  replicas: 1
+
+istio:
+  proxyCPU: "5m"
+  proxyCPULimit: "200m"
+  proxyMemory: "50Mi"
+  proxyMemoryLimit: "256Mi"

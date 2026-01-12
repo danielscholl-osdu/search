@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Operator",
+    "schemaMapping": [
+      "data.Operator",
+      "data.OriginalOperator"
+    ],
+    "description": "The operator filter for the data was taken from e.g. <schemaMapping>."
+  },
+  {
+    "name": "Field",
+    "schemaMapping": [
+      "data.field",
+      "data.Field"
+    ],
+    "description": "The field filter for the data was taken from e.g. <schemaMapping>."
+  },
+  {
+    "name": "Country",
+    "schemaMapping": [
+      "data.Country",
+      "data.country",
+      "data.COUNTRY"
+    ],
+    "description": "The Country filter for the data was taken from e.g. <schemaMapping>."
+  }
+]

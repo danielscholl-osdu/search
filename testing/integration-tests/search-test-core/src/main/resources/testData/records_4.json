@@ -1,0 +1,67 @@
+[{
+    "id": "tenant1:well<timestamp>:1",
+    "tags": {
+        "testtag": "testvalue"
+    },
+    "data": {
+        "Source": "Example Data Source",
+        "FacilityName": "Example FacilityName",
+        "VerticalMeasurements": [
+            {
+                "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+                "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
+                "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:SomeUniqueVerticalMeasurementSourceID:",
+                "VerticalReferenceID": "Example VerticalReferenceID",
+                "TerminationDateTime": "2020-02-13T04:25:50.688Z",
+                "VerticalMeasurementID": "Example VerticalMeasurementID",
+                "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:SomeUniqueVerticalMeasurementPathID:",
+                "EffectiveDateTime": "2020-02-13T04:25:50.688Z",
+                "VerticalMeasurement": 12345.6,
+                "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:Plug%20Back%20depth:",
+                "VerticalMeasurementDescription": "Example VerticalMeasurementDescription",
+                "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:"
+            }
+        ],
+        "FacilityOperators": [
+            {
+                "FacilityOperatorID": "Example Facility Operator ID",
+                "TerminationDateTime": "2020-02-13T04:25:50.688Z",
+                "EffectiveDateTime": "2020-02-13T04:25:50.688Z",
+                "FacilityOperatorOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:"
+            }
+        ]
+    }
+
+},
+    {
+        "id": "tenant1:well<timestamp>:2",
+        "data": {
+            "Source": "Example Data Source",
+            "FacilityName": "Example FacilityName",
+            "VerticalMeasurements": [
+                {
+                    "WellboreTVDTrajectoryID": "namespace:work-product-component--WellboreTrajectory:WellboreTrajectory-911bb71f-06ab-4deb-8e68-b8c9229dc76b:",
+                    "VerticalCRSID": "namespace:reference-data--CoordinateReferenceSystem:SomeUniqueCoordinateReferenceSystemID:",
+                    "VerticalMeasurementSourceID": "namespace:reference-data--VerticalMeasurementSource:SomeUniqueVerticalMeasurementSourceID:",
+                    "VerticalReferenceID": "Example VerticalReferenceID",
+                    "TerminationDateTime": "2020-02-13T04:25:50.688Z",
+                    "VerticalMeasurementID": "Other Example VerticalMeasurementID",
+                    "VerticalMeasurementPathID": "namespace:reference-data--VerticalMeasurementPath:SomeUniqueVerticalMeasurementPathID:",
+                    "EffectiveDateTime": "2020-02-13T04:25:50.688Z",
+                    "VerticalMeasurement": 12.3,
+                    "VerticalMeasurementTypeID": "namespace:reference-data--VerticalMeasurementType:Plug%20Back%20depth:",
+                    "VerticalMeasurementDescription": "Example VerticalMeasurementDescription",
+                    "VerticalMeasurementUnitOfMeasureID": "namespace:reference-data--UnitOfMeasure:m:"
+                }
+            ],
+            "FacilityOperators": [
+                {
+                    "FacilityOperatorID": "Example Facility Operator ID",
+                    "TerminationDateTime": "2025-02-13T04:25:50.688Z",
+                    "EffectiveDateTime": "2020-02-13T04:25:50.688Z",
+                    "FacilityOperatorOrganisationID": "namespace:master-data--Organisation:SomeUniqueOrganisationID:"
+                }
+            ]
+        }
+    }
+]
