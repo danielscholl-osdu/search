@@ -14,7 +14,7 @@
 
 package org.opengroup.osdu.search.middleware;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.*;
@@ -25,23 +25,22 @@ import java.util.HashMap;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ResourceInfo;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import org.opengroup.osdu.core.common.model.http.Request;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CorrelationIDRequestFilterTest {
 
 
@@ -68,7 +67,7 @@ public class CorrelationIDRequestFilterTest {
     @Mock
     private JaxRsDpsLog logger;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         doNothing().when(filterChain).doFilter(httpRequest, httpResponse);
 

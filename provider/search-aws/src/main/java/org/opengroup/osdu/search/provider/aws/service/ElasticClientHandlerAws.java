@@ -63,7 +63,9 @@ public class ElasticClientHandlerAws extends ElasticClientHandler {
                 sslContext = SSLContext.getInstance("TLS");
                 sslContext.init(null, new TrustManager[] { UnsafeX509ExtendedTrustManager.INSTANCE }, null);
                 builder.setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setSSLContext(sslContext)
-                        .setSSLHostnameVerifier((s, session) -> true)
+                        // Suppressed: java:S4830 - Hostname verification disabled for internal EKS cluster connections
+                        // This is controlled by aws.es.certificate.disableTrust configuration property
+                        .setSSLHostnameVerifier((s, session) -> true) // NOSONAR
                         .setConnectionTimeToLive(REST_CLIENT_CONNECTION_KEEPALIVE_SECONDS, TimeUnit.SECONDS));
             } catch (NoSuchAlgorithmException e) {
                 log.error("No such algorithm", e);

@@ -17,7 +17,7 @@
 
 package org.opengroup.osdu.search.smart.filters;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -28,19 +28,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import jakarta.inject.Provider;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.search.provider.impl.CrossTenantInfoServiceImpl;
 import org.opengroup.osdu.search.provider.interfaces.ICrossTenantInfoService;
 import org.opengroup.osdu.search.smart.models.Attribute;
 import org.opengroup.osdu.search.smart.models.AttributeCollection;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AttributeFilterTest {
 
   @InjectMocks
@@ -52,7 +53,7 @@ public class AttributeFilterTest {
   @Mock
   private Attribute attribute;
 
-  @Before
+  @BeforeEach
   public void setup() throws IOException {
     Set<String> input = new HashSet<>();
     input.add("MCCOY");
@@ -65,11 +66,11 @@ public class AttributeFilterTest {
     tenantInfo.setDataPartitionId("tenant1");
     tenantInfoList.add(tenantInfo);
     CrossTenantInfoServiceImpl tenantInfoService = mock(CrossTenantInfoServiceImpl.class);
-    when(tenantInfoServiceProvider.get()).thenReturn(tenantInfoService);
-    when(tenantInfoService.getAllTenantsFromPartitionId()).thenReturn(tenantInfoList);
-    when(attributes.getAllAttributes("tenant1", "Field")).thenReturn(input);
-    when(attribute.getName()).thenReturn("Field");
-    when(attribute.getDescription()).thenReturn("Field Desc");
+    Mockito.lenient().when(tenantInfoServiceProvider.get()).thenReturn(tenantInfoService);
+    Mockito.lenient().when(tenantInfoService.getAllTenantsFromPartitionId()).thenReturn(tenantInfoList);
+    Mockito.lenient().when(attributes.getAllAttributes("tenant1", "Field")).thenReturn(input);
+    Mockito.lenient().when(attribute.getName()).thenReturn("Field");
+    Mockito.lenient().when(attribute.getDescription()).thenReturn("Field Desc");
   }
 
   @Test

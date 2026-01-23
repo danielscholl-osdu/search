@@ -17,9 +17,9 @@
 
 package org.opengroup.osdu.search.smart.filters;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
@@ -36,20 +36,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import jakarta.inject.Provider;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.search.provider.interfaces.ICrossTenantInfoService;
 import org.opengroup.osdu.search.smart.attributes.AttributeLoader;
 import org.opengroup.osdu.search.smart.attributes.AttributesRepository;
 import org.opengroup.osdu.search.smart.models.Attribute;
 import org.opengroup.osdu.search.smart.models.AttributeCollection;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AllFiltersTest {
 
   private static MockedStatic<AttributeLoader> mockedSettings;
@@ -63,14 +64,14 @@ public class AllFiltersTest {
 
   private AllFilters sut;
 
-  @Before
+  @BeforeEach
   public void setup() {
     List<Attribute> listAttributes = new ArrayList<>();
     mockedSettings = mockStatic(AttributeLoader.class);
     when(AttributeLoader.getAttributes()).thenReturn(listAttributes);
   }
 
-  @After
+  @AfterEach
   public void close() {
     mockedSettings.close();
   }
@@ -117,7 +118,7 @@ public class AllFiltersTest {
 
     Map<String, String> result = sut.values("a", Collections.emptySet());
 
-    assertTrue("Keys are not ordered alphabeitcally", Ordering.natural().isOrdered(result.keySet()));
+    assertTrue(Ordering.natural().isOrdered(result.keySet()), "Keys are not ordered alphabetically");
   }
 
   private AllFilters createSut() throws IOException {
@@ -126,14 +127,14 @@ public class AllFiltersTest {
     a.put("a1", "typeA");
     IFilter mockA = mock(IFilter.class);
     when(mockA.name()).thenReturn("a");
-    when(mockA.values(any(), anyInt())).thenReturn(a);
+    Mockito.lenient().when(mockA.values(any(), anyInt())).thenReturn(a);
 
     Map<String, String> b = new HashMap<>();
     b.put("b2", "typeB");
     b.put("b1", "typeB");
     b.put("a6", "typeB");
     IFilter mockB = mock(IFilter.class);
-    when(mockB.values(any(), anyInt())).thenReturn(b);
+    Mockito.lenient().when(mockB.values(any(), anyInt())).thenReturn(b);
     when(mockB.name()).thenReturn("b");
 
     Set<IFilter> filters = new HashSet<>();
@@ -141,5 +142,4 @@ public class AllFiltersTest {
     filters.add(mockB);
     return new AllFilters(filters, tenantInfoServiceProvider, attributes);
   }
-
 }

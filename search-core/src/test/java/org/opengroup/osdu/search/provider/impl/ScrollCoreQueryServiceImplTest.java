@@ -14,10 +14,7 @@
 
 package org.opengroup.osdu.search.provider.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
@@ -27,7 +24,6 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.opengroup.osdu.search.config.SearchConfigurationProperties.POLICY_FEATURE_NAME;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -49,13 +45,14 @@ import java.util.Map;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.ContentTooLongException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.feature.IFeatureFlag;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppError;
@@ -66,10 +63,11 @@ import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
 import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.opengroup.osdu.search.cache.CursorCache;
 import org.opengroup.osdu.search.config.ElasticLoggingConfig;
+import org.opengroup.osdu.search.context.UserContext;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.util.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ScrollCoreQueryServiceImplTest {
 
     private static final String dataPartitionId = "data-partition-id";
@@ -127,14 +125,17 @@ public class ScrollCoreQueryServiceImplTest {
     @Mock
     private IFeatureFlag featureFlag;
 
-    @Before
+    @Mock
+    private UserContext userContext;
+
+    @BeforeEach
     public void init() {
-        doReturn(userId).when(dpsHeaders).getUserEmail();
-        doReturn(indexName).when(crossTenantUtils).getIndexName(any());
-        doReturn(cursorSettings).when(cursorCache).get(anyString());
-        doReturn(client).when(elasticClientHandler).getOrCreateRestClient();
-        when(elasticLoggingConfig.getEnabled()).thenReturn(false);
-        when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
+        Mockito.lenient().doReturn(userId).when(dpsHeaders).getUserEmail();
+        Mockito.lenient().doReturn(indexName).when(crossTenantUtils).getIndexName(any());
+        Mockito.lenient().doReturn(cursorSettings).when(cursorCache).get(anyString());
+        Mockito.lenient().doReturn(client).when(elasticClientHandler).getOrCreateRestClient();
+        Mockito.lenient().when(elasticLoggingConfig.getEnabled()).thenReturn(false);
+        Mockito.lenient().when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
     }
 
     @Test
@@ -264,7 +265,7 @@ public class ScrollCoreQueryServiceImplTest {
         doReturn(searchHits).when(searchScrollResponse).hits();
         doReturn(hits).when(searchHits).hits();
         doReturn(searchScrollResponse).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
-        when(featureFlag.isFeatureEnabled(POLICY_FEATURE_NAME)).thenReturn(false);
+        Mockito.lenient().when(featureFlag.isFeatureEnabled(POLICY_FEATURE_NAME)).thenReturn(false);
 
         CursorQueryResponse obtainedQueryResponse = sut.queryIndex(searchRequest);
 
@@ -273,7 +274,7 @@ public class ScrollCoreQueryServiceImplTest {
         assertNull(obtainedQueryResponse.getCursor());
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryIndex_whenMismatchCursorIssuerAndConsumer_thenThrowException() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
 
@@ -284,20 +285,16 @@ public class ScrollCoreQueryServiceImplTest {
         doReturn(mismatchUserId).when(cursorSettings).getUserId();
         doReturn(client).when(elasticClientHandler).getOrCreateRestClient();
 
-        try {
-            sut.queryIndex(searchRequest);
-        } catch (AppException e) {
-            int errorCode = 403;
-            AppError error = e.getError();
-            assertEquals(error.getCode(), errorCode);
-            assertEquals(error.getReason(), "cursor issuer doesn't match the cursor consumer");
-            assertEquals(error.getMessage(), "cursor sharing is forbidden");
-            throw (e);
-        }
+        AppException e = assertThrows(AppException.class, () -> sut.queryIndex(searchRequest));
+        int errorCode = 403;
+        AppError error = e.getError();
+        assertEquals(errorCode, error.getCode());
+        assertEquals("cursor issuer doesn't match the cursor consumer", error.getReason());
+        assertEquals("cursor sharing is forbidden", error.getMessage());
     }
 
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryIndex_whenCursorSettingsNotFoundInCursorCache_thenThrowException() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
 
@@ -306,16 +303,12 @@ public class ScrollCoreQueryServiceImplTest {
         doReturn(cursor).when(searchRequest).getCursor();
         doReturn(null).when(cursorCache).get(any());
 
-        try {
-            sut.queryIndex(searchRequest);
-        } catch (AppException e) {
-            int errorCode = 400;
-            AppError error = e.getError();
-            assertEquals(error.getReason(), "Can't find the given cursor");
-            assertEquals(error.getMessage(), "The given cursor is invalid or expired");
-            assertEquals(error.getCode(), errorCode);
-            throw (e);
-        }
+        AppException e = assertThrows(AppException.class, () -> sut.queryIndex(searchRequest));
+        int errorCode = 400;
+        AppError error = e.getError();
+        assertEquals("Can't find the given cursor", error.getReason());
+        assertEquals("The given cursor is invalid or expired", error.getMessage());
+        assertEquals(errorCode, error.getCode());
     }
 
     @Test
@@ -341,7 +334,7 @@ public class ScrollCoreQueryServiceImplTest {
         }
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryIndex_whenResponseTooLong_thenThrowException() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
         doReturn("cursor").when(searchRequest).getCursor();
@@ -352,16 +345,12 @@ public class ScrollCoreQueryServiceImplTest {
         doReturn(new ContentTooLongException(null)).when(exception).getCause();
         doThrow(exception).when(client).scroll(any(ScrollRequest.class), eq((Type)Map.class));
 
-        try {
-            sut.queryIndex(searchRequest);
-        } catch (AppException e) {
-            int errorCode = 413;
-            AppError error = e.getError();
-            assertEquals(error.getReason(), "Response is too long");
-            assertEquals(error.getMessage(), "Elasticsearch response is too long, max is 100Mb");
-            assertEquals(error.getCode(), errorCode);
-            throw (e);
-        }
+        AppException e = assertThrows(AppException.class, () -> sut.queryIndex(searchRequest));
+        int errorCode = 413;
+        AppError error = e.getError();
+        assertEquals("Response is too long", error.getReason());
+        assertEquals("Elasticsearch response is too long, max is 100Mb", error.getMessage());
+        assertEquals(errorCode, error.getCode());
     }
 
     private Map<String, List<String>> getHighlightFields() {
@@ -382,22 +371,19 @@ public class ScrollCoreQueryServiceImplTest {
         assertNull(cursor);
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryIndex_whenSearchGives500_thenThrowException() throws Exception {
         CursorQueryRequest searchRequest = mock(CursorQueryRequest.class);
         doReturn(null).when(searchRequest).getCursor();
         AppException ex = new AppException(500, reason, message);
         doReturn(client).when(elasticClientHandler).getOrCreateRestClient();
         doThrow(ex).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
-        try {
-            sut.queryIndex(searchRequest);
-        } catch (AppException e) {
-            int errorCode = 500;
-            AppError error = e.getError();
-            assertEquals(error.getCode(), errorCode);
-            assertEquals(error.getReason(), reason);
-            assertEquals(error.getMessage(), message);
-            throw (e);
-        }
+
+        AppException e = assertThrows(AppException.class, () -> sut.queryIndex(searchRequest));
+        int errorCode = 500;
+        AppError error = e.getError();
+        assertEquals(errorCode, error.getCode());
+        assertEquals(reason, error.getReason());
+        assertEquals(message, error.getMessage());
     }
 }

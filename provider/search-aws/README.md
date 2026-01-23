@@ -37,7 +37,6 @@ In order to run the service locally or remotely, you will need to have the follo
 | `POLICY_CACHE_TIMEOUT`              | `2`                        | no       | Policy cache timeout in minutes                                                               | no         |
 | `ELASTIC_DISABLE_CERTIFICATE_TRUST` | `true`                     | no       | Disable SSL certificate validation for Elasticsearch                                          | no         |
 | `TMP_VOLUME_PATH`                   | `/tmp`                     | no       | Path for temporary volume storage                                                             | no         |
-| `COLLABORATION_FF_ENABLED`          | `false`                    | no       | Enable collaboration feature flag                                                             | no         |
 | `DISABLE_USER_AGENT`                | `false`                    | no       | Disable user agent validation                                                                 | no         |
 
 ### Run Locally

@@ -14,27 +14,27 @@
 
 package org.opengroup.osdu.search.smart.parser;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.model.http.AppException;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.search.smart.models.Filter;
 import org.opengroup.osdu.search.smart.models.FilterCollection;
 import org.opengroup.osdu.search.validation.QueryRequestConstraintValidator;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ParseToQueryTest {
 	
     @Mock

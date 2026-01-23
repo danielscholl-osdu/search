@@ -17,33 +17,28 @@ package org.opengroup.osdu.search.middleware;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import jakarta.validation.ValidationException;
 import javassist.NotFoundException;
 import org.apache.http.HttpStatus;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.opengroup.osdu.core.common.model.http.AppException;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 
-
-import jakarta.validation.ValidationException;
-
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static org.opengroup.osdu.search.util.Constants.LARGE_ERROR_MESSAGE;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class GlobalExceptionMapperTest {
 
     @Mock
@@ -162,6 +157,8 @@ public class GlobalExceptionMapperTest {
         ResponseEntity response = this.sut.handleAppException(appException);
         assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusCodeValue());
         String loggingMsg = LARGE_ERROR_MESSAGE.substring(0, this.configurationProperties.getMaxExceptionLogMessageLength());
-        verify(this.log).error(loggingMsg, new AppException(HttpStatus.SC_BAD_REQUEST, "Too many clauses", loggingMsg));
+
+        AppException apException = new AppException(HttpStatus.SC_BAD_REQUEST, "Too many clauses", loggingMsg);
+        verify(this.log).warning(eq(loggingMsg), any(AppException.class));
     }
 }

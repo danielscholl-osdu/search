@@ -23,13 +23,14 @@ import co.elastic.clients.elasticsearch.core.search.TotalHits;
 import com.google.common.collect.Lists;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.ContentTooLongException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.feature.IFeatureFlag;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppError;
@@ -39,6 +40,7 @@ import org.opengroup.osdu.core.common.model.search.CursorQueryRequest;
 import org.opengroup.osdu.core.common.model.search.CursorQueryResponse;
 import org.opengroup.osdu.search.cache.SearchAfterSettingsCache;
 import org.opengroup.osdu.search.config.ElasticLoggingConfig;
+import org.opengroup.osdu.search.context.UserContext;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.model.SearchAfterSettings;
 import org.opengroup.osdu.search.util.*;
@@ -50,12 +52,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.opengroup.osdu.search.config.SearchConfigurationProperties.POLICY_FEATURE_NAME;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SearchAfterQueryServiceImplTest {
     private static final String reason = "Internal Server";
     private static final String message = "Search not completed";
@@ -108,16 +110,20 @@ public class SearchAfterQueryServiceImplTest {
     private SearchAfterQueryServiceImpl sut;
 
     @Mock
+    private UserContext userContext;
+
+    @Mock
     private IFeatureFlag featureFlag;
 
-    @Before
+    @BeforeEach
     public void init() {
-        doReturn(userId).when(dpsHeaders).getUserEmail();
-        doReturn(indexName).when(crossTenantUtils).getIndexName(any());
-        doReturn(cursorSettings).when(cursorCache).get(anyString());
-        doReturn(client).when(elasticClientHandler).getOrCreateRestClient();
-        when(elasticLoggingConfig.getEnabled()).thenReturn(false);
-        when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
+        Mockito.lenient().doReturn(userId).when(dpsHeaders).getUserEmail();
+        Mockito.lenient().doReturn(indexName).when(crossTenantUtils).getIndexName(any());
+        Mockito.lenient().doReturn(cursorSettings).when(cursorCache).get(anyString());
+        Mockito.lenient().doReturn(client).when(elasticClientHandler).getOrCreateRestClient();
+        Mockito.lenient().when(elasticLoggingConfig.getEnabled()).thenReturn(false);
+        Mockito.lenient().when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
+        Mockito.lenient().when(userContext.isRootUser()).thenReturn(false);
     }
 
     @Test
@@ -247,7 +253,7 @@ public class SearchAfterQueryServiceImplTest {
         doReturn(openPitResponse).when(client).openPointInTime(any(OpenPointInTimeRequest.class));
         doReturn(pitId).when(openPitResponse).id();
         doReturn(searchResponse).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
-        when(featureFlag.isFeatureEnabled(POLICY_FEATURE_NAME)).thenReturn(false);
+        Mockito.lenient().when(featureFlag.isFeatureEnabled(POLICY_FEATURE_NAME)).thenReturn(false);
 
         // act
         CursorQueryResponse obtainedQueryResponse = sut.queryIndex(searchRequest);
@@ -257,7 +263,7 @@ public class SearchAfterQueryServiceImplTest {
         assertEquals(obtainedQueryResponse.getTotalCount(), totalHitsCount);
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryIndex_whenMismatchCursorIssuerAndConsumer_thenThrowException() throws Exception {
         String cursor = "cursor";
         String mismatchUserId = "mismatchUserId";
@@ -267,35 +273,29 @@ public class SearchAfterQueryServiceImplTest {
         doReturn(mismatchUserId).when(cursorSettings).getUserId();
         doReturn(client).when(elasticClientHandler).getOrCreateRestClient();
 
-        try {
-            sut.queryIndex(cursorQueryRequest);
-        } catch (AppException e) {
-            int errorCode = 403;
-            AppError error = e.getError();
-            assertEquals(error.getCode(), errorCode);
-            assertEquals(error.getReason(), "cursor issuer doesn't match the cursor consumer");
-            assertEquals(error.getMessage(), "cursor sharing is forbidden");
-            throw (e);
-        }
+        AppException e = assertThrows(AppException.class, () -> sut.queryIndex(cursorQueryRequest));
+
+        int errorCode = 403;
+        AppError error = e.getError();
+        assertEquals(errorCode, error.getCode());
+        assertEquals("cursor issuer doesn't match the cursor consumer", error.getReason());
+        assertEquals("cursor sharing is forbidden", error.getMessage());
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryIndex_whenCursorSettingsNotFoundInCursorCache_thenThrowException() throws Exception {
         String cursor = "cursor";
         CursorQueryRequest cursorQueryRequest = mock(CursorQueryRequest.class);
         doReturn(cursor).when(cursorQueryRequest).getCursor();
         doReturn(null).when(cursorCache).get(any());
 
-        try {
-            sut.queryIndex(cursorQueryRequest);
-        } catch (AppException e) {
-            int errorCode = 400;
-            AppError error = e.getError();
-            assertEquals(error.getReason(), "Can't find the given cursor");
-            assertEquals(error.getMessage(), "The given cursor is invalid or expired");
-            assertEquals(error.getCode(), errorCode);
-            throw (e);
-        }
+        AppException e = assertThrows(AppException.class, () -> sut.queryIndex(cursorQueryRequest));
+
+        int errorCode = 400;
+        AppError error = e.getError();
+        assertEquals("Can't find the given cursor", error.getReason());
+        assertEquals("The given cursor is invalid or expired", error.getMessage());
+        assertEquals(errorCode, error.getCode());
     }
 
     @Test
@@ -320,7 +320,7 @@ public class SearchAfterQueryServiceImplTest {
         }
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryIndex_whenResponseTooLong_thenThrowException() throws Exception {
         CursorQueryRequest cursorQueryRequest = mock(CursorQueryRequest.class);
         doReturn("cursor").when(cursorQueryRequest).getCursor();
@@ -330,19 +330,16 @@ public class SearchAfterQueryServiceImplTest {
         doReturn(new ContentTooLongException(null)).when(exception).getCause();
 
         doThrow(exception).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
-        try {
-            sut.queryIndex(cursorQueryRequest);
-        } catch (AppException e) {
-            int errorCode = 413;
-            AppError error = e.getError();
-            assertEquals(error.getReason(), "Response is too long");
-            assertEquals(error.getMessage(), "Elasticsearch response is too long, max is 100Mb");
-            assertEquals(error.getCode(), errorCode);
-            throw (e);
-        }
+        AppException e = assertThrows(AppException.class, () -> sut.queryIndex(cursorQueryRequest));
+
+        int errorCode = 413;
+        AppError error = e.getError();
+        assertEquals("Response is too long", error.getReason());
+        assertEquals("Elasticsearch response is too long, max is 100Mb", error.getMessage());
+        assertEquals(errorCode, error.getCode());
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryIndex_whenSearchGives500_thenThrowException() throws Exception {
         CursorQueryRequest cursorQueryRequest = mock(CursorQueryRequest.class);
         OpenPointInTimeResponse openPitResponse = mock(OpenPointInTimeResponse.class);
@@ -353,16 +350,13 @@ public class SearchAfterQueryServiceImplTest {
         doReturn(client).when(elasticClientHandler).getOrCreateRestClient();
 
         doThrow(ex).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
-        try {
-            sut.queryIndex(cursorQueryRequest);
-        } catch (AppException e) {
-            int errorCode = 500;
-            AppError error = e.getError();
-            assertEquals(error.getCode(), errorCode);
-            assertEquals(error.getReason(), reason);
-            assertEquals(error.getMessage(), message);
-            throw (e);
-        }
+        AppException e = assertThrows(AppException.class, () -> sut.queryIndex(cursorQueryRequest));
+
+        int errorCode = 500;
+        AppError error = e.getError();
+        assertEquals(errorCode, error.getCode());
+        assertEquals(reason, error.getReason());
+        assertEquals(message, error.getMessage());
     }
 
     @Test
@@ -415,25 +409,20 @@ public class SearchAfterQueryServiceImplTest {
         verify(this.client, times(0)).closePointInTime(any(ClosePointInTimeRequest.class));
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void close_cursor_whenMismatchCursorIssuerAndConsumer_thenThrowException() throws Exception {
         String cursor = "cursor";
         String mismatchUserId = "mismatchUserId";
         doReturn(mismatchUserId).when(cursorSettings).getUserId();
 
-        try {
-            // act
-            sut.close(cursor);
-        } catch (AppException e) {
-            int errorCode = 403;
-            AppError error = e.getError();
-            assertEquals(error.getCode(), errorCode);
-            assertEquals(error.getReason(), "cursor issuer doesn't match the cursor consumer");
-            assertEquals(error.getMessage(), "cursor sharing is forbidden");
-            throw (e);
-        }
-    }
+        AppException e = assertThrows(AppException.class, () -> sut.close(cursor));
 
+        int errorCode = 403;
+        AppError error = e.getError();
+        assertEquals(errorCode, error.getCode());
+        assertEquals("cursor issuer doesn't match the cursor consumer", error.getReason());
+        assertEquals("cursor sharing is forbidden", error.getMessage());
+    }
 
     private Map<String, List<String>> getHighlightFields() {
         Map<String, List<String>> highlightFields = new HashMap<>();

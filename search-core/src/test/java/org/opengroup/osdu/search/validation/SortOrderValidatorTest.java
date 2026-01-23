@@ -14,30 +14,30 @@
 
 package org.opengroup.osdu.search.validation;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.model.search.validation.SortOrderValidator;
 import org.opengroup.osdu.core.common.SwaggerDoc;
 import org.opengroup.osdu.core.common.model.search.SortOrder;
 import org.opengroup.osdu.core.common.model.search.SortQuery;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import jakarta.validation.ConstraintValidatorContext;
 import java.util.ArrayList;
 import java.util.List;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.mockito.Mockito.mock;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SortOrderValidatorTest {
 
     @Mock
@@ -48,13 +48,12 @@ public class SortOrderValidatorTest {
 
     private ConstraintValidatorContext constraintValidatorContext;
 
-    @Before
+    @BeforeEach
     public void setup() {
-        initMocks(this);
 
         constraintValidatorContext = mock(ConstraintValidatorContext.class);
         ConstraintValidatorContext.ConstraintViolationBuilder builder = mock(ConstraintValidatorContext.ConstraintViolationBuilder.class);
-        when(constraintValidatorContext.buildConstraintViolationWithTemplate(anyString())).thenReturn(builder);
+        Mockito.lenient().when(constraintValidatorContext.buildConstraintViolationWithTemplate(anyString())).thenReturn(builder);
     }
 
     @Test

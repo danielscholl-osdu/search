@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
 public class CorePlusJwtClient implements IServiceAccountJwtClient {
 
   @Autowired(required = false)
-  private TokenProvider tokenProvider;
+  TokenProvider tokenProvider;
 
   @Override
   public String getIdToken(String serviceAccount) {

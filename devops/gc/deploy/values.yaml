@@ -13,6 +13,8 @@ data:
   policyHost: "http://policy"
   policyId: 'osdu.partition["%s"].search'
   securityHttpsCertificateTrust: "true"
+  otelJavaagentEnabled: "true"
+  otelExporterEndpoint: "http://opentelemetry-collector.opentelemetry.svc.cluster.local:4318"
   # Deployments
   requestsCpu: "65m"
   requestsMemory: "400Mi"

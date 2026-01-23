@@ -14,43 +14,48 @@
 
 package org.opengroup.osdu.search.smart.attributes;
 
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.search.smart.models.Attribute;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AttributeMappingReaderTest {
 
     private AttributeMappingReader attributeMappingReader;
 
 
-    @Test(expected = Test.None.class)
+    @Test
     public void should_return_correct_Attributes_when_valid_file() throws Exception {
         attributeMappingReader = spy(new AttributeMappingReader());
-        attributeMappingReader.convertJsonIntoAttributes("testattributes/fileWithCorrectAttributes.json");
+        assertDoesNotThrow(() ->
+                attributeMappingReader.convertJsonIntoAttributes("testattributes/fileWithCorrectAttributes.json")
+        );
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void should_throw_expection_when_invalid_json_file() throws Exception {
         attributeMappingReader = spy(new AttributeMappingReader());
-        attributeMappingReader.convertJsonIntoAttributes("testattributes/invalidAttributeFile.json");
+        assertThrows(AppException.class, () ->
+                attributeMappingReader.convertJsonIntoAttributes("testattributes/invalidAttributeFile.json")
+        );
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void should_throw_exception_when_invalid_file() throws Exception {
         attributeMappingReader = spy(new AttributeMappingReader());
-        List<Attribute> myList = attributeMappingReader.convertJsonIntoAttributes("abcd");
-        assertEquals(0, myList.size());
+        AppException exception = assertThrows(AppException.class, () -> {
+            attributeMappingReader.convertJsonIntoAttributes("abcd");
+        });
     }
 
     @Test

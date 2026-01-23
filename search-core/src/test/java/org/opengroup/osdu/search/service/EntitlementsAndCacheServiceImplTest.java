@@ -15,12 +15,12 @@
 package org.opengroup.osdu.search.service;
 
 import org.apache.http.HttpStatus;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.model.entitlements.Acl;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.cache.ICache;
@@ -36,11 +36,10 @@ import org.opengroup.osdu.core.common.model.storage.RecordMetadata;
 
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class EntitlementsAndCacheServiceImplTest {
 
     private static final String MEMBER_EMAIL = "tester@gmail.com";
@@ -69,7 +68,7 @@ public class EntitlementsAndCacheServiceImplTest {
 
     private static final Map<String, String> headerMap = new HashMap<>();
 
-    @Before
+    @BeforeEach
     public void setup() {
 
         setDefaultHeaders();
@@ -129,17 +128,12 @@ public class EntitlementsAndCacheServiceImplTest {
 
         when(this.entitlementService.getGroups()).thenReturn(groups);
 
-        try {
-            this.sut.authorize(this.headers, "role3");
+        AppException ex = assertThrows(AppException.class,
+                () -> this.sut.authorize(this.headers, "role3"));
 
-            fail("Should not succeed");
-        } catch (AppException e) {
-            assertEquals(HttpStatus.SC_FORBIDDEN, e.getError().getCode());
-            assertEquals("Access denied", e.getError().getReason());
-            assertEquals("The user is not authorized to perform this action", e.getError().getMessage());
-        } catch (Exception e) {
-            fail("Should not get different exception");
-        }
+        assertEquals(HttpStatus.SC_FORBIDDEN, ex.getError().getCode());
+        assertEquals("Access denied", ex.getError().getReason());
+        assertEquals("The user is not authorized to perform this action", ex.getError().getMessage());
     }
 
     @Test
@@ -154,17 +148,12 @@ public class EntitlementsAndCacheServiceImplTest {
 
         when(this.entitlementService.getGroups()).thenThrow(expectedException);
 
-        try {
-            this.sut.authorize(this.headers, "role3");
+        AppException ex = assertThrows(AppException.class,
+                () -> this.sut.authorize(this.headers, "role3"));
 
-            fail("Should not succeed");
-        } catch (AppException e) {
-            assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getError().getCode());
-            assertEquals("Access denied", e.getError().getReason());
-            assertEquals("The user is not authorized to perform this action", e.getError().getMessage());
-        } catch (Exception e) {
-            fail("Should not get different exception");
-        }
+        assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, ex.getError().getCode());
+        assertEquals("Access denied", ex.getError().getReason());
+        assertEquals("The user is not authorized to perform this action", ex.getError().getMessage());
     }
 
     @Test
@@ -268,7 +257,7 @@ public class EntitlementsAndCacheServiceImplTest {
         assertEquals(true, this.sut.hasOwnerAccess(this.headers, ownerList));
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void should_throwAppException_when_NoGroupGotFromCacheOrEntitlements() throws EntitlementsException {
         List<GroupInfo> groupsInfo = new ArrayList<>();
         Groups groups = new Groups();
@@ -278,10 +267,12 @@ public class EntitlementsAndCacheServiceImplTest {
         Set<String> acls = new HashSet<>();
         acls.add("valid@tenant.gmail.com");
 
-        this.sut.isValidAcl(this.headers, acls);
+        assertThrows(AppException.class, () ->
+                this.sut.isValidAcl(this.headers, acls)
+        );
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void should_throwAppException_when_EmailOfGroupNotMatchingValidRegex_NoAtSymbol()
             throws EntitlementsException {
         GroupInfo g1 = new GroupInfo();
@@ -296,10 +287,12 @@ public class EntitlementsAndCacheServiceImplTest {
         Set<String> acls = new HashSet<>();
         acls.add("valid@tenant.gmail.com");
 
-        this.sut.isValidAcl(this.headers, acls);
+        assertThrows(AppException.class, () ->
+                this.sut.isValidAcl(this.headers, acls)
+        );
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void should_throwAppException_when_EmailOfGroupNotMatchingValidRegex_NoGroupName()
             throws EntitlementsException {
         GroupInfo g1 = new GroupInfo();
@@ -314,10 +307,12 @@ public class EntitlementsAndCacheServiceImplTest {
         Set<String> acls = new HashSet<>();
         acls.add("valid@tenant.gmail.com");
 
-        this.sut.isValidAcl(this.headers, acls);
+        assertThrows(AppException.class, () ->
+                this.sut.isValidAcl(this.headers, acls)
+        );
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void should_throwAppException_when_EmailOfGroupNotMatchingValidRegex_DomainTooSimple()
             throws EntitlementsException {
         GroupInfo g1 = new GroupInfo();
@@ -332,7 +327,9 @@ public class EntitlementsAndCacheServiceImplTest {
         Set<String> acls = new HashSet<>();
         acls.add("valid@tenant.gmail.com");
 
-        this.sut.isValidAcl(this.headers, acls);
+        assertThrows(AppException.class, () ->
+                this.sut.isValidAcl(this.headers, acls)
+        );
     }
 
     @Test

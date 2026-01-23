@@ -18,8 +18,8 @@
 
 package org.opengroup.osdu.search.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import co.elastic.clients.elasticsearch._types.GeoShapeRelation;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
@@ -31,15 +31,15 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.model.search.Point;
 import org.opengroup.osdu.core.common.model.search.Polygon;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class GeoQueryBuilderTest {
   private static final String GEO_FIELD = "data.SpatialLocation.Wgs84Coordinates";
   private static final String INTERSECTION_QUERY = "intersection-query";

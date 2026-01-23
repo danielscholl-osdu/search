@@ -1,5 +1,8 @@
 package org.opengroup.osdu.search.auth;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.model.entitlements.AuthorizationResponse;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.entitlements.EntitlementsException;
@@ -11,10 +14,7 @@ import org.opengroup.osdu.core.common.entitlements.IEntitlementsService;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.entitlements.AuthorizationServiceImpl;
 import org.opengroup.osdu.core.common.model.http.AppException;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
@@ -22,12 +22,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AuthorizationServiceImplTest {
 
     @Mock
@@ -40,7 +40,7 @@ public class AuthorizationServiceImplTest {
     @InjectMocks
     AuthorizationServiceImpl sut;
 
-    @Before
+    @BeforeEach
     public void setup(){
         when(entitlementsFactory.create(any())).thenReturn(service);
     }

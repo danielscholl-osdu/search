@@ -49,6 +49,12 @@ include:
     file: "scanners/gitlab-ultimate.yml"
 
   - project: "osdu/platform/ci-cd-pipelines"
+    file: "reporting/reporting.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
+    file: "publishing/common-pages.yml"
+
+  - project: "osdu/platform/ci-cd-pipelines"
     file: "cloud-providers/aws-global.yml"
  
   - project: "osdu/platform/ci-cd-pipelines"
@@ -81,7 +87,6 @@ include:
 
   - local: "devops/gc/pipeline/override-stages.yml"
   - local: "devops/aws/pipeline/override-stages.yml"
-  - local: "/publish.yml"
 
   ### TODO remove before merge
   - project: "osdu/platform/ci-cd-pipelines"

@@ -14,14 +14,14 @@
 
 package org.opengroup.osdu.search.smart.models;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import java.util.Set;
 
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FilterTest {
 

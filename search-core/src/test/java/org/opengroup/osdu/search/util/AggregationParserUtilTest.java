@@ -1,6 +1,6 @@
 package org.opengroup.osdu.search.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.opengroup.osdu.search.util.AggregationParserUtil.NESTED_AGGREGATION_NAME;
 import static org.opengroup.osdu.search.util.AggregationParserUtil.TERM_AGGREGATION_NAME;
@@ -11,15 +11,15 @@ import co.elastic.clients.elasticsearch._types.aggregations.TermsAggregation;
 import co.elastic.clients.util.NamedValue;
 import java.util.List;
 import java.util.Map;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AggregationParserUtilTest {
 
   public static final String SIMPLE_NESTED_FIELD = "data.Nested.NestedField";
@@ -43,7 +43,7 @@ public class AggregationParserUtilTest {
   @InjectMocks
   private AggregationParserUtil aggregationParserUtil;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     when(properties.getAggregationSize()).thenReturn(1000);
     aggregationParserUtil = new AggregationParserUtil(properties);

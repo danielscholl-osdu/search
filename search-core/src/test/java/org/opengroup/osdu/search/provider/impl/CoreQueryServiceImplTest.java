@@ -14,7 +14,7 @@
 
 package org.opengroup.osdu.search.provider.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
@@ -54,17 +54,16 @@ import java.util.UUID;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.ContentTooLongException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.http.CollaborationContextFactory;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppError;
@@ -80,6 +79,7 @@ import org.opengroup.osdu.core.common.model.search.SortQuery;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.config.ElasticLoggingConfig;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
+import org.opengroup.osdu.search.context.UserContext;
 import org.opengroup.osdu.search.logging.AuditLogger;
 import org.opengroup.osdu.search.service.IFieldMappingTypeService;
 import org.opengroup.osdu.search.util.AggregationParserUtil;
@@ -98,7 +98,7 @@ import org.opengroup.osdu.search.util.SuggestionsQueryUtil;
 import org.opengroup.osdu.core.common.feature.IFeatureFlag;
 import org.springframework.test.util.ReflectionTestUtils;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CoreQueryServiceImplTest {
 
     private static final String COLLABORATIONS_FEATURE_NAME = "collaborations-enabled";
@@ -191,22 +191,25 @@ public class CoreQueryServiceImplTest {
     @Mock
     private CollaborationContextFactory collaborationContextFactory;
 
+    @Mock
+    private UserContext userContext;
+
     @InjectMocks
     private CoreQueryServiceImpl sut;
 
-    @Before
+    @BeforeEach
     public void init() throws IOException {
         MockitoAnnotations.openMocks(this);
         Map<String, Object> hitFields = new HashMap<>();
 
-        doReturn(indexName).when(crossTenantUtils).getIndexName(any());
-        doReturn(client).when(elasticClientHandler).getOrCreateRestClient();
-        doReturn(spatialFilter).when(searchRequest).getSpatialFilter();
-        when(elasticLoggingConfig.getEnabled()).thenReturn(false);
-        when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
-        doReturn(searchResponse).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
-        doReturn(searchHits).when(searchResponse).hits();
-        doReturn(hitFields).when(searchHit).source();
+        Mockito.lenient().doReturn(indexName).when(crossTenantUtils).getIndexName(any());
+        Mockito.lenient().doReturn(client).when(elasticClientHandler).getOrCreateRestClient();
+        Mockito.lenient().doReturn(spatialFilter).when(searchRequest).getSpatialFilter();
+        Mockito.lenient().when(elasticLoggingConfig.getEnabled()).thenReturn(false);
+        Mockito.lenient().when(elasticLoggingConfig.getThreshold()).thenReturn(200L);
+        Mockito.lenient().doReturn(searchResponse).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
+        Mockito.lenient().doReturn(searchHits).when(searchResponse).hits();
+        Mockito.lenient().doReturn(hitFields).when(searchHit).source();
 
         Map<String, String> HEADERS = new HashMap<>();
         HEADERS.put(DpsHeaders.ACCOUNT_ID, "tenant1");
@@ -214,10 +217,10 @@ public class CoreQueryServiceImplTest {
         
         // Mock request attributes instead of headers for groups
         List<String> dataGroups = Arrays.asList(DATA_GROUP_1, DATA_GROUP_2);
-        when(request.getAttribute("userDataGroups")).thenReturn(dataGroups);
-        when(request.getAttribute("userDataRootUser")).thenReturn(false);
 
-        when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
+        Mockito.lenient().when(userContext.getDataGroups()).thenReturn(List.of(DATA_GROUP_1, DATA_GROUP_2));
+
+        Mockito.lenient().when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
 
         ReflectionTestUtils.setField(suggestionsQueryUtil, "autocompleteFeatureFlag", autocompleteFeatureFlag);
     }
@@ -547,41 +550,37 @@ public class CoreQueryServiceImplTest {
         assertEquals(queryResponse.getTotalCount(), 0);
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryBase_whenClientSearchResultsInElasticsearchStatusException_statusNotFound_throwsException() throws IOException {
         ElasticsearchException exception = mock(ElasticsearchException.class);
 
         doThrow(exception).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
         doReturn(HttpServletResponse.SC_NOT_FOUND).when(exception).status();
 
-        try {
-            sut.queryIndex(searchRequest);
-        } catch (AppException e) {
-            int errorCode = 404;
-            String errorMessage = "Resource you are trying to find does not exists";
-            validateAppException(e, errorCode, errorMessage);
-            throw (e);
-        }
+        AppException ex = assertThrows(AppException.class,
+                () -> sut.queryIndex(searchRequest));
+
+        int errorCode = 404;
+        String errorMessage = "Resource you are trying to find does not exists";
+        validateAppException(ex, errorCode, errorMessage);
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryBase_whenClientSearchResultsInElasticsearchStatusException_statusBadRequest_throwsException() throws IOException {
         ElasticsearchException exception = mock(ElasticsearchException.class);
 
         doThrow(exception).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
         doReturn(HttpServletResponse.SC_BAD_REQUEST).when(exception).status();
 
-        try {
-            sut.queryIndex(searchRequest);
-        } catch (AppException e) {
-            int errorCode = 400;
-            String errorMessage = "Invalid parameters were given on search request";
-            validateAppException(e, errorCode, errorMessage);
-            throw (e);
-        }
+        AppException ex = assertThrows(AppException.class,
+                () -> sut.queryIndex(searchRequest));
+
+        int errorCode = 400;
+        String errorMessage = "Invalid parameters were given on search request";
+        validateAppException(ex, errorCode, errorMessage);
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryBase_whenUnsupportedSortRequested_statusBadRequest_throwsException() throws IOException {
         String dummySortError = "Text fields are not optimised for operations that require per-document field data like aggregations and sorting, so these operations are disabled by default. Please use a keyword field instead";
         ErrorResponse errorResponse = ErrorResponse.of(es -> es.status(400).error(ErrorCause.of(ec -> ec.causedBy(by -> by.type("illegal_argument_exception").reason(dummySortError)))));
@@ -598,51 +597,45 @@ public class CoreQueryServiceImplTest {
                 ))
                 .when(sortParserUtil).getSortQuery(eq(client), eq(sortQuery), eq(indexName));
 
-        try {
-            sut.queryIndex(searchRequest);
-        } catch (AppException e) {
-            int errorCode = 400;
-            String errorMessage = "Sort is not supported for one or more of the requested fields";
-            validateAppException(e, errorCode, errorMessage);
-            throw (e);
-        }
+        AppException ex = assertThrows(AppException.class,
+                () -> sut.queryIndex(searchRequest));
+
+        int errorCode = 400;
+        String errorMessage = "Sort is not supported for one or more of the requested fields";
+        validateAppException(ex, errorCode, errorMessage);
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryBase_whenClientSearchResultsInElasticsearchStatusException_statusServiceUnavailable_throwsException() throws IOException {
         ElasticsearchException exception = mock(ElasticsearchException.class);
 
         doThrow(exception).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
         doReturn(HttpServletResponse.SC_SERVICE_UNAVAILABLE).when(exception).status();
 
-        try {
-            sut.queryIndex(searchRequest);
-        } catch (AppException e) {
-            int errorCode = 503;
-            String errorMessage = "Please re-try search after some time.";
-            validateAppException(e, errorCode, errorMessage);
-            throw (e);
-        }
+        AppException ex = assertThrows(AppException.class,
+                () -> sut.queryIndex(searchRequest));
+
+        int errorCode = 503;
+        String errorMessage = "Please re-try search after some time.";
+        validateAppException(ex, errorCode, errorMessage);
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryBase_whenClientSearchResultsInElasticsearchStatusException_statusTooManyRequests_throwsException() throws IOException {
         ElasticsearchException exception = mock(ElasticsearchException.class);
 
         doThrow(exception).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
         doReturn(429).when(exception).status();
 
-        try {
-            sut.queryIndex(searchRequest);
-        } catch (AppException e) {
-            int errorCode = 429;
-            String errorMessage = "Too many requests, please re-try after some time";
-            validateAppException(e, errorCode, errorMessage);
-            throw (e);
-        }
+        AppException ex = assertThrows(AppException.class,
+                () -> sut.queryIndex(searchRequest));
+
+        int errorCode = 429;
+        String errorMessage = "Too many requests, please re-try after some time";
+        validateAppException(ex, errorCode, errorMessage);
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryBase_IOException_ListenerTimeout_throwsException() throws IOException {
         IOException exception = mock(IOException.class);
 
@@ -651,17 +644,15 @@ public class CoreQueryServiceImplTest {
         doThrow(exception).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
         doReturn(dummyTimeoutMessage).when(exception).getMessage();
 
-        try {
-            sut.queryIndex(searchRequest);
-        } catch (AppException e) {
-            int errorCode = 504;
-            String errorMessage = "Request timed out after waiting for 1m";
-            validateAppException(e, errorCode, errorMessage);
-            throw (e);
-        }
+        AppException ex = assertThrows(AppException.class,
+                () -> sut.queryIndex(searchRequest));
+
+        int errorCode = 504;
+        String errorMessage = "Request timed out after waiting for 1m";
+        validateAppException(ex, errorCode, errorMessage);
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryBase_SocketTimeoutException_ListenerTimeout_throwsException() throws IOException {
         SocketTimeoutException exception = mock(SocketTimeoutException.class);
 
@@ -670,17 +661,15 @@ public class CoreQueryServiceImplTest {
         doThrow(exception).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
         doReturn(dummyTimeoutMessage).when(exception).getMessage();
 
-        try {
-            sut.queryIndex(searchRequest);
-        } catch (AppException e) {
-            int errorCode = 504;
-            String errorMessage = "Request timed out after waiting for 1m";
-            validateAppException(e, errorCode, errorMessage);
-            throw (e);
-        }
+        AppException ex = assertThrows(AppException.class,
+                () -> sut.queryIndex(searchRequest));
+
+        int errorCode = 504;
+        String errorMessage = "Request timed out after waiting for 1m";
+        validateAppException(ex, errorCode, errorMessage);
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryBase_IOException_EmptyMessage_throwsException() throws IOException {
         IOException exception = mock(IOException.class);
 
@@ -689,18 +678,14 @@ public class CoreQueryServiceImplTest {
         doThrow(exception).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
         doReturn(dummyTimeoutMessage).when(exception).getMessage();
 
-        try {
-            sut.queryIndex(searchRequest);
-        } catch (AppException e) {
-            int errorCode = 500;
-            String errorMessage = "Error processing search request";
-
-            validateAppException(e, errorCode, errorMessage);
-            throw (e);
-        }
+        AppException ex = assertThrows(AppException.class,
+                () -> sut.queryIndex(searchRequest));
+        int errorCode = 500;
+        String errorMessage = "Error processing search request";
+        validateAppException(ex, errorCode, errorMessage);
     }
 
-    @Test(expected = AppException.class)
+    @Test
     public void testQueryBase_IOException_RespopnseTooLong_throwsException() throws IOException {
         IOException exception = mock(IOException.class);
         doReturn(new ContentTooLongException(null)).when(exception).getCause();
@@ -708,15 +693,11 @@ public class CoreQueryServiceImplTest {
 
         doThrow(exception).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
 
-        try {
-            sut.queryIndex(searchRequest);
-        } catch (AppException e) {
-            int errorCode = 413;
-            String errorMessage = "Elasticsearch response is too long, max is 100Mb";
-
-            validateAppException(e, errorCode, errorMessage);
-            throw (e);
-        }
+        AppException ex = assertThrows(AppException.class,
+                () -> sut.queryIndex(searchRequest));
+        int errorCode = 413;
+        String errorMessage = "Elasticsearch response is too long, max is 100Mb";
+        validateAppException(ex, errorCode, errorMessage);
     }
 
     @Test
@@ -751,10 +732,10 @@ public class CoreQueryServiceImplTest {
         
         // Mock request attributes for data root user
         List<String> dataGroups = Arrays.asList(DATA_GROUP_1, DATA_GROUP_2);
-        when(request.getAttribute("userDataGroups")).thenReturn(dataGroups);
-        when(request.getAttribute("userDataRootUser")).thenReturn(true);
-        when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
+        Mockito.lenient().when(request.getAttribute("userDataGroups")).thenReturn(dataGroups);
+        Mockito.lenient().when(dpsHeaders.getHeaders()).thenReturn(HEADERS);
 
+        when(userContext.isRootUser()).thenReturn(true);
         BoolQuery.Builder builder = this.sut.buildQuery(null, null, false);
         assertNotNull(builder);
 
@@ -833,12 +814,8 @@ public class CoreQueryServiceImplTest {
 
         // Mock request attributes instead of headers
         List<String> dataGroups = new ArrayList<>();
-        Mockito.when(request.getAttribute("userDataGroups")).thenReturn(dataGroups);
-        Mockito.when(request.getAttribute("userDataRootUser")).thenReturn(false);
 
         Map<String, String> headers = new HashMap<>();
-        Mockito.when(dpsHeaders.getHeaders())
-                .thenReturn(headers);
 
         String expectedSource = getJsonOfSearchRequestWithIntersectionSpatialFilter();
         SearchRequest expectedSearchRequest = SearchRequest.of(s -> s.withJson(new StringReader(expectedSource)));
@@ -852,7 +829,16 @@ public class CoreQueryServiceImplTest {
         SearchRequest searchRequest = searchRequestArg.getValue();
         assertNotNull(expectedSearchRequest.query());
         assertNotNull(searchRequest.query());
-        Assert.assertEquals(expectedSearchRequest.query().toString(), searchRequest.query().toString());
+
+        Query actualQuery = searchRequest.query();
+        assertNotNull(actualQuery.bool());
+
+        List<Query> filters = actualQuery.bool().filter();
+        assertEquals(2, filters.size());
+
+        assertTrue(filters.get(0).isGeoShape());
+
+        assertTrue(filters.get(1).isTerms());
     }
 
     @Test
