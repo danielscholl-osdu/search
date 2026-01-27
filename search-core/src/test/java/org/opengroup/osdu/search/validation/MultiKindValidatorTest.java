@@ -14,13 +14,13 @@
 
 package org.opengroup.osdu.search.validation;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengroup.osdu.core.common.model.search.validation.MultiKindValidator;
 
 import java.util.ArrayList;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MultiKindValidatorTest {
 
@@ -54,7 +54,7 @@ public class MultiKindValidatorTest {
         assertFalse(validator.isValid("tenant:valid:kind:1.0.0,,tenant:valid:kind:2.0.0", null));
     }
 
-    @Test(expected = Test.None.class)
+    @Test
     public void test_initialize_validator() {
         // for coverage purposes. Do nothing method!
         MultiKindValidator validator = new MultiKindValidator();

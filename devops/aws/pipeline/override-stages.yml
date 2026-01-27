@@ -1,12 +1,19 @@
 aws-acceptance-test:
   variables:
-    CUCUMBER_OPTIONS: "--tags @default,@health,@SpatialLongitudeExtendedRange"
+    CUCUMBER_OPTIONS: "--plugin io.qameta.allure.cucumberjvm.AllureCucumberJvm --tags @default,@health,@SpatialLongitudeExtendedRange"
     GROUP_ID: $DOMAIN
   script:
     - >
       $MAVEN_BUILD . test-results.log
-      verify -DdisableXmlReport=true
+      verify 
+      -Dallure.results.directory=aws/allure-results
+      -DdisableXmlReport=true
       --quiet
       --file $ACCEPTANCE_TEST_DIR/pom.xml
       --update-snapshots
       -Dcucumber.filter.tags="${CUCUMBER_OPTIONS}"
+  artifacts:
+    when: always
+    paths:
+      - test-results.log
+      - $ACCEPTANCE_TEST_DIR/aws/allure-results/

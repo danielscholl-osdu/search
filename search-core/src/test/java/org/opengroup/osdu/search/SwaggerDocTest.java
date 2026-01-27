@@ -14,10 +14,10 @@
 
 package org.opengroup.osdu.search;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengroup.osdu.core.common.SwaggerDoc;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SwaggerDocTest {
 

@@ -14,11 +14,11 @@
 
 package org.opengroup.osdu.search.smart.attributes;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.opengroup.osdu.search.smart.models.Attribute;
 
@@ -27,6 +27,6 @@ public class AttributeLoaderTest {
 	@Test
 	public void should_return_list_of_attributes_provided_in_attribute_mapping_json() {
 		List<Attribute> ls = AttributeLoader.getAttributes();
-		assertFalse("The attribute list should not be empty", ls.isEmpty());
+		assertFalse( ls.isEmpty(), "The attribute list should not be empty");
 	}
 }

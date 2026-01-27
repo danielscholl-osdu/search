@@ -195,7 +195,8 @@ public class AttributeCollection {
     }
   }
 
-  private List<List<String>> getPartionedList(Set<String> kindVals, int size) {
+  // package-private for unit tests: avoids reflection and keeps the method
+  List<List<String>> getPartionedList(Set<String> kindVals, int size) {
     List<String> list = new ArrayList<>(kindVals);
     return Lists.partition(list, size);
   }
@@ -218,7 +219,8 @@ public class AttributeCollection {
     return attributes.get(cacheKey);
   }
 
-  private String checkOrGetAuthorizationHeader() {
+  // package-private for unit tests: avoids reflection and keeps the method
+  String checkOrGetAuthorizationHeader() {
     if (searchConfigurationProperties.getDeploymentEnvironment() == DeploymentEnvironment.LOCAL) {
       String authHeader = headersInfo.getAuthorization();
       if (Strings.isNullOrEmpty(authHeader)) {

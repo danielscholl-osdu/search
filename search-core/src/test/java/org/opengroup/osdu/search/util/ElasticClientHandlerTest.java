@@ -18,28 +18,27 @@
 
 package org.opengroup.osdu.search.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
@@ -47,7 +46,7 @@ import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.search.cache.ElasticsearchClientCache;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ElasticClientHandlerTest {
 
   private static final boolean SECURITY_HTTPS_CERTIFICATE_TRUST = false;
@@ -69,15 +68,14 @@ public class ElasticClientHandlerTest {
   @InjectMocks
   private ElasticClientHandler elasticClientHandler;
 
-  @Before
+  @BeforeEach
   public void setup() {
-    initMocks(this);
 
     mockedRestClients = mockStatic(RestClient.class);
 
     elasticClientHandler.setSecurityHttpsCertificateTrust(SECURITY_HTTPS_CERTIFICATE_TRUST);
     when(tenantInfo.getDataPartitionId()).thenReturn("dp1");
-    
+
     // Mock the cache to call the lambda function when computeIfAbsent is invoked
     when(clientCache.computeIfAbsent(eq("dp1"), any())).thenAnswer(invocation -> {
       String partitionId = invocation.getArgument(0);
@@ -86,7 +84,7 @@ public class ElasticClientHandlerTest {
     });
   }
 
-  @After
+  @AfterEach
   public void close() {
     mockedRestClients.close();
   }
@@ -103,25 +101,13 @@ public class ElasticClientHandlerTest {
     assertEquals(restClient, clientTransport.restClient());
   }
 
-  // TODO not sure what's the test purpose is, code not throwing errors now, but how can restclient
-  // be null. Ignored in the same way as in Indexer Service
-  @Ignore
-  @Test(expected = AppException.class)
-  public void failed_createRestClientForSaaS_when_restclient_is_null() {
-    ClusterSettings clusterSettings = new ClusterSettings("H", 1, "U:P");
-    when(elasticSettingService.getElasticClusterInformation()).thenReturn(clusterSettings);
-    when(RestClient.builder(new HttpHost("H", 1, "https"))).thenAnswer(invocation -> builder);
-    when(builder.build()).thenReturn(null);
-
-    this.elasticClientHandler.getOrCreateRestClient();
-  }
-
-  @Test(expected = AppException.class)
+  @Test
   public void failed_createRestClientForSaaS_when_getcluster_info_throws_exception() {
     when(elasticSettingService.getElasticClusterInformation())
         .thenThrow(new AppException(1, "", ""));
     when(RestClient.builder(new HttpHost("H", 1, "https"))).thenAnswer(invocation -> builder);
-
-    this.elasticClientHandler.getOrCreateRestClient();
+    assertThrows(AppException.class, () -> {
+      this.elasticClientHandler.getOrCreateRestClient();
+    });
   }
 }

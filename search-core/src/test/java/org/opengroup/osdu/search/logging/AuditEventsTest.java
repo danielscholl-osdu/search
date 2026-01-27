@@ -15,19 +15,20 @@
 package org.opengroup.osdu.search.logging;
 
 import com.google.common.collect.Lists;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengroup.osdu.core.common.logging.audit.AuditAction;
 import org.opengroup.osdu.core.common.logging.audit.AuditStatus;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AuditEventsTest {
 
-    @Test(expected = IllegalArgumentException.class)
-    public void should_throwException_when_creatingAuditEventsWithoutUser() {
-        new AuditEvents(null);
+    @Test
+    void should_throwException_when_creatingAuditEventsWithoutUser() {
+        assertThrows(IllegalArgumentException.class, () -> new AuditEvents(null));
     }
 
     @Test

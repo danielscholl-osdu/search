@@ -14,16 +14,16 @@
 
 package org.opengroup.osdu.search.validation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 
 import jakarta.validation.ConstraintValidatorContext;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -40,10 +40,9 @@ public class QueryRequestConstraintValidatorTest {
 
 	private ConstraintValidatorContext constraintValidatorContext;
 
-	@Before
+	@BeforeEach
 	public void setup() {
-		MockitoAnnotations.initMocks(this);
-
+		MockitoAnnotations.openMocks(this);
 		constraintValidatorContext = mock(ConstraintValidatorContext.class);
 		ConstraintValidatorContext.ConstraintViolationBuilder builder = mock(
 				ConstraintValidatorContext.ConstraintViolationBuilder.class);

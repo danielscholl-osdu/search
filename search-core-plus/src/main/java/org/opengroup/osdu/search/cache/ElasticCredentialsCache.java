@@ -20,6 +20,7 @@ package org.opengroup.osdu.search.cache;
 import io.lettuce.core.RedisException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.opengroup.osdu.core.common.cache.ICache;
 import org.opengroup.osdu.core.common.cache.RedisCache;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.provider.interfaces.IElasticCredentialsCache;
@@ -28,7 +29,7 @@ import org.opengroup.osdu.core.common.provider.interfaces.IElasticCredentialsCac
 @RequiredArgsConstructor
 public class ElasticCredentialsCache implements IElasticCredentialsCache<String, ClusterSettings>, AutoCloseable {
 
-  private final RedisCache<String, ClusterSettings> cache;
+  private final ICache<String, ClusterSettings> cache;
 
   @Override
   public void put(String key, ClusterSettings value) {
@@ -59,6 +60,12 @@ public class ElasticCredentialsCache implements IElasticCredentialsCache<String,
 
   @Override
   public void close() {
-    this.cache.close();
+    if (cache instanceof AutoCloseable) {
+      try {
+        ((AutoCloseable) cache).close();
+      } catch (Exception e) {
+        log.error("Failed to close Elastic credentials cache", e);
+      }
+    }
   }
 }

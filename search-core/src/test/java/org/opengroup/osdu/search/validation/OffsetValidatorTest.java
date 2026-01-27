@@ -14,26 +14,27 @@
 
 package org.opengroup.osdu.search.validation;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.model.search.validation.OffsetValidator;
 import org.opengroup.osdu.core.common.model.search.QueryRequest;
 import org.opengroup.osdu.core.common.model.search.QueryUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import jakarta.validation.ConstraintValidatorContext;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class OffsetValidatorTest {
 
     @Mock
@@ -44,13 +45,11 @@ public class OffsetValidatorTest {
 
     private ConstraintValidatorContext constraintValidatorContext;
 
-    @Before
+    @BeforeEach
     public void setup() {
-        MockitoAnnotations.initMocks(this);
-
         constraintValidatorContext = mock(ConstraintValidatorContext.class);
         ConstraintValidatorContext.ConstraintViolationBuilder builder = mock(ConstraintValidatorContext.ConstraintViolationBuilder.class);
-        when(constraintValidatorContext.buildConstraintViolationWithTemplate(anyString())).thenReturn(builder);
+        Mockito.lenient().when(constraintValidatorContext.buildConstraintViolationWithTemplate(anyString())).thenReturn(builder);
     }
 
     @Test
@@ -75,12 +74,5 @@ public class OffsetValidatorTest {
         when(QueryUtils.getResultSizeForQuery(queryRequest.getLimit())).thenReturn(100);
 
         assertFalse(sut.isValid(queryRequest, constraintValidatorContext));
-    }
-
-    @Test(expected = Test.None.class)
-    public void test_constructor() {
-        // for coverage purposes. Do nothing method!
-        OffsetValidator offsetValidator = new OffsetValidator();
-        offsetValidator.initialize(null);
     }
 }

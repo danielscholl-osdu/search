@@ -14,24 +14,26 @@
 
 package org.opengroup.osdu.search.smart.middleware;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.model.http.AppException;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import org.opengroup.osdu.search.smart.models.AttributeCollection;
 import org.opengroup.osdu.search.smart.models.Kinds;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SyncFilterValuesServiceTest {
 
     @Mock
@@ -42,34 +44,25 @@ public class SyncFilterValuesServiceTest {
     @InjectMocks
     private SyncFilterValuesServiceImpl sut;
 
-    @Test(expected = AppException.class)
-    public void should_throw_Exception_when_cache_update_fails() {
-        try {
-            doThrow(new AppException(503, "", "")).when(kinds).cacheSync();
-        } catch (IOException ex) {
-            fail();
-        }
-        sut.updateCache();
+    @Test
+    public void should_throw_Exception_when_cache_update_fails() throws IOException {
+        doThrow(new AppException(503, "", "")).when(kinds).cacheSync();
+        assertThrows(AppException.class, () -> sut.updateCache());
     }
     
-    @Test(expected = AppException.class)
-    public void should_throw_Exception_when_attribute_cache_update_fails() throws URISyntaxException {
-    	
-        try {
-         	Mockito.doNothing().when(kinds).cacheSync();
-            doThrow(new URISyntaxException("","")).when(attributes).cacheSync();
-        } catch (IOException ex) {
-            fail();
-        }
-        sut.updateCache();
+    @Test
+    public void should_throw_Exception_when_attribute_cache_update_fails() throws URISyntaxException, IOException {
+        doNothing().when(kinds).cacheSync();
+        doThrow(new URISyntaxException("", "")).when(attributes).cacheSync();
+        assertThrows(AppException.class, () -> sut.updateCache());
     }
     
     @Test
     public void should_not_throw_Exception_when_attribute_cache_update_successfully() {
     	
         try {
-         	Mockito.doNothing().when(kinds).cacheSync();
-         	Mockito.doNothing().when(attributes).cacheSync();
+         	doNothing().when(kinds).cacheSync();
+         	doNothing().when(attributes).cacheSync();
         } catch (IOException | URISyntaxException ex) {
             fail();
         }

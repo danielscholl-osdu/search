@@ -14,11 +14,11 @@
 
 package org.opengroup.osdu.search.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengroup.osdu.core.common.model.search.QueryUtils;
 import org.opengroup.osdu.core.common.search.Config;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class QueryUtilsTest {
 
