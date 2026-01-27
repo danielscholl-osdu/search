@@ -17,14 +17,10 @@ RUN groupadd -g 10001 -r nonroot \
   && useradd -g 10001 -r -u 10001 nonroot
 # Run as non-root user
 USER 10001:10001
-
-# Expose debug port
-EXPOSE 5005
 # Run the web service on container startup.
 CMD java --add-opens java.base/java.lang=ALL-UNNAMED \
          --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
          -Djava.security.egd=file:/dev/./urandom -Dserver.port=${PORT} \
-         -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 \
          -Dlog4j.formatMsgNoLookups=true \
          -Dloader.path=${LOADER_PATH} \
          -Dloader.main=org.opengroup.osdu.search.SearchCorePlusApplication \
