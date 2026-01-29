@@ -37,6 +37,7 @@ import org.opengroup.osdu.util.conf.OpenIDProviderConfig;
 public class OpenIDTokenProvider {
 
     private static final OpenIDProviderConfig openIDProviderConfig = OpenIDProviderConfig.Instance();
+    private static final String ACCESS_TOKEN = "access_token";
     private static final String ID_TOKEN = "id_token";
     private final AuthorizationGrant clientGrant = new ClientCredentialsGrant();
     private final URI tokenEndpointURI;
@@ -44,36 +45,58 @@ public class OpenIDTokenProvider {
     private final ClientAuthentication clientAuthentication;
 
     public OpenIDTokenProvider() {
-        this.tokenEndpointURI = openIDProviderConfig.getProviderMetadata().getTokenEndpointURI();
-        this.scope = new Scope(openIDProviderConfig.getScopes());
-        this.clientAuthentication =
-            new ClientSecretBasic(
-                new ClientID(openIDProviderConfig.getClientId()),
-                new Secret(openIDProviderConfig.getClientSecret())
-            );
+        if (openIDProviderConfig != null) {
+            this.tokenEndpointURI = openIDProviderConfig.getProviderMetadata().getTokenEndpointURI();
+            this.scope = new Scope(openIDProviderConfig.getScopes());
+            this.clientAuthentication =
+                new ClientSecretBasic(
+                    new ClientID(openIDProviderConfig.getClientId()),
+                    new Secret(openIDProviderConfig.getClientSecret())
+                );
+        } else {
+            this.tokenEndpointURI = null;
+            this.scope = null;
+            this.clientAuthentication = null;
+        }
     }
 
     public String getToken() {
         try {
-            return requestToken();
+            if (anyIsNull(this.tokenEndpointURI, this.scope, this.clientAuthentication)) {
+                return null;
+            }
+            TokenRequest request = new TokenRequest(
+                this.tokenEndpointURI,
+                this.clientAuthentication,
+                this.clientGrant,
+                this.scope
+            );
+            return requestToken(request);
         } catch (ParseException | IOException e) {
             throw new RuntimeException("Unable get credentials from INTEGRATION_TESTER variables", e);
         }
     }
 
-    private String requestToken() throws ParseException, IOException {
-        TokenRequest request = new TokenRequest(this.tokenEndpointURI, this.clientAuthentication, this.clientGrant, this.scope);
-        TokenResponse parse = OIDCTokenResponseParser.parse(request.toHTTPRequest().send());
+    private boolean anyIsNull(URI tokenEndpointURI, Scope scope, ClientAuthentication clientAuthentication) {
+        return tokenEndpointURI == null || scope == null || clientAuthentication == null;
+    }
+
+    private String requestToken(TokenRequest tokenRequest) throws ParseException, IOException {
+        TokenResponse parse = OIDCTokenResponseParser.parse(tokenRequest.toHTTPRequest().send());
 
         if (!parse.indicatesSuccess()) {
             throw new RuntimeException("Unable get credentials from INTEGRATION_TESTER variables");
         }
 
         JSONObject jsonObject = parse.toSuccessResponse().toJSONObject();
-        String idTokenValue = jsonObject.getAsString(ID_TOKEN);
-        if (Objects.isNull(idTokenValue) || idTokenValue.isEmpty()) {
+        // OAuth2 client_credentials returns access_token; some OIDC providers return id_token
+        String tokenValue = jsonObject.getAsString(ACCESS_TOKEN);
+        if (Objects.isNull(tokenValue) || tokenValue.isEmpty()) {
+            tokenValue = jsonObject.getAsString(ID_TOKEN);
+        }
+        if (Objects.isNull(tokenValue) || tokenValue.isEmpty()) {
             throw new RuntimeException("Unable get credentials from INTEGRATION_TESTER variables");
         }
-        return idTokenValue;
+        return tokenValue;
     }
 }
