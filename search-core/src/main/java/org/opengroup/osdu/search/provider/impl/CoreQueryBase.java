@@ -29,6 +29,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.*;
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.google.common.base.Strings;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletResponse;
@@ -38,7 +39,6 @@ import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.ToLongFunction;
-import org.apache.http.ContentTooLongException;
 import org.opengroup.osdu.core.common.feature.IFeatureFlag;
 import org.opengroup.osdu.core.common.http.CollaborationContextFactory;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
@@ -52,6 +52,7 @@ import org.opengroup.osdu.core.common.model.search.QueryUtils;
 import org.opengroup.osdu.core.common.model.search.RecordMetaAttribute;
 import org.opengroup.osdu.core.common.model.search.SpatialFilter;
 import org.opengroup.osdu.search.config.ElasticLoggingConfig;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.context.UserContext;
 import org.opengroup.osdu.search.util.*;
@@ -78,6 +79,7 @@ abstract class CoreQueryBase {
   @Autowired private SuggestionsQueryUtil suggestionsQueryUtil;
   @Autowired public IFeatureFlag featureFlag;
   @Autowired private CollaborationContextFactory collaborationContextFactory;
+  @Autowired private SearchConfigurationProperties searchConfigurationProperties;
 
   // if returnedField contains property matching from excludes than query result will NOT include
   // that property
@@ -371,45 +373,23 @@ abstract class CoreQueryBase {
               e);
       }
     } catch (AppException e) {
-      throw e;
-    } catch (SocketTimeoutException e) {
-      if (e.getMessage().startsWith("60,000 milliseconds timeout on connection")) {
-        throw new AppException(
-            HttpServletResponse.SC_GATEWAY_TIMEOUT,
-            "Search error",
-            String.format("Request timed out after waiting for %s", REQUEST_TIMEOUT.time()),
-            e);
-      }
-      throw new AppException(
-          HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-          "Search error",
-          "Error processing search request",
-          e);
-    } catch (IOException e) {
-      if (e.getMessage().startsWith("listener timeout after waiting for")) {
-        throw new AppException(
-            HttpServletResponse.SC_GATEWAY_TIMEOUT,
-            "Search error",
-            String.format("Request timed out after waiting for %s", REQUEST_TIMEOUT.time()),
-            e);
-      } else if (e.getCause() instanceof ContentTooLongException) {
-        throw new AppException(
-            HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE,
-            "Response is too long",
-            "Elasticsearch response is too long, max is 100Mb",
-            e);
-      }
-      throw new AppException(
-          HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-          "Search error",
-          "Error processing search request",
-          e);
+        throw e;
     } catch (Exception e) {
-      throw new AppException(
-          HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-          "Search error",
-          "Error processing search request",
-          e);
+        int status = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+        String message = "Error processing search request";
+        String reason = "Search error";
+
+        if (isTimeout(e)) {
+            status = HttpServletResponse.SC_GATEWAY_TIMEOUT;
+            message = String.format("Request timed out after waiting for %s", REQUEST_TIMEOUT.time());
+        } else if (isJacksonSizeLimitReached(e)) {
+            status = HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE;
+            reason = "Response is too long";
+            message = String.format("Elasticsearch response is too long, max is %dMb",
+                    searchConfigurationProperties.getElasticMaxResponseSizeMb());
+        }
+
+        throw new AppException(status, reason, message, e);
     } finally {
       Long latency = System.currentTimeMillis() - startTime;
       if (elasticLoggingConfig.getEnabled() || latency > elasticLoggingConfig.getThreshold()) {
@@ -437,6 +417,25 @@ abstract class CoreQueryBase {
       return;
     }
     this.queryFailedAuditLogger(searchRequest);
+  }
+
+  private boolean isTimeout(Throwable e) {
+      String msg = e.getMessage();
+      return e instanceof SocketTimeoutException ||
+        (msg != null && (msg.contains("listener timeout") || msg.contains("timeout on connection")));
+  }
+
+  private boolean isJacksonSizeLimitReached(Throwable t) {
+      int depth = 0;
+      // Limit to 10 iterations to prevent infinite loops in case of circular references
+      while (t != null && depth < 10) {
+          if (t instanceof StreamConstraintsException) {
+              return true;
+          }
+          t = t.getCause();
+          depth++;
+      }
+      return false;
   }
 
   private boolean userHasFullDataAccess() {

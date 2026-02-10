@@ -20,7 +20,7 @@ public class SearchConfigurationProperties {
 	private Integer queryDefaultLimit = 10;
 	private Integer queryLimitMaximum = 1000;
 	private Integer aggregationSize = 1000;
-
+	private Integer elasticMaxResponseSizeMb = 100;
 
 	private String elasticDatastoreKind;
 	private String elasticDatastoreId;

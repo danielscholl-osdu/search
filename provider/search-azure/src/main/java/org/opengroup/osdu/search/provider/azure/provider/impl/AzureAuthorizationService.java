@@ -38,7 +38,7 @@ public class AzureAuthorizationService implements IAuthorizationService {
     public AuthorizationResponse authorizeAny(DpsHeaders dpsHeaders, String... permissions) {
         Groups groups = entitlementsService.getGroups(dpsHeaders);
         if(!groups.any(permissions)) {
-            throw new AppException(HttpStatus.SC_UNAUTHORIZED, "Unauthorized", "User does nto have access to the API");
+            throw new AppException(HttpStatus.SC_UNAUTHORIZED, "Unauthorized", "User does not have access to the API");
         }
         return AuthorizationResponse.builder()
                 .user(groups.getMemberEmail())

@@ -34,6 +34,7 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
 
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -687,16 +688,43 @@ public class CoreQueryServiceImplTest {
 
     @Test
     public void testQueryBase_IOException_RespopnseTooLong_throwsException() throws IOException {
-        IOException exception = mock(IOException.class);
-        doReturn(new ContentTooLongException(null)).when(exception).getCause();
-        doReturn("dummyMessage").when(exception).getMessage();
+        when(properties.getElasticMaxResponseSizeMb()).thenReturn(100);
+        StreamConstraintsException jacksonException = new StreamConstraintsException("test");
+        IOException transportException = new IOException("jakarta.json.JsonException: Jackson exception", jacksonException);
 
-        doThrow(exception).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
+        doThrow(transportException).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
 
         AppException ex = assertThrows(AppException.class,
                 () -> sut.queryIndex(searchRequest));
         int errorCode = 413;
         String errorMessage = "Elasticsearch response is too long, max is 100Mb";
+        validateAppException(ex, errorCode, errorMessage);
+    }
+
+    @Test
+    public void testQueryBase_DeeplyNested_ResponseTooLong_throwsException() throws IOException {
+        StreamConstraintsException root = new StreamConstraintsException("test");
+        RuntimeException middle = new RuntimeException("Mapping error", root);
+        IOException top = new IOException("Transport error", middle);
+
+        doThrow(top).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
+
+        AppException ex = assertThrows(AppException.class, () -> sut.queryIndex(searchRequest));
+        assertEquals(413, ex.getError().getCode());
+    }
+
+    @Test
+    public void testQueryBase_DynamicProperty_MessageUpdates() throws IOException {
+        when(properties.getElasticMaxResponseSizeMb()).thenReturn(50);
+        StreamConstraintsException jacksonException = new StreamConstraintsException("test");
+        IOException transportException = new IOException("jakarta.json.JsonException: Jackson exception", jacksonException);
+
+        doThrow(transportException).when(client).search(any(SearchRequest.class), eq((Type)Map.class));
+
+        AppException ex = assertThrows(AppException.class,
+                () -> sut.queryIndex(searchRequest));
+        int errorCode = 413;
+        String errorMessage = "Elasticsearch response is too long, max is 50Mb";
         validateAppException(ex, errorCode, errorMessage);
     }
 
@@ -914,8 +942,8 @@ public class CoreQueryServiceImplTest {
 
     private void validateAppException(AppException e, int errorCode, String errorMessage) {
         AppError error = e.getError();
-        assertEquals(error.getCode(), errorCode);
-        assertEquals(error.getMessage(), errorMessage);
+        assertEquals(errorCode, error.getCode());
+        assertEquals(errorMessage, error.getMessage());
     }
 
     private void verifyAcls(Query aclQuery, boolean asOwner) {
