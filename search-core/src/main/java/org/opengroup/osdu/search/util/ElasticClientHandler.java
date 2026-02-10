@@ -30,6 +30,10 @@ import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
@@ -45,6 +49,7 @@ import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.search.cache.ElasticsearchClientCache;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -64,6 +69,7 @@ public class ElasticClientHandler implements Closeable {
 
   @Autowired private IElasticSettingService elasticSettingService;
   @Autowired private ElasticsearchClientCache clientCache;
+  @Autowired private SearchConfigurationProperties searchConfigurationProperties;
   @Autowired private TenantInfo tenantInfo;
 
   public ElasticsearchClient getOrCreateRestClient() {
@@ -140,8 +146,18 @@ public class ElasticClientHandler implements Closeable {
 
       restClient = builder.build();
 
+      JsonFactory factory = JsonFactory.builder()
+           .streamReadConstraints(StreamReadConstraints.builder()
+                 .maxDocumentLength(
+                         searchConfigurationProperties.getElasticMaxResponseSizeMb() * 1024 * 1024
+                 ).build()
+           ).build();
+
+      ObjectMapper objectMapper = new ObjectMapper(factory);
+      JacksonJsonpMapper mapper = new JacksonJsonpMapper(objectMapper);
+
       RestClientTransport transport =
-          new RestClientTransport(restClient, new JacksonJsonpMapper());
+          new RestClientTransport(restClient, mapper);
 
       return new ElasticsearchClient(transport);
     } catch (AppException e) {
