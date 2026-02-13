@@ -30,6 +30,7 @@ import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.search.QueryUtils;
 import org.opengroup.osdu.search.config.ElasticLoggingConfig;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 import org.opengroup.osdu.search.context.UserContext;
 import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.util.CrossTenantUtils;
@@ -68,6 +69,9 @@ public class CoreQueryBaseTest {
 
     @MockBean
     UserContext userContext;
+
+    @MockBean
+    SearchConfigurationProperties searchConfigurationProperties;
 
     @TestConfiguration
     static class Config {

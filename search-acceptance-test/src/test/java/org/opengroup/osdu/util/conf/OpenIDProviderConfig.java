@@ -28,23 +28,35 @@ public class OpenIDProviderConfig {
 	public static final String TEST_OPENID_PROVIDER_CLIENT_ID = "PRIVILEGED_USER_OPENID_PROVIDER_CLIENT_ID";
 	public static final String TEST_OPENID_PROVIDER_CLIENT_SECRET = "PRIVILEGED_USER_OPENID_PROVIDER_CLIENT_SECRET";
 	public static final String TEST_OPENID_PROVIDER_URL = "TEST_OPENID_PROVIDER_URL";
-	
+	public static final String TEST_OPENID_PROVIDER_SCOPE = "PRIVILEGED_USER_OPENID_PROVIDER_SCOPE";
+
     private String clientId;
     private String url;
     private String clientSecret;
-    private final String[] scopes = {"openid"};
+    private String[] scopes = {"openid"};
     private static final OpenIDProviderConfig openIDProviderConfig = new OpenIDProviderConfig();
     private static OIDCProviderMetadata providerMetadata;
 
     public static OpenIDProviderConfig Instance() {
         try {
-			openIDProviderConfig.clientId = System.getProperty(TEST_OPENID_PROVIDER_CLIENT_ID,
-					System.getenv(TEST_OPENID_PROVIDER_CLIENT_ID));
-			openIDProviderConfig.url = System.getProperty(TEST_OPENID_PROVIDER_URL,
-					System.getenv(TEST_OPENID_PROVIDER_URL));
-			openIDProviderConfig.clientSecret = System.getProperty(TEST_OPENID_PROVIDER_CLIENT_SECRET,
-					System.getenv(TEST_OPENID_PROVIDER_CLIENT_SECRET));
-
+            openIDProviderConfig.clientId = System.getProperty(TEST_OPENID_PROVIDER_CLIENT_ID,
+                    System.getenv(TEST_OPENID_PROVIDER_CLIENT_ID));
+            openIDProviderConfig.url = System.getProperty(TEST_OPENID_PROVIDER_URL,
+                    System.getenv(TEST_OPENID_PROVIDER_URL));
+            openIDProviderConfig.clientSecret = System.getProperty(TEST_OPENID_PROVIDER_CLIENT_SECRET,
+                    System.getenv(TEST_OPENID_PROVIDER_CLIENT_SECRET));
+            // Override default scope if provided (required for Azure AD)
+            String scopeEnv = System.getProperty(TEST_OPENID_PROVIDER_SCOPE,
+                    System.getenv(TEST_OPENID_PROVIDER_SCOPE));
+            if (scopeEnv != null && !scopeEnv.isEmpty()) {
+                openIDProviderConfig.scopes = new String[]{scopeEnv};
+            }
+            // Return null if configuration is incomplete
+            if (isNullOrEmpty(openIDProviderConfig.clientId) ||
+                isNullOrEmpty(openIDProviderConfig.clientSecret) ||
+                isNullOrEmpty(openIDProviderConfig.url)) {
+                return null;
+            }
             Issuer issuer = new Issuer(openIDProviderConfig.url);
             OIDCProviderConfigurationRequest request = new OIDCProviderConfigurationRequest(issuer);
             HTTPRequest httpRequest = request.toHTTPRequest();
@@ -54,6 +66,10 @@ public class OpenIDProviderConfig {
             throw new RuntimeException("Malformed token provider configuration", e);
         }
         return openIDProviderConfig;
+    }
+
+    private static boolean isNullOrEmpty(String str) {
+        return str == null || str.isEmpty();
     }
 
     public String getClientId() {
