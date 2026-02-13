@@ -8,6 +8,7 @@ rosa: false
 data:
   # Configmaps
   logLevel: "ERROR"
+  collaborationsEnabled: true
   entitlementsHost: "http://entitlements"
   partitionHost: "http://partition"
   policyHost: "http://policy"
