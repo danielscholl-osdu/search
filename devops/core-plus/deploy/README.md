@@ -46,6 +46,7 @@ You need to set variables in **values.yaml** file using any code editor. Some of
 |------|-------------|------|---------|----------|
 **data.logLevel** | logging level | string | `ERROR` | yes
 **data.entitlementsHost** | Entitlements service host | string | `http://entitlements` | yes
+**data.collaborationsEnabled** | Collaboration Context feature is enabled | boolean | true | no
 **data.indexerHost** | Indexer service host | string | `http://indexer` | yes
 **data.policyHost** | Policy service host | string | `http://policy` | yes
 **data.partitionHost** | Partition service host | string | `http://partition` | yes

@@ -30,7 +30,6 @@ import co.elastic.clients.transport.rest_client.RestClientTransport;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,6 +44,7 @@ import org.opengroup.osdu.core.common.model.indexer.IElasticSettingService;
 import org.opengroup.osdu.core.common.model.search.ClusterSettings;
 import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.search.cache.ElasticsearchClientCache;
+import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 
 @ExtendWith(MockitoExtension.class)
 public class ElasticClientHandlerTest {
@@ -64,6 +64,8 @@ public class ElasticClientHandlerTest {
   private ElasticsearchClientCache clientCache;
   @Mock
   private TenantInfo tenantInfo;
+  @Mock
+  private SearchConfigurationProperties properties;
 
   @InjectMocks
   private ElasticClientHandler elasticClientHandler;
