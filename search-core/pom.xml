@@ -49,7 +49,7 @@
                         <artifactId>spring-boot-starter-tomcat</artifactId>
                     </exclusion>
                 </exclusions>
-                <version>2.7.17</version>
+                <version>3.3.13</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
