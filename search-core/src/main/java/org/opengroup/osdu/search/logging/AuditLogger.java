@@ -14,28 +14,35 @@
 
 package org.opengroup.osdu.search.logging;
 
-import org.opengroup.osdu.core.common.model.http.DpsHeaders;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.logging.audit.AuditPayload;
+import org.opengroup.osdu.core.common.model.http.DpsHeaders;
+import org.opengroup.osdu.core.common.util.IpAddressUtil;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
 
-import jakarta.inject.Inject;
 import java.util.List;
 
+@RequestScope
 @Component
+@RequiredArgsConstructor
 public class AuditLogger {
 
-    @Inject
-    private JaxRsDpsLog logger;
-
-    @Inject
-    private DpsHeaders headers;
+    private final JaxRsDpsLog logger;
+    private final DpsHeaders headers;
+    private final HttpServletRequest httpServletRequest;
 
     private AuditEvents events = null;
 
     private AuditEvents getAuditEvents() {
         if (this.events == null) {
-            this.events = new AuditEvents(this.headers.getUserEmail());
+            String user = headers.getUserEmail();
+            String userIpAddress = IpAddressUtil.getClientIpAddress(httpServletRequest);
+            String userAgent = httpServletRequest.getHeader("User-Agent");
+            String userAuthorizedGroupName = headers.getUserAuthorizedGroupName();
+            this.events = new AuditEvents(user, userIpAddress, userAgent, userAuthorizedGroupName);
         }
         return this.events;
     }
