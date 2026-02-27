@@ -52,28 +52,37 @@ public class RedisConfig {
 
     @Value("${redis.command.timeout:5}")
     private int commandTimeout;
+
+    @Value("${redis.principal.id:#{null}}")
+    private String redisPrincipalId;
+
     @Bean
     public RedisAzureCache<String, Groups> groupCache() {
-        return new RedisAzureCache<>(String.class, Groups.class, new RedisAzureConfiguration(database, groupRedisTtl, port, timeout, commandTimeout));
+        return createCache(Groups.class, groupRedisTtl);
     }
 
     @Bean
     public RedisAzureCache<String, CursorSettings> cursorCache() {
-        return new RedisAzureCache<>(String.class, CursorSettings.class, new RedisAzureConfiguration(database, cursorRedisTtl, port, timeout, commandTimeout));
+        return createCache(CursorSettings.class, cursorRedisTtl);
     }
 
     @Bean
     public RedisAzureCache<String, SearchAfterSettings> searchAfterSettingsCache() {
-        return new RedisAzureCache<>(String.class, SearchAfterSettings.class, new RedisAzureConfiguration(database, cursorRedisTtl, port, timeout, commandTimeout));
+        return createCache(SearchAfterSettings.class, cursorRedisTtl);
     }
 
     @Bean
     public RedisAzureCache<String, ClusterSettings> clusterCache() {
-        return new RedisAzureCache<>(String.class, ClusterSettings.class, new RedisAzureConfiguration(database, expiration, port, timeout, commandTimeout));
+        return createCache(ClusterSettings.class, expiration);
     }
 
     @Bean
     public RedisAzureCache<String, String> aliasCache() {
-        return new RedisAzureCache<>(String.class, String.class, new RedisAzureConfiguration(database, aliasCacheExpiration, port, timeout, commandTimeout));
+        return createCache(String.class, aliasCacheExpiration);
+    }
+
+    private <T> RedisAzureCache<String, T> createCache(Class<T> valueClass, int ttl) {
+        RedisAzureConfiguration config = new RedisAzureConfiguration(database, ttl, port, timeout, commandTimeout, redisPrincipalId);
+        return new RedisAzureCache<>(String.class, valueClass, config);
     }
 }
