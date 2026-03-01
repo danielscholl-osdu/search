@@ -14,93 +14,114 @@
 
 package org.opengroup.osdu.search.logging;
 
-import com.google.common.collect.Lists;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
-import org.opengroup.osdu.core.common.logging.audit.AuditPayload;
+import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 
-import java.util.Map;
+import java.util.Collections;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AuditLoggerTest {
 
+    private static final String TEST_USER = "testUser";
+    private static final String TEST_IP = "192.168.1.100";
+    private static final String TEST_USER_AGENT = "TestAgent/1.0";
+    private static final String TEST_AUTHORIZED_GROUP = "users.datalake.viewers";
+
     @Mock
     private JaxRsDpsLog logger;
     @Mock
     private DpsHeaders headers;
+    @Mock
+    private HttpServletRequest httpServletRequest;
 
     @InjectMocks
     private AuditLogger sut;
 
+    private List<String> resources;
+    private AuditEvents auditEvents;
+
     @BeforeEach
     public void setup() {
-        when(this.headers.getUserEmail()).thenReturn("testUser");
+        resources = Collections.singletonList("anything");
+
+        auditEvents = new AuditEvents(TEST_USER, TEST_IP, TEST_USER_AGENT, TEST_AUTHORIZED_GROUP);
+
+        when(headers.getUserEmail()).thenReturn(TEST_USER);
+        when(headers.getUserAuthorizedGroupName()).thenReturn(TEST_AUTHORIZED_GROUP);
+        when(httpServletRequest.getRemoteAddr()).thenReturn(TEST_IP);
+        lenient().when(httpServletRequest.getHeader("User-Agent")).thenReturn(TEST_USER_AGENT);
+        lenient().when(httpServletRequest.getHeader("X-Forwarded-For")).thenReturn(null);
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
     public void should_createAuditLogEvent_when_queryIndex() {
-        this.sut.queryIndexSuccess(Lists.newArrayList("anything"));
+        sut.queryIndexSuccess(resources);
 
-        ArgumentCaptor<AuditPayload> payloadCaptor = ArgumentCaptor.forClass(AuditPayload.class);
-
-        verify(this.logger).audit(payloadCaptor.capture());
-
-        AuditPayload payload = payloadCaptor.getValue();
-        assertEquals("SE001", ((Map) payload.get("auditLog")).get("actionId"));
-        assertEquals("testUser", ((Map) payload.get("auditLog")).get("user"));
+        verify(logger).audit(auditEvents.getSuccessfulQueryIndexEvent(resources));
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
+    public void should_createAuditLogEvent_when_queryIndexFailed() {
+        sut.queryIndexFailed(resources);
+
+        verify(logger).audit(auditEvents.getFailedQueryIndexEvent(resources));
+    }
+
+    @Test
     public void should_createAuditLogEvent_when_queryIndexWithCursor() {
-        this.sut.queryIndexWithCursorSuccess(Lists.newArrayList("anything"));
+        sut.queryIndexWithCursorSuccess(resources);
 
-        ArgumentCaptor<AuditPayload> payloadCaptor = ArgumentCaptor.forClass(AuditPayload.class);
-
-        verify(this.logger).audit(payloadCaptor.capture());
-
-        AuditPayload payload = payloadCaptor.getValue();
-        assertEquals("SE002", ((Map) payload.get("auditLog")).get("actionId"));
-        assertEquals("testUser", ((Map) payload.get("auditLog")).get("user"));
+        verify(logger).audit(auditEvents.getSuccessfulQueryIndexWithCursorEvent(resources));
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
+    public void should_createAuditLogEvent_when_queryIndexWithCursorFailed() {
+        sut.queryIndexWithCursorFailed(resources);
+
+        verify(logger).audit(auditEvents.getFailedQueryIndexWithCursorEvent(resources));
+    }
+
+    @Test
     public void should_createAuditLogEvent_when_getIndexSchema() {
-        this.sut.getIndexSchema(Lists.newArrayList("anything"));
+        sut.getIndexSchema(resources);
 
-        ArgumentCaptor<AuditPayload> payloadCaptor = ArgumentCaptor.forClass(AuditPayload.class);
-
-        verify(this.logger).audit(payloadCaptor.capture());
-
-        AuditPayload payload = payloadCaptor.getValue();
-        assertEquals("SE003", ((Map) payload.get("auditLog")).get("actionId"));
-        assertEquals("testUser", ((Map) payload.get("auditLog")).get("user"));
+        verify(logger).audit(auditEvents.getIndexSchemaEvent(resources));
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
     public void should_createAuditLogEvent_when_deleteIndex() {
-        this.sut.deleteIndex(Lists.newArrayList("anything"));
+        sut.deleteIndex(resources);
 
-        ArgumentCaptor<AuditPayload> payloadCaptor = ArgumentCaptor.forClass(AuditPayload.class);
+        verify(logger).audit(auditEvents.getDeleteIndexEvent(resources));
+    }
 
-        verify(this.logger).audit(payloadCaptor.capture());
+    @Test
+    public void should_createAuditLogEvent_when_updateSmartSearchCache() {
+        sut.updateSmartSearchCache(resources);
 
-        AuditPayload payload = payloadCaptor.getValue();
-        assertEquals("SE004", ((Map) payload.get("auditLog")).get("actionId"));
-        assertEquals("testUser", ((Map) payload.get("auditLog")).get("user"));
+        verify(logger).audit(auditEvents.getSmartSearchCacheUpdateEvent(resources));
+    }
+
+    @Test
+    public void should_useUnknownFallback_whenUserIsEmpty() {
+        when(headers.getUserEmail()).thenReturn("");
+        when(headers.getUserAuthorizedGroupName()).thenReturn("");
+
+        sut.queryIndexSuccess(resources);
+
+        AuditEvents fallbackEvents = new AuditEvents("", TEST_IP, TEST_USER_AGENT, "");
+        verify(logger).audit(fallbackEvents.getSuccessfulQueryIndexEvent(resources));
     }
 }
