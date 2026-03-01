@@ -1,15 +1,14 @@
 package org.opengroup.osdu.search.provider.azure.config.cache;
 
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.opengroup.osdu.azure.cache.RedisAzureCache;
-import org.opengroup.osdu.core.common.model.entitlements.Groups;
-import org.opengroup.osdu.core.common.model.search.ClusterSettings;
-import org.opengroup.osdu.core.common.model.search.CursorSettings;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -31,27 +30,18 @@ public class RedisConfigTest {
     @InjectMocks
     public RedisConfig sut = new RedisConfig();
 
-    @Test
-    public void groupCache_shouldCreateNonNullObjectOfRedisAzureCache() {
-        RedisAzureCache<String, Groups> redisAzureCache = sut.groupCache();
-        assertNotNull(redisAzureCache);
-    }
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = "a1b2c3d4-e5f6-7890-abcd-ef1234567890")
+    public void allCaches_shouldCreateSuccessfully(String principalId) {
+        if (principalId != null) {
+            ReflectionTestUtils.setField(sut, "redisPrincipalId", principalId);
+        }
 
-    @Test
-    public void cursorCache_shouldCreateNonNullObjectOfRedisAzureCache() {
-        RedisAzureCache<String, CursorSettings> redisAzureCache = sut.cursorCache();
-        assertNotNull(redisAzureCache);
-    }
-
-    @Test
-    public void clusterCache_shouldCreateNonNullObjectOfRedisAzureCache() {
-        RedisAzureCache<String, ClusterSettings> redisAzureCache = sut.clusterCache();
-        assertNotNull(redisAzureCache);
-    }
-
-    @Test
-    public void aliasCache_shouldCreateNonNullObjectOfRedisAzureCache() {
-        RedisAzureCache<String, String> redisAzureCache = sut.aliasCache();
-        assertNotNull(redisAzureCache);
+        assertNotNull(sut.groupCache());
+        assertNotNull(sut.cursorCache());
+        assertNotNull(sut.searchAfterSettingsCache());
+        assertNotNull(sut.clusterCache());
+        assertNotNull(sut.aliasCache());
     }
 }
