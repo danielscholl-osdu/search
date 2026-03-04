@@ -349,6 +349,10 @@ components:
           type: array
           items:
             type: string
+        excludedFields:
+          type: array
+          items:
+            type: string
         sort:
           $ref: '#/components/schemas/SortQuery'
         queryAsOwner:
@@ -456,6 +460,10 @@ components:
           items:
             type: string
         returnedFields:
+          type: array
+          items:
+            type: string
+        excludedFields:
           type: array
           items:
             type: string
