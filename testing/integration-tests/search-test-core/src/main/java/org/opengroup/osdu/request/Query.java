@@ -18,6 +18,7 @@ public class Query {
     private String aggregateBy;
     private String suggestPhrase;
     private List<String> returnedFields;
+    private List<String> excludedFields;
     private SpatialFilter spatialFilter;
 
     @Override
