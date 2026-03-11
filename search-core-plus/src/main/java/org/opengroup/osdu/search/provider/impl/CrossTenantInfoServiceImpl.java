@@ -60,7 +60,13 @@ public class CrossTenantInfoServiceImpl implements ITenantInfoService, ICrossTen
     String[] accountIdList = headers.getPartitionIdWithFallbackToAccountId().split(",");
     //Get all tenant values requested by user
     for (String accountId : accountIdList) {
-      TenantInfo tenantInfo = tenantFactory.getTenantInfo(accountId);
+      String trimmedAccountId = accountId.trim();
+      TenantInfo tenantInfo = tenantFactory.getTenantInfo(trimmedAccountId);
+      if (tenantInfo == null) {
+        throw AppException.createUnauthorized(
+            String.format("could not retrieve tenant info for data partition id: %s",
+                trimmedAccountId));
+      }
       tenantInfos.add(tenantInfo);
     }
     return tenantInfos;

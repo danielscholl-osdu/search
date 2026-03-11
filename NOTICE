@@ -91,7 +91,7 @@ The following software have components provided under the terms of this license:
 - Apache Log4j JUL Handler (from https://logging.apache.org/log4j/3.x/, https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-jul)
 - Apache Log4j SLF4J 2.0 Binding (from https://logging.apache.org/log4j/3.x/)
 - Apache Log4j SLF4J Binding (from https://logging.apache.org/log4j/3.x/, https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl)
-- Apache Log4j to SLF4J Adapter (from https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-to-slf4j)
+- Apache Log4j to SLF4J Adapter (from https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-to-slf4j, https://logging.apache.org/log4j/3.x/)
 - AssertJ Core (from https://assertj.github.io/doc/#assertj-core)
 - Asynchronous Http Client (from https://github.com/AsyncHttpClient/async-http-client, https://repo1.maven.org/maven2/org/asynchttpclient/async-http-client)
 - Asynchronous Http Client Netty Utils (from http://github.com/AsyncHttpClient/async-http-client, https://repo1.maven.org/maven2/org/asynchttpclient/async-http-client-netty-utils)
@@ -385,7 +385,7 @@ The following software have components provided under the terms of this license:
 - jersey-inject-hk2 (from https://repo1.maven.org/maven2/org/glassfish/jersey/inject/jersey-hk2)
 - jersey-media-json-jackson (from https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson)
 - jersey-spring6 (from https://repo1.maven.org/maven2/org/glassfish/jersey/ext/jersey-spring6)
-- jts-core (from https://repo1.maven.org/maven2/org/locationtech/jts/jts-core)
+- jts-core (from https://repo1.maven.org/maven2/org/locationtech/jts/jts-core, https://www.locationtech.org/projects/technology.jts)
 - org.locationtech.jts.io:jts-io-common (from https://repo1.maven.org/maven2/org/locationtech/jts/io/jts-io-common)
 
 ========================================================================
@@ -489,7 +489,7 @@ The following software have components provided under the terms of this license:
 - Logback Contrib :: JSON :: Core (from https://repo1.maven.org/maven2/ch/qos/logback/contrib/logback-json-core)
 - Logback Contrib :: Jackson (from https://repo1.maven.org/maven2/ch/qos/logback/contrib/logback-jackson)
 - Logback Core Module (from http://logback.qos.ch, https://repo1.maven.org/maven2/ch/qos/logback/logback-core)
-- jts-core (from https://repo1.maven.org/maven2/org/locationtech/jts/jts-core)
+- jts-core (from https://repo1.maven.org/maven2/org/locationtech/jts/jts-core, https://www.locationtech.org/projects/technology.jts)
 - org.locationtech.jts.io:jts-io-common (from https://repo1.maven.org/maven2/org/locationtech/jts/io/jts-io-common)
 
 ========================================================================
