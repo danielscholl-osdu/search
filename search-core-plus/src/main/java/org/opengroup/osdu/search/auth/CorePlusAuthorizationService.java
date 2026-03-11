@@ -58,7 +58,7 @@ public class CorePlusAuthorizationService extends AuthorizationServiceImpl {
     String cacheKey = getGroupCacheKey(dpsHeaders);
     Groups groups = getGroupsFromCache(cacheKey);
     if (groups == null) {
-      AuthorizationResponse authorizationResponse = super.authorizeAny(tenantName, dpsHeaders, roles);
+      AuthorizationResponse authorizationResponse = authorizeViaParent(tenantName, dpsHeaders, roles);
       this.cache.put(cacheKey, authorizationResponse.getGroups());
       return authorizationResponse;
     } else {

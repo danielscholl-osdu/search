@@ -95,4 +95,13 @@ public class ElasticCredentialsCacheTest {
         credentialsCache.close();
         verify(realCache, times(1)).close();
     }
+
+    @Test
+    void close_completesWithoutError_whenCacheIsNotAutoCloseable() {
+        ICache<String, ClusterSettings> nonCloseableCache = mock(ICache.class);
+        ElasticCredentialsCache credentialsCache = new ElasticCredentialsCache(nonCloseableCache);
+
+        // Should not throw - this test passes if no exception is thrown
+        assertDoesNotThrow(() -> credentialsCache.close());
+    }
 }
