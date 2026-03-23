@@ -386,7 +386,7 @@ The following software have components provided under the terms of this license:
 - jersey-media-json-jackson (from https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson)
 - jersey-spring6 (from https://repo1.maven.org/maven2/org/glassfish/jersey/ext/jersey-spring6)
 - jts-core (from https://repo1.maven.org/maven2/org/locationtech/jts/jts-core, https://www.locationtech.org/projects/technology.jts)
-- org.locationtech.jts.io:jts-io-common (from https://repo1.maven.org/maven2/org/locationtech/jts/io/jts-io-common)
+- org.locationtech.jts.io:jts-io-common (from https://www.locationtech.org/projects/technology.jts)
 
 ========================================================================
 BouncyCastle
@@ -490,7 +490,7 @@ The following software have components provided under the terms of this license:
 - Logback Contrib :: Jackson (from https://repo1.maven.org/maven2/ch/qos/logback/contrib/logback-jackson)
 - Logback Core Module (from http://logback.qos.ch, https://repo1.maven.org/maven2/ch/qos/logback/logback-core)
 - jts-core (from https://repo1.maven.org/maven2/org/locationtech/jts/jts-core, https://www.locationtech.org/projects/technology.jts)
-- org.locationtech.jts.io:jts-io-common (from https://repo1.maven.org/maven2/org/locationtech/jts/io/jts-io-common)
+- org.locationtech.jts.io:jts-io-common (from https://www.locationtech.org/projects/technology.jts)
 
 ========================================================================
 EPL-2.0
