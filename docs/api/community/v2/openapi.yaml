@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.1.0
 info:
   title: Search Service
   description: Search service that provides a set of APIs to search records against
@@ -36,12 +36,12 @@ paths:
         \ as you would use a cursor on a traditional database."
       operationId: queryWithCursor
       parameters:
-      - name: x-collaboration
-        in: header
-        description: x-collaboration
+      - name: search_after
+        in: query
         required: false
         schema:
-          type: string
+          type: boolean
+          default: false
       - name: data-partition-id
         in: header
         description: Tenant Id
@@ -52,58 +52,58 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CursorQueryRequest'
+              $ref: "#/components/schemas/CursorQueryRequest"
         required: true
       responses:
-        "500":
-          description: Internal Server Error
+        "200":
+          description: Success
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/AppError'
+                $ref: "#/components/schemas/CursorQueryResponse"
         "400":
           description: Invalid parameters were given on request
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/AppError'
-        "404":
-          description: Not Found
+                $ref: "#/components/schemas/AppError"
+        "401":
+          description: Unauthorized
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/AppError'
+                $ref: "#/components/schemas/AppError"
         "403":
           description: User not authorized to perform the action
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/AppError'
+                $ref: "#/components/schemas/AppError"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AppError"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AppError"
         "502":
           description: Search service scale-up is taking longer than expected. Wait
             10 seconds and retry.
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/AppError'
-        "200":
-          description: Success
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/CursorQueryResponse'
+                $ref: "#/components/schemas/AppError"
         "503":
           description: Service Unavailable
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/AppError'
-        "401":
-          description: Unauthorized
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/AppError'
+                $ref: "#/components/schemas/AppError"
       security:
       - Authorization: []
   /query:
@@ -118,12 +118,6 @@ paths:
         \ to access the data."
       operationId: queryRecords
       parameters:
-      - name: x-collaboration
-        in: header
-        description: x-collaboration
-        required: false
-        schema:
-          type: string
       - name: data-partition-id
         in: header
         description: Tenant Id
@@ -134,58 +128,58 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/QueryRequest'
+              $ref: "#/components/schemas/QueryRequest"
         required: true
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/AppError'
         "200":
           description: Success
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/QueryResponse'
+                $ref: "#/components/schemas/QueryResponse"
         "400":
           description: Invalid parameters were given on request
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/AppError'
-        "404":
-          description: Not Found
+                $ref: "#/components/schemas/AppError"
+        "401":
+          description: Unauthorized
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/AppError'
+                $ref: "#/components/schemas/AppError"
         "403":
           description: User not authorized to perform the action
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/AppError'
+                $ref: "#/components/schemas/AppError"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AppError"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AppError"
         "502":
           description: Search service scale-up is taking longer than expected. Wait
             10 seconds and retry.
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/AppError'
+                $ref: "#/components/schemas/AppError"
         "503":
           description: Service Unavailable
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/AppError'
-        "401":
-          description: Unauthorized
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/AppError'
+                $ref: "#/components/schemas/AppError"
       security:
       - Authorization: []
   /readiness_check:
@@ -203,24 +197,24 @@ paths:
         schema:
           type: string
       responses:
-        "502":
-          description: Bad Gateway
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/AppError'
         "200":
           description: OK
           content:
             '*/*':
               schema:
                 type: string
+        "502":
+          description: Bad Gateway
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AppError"
         "503":
           description: Service Unavailable
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/AppError'
+                $ref: "#/components/schemas/AppError"
   /liveness_check:
     get:
       tags:
@@ -236,24 +230,24 @@ paths:
         schema:
           type: string
       responses:
-        "502":
-          description: Bad Gateway
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/AppError'
         "200":
           description: OK
           content:
             '*/*':
               schema:
                 type: string
+        "502":
+          description: Bad Gateway
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AppError"
         "503":
           description: Service Unavailable
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/AppError'
+                $ref: "#/components/schemas/AppError"
   /info:
     get:
       tags:
@@ -275,68 +269,141 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VersionInfo'
+                $ref: "#/components/schemas/VersionInfo"
+  /query_with_cursor/{cursor}:
+    delete:
+      tags:
+      - search-api
+      summary: "${searchApi.closePaginationQueryWithCursor.summary}"
+      description: "${searchApi.closePaginationQueryWithCursor.description}"
+      operationId: closeCursor
+      parameters:
+      - name: cursor
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: search_after
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: data-partition-id
+        in: header
+        description: Tenant Id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CursorQueryResponse"
+        "400":
+          description: Invalid parameters were given on request
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AppError"
+        "401":
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AppError"
+        "403":
+          description: User not authorized to perform the action
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AppError"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AppError"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AppError"
+        "502":
+          description: Search service scale-up is taking longer than expected. Wait
+            10 seconds and retry.
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AppError"
+        "503":
+          description: Service Unavailable
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AppError"
+      security:
+      - Authorization: []
 components:
   schemas:
     ByBoundingBox:
-      required:
-      - bottomRight
-      - topLeft
       type: object
       properties:
         topLeft:
-          $ref: '#/components/schemas/Point'
+          $ref: "#/components/schemas/Point"
         bottomRight:
-          $ref: '#/components/schemas/Point'
-    ByDistance:
+          $ref: "#/components/schemas/Point"
       required:
-      - point
+      - bottomRight
+      - topLeft
+    ByDistance:
       type: object
       properties:
         distance:
-          maximum: 9223372036854775807
           type: number
           format: double
+          maximum: 9223372036854775807
         point:
-          $ref: '#/components/schemas/Point'
-    ByGeoPolygon:
+          $ref: "#/components/schemas/Point"
       required:
-      - points
+      - point
+    ByGeoPolygon:
       type: object
       properties:
         points:
           type: array
           items:
-            $ref: '#/components/schemas/Point'
+            $ref: "#/components/schemas/Point"
     ByIntersection:
-      required:
-      - polygons
       type: object
       properties:
         polygons:
           type: array
           items:
-            $ref: '#/components/schemas/Polygon'
-    ByWithinPolygon:
+            $ref: "#/components/schemas/Polygon"
       required:
-      - points
+      - polygons
+    ByWithinPolygon:
       type: object
       properties:
         points:
           type: array
           items:
-            $ref: '#/components/schemas/Point'
-    CursorQueryRequest:
+            $ref: "#/components/schemas/Point"
       required:
-      - kind
+      - points
+    CursorQueryRequest:
       type: object
       properties:
         kind:
           type: object
         limit:
-          minimum: 0
           type: integer
           format: int32
+          minimum: 0
         query:
           type: string
         suggestPhrase:
@@ -354,23 +421,25 @@ components:
           items:
             type: string
         sort:
-          $ref: '#/components/schemas/SortQuery'
+          $ref: "#/components/schemas/SortQuery"
         queryAsOwner:
           type: boolean
         trackTotalCount:
           type: boolean
         spatialFilter:
-          $ref: '#/components/schemas/SpatialFilter'
+          $ref: "#/components/schemas/SpatialFilter"
         cursor:
           type: string
+      required:
+      - kind
     Point:
       type: object
       properties:
         latitude:
-          maximum: 90
-          minimum: -90
           type: number
           format: double
+          maximum: 90
+          minimum: -90
         longitude:
           type: number
           format: double
@@ -380,7 +449,7 @@ components:
         points:
           type: array
           items:
-            $ref: '#/components/schemas/Point'
+            $ref: "#/components/schemas/Point"
     SortQuery:
       type: object
       properties:
@@ -400,32 +469,20 @@ components:
           items:
             type: string
     SpatialFilter:
-      required:
-      - field
       type: object
       properties:
         field:
           type: string
         byBoundingBox:
-          $ref: '#/components/schemas/ByBoundingBox'
+          $ref: "#/components/schemas/ByBoundingBox"
         byDistance:
-          $ref: '#/components/schemas/ByDistance'
+          $ref: "#/components/schemas/ByDistance"
         byGeoPolygon:
-          $ref: '#/components/schemas/ByGeoPolygon'
+          $ref: "#/components/schemas/ByGeoPolygon"
         byIntersection:
-          $ref: '#/components/schemas/ByIntersection'
+          $ref: "#/components/schemas/ByIntersection"
         byWithinPolygon:
-          $ref: '#/components/schemas/ByWithinPolygon'
-    AppError:
-      type: object
-      properties:
-        code:
-          type: integer
-          format: int32
-        reason:
-          type: string
-        message:
-          type: string
+          $ref: "#/components/schemas/ByWithinPolygon"
     CursorQueryResponse:
       type: object
       properties:
@@ -440,17 +497,25 @@ components:
         totalCount:
           type: integer
           format: int64
+    AppError:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        reason:
+          type: string
+        message:
+          type: string
     QueryRequest:
-      required:
-      - kind
       type: object
       properties:
         kind:
           type: object
         limit:
-          minimum: 0
           type: integer
           format: int32
+          minimum: 0
         query:
           type: string
         suggestPhrase:
@@ -468,19 +533,21 @@ components:
           items:
             type: string
         sort:
-          $ref: '#/components/schemas/SortQuery'
+          $ref: "#/components/schemas/SortQuery"
         queryAsOwner:
           type: boolean
         trackTotalCount:
           type: boolean
         spatialFilter:
-          $ref: '#/components/schemas/SpatialFilter'
+          $ref: "#/components/schemas/SpatialFilter"
         aggregateBy:
           type: string
         offset:
-          minimum: 0
           type: integer
           format: int32
+          minimum: 0
+      required:
+      - kind
     AggregationResponse:
       type: object
       properties:
@@ -501,7 +568,7 @@ components:
         aggregations:
           type: array
           items:
-            $ref: '#/components/schemas/AggregationResponse'
+            $ref: "#/components/schemas/AggregationResponse"
         phraseSuggestions:
           type: array
           items:
@@ -515,6 +582,17 @@ components:
         name:
           type: string
         version:
+          type: string
+    FeatureFlagState:
+      type: object
+      properties:
+        name:
+          type: string
+        enabled:
+          type: boolean
+        partition:
+          type: string
+        source:
           type: string
     VersionInfo:
       type: object
@@ -536,9 +614,15 @@ components:
         connectedOuterServices:
           type: array
           items:
-            $ref: '#/components/schemas/ConnectedOuterService'
+            $ref: "#/components/schemas/ConnectedOuterService"
+        featureFlagStates:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureFlagState"
   securitySchemes:
     Authorization:
       type: http
+      name: Authorization
+      in: header
       scheme: bearer
       bearerFormat: Authorization
