@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.2.0](https://github.com/danielscholl-osdu/search/compare/v1.1.0...v1.2.0) (2026-03-25)
+
+
+### ✨ Features
+
+* **azure:** Switch Redis authentication from password to MSI ([18620e6](https://github.com/danielscholl-osdu/search/commit/18620e643cef26ea70495dea75bb6a1aef2f47c0))
+* **azure:** Switch Redis authentication from password to MSI ([2add145](https://github.com/danielscholl-osdu/search/commit/2add1454490cade9aee80bff5cf6ddcde46bca3c))
+* **logging:** Enhance audit event payload with user context and required groups ([3df6ee7](https://github.com/danielscholl-osdu/search/commit/3df6ee767991c915978b76c29bc18161a3d36d44))
+
+
+### 🔧 Miscellaneous
+
+* Sync template updates ([0134e81](https://github.com/danielscholl-osdu/search/commit/0134e81e80dc41649d8b7bd459f4e02c4e82f931))
+
+
+### ♻️ Code Refactoring
+
+* **audit:** Encapsulate audit roles and request context in logging layer ([eef9bdc](https://github.com/danielscholl-osdu/search/commit/eef9bdc390474e8707b1623c14bd04159e966e6f))
+* **audit:** Encapsulate audit roles and request context in logging layer ([648c3dc](https://github.com/danielscholl-osdu/search/commit/648c3dcb9c393d9b585247f503dea89ff0f99264))
+
 ## [1.1.0](https://github.com/danielscholl-osdu/search/compare/v1.0.0...v1.1.0) (2026-02-13)
 
 
