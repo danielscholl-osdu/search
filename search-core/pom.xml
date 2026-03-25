@@ -163,7 +163,7 @@
           <dependency>
               <groupId>co.elastic.clients</groupId>
               <artifactId>elasticsearch-java</artifactId>
-              <version>8.15.2</version>
+              <version>8.15.5</version>
           </dependency>
           <dependency>
               <groupId>org.elasticsearch.client</groupId>
