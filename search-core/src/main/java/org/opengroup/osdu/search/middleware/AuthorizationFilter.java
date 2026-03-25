@@ -74,6 +74,7 @@ public class AuthorizationFilter {
             requestHeaders.put(DpsHeaders.DATA_PARTITION_ID, accountId);
             AuthorizationResponse authorizationResponse = authorizationService.authorizeAny(requestHeaders, requiredRoles);
             requestHeaders.put(DpsHeaders.USER_EMAIL, authorizationResponse.getUser());
+            requestHeaders.put(DpsHeaders.USER_AUTHORIZED_GROUP_NAME, authorizationResponse.getUserAuthorizedGroupName());
 
             for (GroupInfo gInfo : authorizationResponse.getGroups().getGroups()) {
                 if (gInfo.getName().startsWith(DATA_GROUP_PREFIX)) {

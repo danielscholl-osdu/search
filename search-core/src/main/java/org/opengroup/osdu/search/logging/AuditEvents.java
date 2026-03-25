@@ -16,14 +16,16 @@ package org.opengroup.osdu.search.logging;
 
 import com.google.common.base.Strings;
 import org.opengroup.osdu.core.common.logging.audit.AuditPayload;
+import org.opengroup.osdu.core.common.logging.audit.AuditPayload.AuditPayloadBuilder;
 import org.opengroup.osdu.core.common.logging.audit.AuditStatus;
 import org.opengroup.osdu.core.common.logging.audit.AuditAction;
 
 import java.util.List;
 
-import static org.opengroup.osdu.core.common.logging.audit.AuditPayload.builder;
-
 public class AuditEvents {
+
+    private static final String UNKNOWN = "unknown";
+    private static final String UNKNOWN_IP = "0.0.0.0";
 
     private static final String QUERY_INDEX_ACTION_ID = "SE001";
     private static final String QUERY_INDEX_OPERATION = "Query index";
@@ -41,88 +43,81 @@ public class AuditEvents {
     private static final String UPDATE_SMART_SEARCH_CACHE_OPERATION = "Update smart search cache";
 
     private final String user;
+    private final String userIpAddress;
+    private final String userAgent;
+    private final String userAuthorizedGroupName;
 
-    public AuditEvents(String user) {
-        if (Strings.isNullOrEmpty(user)) {
-            throw new IllegalArgumentException("User not provided for audit events.");
-        }
-        this.user = user;
+    public AuditEvents(String user, String userIpAddress, String userAgent, String userAuthorizedGroupName) {
+        this.user = Strings.isNullOrEmpty(user) ? UNKNOWN : user;
+        this.userIpAddress = Strings.isNullOrEmpty(userIpAddress) ? UNKNOWN_IP : userIpAddress;
+        this.userAgent = Strings.isNullOrEmpty(userAgent) ? UNKNOWN : userAgent;
+        this.userAuthorizedGroupName = Strings.isNullOrEmpty(userAuthorizedGroupName) ? UNKNOWN : userAuthorizedGroupName;
+    }
+
+    private AuditPayloadBuilder createAuditPayloadBuilder(List<String> requiredGroupsForAction, AuditStatus status, String actionId) {
+        return AuditPayload.builder()
+                .status(status)
+                .user(this.user)
+                .actionId(actionId)
+                .requiredGroupsForAction(requiredGroupsForAction)
+                .userIpAddress(this.userIpAddress)
+                .userAgent(this.userAgent)
+                .userAuthorizedGroupName(this.userAuthorizedGroupName);
     }
 
     public AuditPayload getSuccessfulQueryIndexEvent(List<String> resources) {
-        return builder()
+        return createAuditPayloadBuilder(AuditOperation.QUERY_INDEX.getRequiredGroups(), AuditStatus.SUCCESS, QUERY_INDEX_ACTION_ID)
                 .action(AuditAction.READ)
-                .status(AuditStatus.SUCCESS)
-                .actionId(QUERY_INDEX_ACTION_ID)
                 .message(QUERY_INDEX_OPERATION)
                 .resources(resources)
-                .user(this.user)
                 .build();
     }
 
     public AuditPayload getFailedQueryIndexEvent(List<String> resources) {
-        return builder()
+        return createAuditPayloadBuilder(AuditOperation.QUERY_INDEX.getRequiredGroups(), AuditStatus.FAILURE, QUERY_INDEX_ACTION_ID)
                 .action(AuditAction.READ)
-                .status(AuditStatus.FAILURE)
-                .actionId(QUERY_INDEX_ACTION_ID)
                 .message(QUERY_INDEX_OPERATION)
                 .resources(resources)
-                .user(this.user)
                 .build();
     }
 
     public AuditPayload getSuccessfulQueryIndexWithCursorEvent(List<String> resources) {
-        return builder()
+        return createAuditPayloadBuilder(AuditOperation.QUERY_INDEX_WITH_CURSOR.getRequiredGroups(), AuditStatus.SUCCESS, QUERY_INDEX_WITH_CURSOR_ACTION_ID)
                 .action(AuditAction.READ)
-                .status(AuditStatus.SUCCESS)
-                .actionId(QUERY_INDEX_WITH_CURSOR_ACTION_ID)
                 .message(QUERY_INDEX_WITH_CURSOR_OPERATION)
                 .resources(resources)
-                .user(this.user)
                 .build();
     }
 
     public AuditPayload getFailedQueryIndexWithCursorEvent(List<String> resources) {
-        return builder()
+        return createAuditPayloadBuilder(AuditOperation.QUERY_INDEX_WITH_CURSOR.getRequiredGroups(), AuditStatus.FAILURE, QUERY_INDEX_WITH_CURSOR_ACTION_ID)
                 .action(AuditAction.READ)
-                .status(AuditStatus.FAILURE)
-                .actionId(QUERY_INDEX_WITH_CURSOR_ACTION_ID)
                 .message(QUERY_INDEX_WITH_CURSOR_OPERATION)
                 .resources(resources)
-                .user(this.user)
                 .build();
     }
 
     public AuditPayload getIndexSchemaEvent(List<String> resources) {
-        return builder()
+        return createAuditPayloadBuilder(AuditOperation.GET_INDEX_SCHEMA.getRequiredGroups(), AuditStatus.SUCCESS, GET_INDEX_SCHEMA_ACTION_ID)
                 .action(AuditAction.READ)
-                .status(AuditStatus.SUCCESS)
-                .actionId(GET_INDEX_SCHEMA_ACTION_ID)
                 .message(GET_INDEX_SCHEMA_OPERATION)
                 .resources(resources)
-                .user(this.user)
                 .build();
     }
 
     public AuditPayload getDeleteIndexEvent(List<String> resources) {
-        return builder()
+        return createAuditPayloadBuilder(AuditOperation.DELETE_INDEX.getRequiredGroups(), AuditStatus.SUCCESS, DELETE_INDEX_ACTION_ID)
                 .action(AuditAction.DELETE)
-                .status(AuditStatus.SUCCESS)
-                .actionId(DELETE_INDEX_ACTION_ID)
                 .message(DELETE_INDEX_OPERATION)
                 .resources(resources)
-                .user(this.user)
                 .build();
     }
 
     public AuditPayload getSmartSearchCacheUpdateEvent(List<String> resources) {
-        return builder()
+        return createAuditPayloadBuilder(AuditOperation.UPDATE_SMART_SEARCH_CACHE.getRequiredGroups(), AuditStatus.SUCCESS, UPDATE_SMART_SEARCH_CACHE_ACTION_ID)
                 .action(AuditAction.UPDATE)
-                .status(AuditStatus.SUCCESS)
-                .actionId(UPDATE_SMART_SEARCH_CACHE_ACTION_ID)
                 .message(UPDATE_SMART_SEARCH_CACHE_OPERATION)
                 .resources(resources)
-                .user(this.user)
                 .build();
     }
 }
