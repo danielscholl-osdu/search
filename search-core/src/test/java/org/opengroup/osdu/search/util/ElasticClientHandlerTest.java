@@ -20,10 +20,8 @@ package org.opengroup.osdu.search.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
@@ -46,10 +44,16 @@ import org.opengroup.osdu.core.common.model.tenant.TenantInfo;
 import org.opengroup.osdu.search.cache.ElasticsearchClientCache;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 
+import java.util.function.Function;
+
 @ExtendWith(MockitoExtension.class)
 public class ElasticClientHandlerTest {
 
   private static final boolean SECURITY_HTTPS_CERTIFICATE_TRUST = false;
+  private static final String DATA_PARTITION_ID_1 = "dp1";
+  private static final String DATA_PARTITION_ID_2 = "dp2";
+  private static final String SCHEME = "https";
+  private static final String HOSTNAME = "H";
   private static MockedStatic<RestClient> mockedRestClients;
 
   @Mock
@@ -76,12 +80,11 @@ public class ElasticClientHandlerTest {
     mockedRestClients = mockStatic(RestClient.class);
 
     elasticClientHandler.setSecurityHttpsCertificateTrust(SECURITY_HTTPS_CERTIFICATE_TRUST);
-    when(tenantInfo.getDataPartitionId()).thenReturn("dp1");
 
     // Mock the cache to call the lambda function when computeIfAbsent is invoked
-    when(clientCache.computeIfAbsent(eq("dp1"), any())).thenAnswer(invocation -> {
+    when(clientCache.computeIfAbsent(eq(DATA_PARTITION_ID_1), any())).thenAnswer(invocation -> {
       String partitionId = invocation.getArgument(0);
-      java.util.function.Function<String, ElasticsearchClient> supplier = invocation.getArgument(1);
+      Function<String, ElasticsearchClient> supplier = invocation.getArgument(1);
       return supplier.apply(partitionId);
     });
   }
@@ -93,10 +96,11 @@ public class ElasticClientHandlerTest {
 
   @Test
   public void createRestClient_when_deployment_env_is_saas() {
-    ClusterSettings clusterSettings = new ClusterSettings("H", 1, "U:P");
-    when(elasticSettingService.getElasticClusterInformation()).thenReturn(clusterSettings);
-    when(RestClient.builder(new HttpHost("H", 1, "https"))).thenAnswer(invocation -> builder);
+    ClusterSettings clusterSettings = new ClusterSettings(HOSTNAME, 1, "U:P");
+    when(elasticSettingService.getElasticClusterInformationForPartition(anyString())).thenReturn(clusterSettings);
+    when(RestClient.builder(new HttpHost(HOSTNAME, 1, SCHEME))).thenAnswer(invocation -> builder);
     when(builder.build()).thenReturn(restClient);
+    when(tenantInfo.getDataPartitionId()).thenReturn(DATA_PARTITION_ID_1);
 
     ElasticsearchClient returned = this.elasticClientHandler.getOrCreateRestClient();
     RestClientTransport clientTransport = (RestClientTransport) returned._transport();
@@ -105,11 +109,27 @@ public class ElasticClientHandlerTest {
 
   @Test
   public void failed_createRestClientForSaaS_when_getcluster_info_throws_exception() {
-    when(elasticSettingService.getElasticClusterInformation())
-        .thenThrow(new AppException(1, "", ""));
-    when(RestClient.builder(new HttpHost("H", 1, "https"))).thenAnswer(invocation -> builder);
+    when(elasticSettingService.getElasticClusterInformationForPartition(anyString()))
+      .thenThrow(new AppException(1, "", ""));
+    when(RestClient.builder(new HttpHost(HOSTNAME, 1, SCHEME))).thenAnswer(invocation -> builder);
+    when(tenantInfo.getDataPartitionId()).thenReturn(DATA_PARTITION_ID_1);
     assertThrows(AppException.class, () -> {
       this.elasticClientHandler.getOrCreateRestClient();
     });
+  }
+
+  @Test
+  public void getOrCreateRestClient_shouldUsePartitionCredentials_notRequestScopeCredentials() {
+    ClusterSettings clusterSettings = new ClusterSettings(HOSTNAME, 1, "U:P");
+
+    when(elasticSettingService.getElasticClusterInformationForPartition(DATA_PARTITION_ID_1)).thenReturn(clusterSettings);
+    when(RestClient.builder(new HttpHost(HOSTNAME, 1, SCHEME))).thenAnswer(invocation -> builder);
+    when(builder.build()).thenReturn(restClient);
+
+    elasticClientHandler.getOrCreateRestClient(DATA_PARTITION_ID_1);
+
+    verify(elasticSettingService).getElasticClusterInformationForPartition(DATA_PARTITION_ID_1);
+    verify(elasticSettingService, never()).getElasticClusterInformationForPartition(DATA_PARTITION_ID_2);
+    verify(elasticSettingService, never()).getElasticClusterInformation();
   }
 }

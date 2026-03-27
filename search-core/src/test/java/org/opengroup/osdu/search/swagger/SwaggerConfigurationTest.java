@@ -15,6 +15,7 @@
 package org.opengroup.osdu.search.swagger;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.security.SecurityScheme;
@@ -93,8 +94,7 @@ public class SwaggerConfigurationTest {
     void operationCustomizer_addsDataPartitionHeaderParameter() {
         OperationCustomizer customizer = swaggerConfiguration.operationCustomizer();
 
-        io.swagger.v3.oas.models.Operation op =
-                new io.swagger.v3.oas.models.Operation().operationId("testOp");
+        Operation op = new Operation().operationId("testOp").tags(List.of(SwaggerConfiguration.SEARCH_API_TAG_NAME));
 
         op = customizer.customize(op, mock(HandlerMethod.class));
 
@@ -106,5 +106,22 @@ public class SwaggerConfigurationTest {
         assertEquals(DpsHeaders.DATA_PARTITION_ID, p.getName());
         assertEquals("header", p.getIn());
         assertTrue(p.getRequired());
+    }
+
+    @Test
+    void operationCustomizer_doesNotAddDataPartitionHeader_whenNotSearchApi() {
+        OperationCustomizer customizer = swaggerConfiguration.operationCustomizer();
+
+        Operation infoOp = new Operation().operationId("infoOp").tags(List.of(SwaggerConfiguration.INFO_API_TAG_NAME));
+        infoOp = customizer.customize(infoOp, mock(HandlerMethod.class));
+        assertNull(infoOp.getParameters(), "info endpoint should not get data-partition-id header");
+
+        Operation healthOp = new Operation().operationId("healthOp").tags(List.of(SwaggerConfiguration.HEALTH_CHECK_API_TAG_NAME));
+        healthOp = customizer.customize(healthOp, mock(HandlerMethod.class));
+        assertNull(healthOp.getParameters(), "health-check endpoint should not get data-partition-id header");
+
+        Operation noTagOp = new Operation().operationId("noTagOp");
+        noTagOp = customizer.customize(noTagOp, mock(HandlerMethod.class));
+        assertNull(noTagOp.getParameters(), "operation with no tags should not get data-partition-id header");
     }
 }

@@ -94,7 +94,8 @@ public class ElasticClientHandler implements Closeable {
     return clientCache.computeIfAbsent(partitionId, pid -> {
       log.info("Creating new ElasticsearchClient for partition: {}", pid);
       try {
-        return getCloudRestClient(elasticSettingService.getElasticClusterInformation());
+        ClusterSettings clusterSettings = elasticSettingService.getElasticClusterInformationForPartition(pid);
+        return getCloudRestClient(clusterSettings);
       } catch (Exception e) {
         log.error("Failed to create ElasticsearchClient for partition: {}", pid, e);
         throw e; // Re-throw to prevent caching of null values

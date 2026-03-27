@@ -57,32 +57,32 @@ public class RedisConfig {
     private String redisPrincipalId;
 
     @Bean
-    public RedisAzureCache<String, Groups> groupCache() {
+    public RedisAzureCache<Groups> groupCache() {
         return createCache(Groups.class, groupRedisTtl);
     }
 
     @Bean
-    public RedisAzureCache<String, CursorSettings> cursorCache() {
+    public RedisAzureCache<CursorSettings> cursorCache() {
         return createCache(CursorSettings.class, cursorRedisTtl);
     }
 
     @Bean
-    public RedisAzureCache<String, SearchAfterSettings> searchAfterSettingsCache() {
+    public RedisAzureCache<SearchAfterSettings> searchAfterSettingsCache() {
         return createCache(SearchAfterSettings.class, cursorRedisTtl);
     }
 
     @Bean
-    public RedisAzureCache<String, ClusterSettings> clusterCache() {
+    public RedisAzureCache<ClusterSettings> clusterCache() {
         return createCache(ClusterSettings.class, expiration);
     }
 
     @Bean
-    public RedisAzureCache<String, String> aliasCache() {
+    public RedisAzureCache<String> aliasCache() {
         return createCache(String.class, aliasCacheExpiration);
     }
 
-    private <T> RedisAzureCache<String, T> createCache(Class<T> valueClass, int ttl) {
+    private <T> RedisAzureCache<T> createCache(Class<T> valueClass, int ttl) {
         RedisAzureConfiguration config = new RedisAzureConfiguration(database, ttl, port, timeout, commandTimeout, redisPrincipalId);
-        return new RedisAzureCache<>(String.class, valueClass, config);
+        return new RedisAzureCache<>(valueClass, config);
     }
 }

@@ -94,13 +94,14 @@ public class CrossTenantInfoServiceImplTest {
     }
 
     @Test()
-    public void testGetAllTenantsFromPartitionId_whenGetTenantInfoReturnsNull() {
+    public void testGetAllTenantsFromPartitionId_whenGetTenantInfoReturnsNull_throwsException() {
         doReturn(partitionIdWithFallbackToAccountIdMultipleAccounts).when(dpsHeaders).getPartitionId();
 
-        List<TenantInfo> tenantInfos = sut.getAllTenantsFromPartitionId();
+        AppException appException = assertThrows(AppException.class,
+                () -> sut.getAllTenantsFromPartitionId());
 
-        assertNull(tenantInfos.get(0));
-        assertNull(tenantInfos.get(1));
+        AppError appError = appException.getError();
+        assertEquals(401, appError.getCode());
     }
 
     @Test()
@@ -121,10 +122,31 @@ public class CrossTenantInfoServiceImplTest {
     }
 
     @Test
+    public void testGetTenantInfoForPartition_whenTenantInfoIsNull_throwsException() {
+        when(tenantFactory.getTenantInfo("unknown-partition")).thenReturn(null);
+
+        AppException appException = assertThrows(AppException.class,
+                () -> sut.getTenantInfoForPartition("unknown-partition"));
+
+        AppError appError = appException.getError();
+        assertEquals(401, appError.getCode());
+    }
+
+    @Test
+    public void testGetTenantInfoForPartition_whenTenantInfoIsProvided_thenReturnsTenantInfo() {
+        TenantInfo tenantInfo = getTenantInfo(1L, "tenant1", "project-id1");
+        when(tenantFactory.getTenantInfo(dataPartitionId)).thenReturn(tenantInfo);
+
+        TenantInfo result = sut.getTenantInfoForPartition(dataPartitionId);
+
+        assertEquals(tenantInfo, result);
+    }
+
+    @Test
     public void shouldGetAllTenantInfos() {
         TenantInfo tenant1 = getTenantInfo(1L, "tenant1", "project-id1");
         TenantInfo tenant2 = getTenantInfo(2L, "tenant2", "project-id2");
-        when(tenantFactory.listTenantInfo()).thenReturn(Arrays.asList(tenant1,tenant2));
+        when(tenantFactory.listTenantInfo()).thenReturn(Arrays.asList(tenant1, tenant2));
 
         List<TenantInfo> tenantInfoList = sut.getAllTenantInfos();
         assertEquals(tenantInfoList.get(0), tenant1);
