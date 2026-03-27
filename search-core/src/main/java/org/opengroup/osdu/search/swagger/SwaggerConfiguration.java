@@ -24,6 +24,16 @@ import java.util.List;
 @Configuration
 public class SwaggerConfiguration {
 
+    public static final String SEARCH_API_TAG_NAME = "search-api";
+    public static final String HEALTH_CHECK_API_TAG_NAME = "health-check-api";
+    public static final String INFO_API_TAG_NAME = "info";
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String SECURITY_SCHEME = "bearer";
+
+    public static final Tag SEARCH_API_TAG = new Tag().name(SEARCH_API_TAG_NAME).description("Service endpoints to search data in datalake");
+    public static final Tag HEALTH_CHECK_API_TAG = new Tag().name(HEALTH_CHECK_API_TAG_NAME).description("Health Check API");
+    public static final Tag INFO_API_TAG = new Tag().name(INFO_API_TAG_NAME).description("Version info endpoint");
+
     @Autowired
     private SwaggerConfigurationProperties configurationProperties;
 
@@ -32,11 +42,11 @@ public class SwaggerConfiguration {
 
         SecurityScheme securityScheme = new SecurityScheme()
                 .type(SecurityScheme.Type.HTTP)
-                .scheme("bearer")
-                .bearerFormat("Authorization")
+                .scheme(SECURITY_SCHEME)
+                .bearerFormat(AUTHORIZATION_HEADER)
                 .in(SecurityScheme.In.HEADER)
-                .name("Authorization");
-        final String securitySchemeName = "Authorization";
+                .name(AUTHORIZATION_HEADER);
+        final String securitySchemeName = AUTHORIZATION_HEADER;
         SecurityRequirement securityRequirement = new SecurityRequirement().addList(securitySchemeName);
         Components components = new Components().addSecuritySchemes(securitySchemeName, securityScheme);
 
@@ -54,9 +64,9 @@ public class SwaggerConfiguration {
 
     private List<Tag> tags() {
         List<Tag> tags = new ArrayList<>();
-        tags.add(new Tag().name("search-api").description("Service endpoints to search data in datalake"));
-        tags.add(new Tag().name("health-check-api").description("Health Check API"));
-        tags.add(new Tag().name("info").description("Version info endpoint"));
+        tags.add(SEARCH_API_TAG);
+        tags.add(HEALTH_CHECK_API_TAG);
+        tags.add(INFO_API_TAG);
         return tags;
     }
 
@@ -72,13 +82,16 @@ public class SwaggerConfiguration {
     @Bean
     public OperationCustomizer operationCustomizer() {
         return (operation, handlerMethod) -> {
-            Parameter dataPartitionId = new Parameter()
-                    .name(DpsHeaders.DATA_PARTITION_ID)
-                    .description("Tenant Id")
-                    .in("header")
-                    .required(true)
-                    .schema(new StringSchema());
-            return operation.addParametersItem(dataPartitionId);
+            if (operation.getTags() != null && operation.getTags().contains(SEARCH_API_TAG_NAME)) {
+                Parameter dataPartitionId = new Parameter()
+                        .name(DpsHeaders.DATA_PARTITION_ID)
+                        .description("Tenant Id")
+                        .in("header")
+                        .required(true)
+                        .schema(new StringSchema());
+                return operation.addParametersItem(dataPartitionId);
+            }
+            return operation;
         };
     }
 }

@@ -20,6 +20,8 @@ package org.opengroup.osdu.search.service;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import jakarta.inject.Provider;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpStatus;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
@@ -38,7 +40,7 @@ import org.springframework.stereotype.Service;
 public class ElasticSettingServiceImpl implements IElasticSettingService {
 
   private final SearchConfigurationProperties searchConfigurationProperties;
-  private final jakarta.inject.Provider<ITenantInfoService> tenantInfoServiceProvider;
+  private final Provider<ITenantInfoService> tenantInfoServiceProvider;
   private final IElasticRepository elasticRepository;
   private final IElasticCredentialsCache<String, ClusterSettings> elasticCredentialCache;
   private final JaxRsDpsLog log;
@@ -46,6 +48,12 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
   @Override
   public ClusterSettings getElasticClusterInformation() {
     TenantInfo tenantInfo = this.tenantInfoServiceProvider.get().getTenantInfo();
+    return getClusterSettingsByTenantInfo(tenantInfo);
+  }
+
+  @Override
+  public ClusterSettings getElasticClusterInformationForPartition(String partitionId) {
+    TenantInfo tenantInfo = this.tenantInfoServiceProvider.get().getTenantInfoForPartition(partitionId);
     return getClusterSettingsByTenantInfo(tenantInfo);
   }
 
