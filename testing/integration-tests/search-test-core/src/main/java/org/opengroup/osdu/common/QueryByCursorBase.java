@@ -1,18 +1,20 @@
 package org.opengroup.osdu.common;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import com.google.gson.Gson;
+
 import java.util.List;
 import java.util.Arrays;
+import java.util.Map;
+
 import org.opengroup.osdu.core.common.model.search.SortQuery;
 import org.opengroup.osdu.request.CursorQuery;
 import org.opengroup.osdu.response.ErrorResponseMock;
 import org.opengroup.osdu.response.ResponseMock;
 import org.opengroup.osdu.util.Config;
 import org.opengroup.osdu.util.HTTPClient;
+import org.opengroup.osdu.util.Utility;
+
+import static org.junit.Assert.*;
 
 public class QueryByCursorBase extends TestsBase {
 
@@ -48,6 +50,14 @@ public class QueryByCursorBase extends TestsBase {
     public void i_set_the_fields_I_want_in_response_as(List<String> returnedFileds) {
         if(returnedFileds.contains("NULL")) requestQuery.setReturnedFields(null);
         else if (!returnedFileds.contains("All")) requestQuery.setReturnedFields(returnedFileds);
+    }
+
+    public void i_set_the_fields_I_want_in_response_with_returnedFields_but_not_excludedFields(List<String> returnedFileds, List<String> excludedFields) {
+        if(returnedFileds.contains("NULL")) requestQuery.setReturnedFields(null);
+        else if (!returnedFileds.contains("All")) requestQuery.setReturnedFields(returnedFileds);
+
+        if(excludedFields.contains("NULL")) requestQuery.setExcludedFields(null);
+        else if (!excludedFields.contains("All")) requestQuery.setExcludedFields(excludedFields);
     }
 
     public void i_set_autocomplete_phrase(String autocompletePhrase) {
@@ -86,6 +96,36 @@ public class QueryByCursorBase extends TestsBase {
         assertEquals(type, response.getReason());
         assertEquals(generateActualName(msg, timeStamp), response.getMessage());
         assertTrue(codes.contains(response.getResponseCode()));
+    }
+
+    public void i_should_get_in_response_records_containing_fields(int resultCount, List<String> fields) {
+        String payload = requestQuery.toString();
+        ResponseMock response = executeQuery(payload, headers, httpClient.getAccessToken(), ResponseMock.class);
+        assertEquals(200, response.getResponseCode());
+        assertEquals(resultCount, response.getResults().size());
+
+        if(fields.contains("NULL") || fields.contains("All")) { return; }
+
+        for (Map<String, Object> results: response.getResults()) {
+            for(String includedField: fields) {
+                assertTrue(Utility.containsField(results, includedField));
+            }
+        }
+    }
+
+    public void i_should_get_in_response_records_not_containing_fields(int resultCount, List<String> fields) {
+        String payload = requestQuery.toString();
+        ResponseMock response = executeQuery(payload, headers, httpClient.getAccessToken(), ResponseMock.class);
+        assertEquals(200, response.getResponseCode());
+        assertEquals(resultCount, response.getResults().size());
+
+        if(fields.contains("NULL") || fields.contains("All")) { return; }
+
+        for (Map<String, Object> results: response.getResults()) {
+            for(String excludedField: fields) {
+                assertFalse(Utility.containsField(results, excludedField));
+            }
+        }
     }
 
     public void i_should_get_in_response_records_along_with_a_cursor(int resultCount) {

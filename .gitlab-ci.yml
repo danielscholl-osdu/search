@@ -30,6 +30,9 @@ variables:
   SERVICE_JAVA_VERSION: "17"
   ACCEPTANCE_TEST_DIR: "search-acceptance-test"
 
+  CIMPL_OPENAPI_SPEC_PATH: docs/api/community/v2/openapi.yaml
+  CIMPL_OPENAPI_YAML_ROUTE: /api/search/v2/api-docs.yaml
+
   CORE_BUILD_SUBDIR: search-core
 
 include:

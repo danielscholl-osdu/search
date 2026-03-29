@@ -37,8 +37,13 @@ public class ElasticSettingServiceImpl implements IElasticSettingService {
 
     @Override
     public ClusterSettings getElasticClusterInformation() {
-
         TenantInfo tenantInfo = this.tenantInfoServiceProvider.get().getTenantInfo();
+        return getElasticClusterInformationForPartition(tenantInfo.getDataPartitionId());
+    }
+
+    @Override
+    public ClusterSettings getElasticClusterInformationForPartition(String partitionId) {
+        TenantInfo tenantInfo = this.tenantInfoServiceProvider.get().getTenantInfoForPartition(partitionId);
         String cacheKey = String.format("%s-%s", configurationProperties.getDeployedServiceId(), tenantInfo.getName());
 
         ClusterSettings clusterInfo = this.elasticCredentialCache.get(cacheKey);
