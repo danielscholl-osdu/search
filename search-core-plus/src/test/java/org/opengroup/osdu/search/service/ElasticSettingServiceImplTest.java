@@ -42,6 +42,17 @@ public class ElasticSettingServiceImplTest {
 
     private static final int DEFAULT_PORT = 9200;
     private static final String DUMMY_CREDENTIALS = "test-user:test-pass";
+    private static final String TEST_TENANT_NAME = "tenantName";
+    private static final String TEST_TENANT_A = "tenantA";
+    private static final String TEST_TENANT_X = "tenantX";
+    private static final String DATA_PARTITION_ID_1 = "dp1";
+    private static final String DATA_PARTITION_ID_2 = "dp2";
+    private static final String SERVICE_ID = "svc";
+    private static final String CACHED_URL = "cachedUrl";
+    private static final String REPO_URL = "repoUrl";
+    private static final String SERVICE_ID_CACHE_KEY = "svc-";
+    private static final String URL_1 = "url1";
+    private static final String URL_2 = "url2";
 
     private SearchConfigurationProperties props;
     private Provider<ITenantInfoService> tenantProvider;
@@ -56,7 +67,7 @@ public class ElasticSettingServiceImplTest {
         tenantProvider = mock(Provider.class);
         tenantService = mock(ITenantInfoService.class);
         when(tenantProvider.get()).thenReturn(tenantService);
-
+        when(props.getDeployedServiceId()).thenReturn(SERVICE_ID);
         repo = mock(IElasticRepository.class);
         cache = mock(IElasticCredentialsCache.class);
         log = mock(JaxRsDpsLog.class);
@@ -68,14 +79,13 @@ public class ElasticSettingServiceImplTest {
 
     @Test
     void whenCacheHit_getElasticClusterInformation_returnsCachedValue_andDoesNotCallRepo() {
-        when(props.getDeployedServiceId()).thenReturn("svc");
 
         TenantInfo tenant = mock(TenantInfo.class);
         when(tenantService.getTenantInfo()).thenReturn(tenant);
-        when(tenant.getName()).thenReturn("tenantName");
+        when(tenant.getName()).thenReturn(TEST_TENANT_NAME);
 
-        String cacheKey = "svc-" + "tenantName";
-        ClusterSettings cached = makeClusterSettings("cachedUrl");
+        String cacheKey = SERVICE_ID_CACHE_KEY + TEST_TENANT_NAME;
+        ClusterSettings cached = makeClusterSettings(CACHED_URL);
         when(cache.get(cacheKey)).thenReturn(cached);
 
         ElasticSettingServiceImpl service = new ElasticSettingServiceImpl(
@@ -91,16 +101,14 @@ public class ElasticSettingServiceImplTest {
     @Test
     void whenCacheMiss_repoReturnsCluster_putsIntoCache_andReturnsIt() {
 
-        when(props.getDeployedServiceId()).thenReturn("svc");
-
         TenantInfo tenant = mock(TenantInfo.class);
         when(tenantService.getTenantInfo()).thenReturn(tenant);
-        when(tenant.getName()).thenReturn("tenantA");
+        when(tenant.getName()).thenReturn(TEST_TENANT_A);
 
-        String cacheKey = "svc-" + "tenantA";
+        String cacheKey = SERVICE_ID_CACHE_KEY + TEST_TENANT_A;
         when(cache.get(cacheKey)).thenReturn(null);
 
-        ClusterSettings repoCluster = makeClusterSettings("repoUrl");
+        ClusterSettings repoCluster = makeClusterSettings(REPO_URL);
         when(repo.getElasticClusterSettings(tenant)).thenReturn(repoCluster);
 
         ElasticSettingServiceImpl service = new ElasticSettingServiceImpl(
@@ -116,13 +124,11 @@ public class ElasticSettingServiceImplTest {
     @Test
     void whenCacheMiss_repoReturnsNull_throwsAppExceptionNotFound() {
 
-        when(props.getDeployedServiceId()).thenReturn("svc");
-
         TenantInfo tenant = mock(TenantInfo.class);
         when(tenantService.getTenantInfo()).thenReturn(tenant);
-        when(tenant.getName()).thenReturn("tenantX");
+        when(tenant.getName()).thenReturn(TEST_TENANT_X);
 
-        String cacheKey = "svc-" + "tenantX";
+        String cacheKey = SERVICE_ID_CACHE_KEY + TEST_TENANT_X;
         when(cache.get(cacheKey)).thenReturn(null);
         when(repo.getElasticClusterSettings(tenant)).thenReturn(null);
 
@@ -137,23 +143,21 @@ public class ElasticSettingServiceImplTest {
     @Test
     void getAllClustersSettings_buildsMapFromAllTenantInfos() {
 
-        when(props.getDeployedServiceId()).thenReturn("svc");
-
         TenantInfo t1 = mock(TenantInfo.class);
         when(t1.getName()).thenReturn("name1");
-        when(t1.getDataPartitionId()).thenReturn("dp1");
+        when(t1.getDataPartitionId()).thenReturn(DATA_PARTITION_ID_1);
 
         TenantInfo t2 = mock(TenantInfo.class);
         when(t2.getName()).thenReturn("name2");
-        when(t2.getDataPartitionId()).thenReturn("dp2");
+        when(t2.getDataPartitionId()).thenReturn(DATA_PARTITION_ID_2);
 
         when(tenantService.getAllTenantInfos()).thenReturn(Arrays.asList(t1, t2));
 
         when(cache.get("svc-name1")).thenReturn(null);
         when(cache.get("svc-name2")).thenReturn(null);
 
-        ClusterSettings cs1 = makeClusterSettings("url1");
-        ClusterSettings cs2 = makeClusterSettings("url2");
+        ClusterSettings cs1 = makeClusterSettings(URL_1);
+        ClusterSettings cs2 = makeClusterSettings(URL_2);
         when(repo.getElasticClusterSettings(t1)).thenReturn(cs1);
         when(repo.getElasticClusterSettings(t2)).thenReturn(cs2);
 
@@ -164,10 +168,75 @@ public class ElasticSettingServiceImplTest {
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertSame(cs1, result.get("dp1"));
-        assertSame(cs2, result.get("dp2"));
+        assertSame(cs1, result.get(DATA_PARTITION_ID_1));
+        assertSame(cs2, result.get(DATA_PARTITION_ID_2));
 
         verify(cache).put("svc-name1", cs1);
         verify(cache).put("svc-name2", cs2);
     }
+
+    @Test
+    void getElasticClusterInformationForPartition_usesTenantInfoForPartition_notRequestScope() {
+
+        TenantInfo tenant = mock(TenantInfo.class);
+        when(tenantService.getTenantInfoForPartition(DATA_PARTITION_ID_1)).thenReturn(tenant);
+        when(tenant.getName()).thenReturn(TEST_TENANT_A);
+
+        String cacheKey = SERVICE_ID_CACHE_KEY + TEST_TENANT_A;
+        ClusterSettings repoCluster = makeClusterSettings(REPO_URL);
+        when(cache.get(cacheKey)).thenReturn(null);
+        when(repo.getElasticClusterSettings(tenant)).thenReturn(repoCluster);
+
+        ElasticSettingServiceImpl service = new ElasticSettingServiceImpl(
+                props, tenantProvider, repo, cache, log);
+        ClusterSettings result = service.getElasticClusterInformationForPartition(DATA_PARTITION_ID_1);
+
+        assertSame(repoCluster, result);
+        verify(tenantService).getTenantInfoForPartition(DATA_PARTITION_ID_1);
+        verify(tenantService, never()).getTenantInfo();
+        verify(cache).put(cacheKey, repoCluster);
+    }
+
+    @Test
+    void getElasticClusterInformationForPartition_cacheHit_returnsCachedValue() {
+
+        TenantInfo tenant = mock(TenantInfo.class);
+        when(tenantService.getTenantInfoForPartition(DATA_PARTITION_ID_2)).thenReturn(tenant);
+        when(tenant.getName()).thenReturn(TEST_TENANT_NAME);
+
+        String cacheKey = SERVICE_ID_CACHE_KEY + TEST_TENANT_NAME;
+        ClusterSettings cached = makeClusterSettings(CACHED_URL);
+        when(cache.get(cacheKey)).thenReturn(cached);
+
+        ElasticSettingServiceImpl service = new ElasticSettingServiceImpl(
+                props, tenantProvider, repo, cache, log);
+        ClusterSettings result = service.getElasticClusterInformationForPartition(DATA_PARTITION_ID_2);
+
+        assertSame(cached, result);
+        verify(tenantService).getTenantInfoForPartition(DATA_PARTITION_ID_2);
+        verify(repo, never()).getElasticClusterSettings(any());
+    }
+
+    @Test
+    void getElasticClusterInformationForPartition_repoReturnsNull_throwsAppExceptionNotFound() {
+
+        TenantInfo tenant = mock(TenantInfo.class);
+        when(tenantService.getTenantInfoForPartition(DATA_PARTITION_ID_1)).thenReturn(tenant);
+        when(tenant.getName()).thenReturn(TEST_TENANT_A);
+
+        String cacheKey = SERVICE_ID_CACHE_KEY + TEST_TENANT_A;
+        when(cache.get(cacheKey)).thenReturn(null);
+        when(repo.getElasticClusterSettings(tenant)).thenReturn(null);
+
+        ElasticSettingServiceImpl service = new ElasticSettingServiceImpl(
+                props, tenantProvider, repo, cache, log);
+
+        AppException ex = assertThrows(
+                AppException.class,
+                () -> service.getElasticClusterInformationForPartition(DATA_PARTITION_ID_1));
+
+        assertEquals(HttpStatus.SC_NOT_FOUND, ex.getError().getCode());
+        verify(cache, never()).put(anyString(), any());
+    }
+
 }
