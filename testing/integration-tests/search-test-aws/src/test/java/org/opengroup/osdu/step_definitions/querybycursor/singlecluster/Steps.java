@@ -75,9 +75,14 @@ public class Steps extends QueryByCursorSteps {
         super.i_search_as(isOwner);
     }
 
-    @When("^I set the fields I want in response as ([\"(a-zA-Z0-9)\",?]*)$")
+    @When("^I set the fields I want in response as ([\"(\\w-.)\",?]*)$")
     public void i_set_the_fields_I_want_in_response_as(List<String> returnedFileds) {
         super.i_set_the_fields_I_want_in_response_as(returnedFileds);
+    }
+
+    @When("^I set the fields I want in response as ([\"(\\w-.)\",?]*) and ([\"(\\w-.)\",?]*)$")
+    public void i_set_the_fields_I_want_in_response_with_returnedFields_but_not_excludedFields(List<String> returnedFileds, List<String> excludedFields) {
+        super.i_set_the_fields_I_want_in_response_with_returnedFields_but_not_excludedFields(returnedFileds, excludedFields);
     }
 
     @When("^I limit the count of returned results to None$$")
@@ -112,6 +117,15 @@ public class Steps extends QueryByCursorSteps {
     }
 
     /******************Assert final response**************/
+    @Then("^I should get in response (\\d+) records containing ([\"(\\w-.)\",?]*)$")
+    public void i_should_get_in_response_records_containing_fields(int resultCount, List<String> fields) {
+        super.i_should_get_in_response_records_containing_fields(resultCount, fields);
+    }
+
+    @Then("^I should get in response (\\d+) records not containing ([\"(\\w-.)\",?]*)$")
+    public void i_should_get_in_response_records_not_containing_fields(int resultCount, List<String> fields) {
+        super.i_should_get_in_response_records_not_containing_fields(resultCount, fields);
+    }
 
     @Then("^I should get in response (\\d+) records along with a cursor$")
     public void i_should_get_in_response_records_along_with_a_cursor(int resultCount) {

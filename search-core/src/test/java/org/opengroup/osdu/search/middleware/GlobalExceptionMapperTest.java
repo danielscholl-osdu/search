@@ -17,22 +17,33 @@ package org.opengroup.osdu.search.middleware;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.ValidationException;
 import javassist.NotFoundException;
 import org.apache.http.HttpStatus;
+import org.elasticsearch.client.Response;
+import org.elasticsearch.client.ResponseException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.context.request.WebRequest;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -54,7 +65,7 @@ public class GlobalExceptionMapperTest {
         AppException exception = new AppException(409, "any reason", "any message");
 
         ResponseEntity<Object> response = sut.handleAppException(exception);
-        assertEquals(409, response.getStatusCodeValue());
+        assertEquals(409, response.getStatusCode().value());
         assertEquals(exception.getError(), response.getBody());
     }
 
@@ -64,8 +75,9 @@ public class GlobalExceptionMapperTest {
         NotFoundException exception = new NotFoundException("any message");
 
          	ResponseEntity<Object> response = sut.handleNotFoundException(exception);
-         	assertEquals(404, response.getStatusCodeValue());
-         	assertTrue(response.getBody().toString().contains("any message"));
+         	assertEquals(404, response.getStatusCode().value());
+            assertNotNull(response.getBody());
+            assertTrue(response.getBody().toString().contains("any message"));
     }
 
 //    @Test
@@ -96,7 +108,7 @@ public class GlobalExceptionMapperTest {
         Exception exception = new Exception("any message");
 
         ResponseEntity<Object> response = sut.handleGeneralException(exception);
-        assertEquals(500, response.getStatusCodeValue());
+        assertEquals(500, response.getStatusCode().value());
         assertEquals("AppError(code=500, reason=Server error., message=An unknown error has occurred., errors=null, debuggingInfo=null, originalException=java.lang.Exception: any message)", response.getBody().toString());
     }
 
@@ -105,7 +117,7 @@ public class GlobalExceptionMapperTest {
         JsonProcessingException exception = new JsonParseException(null, "any message");
 
         ResponseEntity<Object> response = sut.handleJsonProcessingException(exception);
-        assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusCodeValue());
+        assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusCode().value());
     }
 
     @Test
@@ -113,7 +125,7 @@ public class GlobalExceptionMapperTest {
         UnrecognizedPropertyException exception = mock(UnrecognizedPropertyException.class);
 
         ResponseEntity<Object> response = sut.handleUnrecognizedPropertyException(exception);
-        assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusCodeValue());
+        assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusCode().value());
     }
 
     @Test
@@ -121,7 +133,7 @@ public class GlobalExceptionMapperTest {
         ValidationException exception = new ValidationException();
 
         ResponseEntity<Object> response = sut.handleValidationException(exception);
-        assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusCodeValue());
+        assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusCode().value());
     }
 
     @Test
@@ -129,7 +141,7 @@ public class GlobalExceptionMapperTest {
         AccessDeniedException exception = new AccessDeniedException("Access is denied.");
 
         ResponseEntity<Object> response = sut.handleAccessDeniedException(exception);
-        assertEquals(HttpStatus.SC_UNAUTHORIZED, response.getStatusCodeValue());
+        assertEquals(HttpStatus.SC_UNAUTHORIZED, response.getStatusCode().value());
     }
 
     @Test
@@ -147,7 +159,7 @@ public class GlobalExceptionMapperTest {
 
         ResponseEntity response = this.sut.handleIOException(ioException);
 
-        assertEquals(HttpStatus.SC_SERVICE_UNAVAILABLE, response.getStatusCodeValue());
+        assertEquals(HttpStatus.SC_SERVICE_UNAVAILABLE, response.getStatusCode().value());
     }
 
     @Test
@@ -155,10 +167,87 @@ public class GlobalExceptionMapperTest {
         AppException appException = new AppException(HttpStatus.SC_BAD_REQUEST, "Too many clauses", LARGE_ERROR_MESSAGE);
         when(this.configurationProperties.getMaxExceptionLogMessageLength()).thenReturn(5000);
         ResponseEntity response = this.sut.handleAppException(appException);
-        assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusCodeValue());
+        assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusCode().value());
         String loggingMsg = LARGE_ERROR_MESSAGE.substring(0, this.configurationProperties.getMaxExceptionLogMessageLength());
 
         AppException apException = new AppException(HttpStatus.SC_BAD_REQUEST, "Too many clauses", loggingMsg);
         verify(this.log).warning(eq(loggingMsg), any(AppException.class));
+    }
+
+    @Test
+    public void should_returnBadRequest_whenMethodArgumentNotValid() {
+        MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
+        BindingResult bindingResult = mock(BindingResult.class);
+        FieldError fieldError = new FieldError("queryRequest", "kind", "kind cannot be empty");
+
+        when(exception.getBindingResult()).thenReturn(bindingResult);
+        when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError));
+
+        ResponseEntity<Object> response = sut.handleMethodArgumentNotValid(
+                exception, new HttpHeaders(), HttpStatusCode.valueOf(400), mock(WebRequest.class));
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusCode().value());
+        assertInstanceOf(ObjectNode.class, response.getBody());
+        ObjectNode body = (ObjectNode) response.getBody();
+        assertEquals(400, body.get("code").asInt());
+        assertEquals("Bad Request", body.get("reason").asText());
+        assertTrue(body.has("errors"));
+    }
+
+    @Test
+    public void should_returnBadRequest_whenMethodArgumentNotValid_noFieldErrors() {
+        MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
+        BindingResult bindingResult = mock(BindingResult.class);
+
+        when(exception.getBindingResult()).thenReturn(bindingResult);
+        when(bindingResult.getFieldErrors()).thenReturn(Collections.emptyList());
+
+        ResponseEntity<Object> response = sut.handleMethodArgumentNotValid(
+                exception, new HttpHeaders(), HttpStatusCode.valueOf(400), mock(WebRequest.class));
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusCode().value());
+        ObjectNode body = (ObjectNode) response.getBody();
+        assertNotNull(body);
+        assertFalse(body.has("errors"));
+    }
+
+    @Test
+    public void should_returnBadRequest_whenHttpMessageNotReadable() {
+        HttpMessageNotReadableException exception =
+                new HttpMessageNotReadableException("Cannot read", (Throwable) null, null);
+
+        ResponseEntity<Object> response = sut.handleHttpMessageNotReadable(
+                exception, new HttpHeaders(), HttpStatusCode.valueOf(400), mock(WebRequest.class));
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.SC_BAD_REQUEST, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    public void should_handleNonStandardStatusCode_inAppException() {
+        AppException exception = new AppException(499, "Custom status", "custom message");
+
+        ResponseEntity<Object> response = sut.handleAppException(exception);
+        assertEquals(499, response.getStatusCode().value());
+        // Non-standard codes (HttpStatus.resolve() returns null) produce body(e) instead of body(e.getError())
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    public void should_logSuppressedResponseExceptions() {
+        ResponseException suppressedResponseException = mock(ResponseException.class);
+        when(suppressedResponseException.getMessage()).thenReturn("Elasticsearch shard failure");
+
+        Exception cause = new Exception("root cause");
+        cause.addSuppressed(suppressedResponseException);
+
+        AppException appException = new AppException(HttpStatus.SC_BAD_REQUEST, "bad", "bad request", cause);
+
+        sut.handleAppException(appException);
+
+        verify(log).error(anyString(), any(ResponseException.class));
     }
 }
