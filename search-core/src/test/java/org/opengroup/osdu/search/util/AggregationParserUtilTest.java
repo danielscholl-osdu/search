@@ -1,7 +1,9 @@
 package org.opengroup.osdu.search.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.lenient;
 import static org.opengroup.osdu.search.util.AggregationParserUtil.NESTED_AGGREGATION_NAME;
 import static org.opengroup.osdu.search.util.AggregationParserUtil.TERM_AGGREGATION_NAME;
 
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.opengroup.osdu.core.common.model.http.AppException;
 import org.opengroup.osdu.search.config.SearchConfigurationProperties;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,7 +48,7 @@ public class AggregationParserUtilTest {
 
   @BeforeEach
   public void setUp() {
-    when(properties.getAggregationSize()).thenReturn(1000);
+    lenient().when(properties.getAggregationSize()).thenReturn(1000);
     aggregationParserUtil = new AggregationParserUtil(properties);
   }
 
@@ -148,5 +151,14 @@ public class AggregationParserUtilTest {
                     List.of(
                         NamedValue.of("_count", SortOrder.Desc),
                         NamedValue.of("_key", SortOrder.Asc))));
+  }
+
+  @Test
+  public void testMalformedNestedAggregation_throwsAppException() {
+    String malformed = "nested(badformat)";
+    AppException exception = assertThrows(AppException.class,
+        () -> aggregationParserUtil.parseAggregation(malformed));
+    assertEquals(400, exception.getError().getCode());
+    assertTrue(exception.getError().getReason().contains("Malformed nested aggregation"));
   }
 }

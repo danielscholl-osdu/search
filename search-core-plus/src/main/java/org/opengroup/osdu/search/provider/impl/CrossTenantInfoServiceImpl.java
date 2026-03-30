@@ -39,11 +39,16 @@ public class CrossTenantInfoServiceImpl implements ITenantInfoService, ICrossTen
   @Override
   public TenantInfo getTenantInfo() {
     String primaryAccountId = this.headers.getPartitionIdWithFallbackToAccountId();
-    TenantInfo tenantInfo = this.tenantFactory.getTenantInfo(primaryAccountId);
+    return getTenantInfoForPartition(primaryAccountId);
+  }
+
+  @Override
+  public TenantInfo getTenantInfoForPartition(String partitionId) {
+    TenantInfo tenantInfo = this.tenantFactory.getTenantInfo(partitionId);
     if (tenantInfo == null) {
       throw AppException.createUnauthorized(
-          String.format("could not retrieve tenant info for data partition id: %s",
-              primaryAccountId));
+          String.format("could not retrieve tenant info for data partition id: %s", partitionId)
+      );
     }
     return tenantInfo;
   }
@@ -60,7 +65,13 @@ public class CrossTenantInfoServiceImpl implements ITenantInfoService, ICrossTen
     String[] accountIdList = headers.getPartitionIdWithFallbackToAccountId().split(",");
     //Get all tenant values requested by user
     for (String accountId : accountIdList) {
-      TenantInfo tenantInfo = tenantFactory.getTenantInfo(accountId);
+      String trimmedAccountId = accountId.trim();
+      TenantInfo tenantInfo = tenantFactory.getTenantInfo(trimmedAccountId);
+      if (tenantInfo == null) {
+        throw AppException.createUnauthorized(
+            String.format("could not retrieve tenant info for data partition id: %s",
+                trimmedAccountId));
+      }
       tenantInfos.add(tenantInfo);
     }
     return tenantInfos;
