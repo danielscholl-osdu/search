@@ -16,6 +16,8 @@ package org.opengroup.osdu.search.provider.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch.core.search.SourceFilter;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.opengroup.osdu.core.common.http.CollaborationContextFactory;
@@ -128,6 +130,7 @@ public class CoreQueryBaseTest {
 
         when(request.getQuery()).thenReturn("kind:foo");
         when(request.getReturnedFields()).thenReturn(Arrays.asList("a", "b"));
+        when(request.getExcludedFields()).thenReturn(Arrays.asList("b", "c"));
         when(request.getHighlightedFields()).thenReturn(Collections.singletonList("title"));
         when(request.getLimit()).thenReturn(5);
         when(request.getSuggestPhrase()).thenReturn(null);
@@ -144,6 +147,14 @@ public class CoreQueryBaseTest {
         var built = coreQueryBase.createSearchSourceBuilder(request).build();
 
         assertEquals(QueryUtils.getResultSizeForQuery(5), built.size());
+
+        Assertions.assertNotNull(built.source());
+        SourceFilter sourceFilter = built.source().filter();
+        Assertions.assertNotNull(sourceFilter);
+        Assertions.assertTrue(sourceFilter.includes().contains("a"));
+        Assertions.assertFalse(sourceFilter.includes().contains("b"));
+        Assertions.assertTrue(sourceFilter.excludes().contains("b"));
+        Assertions.assertTrue(sourceFilter.excludes().contains("c"));
     }
 
     @Test
@@ -157,6 +168,7 @@ public class CoreQueryBaseTest {
         when(request.getSuggestPhrase()).thenReturn(null);
         when(request.isTrackTotalCount()).thenReturn(false);
         when(request.getReturnedFields()).thenReturn(Collections.emptyList());
+        when(request.getExcludedFields()).thenReturn(Collections.emptyList());
         when(request.getHighlightedFields()).thenReturn(null);
 
         when(featureFlag.isFeatureEnabled(any())).thenReturn(false);

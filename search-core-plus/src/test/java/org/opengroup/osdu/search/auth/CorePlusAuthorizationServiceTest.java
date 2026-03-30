@@ -25,8 +25,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.cache.ICache;
-import org.opengroup.osdu.core.common.entitlements.AuthorizationServiceImpl;
-import org.opengroup.osdu.core.common.entitlements.IEntitlementsFactory;
 import org.opengroup.osdu.core.common.logging.JaxRsDpsLog;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.entitlements.Groups;
@@ -137,5 +135,61 @@ public class CorePlusAuthorizationServiceTest {
         when(cache.get(anyString())).thenThrow(new RuntimeException("boom"));
 
         assertThrows(RuntimeException.class, () -> service.authorizeAny(headers, "R"));
+    }
+
+    @Test
+    void whenGroupsInCache_authorizeAnyWithTenant_returnsCachedGroupsAndDoesNotPut() {
+        DpsHeaders headers = mock(DpsHeaders.class);
+        when(headers.getPartitionIdWithFallbackToAccountId()).thenReturn("part1");
+        when(headers.getAuthorization()).thenReturn("auth-token");
+
+        Groups groups = new Groups();
+        groups.setMemberEmail("user@example.com");
+        when(cache.get(anyString())).thenReturn(groups);
+
+        AuthorizationResponse response = service.authorizeAny("tenant-name", headers, "ROLE_X");
+
+        assertNotNull(response);
+        assertEquals("user@example.com", response.getUser());
+        assertSame(groups, response.getGroups());
+
+        verify(cache, times(1)).get(anyString());
+        verify(cache, never()).put(anyString(), any());
+    }
+
+    @Test
+    void whenCacheMiss_authorizeAnyWithTenant_delegatesToParentAndPutsInCache() {
+
+        DpsHeaders headers = mock(DpsHeaders.class);
+        when(headers.getPartitionIdWithFallbackToAccountId()).thenReturn("p");
+        when(headers.getAuthorization()).thenReturn("a");
+
+        when(cache.get(anyString())).thenReturn(null);
+
+        CorePlusAuthorizationService spy =
+                Mockito.spy(new CorePlusAuthorizationService(cache, jaxRsDpsLog));
+
+        Groups parentGroups = new Groups();
+        parentGroups.setMemberEmail("tenantuser@example.com");
+
+        AuthorizationResponse parentResponse =
+                AuthorizationResponse.builder()
+                        .user("tenantuser@example.com")
+                        .groups(parentGroups)
+                        .build();
+
+        doReturn(parentResponse)
+                .when(spy)
+                .authorizeViaParent(anyString(), any(), any());
+
+        AuthorizationResponse result =
+                spy.authorizeAny("tenant-name", headers, "ROLE_X");
+
+        assertNotNull(result);
+        assertEquals("tenantuser@example.com", result.getUser());
+        assertSame(parentGroups, result.getGroups());
+
+        verify(cache, times(1)).get(anyString());
+        verify(cache, times(1)).put(anyString(), eq(parentGroups));
     }
 }

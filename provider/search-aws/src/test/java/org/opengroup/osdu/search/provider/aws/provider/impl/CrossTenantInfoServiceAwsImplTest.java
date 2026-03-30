@@ -82,4 +82,19 @@ public class CrossTenantInfoServiceAwsImplTest {
 
         assertEquals((this.crossTenantInfoServiceAws.getAllTenantsFromPartitionId()).get(0), info);
     }
+
+    @Test
+    public void should_Return_TenantInfo_ForPartition(){
+        TenantInfo info = new TenantInfo();
+        when(tenantFactory.getTenantInfo("custom-partition")).thenReturn(info);
+
+        assertEquals(info, this.crossTenantInfoServiceAws.getTenantInfoForPartition("custom-partition"));
+    }
+
+    @Test(expected = AppException.class)
+    public void should_Throw_AppException_when_Null_tenantInfoForPartition(){
+        when(tenantFactory.getTenantInfo("unknown")).thenReturn(null);
+
+        this.crossTenantInfoServiceAws.getTenantInfoForPartition("unknown");
+    }
 }

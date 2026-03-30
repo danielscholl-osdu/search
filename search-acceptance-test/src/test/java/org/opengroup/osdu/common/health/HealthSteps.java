@@ -46,12 +46,12 @@ public class HealthSteps extends TestsBase {
   public void i_send_get_request_to_liveness_endpoint() {
     api = Config.getSearchBaseURL() + "liveness_check";
 
-    response = executeGetRequest(api, headers, null);
+    response = executeGetRequest(api, headersWithoutDataPartition(), null);
   }
 
   public void i_send_get_request_to_readiness_endpoint() {
     api = Config.getSearchBaseURL() + "readiness_check";
-    response = executeGetRequest(api, headers, null);
+    response = executeGetRequest(api, headersWithoutDataPartition(), null);
   }
 
   public void i_should_get_OK_in_response() {

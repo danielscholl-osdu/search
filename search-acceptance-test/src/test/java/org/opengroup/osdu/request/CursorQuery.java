@@ -13,6 +13,7 @@ public class CursorQuery {
     private int limit;
     private String query;
     private List<String> returnedFields;
+    private List<String> excludedFields;
     private SortQuery sort;
     private Boolean queryAsOwner;
     private String suggestPhrase;

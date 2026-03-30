@@ -57,6 +57,7 @@ import org.opengroup.osdu.search.policy.service.IPolicyService;
 import org.opengroup.osdu.search.context.UserContext;
 import org.opengroup.osdu.search.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 abstract class CoreQueryBase {
 
@@ -300,11 +301,22 @@ abstract class CoreQueryBase {
     }
     Set<String> returnedFieldsSet = new HashSet<>(returnedFields);
 
+    // set the excluded fields
+    Set<String> excludedFieldsSet = CollectionUtils.isEmpty(request.getExcludedFields())
+            ? new HashSet<>()
+            : new HashSet<>(request.getExcludedFields());
+
+    // the following statement is unnecessary in current ES as
+    // the excludedFields have higher priority than the returned fields.
+    // To be consistent in osdu search, we explicitly remove the overlap fields from the returned fields.
+    returnedFieldsSet.removeAll(excludedFieldsSet);
+
     // remove all matching returnedField and queryable from excludes
     Set<String> requestQueryableExcludes = new HashSet<>(queryableExcludes);
     Set<String> requestExcludes = new HashSet<>(excludes);
-    requestQueryableExcludes.removeAll(returnedFields);
+    requestQueryableExcludes.removeAll(returnedFieldsSet);
     requestExcludes.addAll(requestQueryableExcludes);
+    requestExcludes.addAll(excludedFieldsSet);
     sourceBuilder.source(
         SourceConfig.of(
             sc ->
