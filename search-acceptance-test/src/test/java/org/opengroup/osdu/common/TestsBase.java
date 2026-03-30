@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import cucumber.api.DataTable;
 import org.apache.logging.log4j.util.Strings;
 import org.opengroup.osdu.core.common.model.entitlements.Acl;
+import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.legal.Legal;
 import org.opengroup.osdu.core.common.model.search.Point;
 import org.opengroup.osdu.core.common.model.search.Polygon;
@@ -298,6 +299,12 @@ public abstract class TestsBase {
 
         return rawName.replaceAll("<kindSubType>", kindSubType);
 
+    }
+
+    protected Map<String, String> headersWithoutDataPartition() {
+        Map<String, String> headersWithoutPartition = new HashMap<>(headers);
+        headersWithoutPartition.remove(DpsHeaders.DATA_PARTITION_ID);
+        return headersWithoutPartition;
     }
 
 }

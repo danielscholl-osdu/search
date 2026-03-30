@@ -1,13 +1,21 @@
 package org.opengroup.osdu.search.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import co.elastic.clients.elasticsearch._types.ErrorCause;
+import co.elastic.clients.elasticsearch._types.ErrorResponse;
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import org.apache.http.HttpEntity;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
@@ -81,6 +89,91 @@ public class DetailedBadRequestMessageUtilTest {
 
         String detailedBadRequestMessage = badRequestMessageUtil.getDetailedBadRequestMessage(searchRequest, elasticsearchStatusExceptionMock);
         assertEquals(NESTED_FAIL_REASON + "." + GEO_FIELD_FAIL_REASON, detailedBadRequestMessage);
+    }
+
+    @Test
+    public void testElasticsearchException_withSortFieldError_returnsSortMessage() {
+        String sortErrorReason = "Text fields are not optimised for operations that require per-document field data like aggregations and sorting";
+        ElasticsearchException elasticsearchException = buildMockEsException(sortErrorReason);
+
+        SearchRequest sortRequest = mock(SearchRequest.class);
+        SortOptions sortOption = mock(SortOptions.class);
+        when(sortRequest.sort()).thenReturn(List.of(sortOption));
+
+        String result = badRequestMessageUtil.getDetailedBadRequestMessage(sortRequest, elasticsearchException);
+        assertEquals("Sort is not supported for one or more of the requested fields", result);
+    }
+
+    @Test
+    public void testElasticsearchException_withAggregationFieldError_returnsAggregationMessage() {
+        String aggErrorReason = "Text fields are not optimised for operations that require per-document field data like aggregations and sorting";
+        ElasticsearchException elasticsearchException = buildMockEsException(aggErrorReason);
+
+        SearchRequest aggRequest = mock(SearchRequest.class);
+        when(aggRequest.sort()).thenReturn(Collections.emptyList());
+        Aggregation aggregation = mock(Aggregation.class);
+        when(aggRequest.aggregations()).thenReturn(Map.of("agg", aggregation));
+
+        String result = badRequestMessageUtil.getDetailedBadRequestMessage(aggRequest, elasticsearchException);
+        assertEquals("Aggregations are not supported for one or more of the specified fields", result);
+    }
+
+    @Test
+    public void testElasticsearchException_withGeoSortError_returnsSortMessage() {
+        String geoSortReason = "can't sort on geo_shape field without using specific sorting feature, like geo_distance";
+        ElasticsearchException elasticsearchException = buildMockEsException(geoSortReason);
+
+        SearchRequest sortRequest = mock(SearchRequest.class);
+        SortOptions sortOption = mock(SortOptions.class);
+        when(sortRequest.sort()).thenReturn(List.of(sortOption));
+
+        String result = badRequestMessageUtil.getDetailedBadRequestMessage(sortRequest, elasticsearchException);
+        assertEquals("Sort is not supported for one or more of the requested fields", result);
+    }
+
+    @Test
+    public void testElasticsearchException_withNullCausedBy_returnsDefault() {
+        ElasticsearchException elasticsearchException = mock(ElasticsearchException.class);
+        ErrorResponse errorResponse = mock(ErrorResponse.class);
+        ErrorCause rootError = mock(ErrorCause.class);
+
+        when(elasticsearchException.getSuppressed()).thenReturn(new Throwable[0]);
+        when(elasticsearchException.response()).thenReturn(errorResponse);
+        when(errorResponse.error()).thenReturn(rootError);
+        when(rootError.causedBy()).thenReturn(null);
+
+        String result = badRequestMessageUtil.getDetailedBadRequestMessage(searchRequest, elasticsearchException);
+        assertEquals("Invalid parameters were given on search request", result);
+    }
+
+    @Test
+    public void testNonElasticsearchException_withCause_returnsDefault() {
+        RuntimeException cause = new RuntimeException("some unrelated error");
+        RuntimeException exception = new RuntimeException("outer", cause);
+
+        String result = badRequestMessageUtil.getDetailedBadRequestMessage(searchRequest, exception);
+        assertEquals("Invalid parameters were given on search request", result);
+    }
+
+    @Test
+    public void testElasticsearchException_withNullMsg_inKeywordFieldCheck_returnsDefault() {
+        ElasticsearchException elasticsearchException = buildMockEsException(null);
+
+        String result = badRequestMessageUtil.getDetailedBadRequestMessage(searchRequest, elasticsearchException);
+        assertEquals("Invalid parameters were given on search request", result);
+    }
+
+    private ElasticsearchException buildMockEsException(String causeReason) {
+        ElasticsearchException ex = mock(ElasticsearchException.class);
+        ErrorResponse errorResponse = mock(ErrorResponse.class);
+        ErrorCause errorCause = mock(ErrorCause.class);
+        ErrorCause rootError = mock(ErrorCause.class);
+        when(ex.getSuppressed()).thenReturn(new Throwable[0]);
+        when(ex.response()).thenReturn(errorResponse);
+        when(errorResponse.error()).thenReturn(rootError);
+        when(rootError.causedBy()).thenReturn(errorCause);
+        when(errorCause.reason()).thenReturn(causeReason);
+        return ex;
     }
 
     private InputStream getResponseContent(String fileName) {

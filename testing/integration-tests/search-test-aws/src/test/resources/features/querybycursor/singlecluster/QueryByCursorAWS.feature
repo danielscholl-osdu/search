@@ -16,6 +16,32 @@ Feature: Search recursively on cursor with different queries
       | "tenant1:search<timestamp>:test-data2--Integration:1.0.2"  | "records_2" | "data.default.viewers@tenant1"  |
 
   @default
+  Scenario Outline: Search data in a given kind with returned fields
+    When I send <query> with <kind>
+    And I limit the count of returned results to <limit>
+    And I set the fields I want in response as <returned_fields>
+    And I send request to tenant <tenant>
+    Then I should get in response <count> records containing <fields>
+
+    Examples:
+      | tenant    | kind                                                      | query         | limit | returned_fields    | count | fields              |
+      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | None          | None  | NULL               | 3     | acl,data.WellName   |
+      | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | None          | None  | NULL               | 3     | id,data.Basin       |
+
+  @default
+  Scenario Outline: Search data in a given kind with excluded fields
+    When I send <query> with <kind>
+    And I limit the count of returned results to <limit>
+    And I set the fields I want in response as <returned_fields> and <excluded_fields>
+    And I send request to tenant <tenant>
+    Then I should get in response <count> records not containing <fields>
+
+    Examples:
+      | tenant    | kind                                                      | query         | limit | returned_fields    | excluded_fields   | count | fields            |
+      | "tenant1" | "tenant1:search<timestamp>:test-data--Integration:1.0.1"  | None          | None  | NULL               | acl,data.WellName | 3     | acl,data.WellName |
+      | "tenant1" | "tenant1:search<timestamp>:test-data2--Integration:1.0.2" | None          | None  | NULL               | id,data.Basin     | 3     | id,data.Basin     |
+
+  @default
   Scenario Outline: Search recursively page by page data across the kinds
     When I send <query> with <kind>
     And I limit the count of returned results to <limit>

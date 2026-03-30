@@ -39,12 +39,16 @@
 		<module>search-test-baremetal</module>
     </modules>
 
+	<properties>
+		<jackson.version>2.21.1</jackson.version>
+	</properties>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
 				<groupId>com.fasterxml.jackson</groupId>
 				<artifactId>jackson-bom</artifactId>
-				<version>2.15.3</version>
+				<version>${jackson.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

@@ -34,10 +34,15 @@ public class CrossTenantInfoServiceImpl implements ITenantInfoService, ICrossTen
     @Override
     public TenantInfo getTenantInfo() {
         String primaryAccountId = this.headers.getPartitionIdWithFallbackToAccountId();
-        TenantInfo tenantInfo = this.tenantFactory.getTenantInfo(primaryAccountId);
+        return getTenantInfoForPartition(primaryAccountId);
+    }
+
+    @Override
+    public TenantInfo getTenantInfoForPartition(String partitionId) {
+        TenantInfo tenantInfo = this.tenantFactory.getTenantInfo(partitionId);
         if (tenantInfo == null) {
         	log.error("Tenant info has not found!");
-            throw AppException.createUnauthorized(String.format("could not retrieve tenant info for data partition id: %s", primaryAccountId));
+            throw AppException.createUnauthorized(String.format("could not retrieve tenant info for data partition id: %s", partitionId));
         }
         return tenantInfo;
     }
