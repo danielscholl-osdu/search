@@ -400,8 +400,8 @@ CC-BY-2.5
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- "Java Concurrency in Practice" book annotations (from http://jcip.net/)
 - FindBugs-jsr305 (from http://findbugs.sourceforge.net/)
+- Java Concurrency in Practice book annotations (from http://jcip.net/)
 - MongoDB Java Driver (from http://mongodb.org/, http://www.mongodb.org, https://www.mongodb.com/)
 
 ========================================================================
@@ -799,5 +799,5 @@ unknown
 ========================================================================
 The following software have components provided under the terms of this license:
 
-- "Java Concurrency in Practice" book annotations (from http://jcip.net/)
 - JUnit (from http://junit.org, http://junit.org/)
+- Java Concurrency in Practice book annotations (from http://jcip.net/)
