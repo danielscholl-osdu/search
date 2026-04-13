@@ -19,7 +19,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <cucumber.version>1.2.5</cucumber.version>
         <osdu.oscorecommon.version>0.27.2</osdu.oscorecommon.version>
-        <jackson.version>2.21.1</jackson.version>
+        <jackson.version>2.21.2</jackson.version>
         <argLine>
             --add-opens=java.base/java.util=ALL-UNNAMED
             --add-opens java.base/java.lang=ALL-UNNAMED
