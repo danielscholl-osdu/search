@@ -4,14 +4,15 @@ aws-acceptance-test:
     GROUP_ID: $DOMAIN
   script:
     - >
-      $MAVEN_BUILD . test-results.log
+      set -euxo pipefail &&
+      cd $ACCEPTANCE_TEST_DIR &&
+      $MAVEN 
       verify 
       -Dallure.results.directory=aws/allure-results
       -DdisableXmlReport=true
       --quiet
-      --file $ACCEPTANCE_TEST_DIR/pom.xml
       --update-snapshots
-      -Dcucumber.filter.tags="${CUCUMBER_OPTIONS}"
+      -Dcucumber.filter.tags="${CUCUMBER_OPTIONS}" | tee test-results.log
   artifacts:
     when: always
     paths:
