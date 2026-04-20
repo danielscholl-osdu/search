@@ -22,7 +22,7 @@ public class HealthCheckApi {
 
   @Operation(
       summary = "${healthChecksApi.livenessCheck.summary}",
-      description = "${healthCheckApi.livenessCheck.description}",
+      description = "${healthChecksApi.livenessCheck.description}",
       tags = {"health-check-api"})
   @ApiResponses(
       value = {

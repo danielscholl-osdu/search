@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 
 import com.google.gson.reflect.TypeToken;
 import cucumber.api.DataTable;
-import org.apache.logging.log4j.util.Strings;
+
 import org.opengroup.osdu.core.common.model.entitlements.Acl;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
 import org.opengroup.osdu.core.common.model.legal.Legal;
@@ -69,7 +69,7 @@ public abstract class TestsBase {
     }
 
     public void i_send_request_with_xcollab_header(String xCollaborationHeader) {
-        if (Strings.isNotEmpty(xCollaborationHeader)) {
+        if (xCollaborationHeader != null && !xCollaborationHeader.isEmpty()) {
             headers = HTTPClient.addHeader(headers, X_COLLABORATION_HEADER, xCollaborationHeader);
         }
     }
@@ -266,7 +266,7 @@ public abstract class TestsBase {
             schemaRecords.put(actualKind, recordsForKind);
             String payLoad = new Gson().toJson(records);
             LOGGER.log( Level.INFO, String.format("Start ingesting records= %s", payLoad));
-            if (Strings.isNotEmpty(xCollaborationHeader)) {
+            if (xCollaborationHeader != null && !xCollaborationHeader.isEmpty()) {
                 headers.put(X_COLLABORATION_HEADER, xCollaborationHeader);
             }
             ClientResponse clientResponse = httpClient.send(HttpMethod.PUT, getStorageBaseURL() + "records", payLoad, headers, httpClient.getAccessToken());

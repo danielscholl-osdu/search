@@ -15,6 +15,7 @@
 package org.opengroup.osdu.util;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 
@@ -24,11 +25,11 @@ public class NotFoundIgnoringResponseErrorHandler extends DefaultResponseErrorHa
 
     @Override
     public boolean hasError(ClientHttpResponse response) throws IOException {
-        return super.hasError(response) && response.getRawStatusCode() != HttpStatus.NOT_FOUND.value();
+        return super.hasError(response) && response.getStatusCode().value() != HttpStatus.NOT_FOUND.value();
     }
 
     @Override
-    protected boolean hasError(HttpStatus statusCode) {
+    protected boolean hasError(HttpStatusCode statusCode) {
         return super.hasError(statusCode) && statusCode != HttpStatus.NOT_FOUND;
     }
 }

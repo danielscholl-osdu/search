@@ -28,8 +28,7 @@
     </parent>
 
     <properties>
-        <maven.compiler.target>17</maven.compiler.target>
-        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.release>17</maven.compiler.release>
         <maven.war.plugin>2.6</maven.war.plugin>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
@@ -86,20 +85,6 @@
           <dependency>
               <groupId>org.glassfish.jersey.core</groupId>
               <artifactId>jersey-client</artifactId>
-          </dependency>
-          <dependency>
-              <groupId>io.swagger</groupId>
-              <artifactId>swagger-jaxrs</artifactId>
-              <exclusions>
-                  <exclusion>
-                      <groupId>jakarta.ws.rs</groupId>
-                      <artifactId>jsr311-api</artifactId>
-                  </exclusion>
-                  <exclusion>
-                      <groupId>com.fasterxml.jackson.core</groupId>
-                      <artifactId>jackson-databind</artifactId>
-                  </exclusion>
-              </exclusions>
           </dependency>
 
           <!--explicitly load latest compatible version with security fix in it-->

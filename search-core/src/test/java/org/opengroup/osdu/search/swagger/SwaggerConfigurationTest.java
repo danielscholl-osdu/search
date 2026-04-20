@@ -14,9 +14,13 @@
 
 package org.opengroup.osdu.search.swagger;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.ComposedSchema;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,11 +30,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengroup.osdu.core.common.model.http.DpsHeaders;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.web.method.HandlerMethod;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -123,5 +131,27 @@ public class SwaggerConfigurationTest {
         Operation noTagOp = new Operation().operationId("noTagOp");
         noTagOp = customizer.customize(noTagOp, mock(HandlerMethod.class));
         assertNull(noTagOp.getParameters(), "operation with no tags should not get data-partition-id header");
+    }
+
+    @Test
+    void stripObjectTypeFromAnyOfSchemas_handlesNullSchemaAndPropertyEntries() {
+        OpenApiCustomizer customizer = swaggerConfiguration.stripObjectTypeFromAnyOfSchemas();
+
+        ComposedSchema composedAnyOfObject = new ComposedSchema();
+        composedAnyOfObject.setType("object");
+        composedAnyOfObject.addAnyOfItem(new StringSchema());
+
+        Schema<?> schema = new Schema<>();
+        schema.addProperty("nullProperty", null);
+        schema.addProperty("composed", composedAnyOfObject);
+
+        Map<String, Schema> schemas = new LinkedHashMap<>();
+        schemas.put("nullSchema", null);
+        schemas.put("schema", schema);
+
+        OpenAPI openAPI = new OpenAPI().components(new Components().schemas(schemas));
+
+        assertDoesNotThrow(() -> customizer.customise(openAPI));
+        assertNull(composedAnyOfObject.getType(), "type should be cleared when anyOf is present");
     }
 }
