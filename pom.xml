@@ -23,8 +23,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <maven.compiler.target>17</maven.compiler.target>
-        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.release>17</maven.compiler.release>
         <skip.unit.tests>false</skip.unit.tests>
         <skip.integration.tests>true</skip.integration.tests>
         <jackson.version>2.21.2</jackson.version>
@@ -36,14 +35,16 @@
         <reactor-bom.version>2023.0.6</reactor-bom.version>
         <google-oauth-client.version>1.34.1</google-oauth-client.version>
         <commons-compress.version>1.21</commons-compress.version>
-        <osdu.oscorecommon.version>5.4.1</osdu.oscorecommon.version>
+        <osdu.oscorecommon.version>6.0.0</osdu.oscorecommon.version>
         <spring-framework-version>6.2.17</spring-framework-version>
         <spring-security.version>6.5.9</spring-security.version>
-        <openapi.version>2.8.6</openapi.version>
+        <openapi.version>2.8.16</openapi.version>
+        <swagger-core.version>2.2.45</swagger-core.version>
         <json-smart.version>2.6.0</json-smart.version>
         <mockito-core.version>5.12.0</mockito-core.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
         <spring-boot.version>3.5.13</spring-boot.version>
+        <lombok.version>1.18.42</lombok.version>
     </properties>
 
     <licenses>
@@ -78,6 +79,21 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-core-jakarta</artifactId>
+                <version>${swagger-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-models-jakarta</artifactId>
+                <version>${swagger-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-annotations-jakarta</artifactId>
+                <version>${swagger-core.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.opengroup.osdu</groupId>
                 <artifactId>os-core-common</artifactId>
                 <version>${osdu.oscorecommon.version}</version>
@@ -88,21 +104,6 @@
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
                 <version>3.24.1-GA</version>
-            </dependency>
-            <dependency>
-                <groupId>io.swagger</groupId>
-                <artifactId>swagger-jaxrs</artifactId>
-                <version>1.5.22</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>jakarta.ws.rs</groupId>
-                        <artifactId>jsr311-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.fasterxml.jackson.core</groupId>
-                        <artifactId>jackson-databind</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>
@@ -357,6 +358,19 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>

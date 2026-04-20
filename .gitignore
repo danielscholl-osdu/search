@@ -63,3 +63,6 @@ dist/
 
 # Local history plugin
 .history/*
+
+# GitHub Copilot
+.github/copilot-instructions.md

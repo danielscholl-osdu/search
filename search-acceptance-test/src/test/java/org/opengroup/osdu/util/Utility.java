@@ -3,7 +3,6 @@ package org.opengroup.osdu.util;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.util.CollectionUtils;
 
 import java.util.HashMap;
@@ -22,7 +21,7 @@ public class Utility {
     }
 
     public static boolean containsField(Map<String, Object> record, String fieldName) {
-        if(Strings.isBlank(fieldName) || CollectionUtils.isEmpty(record)){
+        if(fieldName == null || fieldName.isBlank() || CollectionUtils.isEmpty(record)){
             return false;
         }
 
