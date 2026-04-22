@@ -269,7 +269,7 @@ The following software have components provided under the terms of this license:
 - io.grpc:grpc-context (from https://github.com/grpc/grpc-java)
 - jackson-coreutils (from https://github.com/java-json-tools/jackson-coreutils)
 - jackson-databind (from http://github.com/FasterXML/jackson, http://wiki.fasterxml.com/JacksonHome, https://github.com/FasterXML/jackson)
-- java-cloudant (from https://cloudant.com)
+- java-cloudant (from https://cloudant.com, https://cloudant.com/)
 - javatuples (from http://www.javatuples.org)
 - javax.annotation API (from http://jcp.org/en/jsr/detail?id=250)
 - jersey-container-servlet (from https://repo1.maven.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet)
