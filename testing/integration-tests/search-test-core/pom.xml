@@ -15,11 +15,12 @@
     <packaging>jar</packaging>
 
     <properties>
-        <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <cucumber.version>1.2.5</cucumber.version>
-        <osdu.oscorecommon.version>0.27.2</osdu.oscorecommon.version>
-        <jackson.version>2.21.1</jackson.version>
+        <osdu.oscorecommon.version>6.0.0</osdu.oscorecommon.version>
+        <jackson.version>2.21.2</jackson.version>
+        <spring-boot.version>3.5.13</spring-boot.version>
         <argLine>
             --add-opens=java.base/java.util=ALL-UNNAMED
             --add-opens java.base/java.lang=ALL-UNNAMED
@@ -31,6 +32,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- Jackson override: Spring Boot 3.5.7, 3.5.8, 3.5.9 and other artifacts provides 2.19.4, we need 2.21.1 for GHSA-72hv-8253-57qq -->
             <!-- Maybe remove this override when Spring Boot BOM updates to Jackson >= 2.21.1 -->
             <dependency>
@@ -48,6 +56,11 @@
             <groupId>org.opengroup.osdu</groupId>
             <artifactId>os-core-common</artifactId>
             <version>${osdu.oscorecommon.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
         <dependency>
@@ -106,7 +119,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.26</version>
+            <version>1.18.42</version>
             <scope>provided</scope>
         </dependency>
 

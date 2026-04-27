@@ -56,6 +56,9 @@ public class RedisConfig {
     @Value("${redis.principal.id:#{null}}")
     private String redisPrincipalId;
 
+    @Value("${redis.hostname:#{null}}")
+    private String redisHostname;
+
     @Bean
     public RedisAzureCache<Groups> groupCache() {
         return createCache(Groups.class, groupRedisTtl);
@@ -82,7 +85,7 @@ public class RedisConfig {
     }
 
     private <T> RedisAzureCache<T> createCache(Class<T> valueClass, int ttl) {
-        RedisAzureConfiguration config = new RedisAzureConfiguration(database, ttl, port, timeout, commandTimeout, redisPrincipalId);
+        RedisAzureConfiguration config = new RedisAzureConfiguration(database, ttl, port, timeout, commandTimeout, redisPrincipalId, redisHostname);
         return new RedisAzureCache<>(valueClass, config);
     }
 }
