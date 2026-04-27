@@ -14,8 +14,8 @@
 
 package org.opengroup.osdu.search.api;
 
-import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -48,7 +48,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.annotation.RequestScope;
 
 import jakarta.inject.Inject;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -103,14 +102,9 @@ public class SearchApi {
     })
     @PostMapping("/query_with_cursor")
     @PreAuthorize("@authorizationFilter.hasPermission('" + SearchServiceRole.ADMIN + "', '" + SearchServiceRole.USER + "')")
-    @ApiOperation(
-            value = SwaggerDoc.QUERY_WITH_CURSOR_POST_TITLE,
-            nickname = SwaggerDoc.QUERY_WITH_CURSOR_OPERATION_ID,
-            code = HttpServletResponse.SC_ACCEPTED,
-            notes = SwaggerDoc.QUERY_WITH_CURSOR_POST_NOTES)
     public ResponseEntity<CursorQueryResponse> queryWithCursor(
         @NotNull(message = SwaggerDoc.REQUEST_VALIDATION_NOT_NULL_BODY) @RequestBody @Valid CursorQueryRequest queryRequest,
-        @RequestParam(value="search_after", required = false, defaultValue = "false") boolean search_after) throws Exception {
+        @Parameter(description = "If true, use search-after pagination instead of scroll.") @RequestParam(value="search_after", required = false, defaultValue = "false") boolean search_after) throws Exception {
         CursorQueryResponse searchResponse;
         if(searchAfterFeatureManager.isEnabled() || search_after) {
             searchResponse = searchAfterQueryService.queryIndex(queryRequest);
@@ -136,8 +130,8 @@ public class SearchApi {
     @DeleteMapping("/query_with_cursor/{cursor}")
     @PreAuthorize("@authorizationFilter.hasPermission('" + SearchServiceRole.ADMIN + "', '" + SearchServiceRole.USER + "')")
     @ResponseStatus(HttpStatus.OK)
-    public void closeCursor(@NotNull @PathVariable(value = "cursor") String cursor,
-                            @RequestParam(value="search_after", required = false, defaultValue = "false") boolean search_after) throws Exception {
+    public void closeCursor(@Parameter(description = "Cursor value returned by a previous query_with_cursor response.") @NotNull @PathVariable(value = "cursor") String cursor,
+                            @Parameter(description = "If true, close a search-after pagination context instead of a scroll context.") @RequestParam(value="search_after", required = false, defaultValue = "false") boolean search_after) throws Exception {
         if(searchAfterFeatureManager.isEnabled() || search_after) {
             searchAfterQueryService.close(cursor);
         }

@@ -17,7 +17,7 @@ package org.opengroup.osdu.search.model;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import org.opengroup.osdu.core.common.SwaggerDoc;
 import org.opengroup.osdu.core.common.model.search.Query;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -40,14 +40,14 @@ public class SmartParsedQuery {
     }
 
     @NotBlank(message = SwaggerDoc.KIND_VALIDATION_CAN_NOT_BE_NULL_OR_EMPTY)
-    @ApiModelProperty(value = SwaggerDoc.KIND_REQUEST_DESCRIPTION, required = true, example = SwaggerDoc.KIND_EXAMPLE)
+    @Schema(description = SwaggerDoc.KIND_REQUEST_DESCRIPTION, requiredMode = Schema.RequiredMode.REQUIRED, example = SwaggerDoc.KIND_EXAMPLE)
     @ValidMultiKind
     private Object kind;
 
-    @ApiModelProperty(value = SwaggerDoc.QUERY_DESCRIPTION)
+    @Schema(description = SwaggerDoc.QUERY_DESCRIPTION)
     @JsonRawValue
     private String query = "";
 
-    @ApiModelProperty(value = SwaggerDoc.QUERYASOWNER_DESCRIPTION, dataType = "java.lang.Boolean", example = "false")
+    @Schema(description = SwaggerDoc.QUERYASOWNER_DESCRIPTION, example = "false")
     private boolean queryAsOwner ;
 }
